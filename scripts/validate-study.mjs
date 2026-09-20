@@ -1,0 +1,22 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {partVisible,readViewUrl,viewUrl,resolveSelection} from '../app/viewer-state.ts';
+import {historyReducer} from '../app/use-view-history.ts';
+const atlas=JSON.parse(readFileSync(new URL('../public/models/atlas-male-detail.json',import.meta.url)));
+const base={selected:[],visible:['skeletal','muscular','integumentary'],explode:0,isolate:false,view:'front',rotate:false,reset:0};
+const selected=resolveSelection(atlas,['Femur.l','Femur.r']);assert.equal(selected.length,2);
+const s={...base,selected,contextOpacity:.17,region:'lower-left',peel:2,hidden:['DETAIL:Patella.l'],skinOpacity:.2,section:{enabled:true,axis:'sagittal',position:.41,flip:true},labels:true};
+const camera=[1,2,3,0,.9,0,.1,0];const url=viewUrl('http://localhost:3016/','male-detail',s,camera);const restored=readViewUrl(new URL(url).search,atlas,base);
+for(const key of ['selected','contextOpacity','region','peel','hidden','skinOpacity','section','labels'])assert.deepEqual(restored[key],s[key]);assert.deepEqual(restored.camera,camera);
+assert.equal(readViewUrl('?context=NaN&camera=1,2,3,1,2,3&select=unknown',atlas,base).camera,undefined);assert.equal(readViewUrl('?context=NaN',atlas,base).contextOpacity,1);
+const selectedPart=atlas.parts.find(p=>p.id===selected[0]);assert.equal(partVisible(selectedPart,{...s,isolate:true,peel:7}),true);assert.equal(partVisible(atlas.parts.find(p=>p.system==='muscular'),{...base,peel:3}),false);
+let h={present:base,past:[],future:[],time:0,key:''};h=historyReducer(h,{type:'set',update:s,time:1000});h=historyReducer(h,{type:'undo'});assert.deepEqual(h.present,base);h=historyReducer(h,{type:'redo'});assert.deepEqual(h.present,s);
+h=historyReducer(h,{type:'set',update:{...s,contextOpacity:.2},time:2000});h=historyReducer(h,{type:'set',update:{...s,contextOpacity:.3},time:2100});h=historyReducer(h,{type:'undo'});assert.equal(h.present.contextOpacity,.17);
+console.log('Selection sets, URL round-trips, malformed URLs, peeling, undo/redo and slider coalescing passed.');
+
+const beforeCamera=[0,1,4,0,1,0,0,0],afterCamera=[0,1,1,0,1,0,0,0];
+let cameraHistory={present:base,past:[],future:[],time:0,key:''};
+cameraHistory=historyReducer(cameraHistory,{type:'set',update:{...base,focus:1},time:5000,camera:beforeCamera});
+cameraHistory=historyReducer(cameraHistory,{type:'undo',camera:afterCamera});assert.deepEqual(cameraHistory.present.camera,beforeCamera);
+cameraHistory=historyReducer(cameraHistory,{type:'redo',camera:beforeCamera});assert.deepEqual(cameraHistory.present.camera,afterCamera);
+console.log('Camera snapshots survive focus undo/redo.');

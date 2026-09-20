@@ -1,0 +1,668 @@
+{
+  "source": {
+    "name": "Z-Anatomy",
+    "url": "https://github.com/Z-Anatomy/Models-of-human-anatomy",
+    "licence": "Mixed component licenses; see NOTICE.md",
+    "derived_from": "BodyParts3D, DBCLS, CC BY-SA 2.1 Japan",
+    "terminology": "Terminologia Anatomica (TA2)"
+  },
+  "boot": [
+    "body-surface"
+  ],
+  "regions": [
+    {
+      "region": "abdomen-pelvis",
+      "structures": 281,
+      "bounds": {
+        "lo": [
+          -0.28114,
+          0.72665,
+          -0.11914
+        ],
+        "hi": [
+          0.28114,
+          1.28026,
+          0.1253
+        ]
+      },
+      "systems": {
+        "Lymphoid": 37,
+        "Cardiovascular": 83,
+        "Viscera": 54,
+        "Attachment": 37,
+        "Joint": 21,
+        "Bone": 7,
+        "Muscle": 26,
+        "Region": 10,
+        "Nervous": 6
+      },
+      "tissues": {
+        "lymphoid": 37,
+        "artery": 50,
+        "viscera": 54,
+        "attachment": 37,
+        "ligament": 18,
+        "cartilage": 6,
+        "muscle": 21,
+        "bone": 4,
+        "vein": 33,
+        "fascia": 2,
+        "region": 10,
+        "nerve": 6,
+        "tendon": 3
+      },
+      "sides": {
+        "None": 125,
+        "left": 72,
+        "right": 84
+      },
+      "noncommercial": 2,
+      "open_shells": 0,
+      "geometry": {
+        "structures": 272,
+        "triangles": 1187618,
+        "bytes": 29342772
+      },
+      "bytes_packed": 6641928,
+      "geometry_sha256": "82e88907a779120a4edc8641944a9f57ce28cd14ffa98d380a7848efc1d1b245",
+      "previous_geometry_sha256": "c086adfb4694bff4d6c2112c62ff26e62f7826f12ca239ff268f48d7f11f638b",
+      "hashNote": "Verified served GLB; source index retains the pre-restoration hash. Named kidney nodes carry matching creator and license metadata."
+    },
+    {
+      "region": "back",
+      "structures": 220,
+      "bounds": {
+        "lo": [
+          -0.18721,
+          0.8514,
+          -0.13486
+        ],
+        "hi": [
+          0.18721,
+          1.58234,
+          0.09973
+        ]
+      },
+      "systems": {
+        "Cardiovascular": 11,
+        "Muscle": 82,
+        "Bone": 47,
+        "Nervous": 2,
+        "Attachment": 46,
+        "Region": 7,
+        "Joint": 22,
+        "Lymphoid": 3
+      },
+      "tissues": {
+        "artery": 7,
+        "fascia": 7,
+        "cartilage": 44,
+        "muscle": 67,
+        "bone": 24,
+        "cns": 2,
+        "attachment": 46,
+        "vein": 4,
+        "region": 7,
+        "lymphoid": 3,
+        "ligament": 1,
+        "tendon": 8
+      },
+      "sides": {
+        "right": 55,
+        "left": 54,
+        "None": 111
+      },
+      "noncommercial": 0,
+      "open_shells": 6,
+      "geometry": {
+        "structures": 237,
+        "triangles": 495208,
+        "bytes": 11336040
+      },
+      "bytes_packed": 3033212,
+      "geometry_sha256": "56b1d070bbdaad2c37d48bd21cb7df1d67920a8f0b8f5490a5abe26c9636bd92"
+    },
+    {
+      "region": "body-surface",
+      "structures": 1,
+      "bounds": {
+        "lo": [
+          -0.34445,
+          -0.0054,
+          -0.15416
+        ],
+        "hi": [
+          0.34445,
+          1.74573,
+          0.14991
+        ]
+      },
+      "systems": {
+        "Region": 1
+      },
+      "tissues": {
+        "surface": 1
+      },
+      "sides": {
+        "None": 1
+      },
+      "noncommercial": 0,
+      "open_shells": 0,
+      "geometry": {
+        "structures": 1,
+        "triangles": 180000,
+        "bytes": 4316896
+      },
+      "derived": true,
+      "bytes_packed": 831824,
+      "geometry_sha256": "2b5c229a65a3581b213eea39c46937045b52d0cfc79fbf62815e2a1ce6d75f7f"
+    },
+    {
+      "region": "core",
+      "structures": 90,
+      "bounds": {
+        "lo": [
+          -0.27758,
+          0.02815,
+          -0.132
+        ],
+        "hi": [
+          0.27758,
+          1.85257,
+          0.12609
+        ]
+      },
+      "systems": {
+        "Nervous": 50,
+        "Joint": 6,
+        "Region": 4,
+        "Cardiovascular": 8,
+        "Muscle": 22
+      },
+      "tissues": {
+        "cns": 31,
+        "ligament": 6,
+        "region": 4,
+        "vein": 8,
+        "fascia": 6,
+        "nerve": 17,
+        "muscle": 16,
+        "sense": 2
+      },
+      "sides": {
+        "None": 33,
+        "left": 28,
+        "right": 29
+      },
+      "noncommercial": 0,
+      "open_shells": 0,
+      "geometry": {
+        "structures": 90,
+        "triangles": 805064,
+        "bytes": 17668972
+      },
+      "bytes_packed": 3547104,
+      "geometry_sha256": "9766b9c38417f239b5bf70a4ac7118731a871d83f7bb8e84b2c99f4f0b52917c"
+    },
+    {
+      "region": "head",
+      "structures": 969,
+      "bounds": {
+        "lo": [
+          -0.10295,
+          1.29005,
+          -0.13162
+        ],
+        "hi": [
+          0.09337,
+          1.74334,
+          0.11673
+        ]
+      },
+      "systems": {
+        "Viscera": 20,
+        "Nervous": 354,
+        "Cardiovascular": 192,
+        "Region": 87,
+        "Attachment": 82,
+        "Bone": 78,
+        "Joint": 14,
+        "Lymphoid": 26,
+        "Muscle": 116
+      },
+      "tissues": {
+        "viscera": 20,
+        "nerve": 45,
+        "artery": 145,
+        "cns": 258,
+        "sense": 51,
+        "region": 87,
+        "vein": 47,
+        "attachment": 82,
+        "bone": 65,
+        "capsule": 2,
+        "cartilage": 15,
+        "lymphoid": 26,
+        "muscle": 82,
+        "fascia": 6,
+        "ligament": 10,
+        "tendon": 28
+      },
+      "sides": {
+        "left": 448,
+        "right": 450,
+        "None": 71
+      },
+      "noncommercial": 4,
+      "open_shells": 42,
+      "geometry": {
+        "structures": 924,
+        "triangles": 3276418,
+        "bytes": 75821336
+      },
+      "bytes_packed": 16253080,
+      "geometry_sha256": "0b4b93cea5542470222e98d675b9d2497b9113267264a953002045899d7028cb"
+    },
+    {
+      "region": "lower-limb-left",
+      "structures": 552,
+      "bounds": {
+        "lo": [
+          -0.00106,
+          -0.03041,
+          -0.14834
+        ],
+        "hi": [
+          0.1813,
+          1.15548,
+          0.14565
+        ]
+      },
+      "systems": {
+        "Muscle": 149,
+        "Lymphoid": 19,
+        "Attachment": 104,
+        "Joint": 80,
+        "Region": 34,
+        "Nervous": 33,
+        "Cardiovascular": 71,
+        "Bone": 62
+      },
+      "tissues": {
+        "muscle": 60,
+        "lymphoid": 19,
+        "synovium": 38,
+        "attachment": 104,
+        "cartilage": 38,
+        "region": 34,
+        "nerve": 32,
+        "ligament": 65,
+        "artery": 47,
+        "vein": 24,
+        "capsule": 8,
+        "tendon": 39,
+        "bone": 31,
+        "fascia": 12,
+        "cns": 1
+      },
+      "sides": {
+        "left": 521,
+        "None": 31
+      },
+      "noncommercial": 0,
+      "open_shells": 9,
+      "geometry": {
+        "structures": 476,
+        "triangles": 841877,
+        "bytes": 18894676
+      },
+      "bytes_packed": 4262924,
+      "geometry_sha256": "50ce8a1ef4cc324eaf36bbc43154341b27f3bb2a150fa55fefaabaf93a5c2574"
+    },
+    {
+      "region": "lower-limb-right",
+      "structures": 543,
+      "bounds": {
+        "lo": [
+          -0.1813,
+          -0.03041,
+          -0.14834
+        ],
+        "hi": [
+          0.00521,
+          1.15548,
+          0.14565
+        ]
+      },
+      "systems": {
+        "Muscle": 147,
+        "Lymphoid": 19,
+        "Attachment": 101,
+        "Joint": 79,
+        "Region": 34,
+        "Nervous": 33,
+        "Cardiovascular": 68,
+        "Bone": 62
+      },
+      "tissues": {
+        "muscle": 59,
+        "lymphoid": 19,
+        "synovium": 38,
+        "attachment": 101,
+        "cartilage": 38,
+        "region": 34,
+        "nerve": 32,
+        "ligament": 64,
+        "artery": 44,
+        "vein": 24,
+        "capsule": 8,
+        "tendon": 39,
+        "bone": 31,
+        "fascia": 11,
+        "cns": 1
+      },
+      "sides": {
+        "right": 512,
+        "None": 31
+      },
+      "noncommercial": 0,
+      "open_shells": 8,
+      "geometry": {
+        "structures": 468,
+        "triangles": 826387,
+        "bytes": 18552800
+      },
+      "bytes_packed": 4186164,
+      "geometry_sha256": "bbc7561f128b11f9c4703375309b9051b6c1c3247fcef82025834def31d6fbc7"
+    },
+    {
+      "region": "neck",
+      "structures": 213,
+      "bounds": {
+        "lo": [
+          -0.17429,
+          1.13311,
+          -0.11954
+        ],
+        "hi": [
+          0.17429,
+          1.60394,
+          0.13344
+        ]
+      },
+      "systems": {
+        "Muscle": 66,
+        "Lymphoid": 19,
+        "Bone": 6,
+        "Region": 18,
+        "Cardiovascular": 29,
+        "Joint": 9,
+        "Nervous": 9,
+        "Viscera": 9,
+        "Attachment": 48
+      },
+      "tissues": {
+        "muscle": 58,
+        "lymphoid": 19,
+        "cartilage": 6,
+        "region": 18,
+        "vein": 12,
+        "ligament": 9,
+        "artery": 17,
+        "nerve": 9,
+        "viscera": 9,
+        "attachment": 48,
+        "tendon": 6,
+        "fascia": 2
+      },
+      "sides": {
+        "left": 90,
+        "right": 91,
+        "None": 32
+      },
+      "noncommercial": 0,
+      "open_shells": 2,
+      "geometry": {
+        "structures": 211,
+        "triangles": 466355,
+        "bytes": 10270236
+      },
+      "bytes_packed": 2305912,
+      "geometry_sha256": "62edc42bb946dba23ae5e8f0b7421d5e85541865228cea00e59653893e8c8dbc"
+    },
+    {
+      "region": "thorax",
+      "structures": 441,
+      "bounds": {
+        "lo": [
+          -0.1862,
+          1.00495,
+          -0.13371
+        ],
+        "hi": [
+          0.19686,
+          1.47554,
+          0.13235
+        ]
+      },
+      "systems": {
+        "Muscle": 23,
+        "Attachment": 128,
+        "Viscera": 36,
+        "Cardiovascular": 112,
+        "Lymphoid": 20,
+        "Bone": 74,
+        "Joint": 36,
+        "Region": 12
+      },
+      "tissues": {
+        "muscle": 21,
+        "attachment": 128,
+        "viscera": 36,
+        "vein": 43,
+        "lymphoid": 20,
+        "artery": 52,
+        "heart": 17,
+        "cartilage": 72,
+        "bone": 27,
+        "ligament": 11,
+        "region": 12,
+        "tendon": 2
+      },
+      "sides": {
+        "left": 88,
+        "right": 83,
+        "None": 270
+      },
+      "noncommercial": 0,
+      "open_shells": 1,
+      "geometry": {
+        "structures": 322,
+        "triangles": 1805545,
+        "bytes": 38352136
+      },
+      "bytes_packed": 9003248,
+      "geometry_sha256": "3d6f0c69d8c5bca7d47985acebd1a151793d08e7d4d4f8cd2bad0215b0ef572f"
+    },
+    {
+      "region": "upper-limb-left",
+      "structures": 575,
+      "bounds": {
+        "lo": [
+          -0.31701,
+          0.69847,
+          -0.13588
+        ],
+        "hi": [
+          0.34006,
+          1.58122,
+          0.12696
+        ]
+      },
+      "systems": {
+        "Nervous": 51,
+        "Cardiovascular": 51,
+        "Muscle": 123,
+        "Attachment": 91,
+        "Synovium": 15,
+        "Artery": 16,
+        "Ligament": 43,
+        "Joint": 72,
+        "Vein": 6,
+        "Region": 24,
+        "Lymphoid": 8,
+        "Cartilage": 23,
+        "Bone": 34,
+        "Nerve": 17,
+        "Other": 1
+      },
+      "tissues": {
+        "nerve": 68,
+        "artery": 47,
+        "muscle": 87,
+        "attachment": 91,
+        "synovium": 36,
+        "ligament": 103,
+        "fascia": 9,
+        "vein": 26,
+        "region": 24,
+        "lymphoid": 8,
+        "capsule": 8,
+        "cartilage": 29,
+        "bone": 33,
+        "tendon": 6
+      },
+      "sides": {
+        "left": 553,
+        "None": 22
+      },
+      "noncommercial": 0,
+      "open_shells": 2,
+      "geometry": {
+        "structures": 566,
+        "triangles": 891715,
+        "bytes": 22885004
+      },
+      "bytes_packed": 6831116,
+      "geometry_sha256": "bc14c0ba914f310d82594f3e96894404b193453f9581d0e2e77a849a09a80ba1"
+    },
+    {
+      "region": "upper-limb-right",
+      "structures": 579,
+      "bounds": {
+        "lo": [
+          -0.34006,
+          0.69847,
+          -0.13588
+        ],
+        "hi": [
+          0.01258,
+          1.58122,
+          0.13057
+        ]
+      },
+      "systems": {
+        "Nervous": 48,
+        "Cardiovascular": 51,
+        "Muscle": 124,
+        "Attachment": 91,
+        "Synovium": 15,
+        "Artery": 16,
+        "Ligament": 44,
+        "Joint": 71,
+        "Lymphoid": 12,
+        "Vein": 6,
+        "Region": 26,
+        "Cartilage": 23,
+        "Bone": 34,
+        "Nerve": 17,
+        "Other": 1
+      },
+      "tissues": {
+        "nerve": 65,
+        "artery": 48,
+        "muscle": 88,
+        "attachment": 91,
+        "synovium": 36,
+        "ligament": 103,
+        "fascia": 9,
+        "lymphoid": 12,
+        "vein": 25,
+        "region": 26,
+        "capsule": 8,
+        "cartilage": 29,
+        "bone": 33,
+        "tendon": 6
+      },
+      "sides": {
+        "right": 556,
+        "None": 23
+      },
+      "noncommercial": 0,
+      "open_shells": 2,
+      "geometry": {
+        "structures": 570,
+        "triangles": 882324,
+        "bytes": 22639628
+      },
+      "bytes_packed": 6706984,
+      "geometry_sha256": "bcd77622c467aa7557b1312f760fb2b6c5da12ff110d21761050c2f73b7d38f1"
+    }
+  ],
+  "totals": {
+    "structures": 4464,
+    "triangles": 11658511,
+    "bytes": 270080496,
+    "bytes_packed": 63603496
+  },
+  "preview": {
+    "scope": "whole-body",
+    "title": {
+      "name": "Anatomy Atlas",
+      "sub": "Whole-body preview"
+    },
+    "label": "whole-body preview",
+    "geometry_chunks": [
+      "abdomen-pelvis",
+      "back",
+      "body-surface",
+      "core",
+      "head",
+      "lower-limb-left",
+      "lower-limb-right",
+      "neck",
+      "thorax",
+      "upper-limb-left",
+      "upper-limb-right"
+    ],
+    "unavailable_chunks_omitted": []
+  },
+  "stream": [
+    "core",
+    "thorax",
+    "abdomen-pelvis",
+    "back",
+    "neck",
+    "upper-limb-right",
+    "upper-limb-left",
+    "lower-limb-right",
+    "lower-limb-left",
+    "head"
+  ],
+  "measurements": {
+    "attached": 0,
+    "dropped": {}
+  },
+  "release_profile": {
+    "name": "noncommercial-education",
+    "noncommercial_structures_included": [
+      "Cochlea.l",
+      "Cochlea.r",
+      "Kidney.l",
+      "Kidney.r",
+      "Vestibule.l",
+      "Vestibule.r"
+    ],
+    "historical_bodyparts3d_measurements_omitted": true
+  }
+}
