@@ -66,7 +66,18 @@ The repository includes browser-ready geometry. Rebuilding it is optional: obtai
 
 ## Deploy
 
-Import this repository into Vercel as a Vite project. The included `vercel.json` configures `npm ci`, `npm run build`, and the `dist` output directory. It can also be served by a static host.
+GitHub Pages publishes this project at https://ctzurcanu.github.io/human-atlas/ using `.github/workflows/pages.yml`. Pushes to `main` run type checking, build the static site, and deploy `dist`. The workflow can also be run manually. Repository Settings → Pages → Source must be set to **GitHub Actions**.
+
+The workflow uses the Pages deployment base path for scripts, model catalogues, binary chunks, icons, and attribution links. Shared-view URLs preserve this path. Local development continues at `/`.
+
+To reproduce the Pages build locally:
+
+```sh
+VITE_BASE_PATH=/human-atlas/ npm run build
+npx vite preview --base /human-atlas/ --port 4173
+```
+
+The `dist` directory can also be served by another static host; set `VITE_BASE_PATH` to its deployment path when building.
 
 ## License
 

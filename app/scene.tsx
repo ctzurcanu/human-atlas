@@ -1,3 +1,4 @@
+import {assetUrl} from './asset-url';
 import {partVisible} from './viewer-state';
 import {useEffect,useRef} from 'react';
 import * as T from 'three';
@@ -72,7 +73,7 @@ export default function AnatomyScene({atlas,state,onSelect,onCamera,onProgress,o
   controls.addEventListener('end',()=>cameraCallback.current?.(cameraValues()));
   let loaded=0;
   const loadChunk=async(ci:number)=>{
-   const chunk=atlas.chunks[ci],compressed=!!chunk.gzip&&typeof DecompressionStream!=='undefined';const response=await fetch(compressed?chunk.gzip!:chunk.url,{signal:abort.signal});const buffer=await decodeModelResponse(response,chunk.bytes,compressed);if(disposed)return;
+   const chunk=atlas.chunks[ci],compressed=!!chunk.gzip&&typeof DecompressionStream!=='undefined';const response=await fetch(assetUrl(compressed?chunk.gzip!:chunk.url),{signal:abort.signal});const buffer=await decodeModelResponse(response,chunk.bytes,compressed);if(disposed)return;
    const groups=new Map<string,T.BufferGeometry[]>();
    atlas.parts.forEach((p,i)=>{
     if(p.chunk!==ci)return;
