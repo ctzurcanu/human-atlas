@@ -2,10 +2,12 @@ import {readFileSync} from 'node:fs';
 
 export const VIEWER_URL = 'https://ctzurcanu.github.io/human-atlas/';
 export const MODELS = {
-  'male-detail': 'atlas-male-detail.json',
-  'male-full': 'atlas-male-full.json',
+  'male-detail': 'atlas-male-complete.json',
+  'male-full': 'atlas-male-complete.json',
   male: 'atlas.json',
-  female: 'atlas-female.json',
+  female: 'atlas-hra-female.json',
+  embryo: 'atlas-embryo.json',
+  cell: 'atlas-cell.json',
   'local-male': 'male.json',
   'local-female': 'female.json',
 };
@@ -82,9 +84,9 @@ export function anatomyView({structure, model = 'male-detail', view = 'three-qua
   params.set('model', model);
   params.set('view', view);
   matches.forEach(concept => params.append('select', concept.id));
-  params.set('layers', DEFAULT_LAYERS.join(','));
+  params.set('layers', (model==='cell'||model==='embryo'?[...new Set(atlas.parts.map(part=>part.system))]:DEFAULT_LAYERS).join(','));
   params.set('context', String(context));
-  params.set('skin', model.startsWith('local-')?'0':'0.1');
+  params.set('skin', model==='cell'?'0.18':model.startsWith('local-')?'0':'0.1');
   params.set('region', 'all');
   params.set('peel', '0');
   params.set('focus', '1');

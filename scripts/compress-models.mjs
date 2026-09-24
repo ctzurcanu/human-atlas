@@ -1,7 +1,9 @@
 import fs from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
 import {gzipSync} from 'node:zlib';
-const base=new URL('../public/models/',import.meta.url);
-for(const name of fs.readdirSync(base).filter(n=>n==='atlas.json'||n==='atlas-female.json'||n==='atlas-male-detail.json'||n==='atlas-male-full.json')){
+const base=process.argv[2]?pathToFileURL(path.resolve(process.argv[2])+path.sep):new URL('../public/models/',import.meta.url);
+for(const name of fs.readdirSync(base).filter(n=>n==='atlas.json')){
  const path=new URL(name,base),atlas=JSON.parse(fs.readFileSync(path));
  let bytes=0;
  for(const c of atlas.chunks){const compressed=gzipSync(fs.readFileSync(new URL(c.url.split('/').pop(),base)),{level:9});c.gzip=c.url+'.gz';c.gzipBytes=compressed.length;fs.writeFileSync(new URL(c.gzip.split('/').pop(),base),compressed);bytes+=compressed.length;}

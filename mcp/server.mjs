@@ -29,7 +29,7 @@ export function createServer() {
 
   server.registerTool('show_anatomy', {
     title: 'Show Human Atlas 3D anatomy',
-    description: 'Create an interactive Human Atlas view and copyable iframe for a modeled structure. Use an exact structure name or ID; search_anatomy resolves ambiguity. For a request like "show the male stomach", pass structure="Stomach" and model="male-detail". Pass controls to choose which iframe controls appear; by default Study, Camera controls, Explode, and PNG download are hidden. Pass [] for a bare viewer. Models local-male and local-female use the local development viewer on port 3016 and require npm run dev.',
+    description: 'Create an interactive Human Atlas view and copyable iframe for a modeled structure. Use an exact structure name or ID; search_anatomy resolves ambiguity. For a request like "show the male stomach", pass structure="Stomach" and model="male-detail". Use model="embryo" for the HRA placenta, amnion, and umbilical structures; model="cell" for cell components. Pass controls to choose which iframe controls appear; by default Study, Camera controls, Explode, and PNG download are hidden. Pass [] for a bare viewer. Models local-male and local-female use the local development viewer on port 3016 and require npm run dev.',
     inputSchema: {
       structure: z.string().min(1).describe('Exact structure name or atlas concept ID.'),
       model: modelSchema.default('male-detail'),

@@ -1,6 +1,6 @@
 # Human Atlas
 
-An interactive 3D anatomy explorer built with React, Three.js, and shadcn/ui. The default **Male · detailed** reference has **4,391 selectable pieces**. Switch to the standard male reference (**2,234 selectable meshes**, **3,432 named concepts**) or the female reference (**1,038 selectable meshes**, **1,253 named concepts**).
+An interactive 3D anatomy explorer built with React, Three.js, and shadcn/ui. The default **Male · detailed** reference is built directly from Z-Anatomy and Open 3D Model publisher files: **4,405 selectable surfaces**, **3,801 named concepts**, and **5,764,617 triangles**. The standard BodyParts3D male and female references are also available.
 
 **[Explore the live demo](https://ctzurcanu.github.io/human-atlas/)**
 
@@ -27,26 +27,13 @@ npm run dev
 
 Open http://localhost:3016. To build the static site, run `npm run build`; the output is in `dist/`.
 
-### Use the local Zygote male and female models
-
-The `fetch/content` mirror can be imported into a development-only model directory:
-
-```sh
-npm run import:local-models
-npm run dev
-```
-
-The importer reads `/Users/christiantzurcanu/Documents/dev/fetch/content` by default. Pass a different mirror directory after `--` if needed, for example `npm run import:local-models -- /path/to/content`. In the local viewer, choose **Male · local Zygote** or **Female · local Zygote**, or open `http://localhost:3016/?model=local-male&select=Stomach&focus=1&context=0.18&skin=0` and the corresponding `local-female` URL. The MCP server also accepts `model="local-male"` and `model="local-female"` while the local development server is running.
-
-Converted geometry and source texture maps are written to `.local-models/`, which is Git-ignored and served only by the Vite development server. They are not copied into `dist` or published to GitHub Pages. Local models open with skin hidden so the textured anatomy is visible; use the Skin / body surface slider to show the textured skin.
-
 ## Validate
 
 ```sh
 npm run check
 node scripts/validate-atlas.mjs
-node scripts/validate-atlas.mjs atlas-female.json
-node scripts/validate-atlas.mjs atlas-male-detail.json
+node scripts/validate-primary-female.mjs public/models/atlas-hra-female.json
+node scripts/validate-primary-atlas.mjs public/models/atlas-z-anatomy.json
 node scripts/validate-interactions.mjs
 npm run build
 ```
@@ -55,13 +42,13 @@ Validation covers mesh buffers, names and concept membership, nonoverlapping exp
 
 ## Anatomy data
 
-The default detailed male reference includes 564 muscle/tendon pieces, 537 nervous-system pieces, 717 connective-tissue pieces, and 680 muscle attachment markers. Attachment markers, surface regions, 64 fascia pieces, and 27 schematic details have separate layers, hidden by default. Schematic geometry is not presented as anatomically positioned in the default body. Counts represent modeled pieces, not unique anatomical organs; coverage and granularity differ between models. The standard male reference remains selectable.
+The detailed male reference retains each original Z-Anatomy object and its material-defined surfaces, including tendon and cartilage patches. Original Open 3D Model upper-limb files contribute additional nerves, vessels, muscles, hand bones, ligaments, and sheaths; the right-side additions are mirrored to the left and labeled as such in the manifest. Blender reference lettering is excluded. Muscle attachments and fascia have separate layers, hidden by default. Counts represent selectable surfaces, not unique organs; coverage and granularity differ between models. The standard male reference remains selectable.
 
-Geometry is hash-pinned, transformed to the stage, simplified within a 0.2% relative error limit per structure, and repacked. The detailed reference has about 4.3 million triangles and a 52 MB compressed download. Some catalogue entries have no identifiable geometry and are omitted from search instead of providing empty selections. Their names are recorded in the manifest.
+The original Z-Anatomy and Open 3D Model archives and source files are SHA-256 verified. The direct importer bakes source transforms, converts Z-up to the viewer's Y-up coordinates, splits material surfaces, and packs raw and gzip buffers without simplifying the source triangles. Original material colors are recorded as `sourceColor`; a subdued anatomy palette is used for display. The Z-Anatomy Blender archive contains no anatomical image textures. The Open 3D Model upper-limb GLB contains embedded images, but the current batched viewer uses its material colors without rendering those images.
 
 The standard male option represents an adult male reference anatomy. It does not represent every human structure or variation. Individual meshes are distinct from named concepts, which may group multiple meshes. Descriptions distinguish general system context from individual organ explanations.
 
-The female option includes whole-body surface, selected organs, and female reproductive anatomy, plus 76 female lower-limb muscle surfaces. There are 90 muscle pieces in total after replacing two duplicate thigh muscles. Upper-body muscle and skeleton coverage remains incomplete; this is not a complete counterpart to the male atlas. No male-derived meshes are used. The lower-limb surfaces are approximately fitted to the bones (17–36 mm fit residuals), not a validated single-scan assembly. Eight pregnancy reference pieces are available in a separate layer, hidden by default. The two collections have different coverage.
+The female option has 1,030 selectable meshes and 1,234 concepts. It combines the original Human Reference Atlas united-female v1.10 GLB, eight pelvic bone surfaces from official HRA v1.5, and 74 original University of Denver Visible Human Female lower-limb muscle STLs. The eight placenta-group meshes are in the separate Embryo model. The other two muscle STLs duplicate HRA's rectus femoris meshes and are omitted. Upper-body muscles and skeleton are still incomplete; this is not a complete counterpart to the male atlas. The separately sourced lower-limb muscles are fitted to the HRA bones, with measured alignment errors in the manifest.
 
 Geometry is simplified for browser performance while retaining every source mesh. The packaged standard male model contains 2,288,268 triangles and downloads approximately 33 MB of compressed geometry.
 
@@ -75,7 +62,17 @@ The optional WebMCP tools expose anatomy search and inspection in compatible bro
 
 ## Rebuilding geometry
 
-The repository includes browser-ready geometry. Rebuilding it is optional: obtain the original male OBJ archive and English metadata tables, prepare the joined concepts and display-system mappings, run `scripts/convert-anatomy.py`, then `node scripts/optimize-anatomy.mjs` and `node scripts/compress-models.mjs`. Simplification uses a 0.2% relative error limit per structure.
+The repository includes browser-ready geometry. Rebuild the detailed male assets directly from the publishers' archives with Blender 4.3 or newer:
+
+```sh
+npm run import:primary-male
+```
+
+Set `BLENDER` to the Blender executable if it is not on `PATH`. The script fetches and hash-verifies the [original Z-Anatomy archive](https://github.com/Z-Anatomy/Models-of-human-anatomy) and [Open 3D Model upper-limb GLB](https://anatomytool.org/open3dmodel-create), opens both with source scripts disabled, runs the two direct importers, and validates every atlas buffer. It does not read geometry, catalogues, aliases, or labels from another anatomy viewer. To stage the output elsewhere, run `node scripts/import-primary-male.mjs --out /path/to/output`.
+
+Rebuild the standard male reference with `npm run import:primary-standard`. This fetches and verifies the official [BodyParts3D OBJ archive and four metadata tables](https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html), joins the IS-A and PART-OF concepts, applies Human Atlas's separately maintained element-to-system mapping, converts and optimizes the meshes, and validates the output before installing it. The tested rebuild matches every shipped standard-male geometry chunk byte for byte.
+
+Rebuild the female reference from the [official HRA united-female v1.10 GLB](https://purl.humanatlas.io/ref-organ/united-female/v1.10) and [v1.5 GLB](https://purl.humanatlas.io/ref-organ/united-female/v1.5) with `npm run import:primary-female`. The importer verifies both GLB hashes, reads node names, hierarchy, transforms, ontology IDs, and material colors, then simplifies each mesh within a 0.2% relative error bound. Both GLBs contain no image textures. Put the [University of Denver original female STL ZIP](https://digitalcommons.du.edu/visiblehuman/1/) at `.local-models/source/Final 3D STL Models-stl-female.zip`, install NumPy for your Python interpreter, then run `npm run import:primary-female-muscles`. The second script verifies the ZIP hash, uses its original femur, tibia, and fibula STLs to fit each leg to HRA, and adds 74 nonduplicate original muscle meshes. The source ZIP stays outside `public` and the transform and bone-fit measurements are recorded in the manifest. No intermediary adaptation is used.
 
 ## Deploy
 
@@ -117,7 +114,7 @@ Human Atlas includes a local stdio MCP server. It searches the packaged anatomy 
 }
 ```
 
-The server provides `search_anatomy` for names and IDs and `show_anatomy` for an interactive view. For example, call `show_anatomy` with `{"structure":"Stomach","model":"male-detail","controls":["systems","open"]}` to show Systems without Explode. Omit `controls` for the default interface, or pass `[]` for a bare viewer. To select a precise side or variant, use the ID returned by `search_anatomy`, such as `DETAIL:Sternocostal head of pectoralis major muscle.l`. The view tool returns a deployed URL and copyable iframe code. MCP Apps-capable clients can display the interactive viewer inline; other clients can open the URL or use the iframe HTML. The MCP process runs locally; GitHub Pages hosts the viewer only.
+The server provides `search_anatomy` for names and IDs and `show_anatomy` for an interactive view. For example, call `show_anatomy` with `{"structure":"Stomach","model":"male-detail","controls":["systems","open"]}` to show Systems without Explode. Omit `controls` for the default interface, or pass `[]` for a bare viewer. To select a precise side or variant, use the ID returned by `search_anatomy`, such as `ZA:Sternocostal head of pectoralis major muscle.l`. The view tool returns a deployed URL and copyable iframe code. MCP Apps-capable clients can display the interactive viewer inline; other clients can open the URL or use the iframe HTML. The MCP process runs locally; GitHub Pages hosts the viewer only.
 
 Run `npm run test:mcp` to verify tool calls, URL selection, and the UI resource.
 
@@ -127,17 +124,13 @@ The application code is distributed under the [GNU General Public License, versi
 
 Issues and pull requests are welcome. Please include reproduction steps and browser/device details for interaction problems.
 
-To reproduce the expanded female assets, run `node scripts/upgrade-female.mjs`. It downloads a pinned geometry adaptation, excludes all male-derived meshes, removes duplicate rectus femoris surfaces, and repacks female-only buffers.
-
-Rebuild the detailed male reference with `node scripts/import-male-detail.mjs [CACHE_DIRECTORY]`. The importer uses the catalog and SHA-256 manifest in `scripts/data/`, fetches only public geometry, rejects changed assets, resolves unique naming differences, and excludes duplicate or unidentified geometry.
+The selected detailed male and female models use the direct-source importers above. The former intermediary-derived binaries, manifests, and import scripts have been removed from this checkout.
 
 ### Display and model quality
 
 The interface and 3D stage follow the operating system’s light/dark preference, including changes while the viewer is open. Wheel zoom follows the pointer; selecting a structure makes it the orbit pivot, including when other anatomy remains visible.
 
-The model menu includes **Male · full resolution + skin**, preserving all 11,647,803 triangles in the imported named source meshes (124 MB compressed). The existing detailed option retains 4,428,317 triangles for lighter devices. Both have the same named anatomy and component licenses. The full-resolution option initially shows the derived outer body surface. The Systems panel’s skin opacity slider can fade or remove it; this surface is not a histological skin-layer model. Rendering still uses the viewer’s system colors, not the source’s textures.
-
-Regenerate full resolution using `node scripts/import-male-detail.mjs /tmp/male-atlas-source --full`. Validate with `node scripts/validate-atlas.mjs atlas-male-full.json`.
+**Male · detailed** and **Male · full resolution + skin** use the same full-triangle direct Z-Anatomy build with original Open 3D Model upper-limb additions. The full resolution option initially shows the original source's segmented outer body surface. The Systems panel's skin opacity slider can fade or remove it; this surface is not a histological skin-layer model. The original publisher material colors are retained in the manifest, and the viewer uses its own calmer anatomy palette.
 
 ### Dissection, selection sets, and view URLs
 
@@ -153,6 +146,6 @@ Use **Share view URL** to get a URL containing the model, selected IDs, camera p
 
 `select` accepts a concept ID, source ID, or exact display name and can be repeated. `view` accepts `three-quarter`, `front`, `back`, `side` (patient-left), `right`, `superior`, and `inferior`. `focus=1` frames a selection when a camera is not supplied. `cut=axial|sagittal|coronal` and `slice=0..1` control sections; `flip=1` reverses the retained side. Unknown names are ignored. URLs are self-contained and do not upload views to a server.
 
-Source coverage is audited by `node scripts/validate-source-coverage.mjs` against the downloaded GLBs and reference metadata. The import now applies 70 source node aliases, including laterality corrections, and whole-structure representation groups. All 4,391 geometry-backed source records are available, including 254 tendon/cartilage patches stored in parent mesh materials. Canonical aliases and whole-structure handles suppress duplicate geometry, matching the reference’s 4,350 physical representations. Catalogue names without direct geometry are listed in `public/SOURCE-COVERAGE.json`; no geometry is fabricated for them. Only factual anatomy metadata and licensed geometry are imported; no reference viewer code is included.
+Direct-source coverage is checked by `scripts/validate-primary-atlas.mjs` and `scripts/validate-primary-female.mjs`. They verify source hashes, part and concept identities, indices, bounds, and every raw/gzip chunk. Meshes absent from the publishers' files are not fabricated.
 
 Additional checks: `node --experimental-strip-types scripts/validate-study.mjs` and `node --experimental-strip-types scripts/validate-camera.mjs`.

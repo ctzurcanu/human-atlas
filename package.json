@@ -12,7 +12,13 @@
     "check": "tsc --noEmit",
     "mcp": "node mcp/server.mjs",
     "test:mcp": "node --test mcp/server.test.mjs",
-    "import:local-models": "node scripts/import-local-zygote.mjs"
+    "import:local-models": "node scripts/import-local-zygote.mjs",
+    "import:cell": "node scripts/import-cell.mjs",
+    "import:primary-male": "node scripts/import-primary-male.mjs",
+    "import:primary-female": "node scripts/import-primary-female.mjs",
+    "import:primary-female-muscles": "node scripts/run-female-muscles.mjs",
+    "import:primary-standard": "node scripts/import-primary-standard.mjs",
+    "build:complete-male": "node scripts/build-complete-male.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
