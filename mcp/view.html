@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Human Atlas view</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; }
+    html, body { margin: 0; }
+    main { width: 100%; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem .75rem; background: var(--color-background-secondary, #f3f3f3); color: var(--color-text-primary, #222); }
+    strong { font-size: .9rem; }
+    a { color: inherit; font-size: .8rem; }
+    iframe { display: block; width: 100%; height: 560px; border: 0; }
+    #status { margin: 0; padding: 1rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <header><strong id="title">Human Atlas</strong><a id="open" hidden target="_blank" rel="noopener noreferrer">Open full view</a></header>
+    <p id="status" role="status">Loading anatomy view…</p>
+    <iframe id="viewer" title="Human Atlas interactive anatomy viewer" loading="lazy" allowfullscreen hidden></iframe>
+  </main>
+  <script>
+    const title = document.getElementById('title');
+    const status = document.getElementById('status');
+    const viewer = document.getElementById('viewer');
+    const open = document.getElementById('open');
+    function show(result) {
+      if (result?.isError) {
+        status.textContent = result.content?.find(item => item.type === 'text')?.text || 'Unable to show this anatomy view.';
+        return;
+      }
+      const data = result?.structuredContent;
+      if (!data || typeof data.url !== 'string') return;
+      let url;
+      try { url = new URL(data.url); } catch { return; }
+      if (url.origin !== 'https://ctzurcanu.github.io' || url.pathname !== '/human-atlas/' || url.searchParams.get('embed') !== '1') return;
+      title.textContent = data.structures?.map(item => item.name).join(' and ') || 'Human Atlas';
+      viewer.src = url.href;
+      viewer.hidden = false;
+      status.hidden = true;
+      open.href = url.href;
+      open.hidden = false;
+    }
+    window.addEventListener('message', event => {
+      if (event.source !== window.parent || event.data?.jsonrpc !== '2.0') return;
+      const message = event.data;
+      if (message.id === 1 && (message.result || message.error)) {
+        if (message.result) {
+          window.parent.postMessage({jsonrpc: '2.0', method: 'ui/notifications/initialized', params: {}}, '*');
+          window.parent.postMessage({jsonrpc: '2.0', method: 'ui/notifications/size-changed', params: {height: 610}}, '*');
+        } else status.textContent = 'The host could not initialize the anatomy view.';
+      }
+      if (message.method === 'ui/notifications/tool-result') show(message.params);
+      if (message.method === 'ui/notifications/tool-cancelled') status.textContent = 'The anatomy view was cancelled.';
+      if (message.method === 'ui/resource-teardown' && message.id !== undefined) {
+        window.parent.postMessage({jsonrpc: '2.0', id: message.id, result: {}}, '*');
+      }
+    });
+    window.parent.postMessage({
+      jsonrpc: '2.0', id: 1, method: 'ui/initialize',
+      params: {protocolVersion: '2026-01-26', appInfo: {name: 'Human Atlas', version: '0.1.0'}, appCapabilities: {availableDisplayModes: ['inline', 'fullscreen']}}
+    }, '*');
+  </script>
+</body>
+</html>

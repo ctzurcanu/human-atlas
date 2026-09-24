@@ -87,6 +87,25 @@ Open a view, choose the model and layers you want, then use **Share and embed th
 
 You can use `model=male-detail`, `male-full`, or `male` instead of `female`. Set a fixed or responsive height on the iframe; 600px gives the controls room, and the minimum supported height is 340px. The embedded viewer keeps model switching, system layers, search, study tools, and anatomy selection.
 
+## Use with an MCP client
+
+Human Atlas includes a local stdio MCP server. It searches the packaged anatomy catalogues and creates focused views of the deployed viewer. Run `npm ci`, then add this server to your MCP client's configuration (replace the path with your checkout's absolute path):
+
+```json
+{
+  "mcpServers": {
+    "human-atlas": {
+      "command": "node",
+      "args": ["/absolute/path/to/human-atlas/mcp/server.mjs"]
+    }
+  }
+}
+```
+
+The server provides `search_anatomy` for names and IDs and `show_anatomy` for an interactive view. For example, call `show_anatomy` with `{"structure":"Stomach","model":"male-detail"}`. To select a precise side or variant, use the ID returned by `search_anatomy`, such as `DETAIL:Sternocostal head of pectoralis major muscle.l`. The view tool returns a deployed URL and copyable iframe code. MCP Apps-capable clients can display the interactive viewer inline; other clients can open the URL or use the iframe HTML. The MCP process runs locally; GitHub Pages hosts the viewer only.
+
+Run `npm run test:mcp` to verify tool calls, URL selection, and the UI resource.
+
 ## License
 
 The application code is distributed under the [GNU General Public License, version 3](LICENSE) (GPL-3.0-only).
