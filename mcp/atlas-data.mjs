@@ -6,8 +6,11 @@ export const MODELS = {
   'male-full': 'atlas-male-full.json',
   male: 'atlas.json',
   female: 'atlas-female.json',
+  'local-male': 'male.json',
+  'local-female': 'female.json',
 };
 export const VIEWS = ['three-quarter', 'front', 'back', 'side', 'right', 'superior', 'inferior'];
+export const EMBED_CONTROLS = ['model', 'search', 'study', 'systems', 'camera', 'explode', 'details', 'open', 'download'];
 export const DEFAULT_LAYERS = [
   'cardiac', 'sensory', 'skeletal', 'muscular', 'arterial', 'venous', 'nervous',
   'respiratory', 'digestive', 'urinary', 'lymphatic', 'endocrine', 'reproductive', 'connective',
@@ -18,7 +21,7 @@ export function catalogue(model = 'male-detail') {
   const filename = MODELS[model];
   if (!filename) throw new Error(`Unknown model: ${model}`);
   if (!catalogues.has(model)) {
-    const url = new URL(`../public/models/${filename}`, import.meta.url);
+    const url = new URL(model.startsWith('local-')?`../.local-models/${filename}`:`../public/models/${filename}`, import.meta.url);
     catalogues.set(model, JSON.parse(readFileSync(url, 'utf8')));
   }
   return catalogues.get(model);
@@ -66,25 +69,27 @@ export function resolveAnatomy(structure, model = 'male-detail') {
     : `No modeled structure matches "${structure}" in ${model}.`);
 }
 
-export function anatomyView({structure, model = 'male-detail', view = 'three-quarter', context = 0.18}) {
+export function anatomyView({structure, model = 'male-detail', view = 'three-quarter', context = 0.18, controls}) {
   if (!VIEWS.includes(view)) throw new Error(`Unknown view: ${view}`);
   if (typeof context !== 'number' || !Number.isFinite(context) || context < 0 || context > 1) throw new Error('Context must be between 0 and 1.');
+  if (controls !== undefined && (!Array.isArray(controls) || controls.some(control => !EMBED_CONTROLS.includes(control)))) throw new Error('Unknown embed control.');
   const matches = resolveAnatomy(structure, model);
   const atlas = catalogue(model);
   const selected = [...new Set(matches.flatMap(concept => concept.elements))];
   const parts = new Map(atlas.parts.map(part => [part.id, part]));
-  const url = new URL(VIEWER_URL);
+  const url = new URL(model.startsWith('local-')?'http://localhost:3016/':VIEWER_URL);
   const params = url.searchParams;
   params.set('model', model);
   params.set('view', view);
   matches.forEach(concept => params.append('select', concept.id));
   params.set('layers', DEFAULT_LAYERS.join(','));
   params.set('context', String(context));
-  params.set('skin', '0.1');
+  params.set('skin', model.startsWith('local-')?'0':'0.1');
   params.set('region', 'all');
   params.set('peel', '0');
   params.set('focus', '1');
   params.set('embed', '1');
+  if (controls !== undefined) params.set('ui', [...new Set(controls)].join(','));
   const iframe = `<iframe src="${url.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}" title="Human Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:600px;border:0" allowfullscreen></iframe>`;
   return {
     model,

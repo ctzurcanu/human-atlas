@@ -35,7 +35,7 @@
       if (!data || typeof data.url !== 'string') return;
       let url;
       try { url = new URL(data.url); } catch { return; }
-      if (url.origin !== 'https://ctzurcanu.github.io' || url.pathname !== '/human-atlas/' || url.searchParams.get('embed') !== '1') return;
+      if (!((url.origin === 'https://ctzurcanu.github.io' && url.pathname === '/human-atlas/') || (url.origin === 'http://localhost:3016' && url.pathname === '/')) || url.searchParams.get('embed') !== '1') return;
       title.textContent = data.structures?.map(item => item.name).join(' and ') || 'Human Atlas';
       viewer.src = url.href;
       viewer.hidden = false;

@@ -4,7 +4,7 @@ import {pathToFileURL} from 'node:url';
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 import {z} from 'zod';
-import {anatomyView, MODELS, searchAnatomy, VIEWS} from './atlas-data.mjs';
+import {anatomyView, EMBED_CONTROLS, MODELS, searchAnatomy, VIEWS} from './atlas-data.mjs';
 
 const UI_URI = 'ui://human-atlas/anatomy-view';
 const UI_MIME = 'text/html;profile=mcp-app';
@@ -29,12 +29,13 @@ export function createServer() {
 
   server.registerTool('show_anatomy', {
     title: 'Show Human Atlas 3D anatomy',
-    description: 'Create an interactive Human Atlas view and copyable iframe for a modeled structure. Use an exact structure name or ID; search_anatomy resolves ambiguity. For a request like "show the male stomach", pass structure="Stomach" and model="male-detail". The returned URL focuses the selected structure in the deployed viewer.',
+    description: 'Create an interactive Human Atlas view and copyable iframe for a modeled structure. Use an exact structure name or ID; search_anatomy resolves ambiguity. For a request like "show the male stomach", pass structure="Stomach" and model="male-detail". Pass controls to choose which iframe controls appear; by default Study, Camera controls, Explode, and PNG download are hidden. Pass [] for a bare viewer. Models local-male and local-female use the local development viewer on port 3016 and require npm run dev.',
     inputSchema: {
       structure: z.string().min(1).describe('Exact structure name or atlas concept ID.'),
       model: modelSchema.default('male-detail'),
       view: z.enum(VIEWS).default('three-quarter').describe('Camera direction. Defaults to three-quarter.'),
       context: z.number().min(0).max(1).default(0.18).describe('Opacity of surrounding anatomy, 0 to 1.'),
+      controls: z.array(z.enum(EMBED_CONTROLS)).optional().describe('Controls visible in the iframe: model, search, study, systems, camera, explode, details, open, download. Omit for defaults; [] shows only the 3D view.'),
     },
     _meta: {ui: {resourceUri: UI_URI}},
     annotations: {readOnlyHint: true},
@@ -53,12 +54,12 @@ export function createServer() {
   server.registerResource('Human Atlas interactive anatomy view', UI_URI, {
     description: 'Interactive Human Atlas view for show_anatomy results.',
     mimeType: UI_MIME,
-    _meta: {ui: {csp: {frameDomains: ['https://ctzurcanu.github.io']}, prefersBorder: false}},
+    _meta: {ui: {csp: {frameDomains: ['https://ctzurcanu.github.io','http://localhost:3016']}, prefersBorder: false}},
   }, async () => ({contents: [{
     uri: UI_URI,
     mimeType: UI_MIME,
     text: UI_HTML,
-    _meta: {ui: {csp: {frameDomains: ['https://ctzurcanu.github.io']}, prefersBorder: false}},
+    _meta: {ui: {csp: {frameDomains: ['https://ctzurcanu.github.io','http://localhost:3016']}, prefersBorder: false}},
   }]}));
 
   return server;

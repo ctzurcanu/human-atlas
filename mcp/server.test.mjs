@@ -17,6 +17,24 @@ test('the requested structure becomes a selected, focused embed', () => {
   assert.deepEqual(result.systems, ['digestive']);
 });
 
+test('local models resolve to the local viewer and local geometry', () => {
+  const result = anatomyView({structure: 'Stomach', model: 'local-female'});
+  const url = new URL(result.url);
+  assert.equal(url.origin, 'http://localhost:3016');
+  assert.equal(url.searchParams.get('model'), 'local-female');
+  assert.equal(url.searchParams.get('skin'), '0');
+  assert.equal(result.structures[0].pieces, 2);
+});
+
+test('embed controls can hide the explode dock while keeping systems available', () => {
+  const result = anatomyView({structure: 'Stomach', controls: ['systems', 'open']});
+  const url = new URL(result.url);
+  assert.equal(url.searchParams.get('ui'), 'systems,open');
+  assert.ok(result.iframe.includes('ui=systems%2Copen'));
+  assert.equal(new URL(anatomyView({structure: 'Stomach', controls: []}).url).searchParams.get('ui'), '');
+  assert.throws(() => anatomyView({structure: 'Stomach', controls: ['unknown']}), /Unknown embed control/);
+});
+
 test('exact IDs choose the requested side, bilateral names choose both, and duplicate names need an ID', () => {
   const id = 'DETAIL:Sternocostal head of pectoralis major muscle.l';
   assert.deepEqual(resolveAnatomy(id).map(c => c.id), [id]);
@@ -45,11 +63,13 @@ test('MCP discovery, tool call, and UI resource work together', async () => {
     const shown = await client.callTool({name: 'show_anatomy', arguments: {structure: 'Stomach'}});
     assert.equal(shown.isError, undefined);
     assert.equal(new URL(shown.structuredContent.url).searchParams.get('select'), 'DETAIL:Stomach');
+    const customized = await client.callTool({name: 'show_anatomy', arguments: {structure: 'Stomach', controls: ['systems', 'open']}});
+    assert.equal(new URL(customized.structuredContent.url).searchParams.get('ui'), 'systems,open');
     const missing = await client.callTool({name: 'show_anatomy', arguments: {structure: 'not a modeled structure'}});
     assert.equal(missing.isError, true);
     const ui = (await client.readResource({uri: 'ui://human-atlas/anatomy-view'})).contents[0];
     assert.equal(ui.mimeType, 'text/html;profile=mcp-app');
-    assert.deepEqual(ui._meta.ui.csp.frameDomains, ['https://ctzurcanu.github.io']);
+    assert.deepEqual(ui._meta.ui.csp.frameDomains, ['https://ctzurcanu.github.io','http://localhost:3016']);
     assert.ok(ui.text.includes('ui/notifications/tool-result'));
   } finally {
     await client.close();

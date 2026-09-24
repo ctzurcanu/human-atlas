@@ -11,7 +11,8 @@
     "build:vercel": "vite build",
     "check": "tsc --noEmit",
     "mcp": "node mcp/server.mjs",
-    "test:mcp": "node --test mcp/server.test.mjs"
+    "test:mcp": "node --test mcp/server.test.mjs",
+    "import:local-models": "node scripts/import-local-zygote.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
@@ -48,6 +49,7 @@
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "6.0.2",
     "@vitejs/plugin-rsc": "0.5.26",
+    "json5": "2.2.3",
     "meshoptimizer": "^1.2.0",
     "oxfmt": "0.61.0",
     "oxlint": "1.76.0",

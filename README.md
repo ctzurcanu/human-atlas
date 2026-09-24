@@ -8,10 +8,12 @@ An interactive 3D anatomy explorer built with React, Three.js, and shadcn/ui. Th
 
 - Choose male or female anatomy from the selector below the title.
 - Orbit, zoom, and select structures directly on the body.
-- Toggle individual systems or use skeleton and organ presets.
+- Toggle individual systems or use the All, Skin, Muscles, Vessels, Skeleton, and Organs presets.
 - Move from assembled anatomy to a spaced inventory of every visible piece.
 - Search anatomical names and source identifiers.
 - Isolate a selected structure and read its details.
+- Download a clean PNG of the current 3D view, without the interface.
+- Save named views in this browser and reopen them from the share panel.
 - Use compact controls and detail panels on mobile.
 
 ## Run locally
@@ -24,6 +26,19 @@ npm run dev
 ```
 
 Open http://localhost:3016. To build the static site, run `npm run build`; the output is in `dist/`.
+
+### Use the local Zygote male and female models
+
+The `fetch/content` mirror can be imported into a development-only model directory:
+
+```sh
+npm run import:local-models
+npm run dev
+```
+
+The importer reads `/Users/christiantzurcanu/Documents/dev/fetch/content` by default. Pass a different mirror directory after `--` if needed, for example `npm run import:local-models -- /path/to/content`. In the local viewer, choose **Male · local Zygote** or **Female · local Zygote**, or open `http://localhost:3016/?model=local-male&select=Stomach&focus=1&context=0.18&skin=0` and the corresponding `local-female` URL. The MCP server also accepts `model="local-male"` and `model="local-female"` while the local development server is running.
+
+Converted geometry and source texture maps are written to `.local-models/`, which is Git-ignored and served only by the Vite development server. They are not copied into `dist` or published to GitHub Pages. Local models open with skin hidden so the textured anatomy is visible; use the Skin / body surface slider to show the textured skin.
 
 ## Validate
 
@@ -79,13 +94,13 @@ The `dist` directory can also be served by another static host; set `VITE_BASE_P
 
 ## Embed the viewer
 
-Open a view, choose the model and layers you want, then use **Share and embed this view → Copy embed code**. The generated iframe opens that saved view with compact controls and a link to the full viewer. For example:
+Open a view, choose the model and layers you want, then use **Share and save this view**. Select which controls should appear in the iframe and choose **Copy embed code**. The generated iframe opens the saved view with only those controls. For example, this one includes Systems and a link to the full viewer, but excludes Explode:
 
 ```html
-<iframe src="https://ctzurcanu.github.io/human-atlas/?model=female&amp;embed=1" title="Human Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:600px;border:0" allowfullscreen></iframe>
+<iframe src="https://ctzurcanu.github.io/human-atlas/?model=female&amp;embed=1&amp;ui=systems%2Copen" title="Human Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:600px;border:0" allowfullscreen></iframe>
 ```
 
-You can use `model=male-detail`, `male-full`, or `male` instead of `female`. Set a fixed or responsive height on the iframe; 600px gives the controls room, and the minimum supported height is 340px. The embedded viewer keeps model switching, system layers, search, study tools, and anatomy selection.
+You can use `model=male-detail`, `male-full`, or `male` instead of `female`. Set a fixed or responsive height on the iframe; 600px gives the controls room, and the minimum supported height is 340px. The `ui` parameter is a comma-separated list of visible controls: `model`, `search`, `study`, `systems`, `camera`, `explode`, `details`, `open`, and `download`. Use `ui=` for a bare viewer. If `ui` is omitted, the default controls are model, search, systems, details, and open; Study, Camera controls, Explode, and PNG download are off by default. The Systems button works independently of Explode. Named views are stored only in the browser where they were saved; the generated URL and iframe code can be shared separately.
 
 ## Use with an MCP client
 
@@ -102,7 +117,7 @@ Human Atlas includes a local stdio MCP server. It searches the packaged anatomy 
 }
 ```
 
-The server provides `search_anatomy` for names and IDs and `show_anatomy` for an interactive view. For example, call `show_anatomy` with `{"structure":"Stomach","model":"male-detail"}`. To select a precise side or variant, use the ID returned by `search_anatomy`, such as `DETAIL:Sternocostal head of pectoralis major muscle.l`. The view tool returns a deployed URL and copyable iframe code. MCP Apps-capable clients can display the interactive viewer inline; other clients can open the URL or use the iframe HTML. The MCP process runs locally; GitHub Pages hosts the viewer only.
+The server provides `search_anatomy` for names and IDs and `show_anatomy` for an interactive view. For example, call `show_anatomy` with `{"structure":"Stomach","model":"male-detail","controls":["systems","open"]}` to show Systems without Explode. Omit `controls` for the default interface, or pass `[]` for a bare viewer. To select a precise side or variant, use the ID returned by `search_anatomy`, such as `DETAIL:Sternocostal head of pectoralis major muscle.l`. The view tool returns a deployed URL and copyable iframe code. MCP Apps-capable clients can display the interactive viewer inline; other clients can open the URL or use the iframe HTML. The MCP process runs locally; GitHub Pages hosts the viewer only.
 
 Run `npm run test:mcp` to verify tool calls, URL selection, and the UI resource.
 
