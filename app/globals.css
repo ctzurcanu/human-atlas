@@ -164,8 +164,9 @@ h1 .edition{font-family:inherit;font-weight:500;font-size:10px;letter-spacing:.0
 .share-view .embed-option-grid input{display:inline-block;width:16px;height:16px;flex:none;margin:0;padding:0;accent-color:var(--primary)}
 .embed-actions a{display:inline-flex;align-items:center;gap:6px;padding:8px;color:var(--foreground);font-size:12px;text-decoration:none}
 .embed-actions a:hover{text-decoration:underline}
-.bookmark-section{border-top:1px solid var(--border);padding-top:12px;display:grid;gap:8px}
+.bookmark-section{border-bottom:1px solid var(--border);padding-bottom:14px;display:grid;gap:8px}
 .bookmark-section h3{margin:0;font-size:13px;font-weight:600}
+.bookmark-section h4,.share-subheading{margin:0;font-size:12px;font-weight:600;color:var(--foreground)}
 .bookmark-add{display:flex;gap:8px;align-items:flex-end}
 .bookmark-add input{min-width:0;flex:1;margin-top:0}
 .bookmark-section ul{list-style:none;padding:0;margin:0;max-height:150px;overflow:auto}
@@ -174,6 +175,9 @@ h1 .edition{font-family:inherit;font-weight:500;font-size:10px;letter-spacing:.0
 .bookmark-section li .icon-button{flex:none}
 .export-status{position:absolute;z-index:75;top:84px;right:30px;margin:0;padding:9px 12px;border-radius:8px;font-size:12px;color:var(--foreground)}
 .studio.embedded .export-status{top:60px;right:12px}
+.search-panel [data-slot=input-group]{background:var(--card);border-color:var(--border)}
+.anatomy-search-results{background:var(--popover)!important;color:var(--popover-foreground)!important;border:1px solid var(--border)!important;box-shadow:0 16px 48px #0002}
+.anatomy-search-results [data-slot=combobox-item][data-highlighted]{background:var(--accent);color:var(--accent-foreground)}
 .studio.embedded .identity{top:12px;left:12px}.studio.embedded .identity-meta{display:none}
 .studio.embedded .top-actions{top:12px;right:12px;gap:5px}.studio.embedded .top-actions span,.studio.embedded .top-actions kbd{display:none}
 .studio.embedded .top-actions button,.studio.embedded .top-actions .open-full{width:40px;min-width:40px;height:40px;min-height:40px;padding:0;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--border);border-radius:9px;color:var(--foreground)}

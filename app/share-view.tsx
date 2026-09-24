@@ -29,8 +29,14 @@ export default function ShareView({viewUrl,defaultName,close}:Props){
   const next=[{id:crypto.randomUUID(),name:title,url:viewUrl,createdAt:Date.now()},...bookmarks].slice(0,100);
   if(persist(next)){setName('');setStatus('View saved in this browser.');}
  };
- return <div className="share-view glass" role="dialog" aria-label="Share and save view">
-  <div className="panel-heading"><span>Share and save this view</span><Button variant="ghost" className="icon-button" onClick={close} aria-label="Close share options"><X size={18}/></Button></div>
+ return <div className="share-view glass" role="dialog" aria-label="Save or open views">
+  <div className="panel-heading"><span>Save or open views</span><Button variant="ghost" className="icon-button" onClick={close} aria-label="Close saved views"><X size={18}/></Button></div>
+  <section className="bookmark-section" aria-label="Save current view"><h3>Save current view</h3><p>Your model, camera angle, zoom, selection, and layers are saved in this browser.</p>
+   <div className="bookmark-add"><input aria-label="Name this view" placeholder="Name this view" value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')save();}}/><Button variant="outline" onClick={save}><BookmarkPlus size={15}/> Save view</Button></div>
+   {bookmarks.length>0&&<><h4>Saved views</h4><ul>{bookmarks.map(item=><li key={item.id}><Button variant="ghost" onClick={()=>location.assign(item.url)} title={item.url}>{item.name}</Button><Button variant="ghost" className="icon-button" onClick={()=>{if(persist(bookmarks.filter(bookmark=>bookmark.id!==item.id)))setStatus('Saved view removed.');}} aria-label={`Remove ${item.name}`}><Trash2 size={15}/></Button></li>)}</ul></>}
+  </section>
+  <p role="status">{status}</p>
+  <h3 className="share-subheading">Share this view</h3>
   <label>View URL<input aria-label="View URL" readOnly value={viewUrl} onFocus={e=>e.target.select()}/></label>
   <Button variant="outline" onClick={()=>void copy(viewUrl,'Link')}><Copy size={15}/> Copy link</Button>
   <fieldset className="embed-options"><legend>Controls in iframe</legend>
@@ -40,10 +46,5 @@ export default function ShareView({viewUrl,defaultName,close}:Props){
   <label>Iframe height (px)<input aria-label="Iframe height" type="number" min={340} max={1200} step={10} value={height} onChange={e=>setHeight(Number(e.target.value))}/></label>
   <label>Embed on a website<textarea aria-label="Iframe embed code" readOnly rows={4} value={code} onFocus={e=>e.target.select()}/></label>
   <div className="embed-actions"><Button variant="outline" onClick={()=>void copy(code,'Embed code')}><Copy size={15}/> Copy embed code</Button><a href={preview} target="_blank" rel="noopener noreferrer"><ExternalLink size={15}/> Preview iframe</a></div>
-  <section className="bookmark-section" aria-label="Saved views"><h3>Saved views</h3><p>Saved only in this browser.</p>
-   <div className="bookmark-add"><input aria-label="Name this view" placeholder="Name this view" value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')save();}}/><Button variant="outline" onClick={save}><BookmarkPlus size={15}/> Save</Button></div>
-   {bookmarks.length>0&&<ul>{bookmarks.map(item=><li key={item.id}><Button variant="ghost" onClick={()=>location.assign(item.url)} title={item.url}>{item.name}</Button><Button variant="ghost" className="icon-button" onClick={()=>{if(persist(bookmarks.filter(bookmark=>bookmark.id!==item.id)))setStatus('Saved view removed.');}} aria-label={`Remove ${item.name}`}><Trash2 size={15}/></Button></li>)}</ul>}
-  </section>
-  <p role="status">{status}</p>
  </div>;
 }

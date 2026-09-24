@@ -13,7 +13,7 @@ An interactive 3D anatomy explorer built with React, Three.js, and shadcn/ui. Th
 - Search anatomical names and source identifiers.
 - Isolate a selected structure and read its details.
 - Download a clean PNG of the current 3D view, without the interface.
-- Save named views in this browser and reopen them from the share panel.
+- After positioning the model, select the bookmark icon at the top right, name the view, and select **Save view** in the panel. Reopen saved views from that same panel. They are stored in this browser's localStorage.
 - Use compact controls and detail panels on mobile.
 
 ## Run locally
