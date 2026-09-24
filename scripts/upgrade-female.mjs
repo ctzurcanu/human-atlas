@@ -1,6 +1,5 @@
 /** Import only female-source geometry from a pinned, CC BY 4.0 adaptation.
  * Run: node scripts/upgrade-female.mjs
- * Original sources and adaptations are recorded in public/ATTRIBUTION.md.
  * Repack the allowed meshes: excluded male geometry never enters our output.
  */
 import fs from 'node:fs/promises';

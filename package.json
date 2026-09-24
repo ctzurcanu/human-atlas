@@ -54,5 +54,5 @@
     "wrangler": "4.92.0"
   },
   "type": "module",
-  "license": "MIT"
+  "license": "GPL-3.0-only"
 }

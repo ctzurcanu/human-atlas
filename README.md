@@ -1,8 +1,8 @@
 # Human Atlas
 
-An interactive 3D anatomy explorer built with React, Three.js, and shadcn/ui. The default **Male · detailed** reference combines **4,391 selectable pieces** from Z-Anatomy and Open 3D Model, adapted by Brian Pridgen. Switch to the original BodyParts3D male reference (**2,234 selectable meshes**, **3,432 named concepts**) and the Human Reference Atlas female reference (**1,038 selectable meshes**, **1,253 named concepts**).
+An interactive 3D anatomy explorer built with React, Three.js, and shadcn/ui. The default **Male · detailed** reference has **4,391 selectable pieces**. Switch to the standard male reference (**2,234 selectable meshes**, **3,432 named concepts**) or the female reference (**1,038 selectable meshes**, **1,253 named concepts**).
 
-**[Explore the live demo](https://human-atlas-seven.vercel.app)**
+**[Explore the live demo](https://ctzurcanu.github.io/human-atlas/)**
 
 ## Explore
 
@@ -40,17 +40,15 @@ Validation covers mesh buffers, names and concept membership, nonoverlapping exp
 
 ## Anatomy data
 
-The default detailed male reference includes 564 muscle/tendon pieces, 537 nervous-system pieces, 717 connective-tissue pieces, and 680 muscle attachment markers. It imports all 769 Open 3D Model structures present in the source catalog, including the adapted upper limbs and brachial plexus. Attachment markers, surface regions, 64 fascia pieces, and 27 source-designated schematic details have separate layers, hidden by default. Schematic geometry retains its source placement and is not presented as anatomically positioned in the default body. Counts represent modeled pieces, not unique anatomical organs; coverage and granularity differ from BodyParts3D. The original male reference remains selectable.
+The default detailed male reference includes 564 muscle/tendon pieces, 537 nervous-system pieces, 717 connective-tissue pieces, and 680 muscle attachment markers. Attachment markers, surface regions, 64 fascia pieces, and 27 schematic details have separate layers, hidden by default. Schematic geometry is not presented as anatomically positioned in the default body. Counts represent modeled pieces, not unique anatomical organs; coverage and granularity differ between models. The standard male reference remains selectable.
 
-The geometry is adapted from Brian Pridgen’s Anatomy Atlas; its viewer software is not copied. Geometry is hash-pinned, transformed to the stage, simplified within a 0.2% relative error limit per structure, and repacked. The detailed reference has about 4.3 million triangles and a 52 MB compressed download. Some source catalog entries have no identifiable geometry and are omitted from search instead of providing empty selections. Their names are recorded in the manifest. Mirrored anatomy retains its provenance.
+Geometry is hash-pinned, transformed to the stage, simplified within a 0.2% relative error limit per structure, and repacked. The detailed reference has about 4.3 million triangles and a 52 MB compressed download. Some catalogue entries have no identifiable geometry and are omitted from search instead of providing empty selections. Their names are recorded in the manifest.
 
-**Detailed male geometry has mixed licenses**, including CC BY-SA 4.0, CC BY-NC 4.0 (kidneys), and CC BY-NC-SA 4.0 (inner-ear components). The noncommercial restrictions apply to those components and outputs containing them. The original MIT application license does not relicense the anatomy. Preserve [the complete source notice](public/MALE-ANATOMY-NOTICE.md) and [our adaptation credits](public/ATTRIBUTION.md).
+The standard male option represents an adult male reference anatomy. It does not represent every human structure or variation. Individual meshes are distinct from named concepts, which may group multiple meshes. Descriptions distinguish general system context from individual organ explanations.
 
-The original male viewer uses **BodyParts3D 4.0**, an adult male reference anatomy, licensed **CC BY 4.0**. It does not represent every human structure or variation. Individual source meshes are distinct from named concepts, which may group multiple meshes. Descriptions distinguish general system context from individual organ explanations.
+The female option includes whole-body surface, selected organs, and female reproductive anatomy, plus 76 female lower-limb muscle surfaces. There are 90 muscle pieces in total after replacing two duplicate thigh muscles. Upper-body muscle and skeleton coverage remains incomplete; this is not a complete counterpart to the male atlas. No male-derived meshes are used. The lower-limb surfaces are approximately fitted to the bones (17–36 mm fit residuals), not a validated single-scan assembly. Eight pregnancy reference pieces are available in a separate layer, hidden by default. The two collections have different coverage.
 
-The female viewer uses the **Human Reference Atlas / HuBMAP 3D Reference Organ Set for Female v1.10**, licensed **CC BY 4.0**. It includes whole-body surface, selected organs, and female reproductive anatomy, plus 76 female-source lower-limb muscles from Andreassen et al. (2023). There are 90 muscle pieces in total after replacing two duplicate thigh muscles. Upper-body muscle and skeleton coverage remains incomplete; this is not a complete counterpart to the male atlas. No male-derived meshes are used. The lower-limb study surfaces are approximately fitted to HRA bones (17–36 mm source fit residuals), not a validated single-scan assembly. Eight pregnancy reference pieces are available in a separate layer, hidden by default. The two collections have different coverage.
-
-Geometry is simplified for browser performance while retaining every source mesh. The packaged male model contains 2,288,268 triangles and downloads approximately 33 MB of compressed geometry. Full credits, source links, and adaptation details are in [ATTRIBUTION.md](public/ATTRIBUTION.md).
+Geometry is simplified for browser performance while retaining every source mesh. The packaged standard male model contains 2,288,268 triangles and downloads approximately 33 MB of compressed geometry.
 
 This is an educational explorer, not a diagnostic or surgical tool.
 
@@ -62,13 +60,13 @@ The optional WebMCP tools expose anatomy search and inspection in compatible bro
 
 ## Rebuilding geometry
 
-The repository includes browser-ready geometry. Rebuilding it is optional: obtain the official BodyParts3D OBJ archive and English metadata tables, prepare the joined concepts and display-system mappings, run `scripts/convert-anatomy.py`, then `node scripts/optimize-anatomy.mjs` and `node scripts/compress-models.mjs`. Simplification uses a 0.2% relative error limit per structure.
+The repository includes browser-ready geometry. Rebuilding it is optional: obtain the original male OBJ archive and English metadata tables, prepare the joined concepts and display-system mappings, run `scripts/convert-anatomy.py`, then `node scripts/optimize-anatomy.mjs` and `node scripts/compress-models.mjs`. Simplification uses a 0.2% relative error limit per structure.
 
 ## Deploy
 
 GitHub Pages publishes this project at https://ctzurcanu.github.io/human-atlas/ using `.github/workflows/pages.yml`. Pushes to `main` run type checking, build the static site, and deploy `dist`. The workflow can also be run manually. Repository Settings → Pages → Source must be set to **GitHub Actions**.
 
-The workflow uses the Pages deployment base path for scripts, model catalogues, binary chunks, icons, and attribution links. Shared-view URLs preserve this path. Local development continues at `/`.
+The workflow uses the Pages deployment base path for scripts, model catalogues, binary chunks, and icons. Shared-view URLs preserve this path. Local development continues at `/`.
 
 To reproduce the Pages build locally:
 
@@ -79,13 +77,23 @@ npx vite preview --base /human-atlas/ --port 4173
 
 The `dist` directory can also be served by another static host; set `VITE_BASE_PATH` to its deployment path when building.
 
+## Embed the viewer
+
+Open a view, choose the model and layers you want, then use **Share and embed this view → Copy embed code**. The generated iframe opens that saved view with compact controls and a link to the full viewer. For example:
+
+```html
+<iframe src="https://ctzurcanu.github.io/human-atlas/?model=female&amp;embed=1" title="Human Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:600px;border:0" allowfullscreen></iframe>
+```
+
+You can use `model=male-detail`, `male-full`, or `male` instead of `female`. Set a fixed or responsive height on the iframe; 600px gives the controls room, and the minimum supported height is 340px. The embedded viewer keeps model switching, system layers, search, study tools, and anatomy selection.
+
 ## License
 
-Original application code is released under the [MIT License](LICENSE). **The anatomy data has its own CC BY 4.0 license**; preserve the attribution when redistributing it. Third-party dependencies retain their respective licenses.
+The application code is distributed under the [GNU General Public License, version 3](LICENSE) (GPL-3.0-only).
 
 Issues and pull requests are welcome. Please include reproduction steps and browser/device details for interaction problems.
 
-To reproduce the expanded female assets, run `node scripts/upgrade-female.mjs`. It downloads a pinned CC BY geometry adaptation, excludes all male-derived meshes, removes duplicate rectus femoris surfaces, and repacks female-only buffers. See the attribution file for original datasets and the geometry adaptation credit.
+To reproduce the expanded female assets, run `node scripts/upgrade-female.mjs`. It downloads a pinned geometry adaptation, excludes all male-derived meshes, removes duplicate rectus femoris surfaces, and repacks female-only buffers.
 
 Rebuild the detailed male reference with `node scripts/import-male-detail.mjs [CACHE_DIRECTORY]`. The importer uses the catalog and SHA-256 manifest in `scripts/data/`, fetches only public geometry, rejects changed assets, resolves unique naming differences, and excludes duplicate or unidentified geometry.
 

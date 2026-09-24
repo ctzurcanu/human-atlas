@@ -1,6 +1,6 @@
 # Human Atlas attribution and component licenses
 
-The application code is distributed under [GNU GPLv3](LICENSE.txt). Original upstream application code is copyright © 2026 ashemag; its [MIT notice](MIT-upstream.txt) remains in the repository. Anatomical geometry, metadata, fonts, and dependencies retain their respective licenses below.
+The application code is distributed under [GNU GPLv3](LICENSE). Original upstream application code is copyright © 2026 ashemag; its [MIT notice](LICENSES/MIT-upstream.txt) remains in the repository. Anatomical geometry, metadata, fonts, and dependencies retain their respective licenses below.
 
 BodyParts3D, © The Database Center for Life Science licensed under CC Attribution 4.0 International.
 
@@ -56,7 +56,7 @@ Changes for Human Atlas: source regional GLBs decoded; node transforms baked, in
 
 The import contains 4,391 individually selectable pieces, including all 769 Open 3D Model records. The source’s adapted upper limbs include mirrored structures; neither this import nor those adaptations establish independent anatomical validation. The original BodyParts3D atlas remains available because coverage and subdivision differ.
 
-Geometry identity is pinned in `scripts/data/male-source-index.json`. The served abdomen-pelvis file includes the credited kidney restoration and differs from the stale hash in the source page index; both hashes and the verification note are retained. No proprietary viewer code, styling, or text definitions were imported. Human Atlas’s conversion script and UI code are distributed under [GPLv3](LICENSE.txt); those terms do not override the separate anatomy licenses. The upstream MIT notice for original application code is preserved in [LICENSES/MIT-upstream.txt](MIT-upstream.txt).
+Geometry identity is pinned in `scripts/data/male-source-index.json`. The served abdomen-pelvis file includes the credited kidney restoration and differs from the stale hash in the source page index; both hashes and the verification note are retained. No proprietary viewer code, styling, or text definitions were imported. Human Atlas’s conversion script and UI code are distributed under [GPLv3](LICENSE); those terms do not override the separate anatomy licenses. The upstream MIT notice for original application code is preserved in [LICENSES/MIT-upstream.txt](LICENSES/MIT-upstream.txt).
 
 ---
 
@@ -64,7 +64,7 @@ Geometry identity is pinned in `scripts/data/male-source-index.json`. The served
 
 The source anatomy was adapted by **Brian Pridgen, MD**. His original viewer
 software is not included in Human Atlas. Human Atlas application code is
-distributed under [GPLv3](LICENSE.txt); the anatomy and third-party components
+distributed under [GPLv3](LICENSE); the anatomy and third-party components
 below retain their separate licenses.
 
 ### Anatomical geometry and anatomy-derived metadata

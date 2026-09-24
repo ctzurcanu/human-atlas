@@ -1,6 +1,6 @@
 """Convert official BodyParts3D 4.0 OBJ meshes without altering topology.
 Usage: python3 scripts/convert-anatomy.py OBJ_DIRECTORY CONCEPT_MAP SYSTEM_MAP
-Source and attribution: public/ATTRIBUTION.md. Geometry positions change mm/Z-up
+Geometry positions change mm/Z-up
 into meters/Y-up; normals become signed 16-bit and parts are grouped into chunks.
 """
 import sys,json,re,struct,math

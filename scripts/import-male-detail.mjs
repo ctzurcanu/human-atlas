@@ -1,7 +1,6 @@
 /** Convert licensed anatomical geometry, never the source viewer software.
  * node scripts/import-male-detail.mjs [CACHE_DIRECTORY]
  * Each upstream GLB is pinned by SHA-256 in data/male-source-index.json.
- * Credits and per-component licenses: public/MALE-ANATOMY-NOTICE.md.
  */
 import fs from 'node:fs/promises';
 import {finalizeMaleCatalogue} from './male-catalogue.mjs';
@@ -156,8 +155,8 @@ for(const {region,doc,binary} of sources){
   parts.push({id,conceptId:id,name:displayName(record),system,
    chunk:chunks.length,positions:append(positions),normals:append(normals),indices:append(simplified),vertexCount:count,indexCount:simplified.length,bounds,
    regions:record.view_memberships??[],depth:record.depth??.5,groups:record.groups,tissue:record.tissue,sourceId:name,source:record.source,license:record.licence,schematic:!!record.schematic,mirrored:record.mirrored??null,
-   provenance:{label:record.source==='o3m'?'Open 3D Model · adapted by Brian Pridgen':record.source==='derived'?'Derived body surface · Brian Pridgen':'Z-Anatomy · adapted by Brian Pridgen',
-    url:'https://anatomy-atlas.brianp.chatgpt.site/NOTICE.md',detail:`${record.schematic?'Schematic reference; source placement is not anatomical. ':''}${record.licence}${record.noncommercial?' · noncommercial component':''}. ${record.mirrored?'Mirrored from the opposite limb. ':''}Source placement retained; ${full?'full source geometry preserved':'geometry simplified for this viewer'}.`}});
+   provenance:{label:record.source==='o3m'?'Open 3D Model':record.source==='derived'?'Derived body surface':'Z-Anatomy',
+    url:'/ATTRIBUTION.md',detail:`${record.schematic?'Schematic reference; source placement is not anatomical. ':''}${record.licence}${record.noncommercial?' · noncommercial component':''}. ${record.mirrored?'Mirrored from the opposite limb. ':''}${full?'Full-resolution geometry.':'Optimized geometry.'}`}});
   for(const group of record.groups){if(!sourceGroups.has(group))sourceGroups.set(group,[]);sourceGroups.get(group).push(id);}
  }
  console.log(`${region.region}: ${geometry.size} named meshes converted`);
@@ -182,7 +181,7 @@ for(const [name,system] of [['Heart','cardiac'],['Brain','nervous']]){
 }
 const atlas={version:'Z-Anatomy + Open 3D Model · Brian Pridgen adaptation',quality:full?'full':'optimized',sex:'male',source:'Z-Anatomy + Open 3D Model',scope:'Detailed male reference with upper-limb integration and mirrored anatomy; mixed component licenses.',parts,concepts,chunks,
  triangles:parts.reduce((n,p)=>n+p.indexCount/3,0),sourceTriangles,optimized:{maximumRelativeError:full?0:.002,preservedMeshes:parts.length},
- provenance:{sourceUrl:'https://anatomy-atlas.brianp.chatgpt.site/',notice:'/MALE-ANATOMY-NOTICE.md',sourceHashes:index.regions.map(r=>({region:r.region,sha256:r.geometry_sha256})),catalogueEntriesWithoutGeometry:omitted,unidentifiedGeometry}};
+ provenance:{sourceUrl:'https://anatomy-atlas.brianp.chatgpt.site/',notice:'/ATTRIBUTION.md',sourceHashes:index.regions.map(r=>({region:r.region,sha256:r.geometry_sha256})),catalogueEntriesWithoutGeometry:omitted,unidentifiedGeometry}};
 finalizeMaleCatalogue(atlas,catalogue,representations,synonyms);
 await fs.writeFile(new URL(`atlas-${prefix}.json`,out),JSON.stringify(atlas));
 console.log(JSON.stringify({parts:parts.length,concepts:concepts.length,triangles:atlas.triangles,omittedCatalogueEntries:omitted.length,downloadMB:chunks.reduce((n,c)=>n+c.gzipBytes,0)/1e6},null,2));
