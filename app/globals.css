@@ -15,6 +15,7 @@
 @media(max-width:767px){.anatomy-choice{margin-top:10px}.anatomy-choice [data-slot=select-trigger]{min-height:40px;font-size:12px}.layers-panel.mobile-open{top:auto}.search-panel{top:162px}.anatomy-search-results{max-height:calc(100dvh - 370px)!important}}
 @media(max-height:600px) and (orientation:landscape){.anatomy-choice{margin-top:7px}.anatomy-choice [data-slot=select-trigger]{min-height:36px}.layers-panel.mobile-open{top:132px}.search-panel{top:70px}.anatomy-search-results{max-height:160px!important}}
 .part-hover{position:absolute;pointer-events:none;z-index:45;max-width:250px;background:#202e3bf5;color:#ffffff;padding:9px 12px;border-radius:5px;box-shadow:0 5px 18px #18253620;font-size:13px;line-height:1.45;text-transform:capitalize}.part-hover[hidden]{display:none}.structure-meta strong{overflow-wrap:anywhere;max-width:150px}.view-controls button:disabled{opacity:.22;background:none}.scene canvas{cursor:grab}.scene canvas:active{cursor:grabbing}
+.part-hover small{display:block;margin-top:3px;color:#d1dee7;font-size:11px;line-height:1.3;text-transform:none}.part-hover small[hidden]{display:none}
 @media(min-width:768px) and (max-width:1100px){body:has(.detail-sheet) .layers-panel{display:none}}
 @media(max-width:767px){.detail-sheet.is-isolated{max-height:34dvh}}
 .detail-sheet [data-slot=sheet-close],.about-sheet [data-slot=sheet-close]{top:10px;right:10px;min-width:36px;min-height:36px;transform:none}.detail-sheet .eyebrow{padding-right:28px}
@@ -241,8 +242,14 @@ button,input,select,textarea{font-family:inherit}
 
 .hierarchy-header{display:flex;align-items:center;gap:4px;flex:none}
 .hierarchy-tabs{display:flex;flex:1;gap:3px;padding:3px;border:1px solid var(--border);border-radius:9px;background:var(--secondary)}
-.hierarchy-tabs button{flex:1;min-width:0;padding:6px 4px;border-radius:6px;color:var(--muted-foreground);font-size:12px;font-weight:600;line-height:1.2;text-align:center}
-.hierarchy-tabs button.active{background:var(--card);color:var(--foreground);box-shadow:0 1px 4px #18253614}
+.hierarchy-tabs>button,.guest-menu-wrap>button{flex:1;min-width:0;padding:6px 4px;border-radius:6px;color:var(--muted-foreground);font-size:12px;font-weight:600;line-height:1.2;text-align:center}
+.hierarchy-tabs>button.active,.guest-menu-wrap>button.active{background:var(--card);color:var(--foreground);box-shadow:0 1px 4px #18253614}
+.guest-menu-wrap{position:relative;display:flex;flex:1;min-width:0}.guest-menu-wrap>button{display:flex;align-items:center;justify-content:center;gap:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.guest-menu{position:absolute;z-index:10;right:0;top:calc(100% + 8px);width:240px;max-width:calc(100vw - 20px);padding:8px;border-radius:10px;background:var(--card);display:grid;gap:3px;box-shadow:0 12px 32px #101b2b42}
+.guest-menu-title{font-size:11px;font-weight:700;color:var(--muted-foreground);padding:5px 7px}.guest-menu-item{width:100%;min-height:31px;text-align:left;padding:5px 7px!important;border-radius:6px;color:var(--foreground)!important;font-size:12px!important;font-weight:500!important}.guest-menu-item:hover{background:var(--accent)}.guest-menu-empty{font-size:11px;color:var(--muted-foreground);padding:5px 7px}
+.guest-menu-form{display:grid;gap:6px;border-top:1px solid var(--border);margin-top:5px;padding:9px 4px 3px}.guest-menu-form label{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600}.guest-menu-form input{width:100%;min-width:0;min-height:31px;border:1px solid var(--border);border-radius:6px;background:var(--background);color:var(--foreground);padding:5px 7px;font-size:11px}.guest-menu-form button{min-height:30px;border-radius:6px;background:var(--primary)!important;color:var(--primary-foreground)!important;font-size:11px!important;font-weight:600!important}.guest-menu-form p{margin:0;color:#b8564c;font-size:11px;line-height:1.3}
+.guest-unmodeled .tree-label{color:var(--muted-foreground);opacity:.66;cursor:default}.guest-tree .tree-name{white-space:normal;line-height:1.3}.guest-source{display:block;margin:12px 9px 6px;color:var(--muted-foreground);font-size:11px;text-decoration:underline}.guest-tree-loading{flex:1;padding:16px 5px;color:var(--muted-foreground);font-size:12px}
+.guest-tree .tree-expander{display:inline-flex;align-items:center;justify-content:center;flex:none;width:14px;height:26px;padding:0;color:var(--muted-foreground)}.guest-tree .tree-label{min-height:30px}
 .depth-row{min-height:36px}.depth-row .tree-label{min-height:34px}.depth-index{flex:none;width:20px;color:var(--muted-foreground);font-size:10px;font-variant-numeric:tabular-nums;font-weight:400}
 .depth-leaf .tree-label{min-height:31px}
 .system-tree{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;margin-top:10px;padding:0 5px 8px 0;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
@@ -319,3 +326,27 @@ button.tree-check[data-state=mixed]{opacity:.7}
  .anatomy-choice button.model-action{width:42px}
  .anatomy-labels .explosion-group-label text{font-size:9px}
 }
+
+.section-panel{position:absolute;z-index:35;right:5px;top:54px;bottom:5px;width:230px;max-width:calc(100vw - 10px);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.studio .layers-panel,.studio .search-panel,.studio .study-panel,.studio .section-panel{z-index:50}
+.studio[data-front-panel=layers] .layers-panel,.studio[data-front-panel=search] .search-panel,.studio[data-front-panel=study] .study-panel,.studio[data-front-panel=sections] .section-panel{z-index:70}
+body:has(.studio[data-front-panel=details]) .detail-sheet{z-index:70!important}
+.section-panel .panel-heading{font-size:14px}.section-panel .panel-heading strong{font-weight:600}.section-panel .icon-button{min-width:32px;min-height:32px}
+.section-preview{flex:0 0 min(30vh,250px);min-height:150px;background:var(--secondary);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.section-preview canvas{display:block;width:100%;height:100%}
+.section-tabs{display:flex;gap:3px;border-bottom:1px solid var(--border);padding-bottom:5px}
+.section-tabs [role=tab]{flex:1;min-width:0;padding:8px 4px;border-radius:6px;font-size:11px;color:var(--muted-foreground);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.section-tabs [role=tab].active{background:var(--accent);color:var(--foreground);font-weight:600}
+.section-tabs .icon-button{flex:none}
+.section-scroll{overflow-y:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:13px;padding:2px 2px 12px;scrollbar-width:thin}
+.section-scroll label{display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--foreground)}
+.section-presets{border:1px solid var(--border);border-radius:9px;padding:7px;display:grid;gap:4px;min-width:0}
+.section-presets legend{font-size:12px;font-weight:600;padding:0 5px}
+.section-presets button{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;min-height:36px;text-align:left;border-radius:6px;padding:7px 9px;color:var(--foreground);font-size:12px}
+.section-presets button[aria-pressed=true]{background:var(--accent)}.section-presets button span{color:var(--muted-foreground);font-size:11px}
+.section-angle-controls{display:grid;gap:10px}.section-angle-controls label,.section-position label{display:grid;grid-template-columns:1fr auto;gap:5px}.section-angle-controls output,.section-position output{font-variant-numeric:tabular-nums;color:var(--muted-foreground)}
+.section-angle-controls input,.section-position input{grid-column:1/-1;width:100%;height:22px;accent-color:var(--primary);cursor:pointer}
+.section-position>div{display:flex;justify-content:space-between;color:var(--muted-foreground);font-size:10px}.section-scroll .check-label{display:flex;flex-direction:row;align-items:center}
+.section-toggle{min-height:38px;border:1px solid var(--border)!important;border-radius:7px;background:var(--secondary)!important;font-size:12px;font-weight:600}
+@media(max-width:767px){.section-panel{top:auto;bottom:5px;right:5px;left:5px;width:auto;height:min(62dvh,530px)}.section-preview{flex-basis:160px;min-height:120px}.section-scroll{gap:10px}.section-presets button{min-height:32px}.studio:not(.embedded):has(.section-panel) .layers-panel.mobile-open{top:104px;bottom:calc(min(62dvh,530px) + 10px);max-height:none}}
+@media(max-width:767px) and (max-height:600px) and (orientation:landscape){.section-panel{top:5px;bottom:5px;right:5px;left:auto;width:min(230px,calc(100vw - 145px));height:auto}.section-preview{flex-basis:130px}.studio:not(.embedded):has(.section-panel) .layers-panel.mobile-open{top:104px;bottom:94px;right:calc(min(230px,100vw - 145px) + 10px);width:auto;max-height:none}}

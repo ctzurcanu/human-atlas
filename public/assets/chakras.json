@@ -1,0 +1,142 @@
+{
+  "schema": "human-atlas-hierarchy/v1",
+  "id": "chakras",
+  "name": "Chakras",
+  "source": "https://hackmd.io/@ctzurcanu/B1ecngVNWx",
+  "nodes": [
+    {
+      "name": "Ajna",
+      "children": [
+        {"name": "Two petals", "children": [
+          {"name": "Retinas", "matches": ["Retina (left)", "Retina (right)"]},
+          {"name": "Vision cortex"},
+          {"name": "Pre-frontal cortex"}
+        ]},
+        {"name": "Bija", "children": [{"name": "Synchronization and connectivity"}]},
+        {"name": "Glands", "children": [
+          {"name": "Pineal", "matches": ["Pineal gland"]},
+          {"name": "Pituitary", "matches": ["Pituitary gland"]}
+        ]}
+      ]
+    },
+    {
+      "name": "Vishuddha",
+      "children": [
+        {"name": "Cerebellum", "matches": ["Cerebellum"]},
+        {"name": "C3–5 phrenic motor", "matches": ["Phrenic nerve", "Phrenic nerve (left)", "Phrenic nerve (right)"]},
+        {"name": "Glands", "children": [{"name": "Thyroid", "matches": ["Thyroid gland"]}]}
+      ]
+    },
+    {
+      "name": "Anahata · T1–6",
+      "children": [
+        {"name": "Cardiac plexus · T1–3 · parasympathetic CN X", "matches": ["Cardiac plexus"]},
+        {"name": "Esophageal plexus · T2–4 · parasympathetic CN X", "matches": ["Esophageal plexus"]},
+        {"name": "Pulmonary plexus · T2–6 · parasympathetic CN X", "matches": ["Pulmonary plexus", "Pulmonary plexus (left)", "Pulmonary plexus (right)"]},
+        {"name": "Glands", "children": [
+          {"name": "Thymus", "matches": ["Thymus", "Left lobe of thymus", "Right lobe of thymus"]},
+          {"name": "Heart", "matches": ["Heart"], "children": [
+            {"name": "Atrial natriuretic peptide (ANP)"},
+            {"name": "Brain natriuretic peptide (BNP)"}
+          ]}
+        ]}
+      ]
+    },
+    {
+      "name": "Manipura · upper T6–9",
+      "children": [
+        {"name": "Celiac plexus · T6–9", "matches": ["Celiac plexus"]},
+        {"name": "Gastric plexus", "matches": ["Gastric plexus"]},
+        {"name": "Glands", "children": [
+          {"name": "Stomach", "matches": ["Stomach"], "children": [
+            {"name": "Gastrin"}, {"name": "Somatostatin"}, {"name": "Histamine"}, {"name": "Ghrelin"}
+          ]},
+          {"name": "Liver", "matches": ["Liver"], "children": [
+            {"name": "Insulin-like growth factor 1 (IGF-1)"}, {"name": "Angiotensinogen"},
+            {"name": "Thrombopoietin"}, {"name": "Hepcidin"}
+          ]},
+          {"name": "Skeletal muscles", "systems": ["muscular"], "children": [
+            {"name": "Interleukin-6 (IL-6)"}, {"name": "Irisin"}, {"name": "Myostatin"},
+            {"name": "BDNF (brain-derived neurotrophic factor)"}
+          ]}
+        ]}
+      ]
+    },
+    {
+      "name": "Manipura · lower",
+      "children": [
+        {"name": "Hepatic plexus · T5–9", "matches": ["Hepatic plexus"]},
+        {"name": "Splenic plexus · T6–9", "matches": ["Splenic plexus"]},
+        {"name": "Superior mesenteric plexus · T8–10", "matches": ["Superior mesenteric plexus"]},
+        {"name": "Suprarenal plexus", "matches": ["Suprarenal plexus"]},
+        {"name": "Glands", "children": [
+          {"name": "Adrenal", "matches": ["Suprarenal gland (left)", "Suprarenal gland (right)"], "children": [
+            {"name": "Aldosterone (mineralocorticoid)"},
+            {"name": "Cortisol (glucocorticoid); androstenedione (weak androgen)"},
+            {"name": "DHEA, DHEA-S, androstenedione (adrenal androgens)"},
+            {"name": "Epinephrine (80%); norepinephrine (20%)"}
+          ]},
+          {"name": "Pancreas", "matches": ["Pancreas"], "children": [
+            {"name": "Glucagon"}, {"name": "Insulin"}, {"name": "Somatostatin"},
+            {"name": "Pancreatic polypeptide"}, {"name": "Ghrelin"}
+          ]},
+          {"name": "Duodenum and jejunum", "matches": ["Duodenum", "Jejunum"], "children": [
+            {"name": "Cholecystokinin (CCK)"}, {"name": "Secretin"},
+            {"name": "Gastric inhibitory peptide (GIP)"}, {"name": "Motilin"}
+          ]}
+        ]}
+      ]
+    },
+    {
+      "name": "Swaddhishtana · L1–2, S2–4",
+      "children": [
+        {"name": "Aorticorenal plexus · T10–12", "matches": ["Aorticorenal plexus"]},
+        {"name": "Intrinsic gonadal ganglia", "matches": ["Intrinsic gonadal ganglia"]},
+        {"name": "Superior hypogastric plexus · sympathetic L1–2, parasympathetic S2–4", "matches": ["Superior hypogastric plexus"]},
+        {"name": "Inferior hypogastric plexus · L1–2", "matches": ["Inferior hypogastric plexus"]},
+        {"name": "Inferior mesenteric plexus · L1–2, S2–4", "matches": ["Inferior mesenteric plexus"]},
+        {"name": "Glands", "children": [
+          {"name": "Kidneys", "matches": ["Kidney (left)", "Kidney (right)"], "children": [
+            {"name": "Renin"}, {"name": "Erythropoietin (EPO)"},
+            {"name": "Calcitriol (1,25-(OH)₂ vitamin D)"}
+          ]},
+          {"name": "Adipose tissue", "matches": ["Adipose tissue"], "children": [
+            {"name": "Leptin"}, {"name": "Adiponectin"}, {"name": "Resistin"},
+            {"name": "Visfatin"}, {"name": "IL-6, TNF-α"}
+          ]},
+          {"name": "Testes", "matches": ["Testis (left)", "Testis (right)"], "children": [
+            {"name": "Testosterone"}, {"name": "Inhibin"},
+            {"name": "Anti-Müllerian hormone (AMH)"}
+          ]},
+          {"name": "Ovaries", "matches": ["Ovary (left)", "Ovary (right)"], "children": [
+            {"name": "Estrogen"}, {"name": "Progesterone"},
+            {"name": "Inhibin"}, {"name": "Relaxin"}
+          ]}
+        ]}
+      ]
+    },
+    {
+      "name": "Muladhara",
+      "children": [
+        {"name": "Sympathetic fibers · L1–2"},
+        {"name": "Paravertebral ganglion · L1–2", "matches": ["Paravertebral ganglion"]},
+        {"name": "Intrinsic rectal ganglia", "matches": ["Intrinsic rectal ganglia"]},
+        {"name": "Glands", "children": [
+          {"name": "Colon", "matches": ["Ascending colon", "Descending colon", "Sigmoid colon", "Transverse colon"], "children": [
+            {"name": "Short-chain fatty acids: acetate, propionate, butyrate"},
+            {"name": "Secondary bile acids: deoxycholic acid, lithocholic acid"},
+            {"name": "Tryptophan derivatives: indole, indole-3-propionic acid, indole-3-aldehyde"},
+            {"name": "Vitamins B and K: K₂, B₁₂, folate, biotin"},
+            {"name": "Gases: hydrogen, methane, hydrogen sulfide"},
+            {"name": "Neuroactive metabolites: GABA, serotonin and dopamine precursors"}
+          ]},
+          {"name": "Bones", "systems": ["skeletal"], "children": [
+            {"name": "Osteocalcin"}, {"name": "Fibroblast growth factor 23 (FGF23)"},
+            {"name": "Lipocalin 2 (LCN2)"}, {"name": "Sclerostin"}
+          ]}
+        ]}
+      ]
+    },
+    {"name": "Other", "unmapped": true}
+  ]
+}

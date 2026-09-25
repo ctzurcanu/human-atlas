@@ -31,7 +31,7 @@ test('served catalogues select publisher-source male and female assets', () => {
   assert.equal(catalogue('male-detail').source, 'Z-Anatomy + Open 3D Model + BodyParts3D 4.0');
   assert.equal(catalogue('male-full').source, 'Z-Anatomy + Open 3D Model + BodyParts3D 4.0');
   const male = catalogue('male-detail');
-  assert.equal(male.parts.length, 5310);
+  assert.equal(male.parts.length, 5209);
   for (const [structure, system] of [
     ['Ureter (left)', 'urinary'],
     ['Femoral artery (right)', 'arterial'],
@@ -41,15 +41,18 @@ test('served catalogues select publisher-source male and female assets', () => {
     assert.equal(male.parts.find(part => part.name === structure)?.system, system);
     assert.ok(resolveAnatomy(structure).length > 0);
   }
-  assert.equal(male.parts.find(part => part.id === 'O3M:1st metacarpal bone.l')?.provenance.mirrored, true);
+  assert.equal(male.parts.find(part => part.id === 'O3M:Sesamoid bones of hand.l')?.provenance.mirrored, true);
+  assert.equal(male.parts.some(part => part.id.startsWith('O3M:') && part.system === 'skeletal' && !/Sesamoid bones of hand/i.test(part.name)), false);
+  assert.equal(male.parts.some(part => part.id.startsWith('O3M:') && /Brachiocephalic artery|Arm superficial vein-(Basilic|Cephalic|Median antebrachial|Median cubital) vein/i.test(part.name)), false);
   assert.deepEqual(resolveAnatomy('ZA:Median nerve.r').map(concept => concept.id), ['ZA:Median nerve.r']);
   assert.ok(resolveAnatomy('jejunum').some(concept => concept.elements.length > 0));
-  assert.ok(resolveAnatomy('ileum').some(concept => concept.elements.length > 0));
+  assert.equal(male.parts.some(part => part.id.startsWith('FJ') && /ileum|ileocecal junction|mesentery of small intestine/i.test(part.name)), false);
+  assert.equal(male.parts.some(part => part.id.startsWith('FJ') && /pancreatic duct tree|deferent duct|superficial dorsal vein of penis/i.test(part.name)), false);
   assert.equal(resolveAnatomy('Ureters')[0].elements.length, 2);
   assert.ok(resolveAnatomy('small intestine').some(concept => concept.elements.length > 0));
-  assert.ok(resolveAnatomy('Intestines').some(concept => concept.elements.length >= 40));
+  assert.ok(resolveAnatomy('Intestines').some(concept => concept.elements.length >= 8));
   assert.equal(resolveAnatomy('Ductus deferens')[0].elements.length, 2);
-  assert.equal(resolveAnatomy('Blood vessels of the penis')[0].elements.length, 6);
+  assert.equal(resolveAnatomy('Blood vessels of the penis')[0].elements.length, 4);
   assert.equal(catalogue('female').source, 'Human Reference Atlas');
   assert.deepEqual(anatomyView({structure: 'Uterus', model: 'female'}).systems, ['reproductive']);
   assert.equal(catalogue('female').parts.some(part=>part.name==='Amnion'),false);
@@ -99,6 +102,10 @@ test('MCP views cover the shareable viewer settings and whole models', () => {
   const whole=new URL(anatomyView({model:'female',hierarchy:'depth',depthHidden:['skin'],explode:.5,region:'lower-left',view:'back',skinOpacity:.35,labels:false,section:{axis:'sagittal',position:.4,flip:true},camera:[1,2,3,0,1,0],controls:['systems','explode','study']}).url);
   assert.deepEqual(whole.searchParams.getAll('select'),[]);
   for(const [key,value] of Object.entries({tree:'depth',depth:'skin',explode:'0.5',region:'lower-left',view:'back',skin:'0.35',labels:'0',cut:'sagittal',slice:'0.4',flip:'1',camera:'1,2,3,0,1,0',ui:'systems,explode,study'}))assert.equal(whole.searchParams.get(key),value,key);
+  const oblique=new URL(anatomyView({section:{axis:'oblique',position:.31,flip:false,azimuth:-42,elevation:27},controls:['sections']}).url);
+  for(const [key,value] of Object.entries({cut:'oblique',slice:'0.31',azimuth:'-42',elevation:'27',ui:'sections'}))assert.equal(oblique.searchParams.get(key),value,key);
+  const paired=new URL(anatomyView({sections:[{axis:'axial',position:.25,flip:true},{axis:'oblique',position:.62,flip:false,azimuth:24,elevation:-12}],activeSection:1}).url);
+  for(const [key,value] of Object.entries({sections:'2',sectionTab:'2',cut:'axial',slice:'0.25',cut2:'oblique',slice2:'0.62',azimuth2:'24',elevation2:'-12'}))assert.equal(paired.searchParams.get(key),value,key);
   assert.equal(new URL(anatomyView({rotate:true}).url).searchParams.get('rotate'),'1');
   assert.throws(()=>anatomyView({rotate:true,explode:.5}),/Auto rotation/);
   const selected=anatomyView({structures:['Stomach','Pancreas'],hidden:['ZA:Liver'],systems:['digestive'],isolate:true,context:.2,focus:false});
@@ -110,6 +117,11 @@ test('MCP views cover the shareable viewer settings and whole models', () => {
   assert.equal(url.searchParams.has('focus'),false);
   assert.equal(selected.selectedPieces.length,2);
   assert.equal(new URL(anatomyView({model:'embryo',hierarchy:'depth',depthHidden:['skin']}).url).searchParams.get('depth'),'skin');
+  assert.equal(new URL(anatomyView({hierarchy:'guest:chakras'}).url).searchParams.get('tree'),'guest:chakras');
+  const guestView=new URL(anatomyView({hierarchy:'guest:custom',guestUrls:['https://example.com/custom.json']}).url);
+  assert.equal(guestView.searchParams.get('tree'),'guest:custom');
+  assert.deepEqual(guestView.searchParams.getAll('guest'),['https://example.com/custom.json']);
+  assert.throws(()=>anatomyView({hierarchy:'guest:custom'}),/guest URL/);
   assert.throws(()=>anatomyView({model:'cell',hierarchy:'depth'}),/hierarchy/);
   assert.throws(()=>anatomyView({depthHidden:['missing']}),/depth layer/);
   assert.throws(()=>anatomyView({systems:['missing']}),/system/);
@@ -128,10 +140,16 @@ test('browser WebMCP exposes live view and saved view operations',async()=>{
   assert.deepEqual(byName('get_anatomy_view').execute({}),{model:'male-detail',hierarchy:'depth'});
   byName('set_anatomy_view').execute({hierarchy:'depth',structures:['Stomach'],depthHidden:['skin'],explode:.5,section:{axis:'coronal',position:.3,flip:true}});
   assert.deepEqual(calls[0],{hierarchy:'depth',structures:['Stomach'],depthHidden:['skin'],explode:.5,section:{axis:'coronal',position:.3,flip:true}});
+  byName('set_anatomy_view').execute({section:{axis:'oblique',position:.6,flip:false,azimuth:112,elevation:-16}});
+  assert.deepEqual(calls[1],{section:{axis:'oblique',position:.6,flip:false,azimuth:112,elevation:-16}});
+  byName('set_anatomy_view').execute({sections:[{axis:'axial',position:.25,flip:true},null],activeSection:1});
+  assert.deepEqual(calls[2],{sections:[{axis:'axial',position:.25,flip:true},null],activeSection:1});
+  byName('set_anatomy_view').execute({hierarchy:'guest:chakras'});
+  assert.deepEqual(calls[3],{hierarchy:'guest:chakras'});
   assert.throws(()=>byName('set_anatomy_view').execute({depthHidden:['missing']}),/depth layer/);
   assert.throws(()=>byName('set_anatomy_view').execute({model:'female',explode:.2}),/separate call/);
   byName('act_on_anatomy_view').execute({action:'reset'});
-  assert.equal(calls[1],'reset');
+  assert.equal(calls[4],'reset');
 });
 
 test('MCP discovery, tool call, and UI resource work together', async () => {

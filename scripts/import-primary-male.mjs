@@ -22,9 +22,11 @@ await run(process.execPath,[path.join(root,'scripts','fetch-open3d-upper-limb.mj
 await run(blender,['-b',path.join(cache,'Startup.blend'),'--factory-startup','--disable-autoexec','--python',path.join(root,'scripts','build-z-anatomy.py'),'--','--out',stage,'--source-sha256','e029688545627bd0214b269e1063143abb580aad72b2c2445d6d8a9a0d9da736']);
 await run(blender,['-b','--factory-startup','--disable-autoexec','--python',path.join(root,'scripts','build-open3d-upper-limb.py'),'--','--glb',path.join(cache,'upper-limb.glb'),'--atlas',path.join(stage,'atlas-z-anatomy.json'),'--zip-sha256','5af0190a6d7bf47393447ac30021e4f3ba619721c7f3a620c39a895947078432']);
 const manifest=path.join(stage,'atlas-z-anatomy.json');
+await run(process.execPath,[path.join(root,'scripts','prune-duplicate-upper-limb.mjs'),manifest]);
 await run(process.execPath,[path.join(root,'scripts','validate-primary-atlas.mjs'),manifest]);
 const atlas=JSON.parse(await fs.readFile(manifest));
 for(const chunk of atlas.chunks)for(const url of [chunk.url,chunk.gzip]){const name=path.basename(url);await fs.copyFile(path.join(stage,name),path.join(out,name));}
+for(const texture of atlas.provenance.additionalSources[0].preservedTextures){const name=path.basename(texture.url);await fs.copyFile(path.join(stage,name),path.join(out,name));}
 await fs.copyFile(manifest,path.join(out,'atlas-z-anatomy.json'));
 if((await fs.stat(path.join(out,'atlas.json')).catch(()=>null))?.isFile())
  await run(process.execPath,[path.join(root,'scripts','build-complete-male.mjs'),out]);

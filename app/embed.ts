@@ -2,6 +2,7 @@ export const EMBED_UI=[
  {id:'model',label:'Model picker'},
  {id:'search',label:'Search'},
  {id:'study',label:'Study tools'},
+ {id:'sections',label:'Sections'},
  {id:'systems',label:'Layers'},
  {id:'camera',label:'Camera controls'},
  {id:'explode',label:'Explode slider'},

@@ -5,6 +5,7 @@ decoded by Blender; no viewer exports, aliases, or catalogues are inputs.
 """
 import argparse
 import gzip
+import hashlib
 import json
 import math
 import re
@@ -29,12 +30,46 @@ source_url = 'https://anatomytool.org/open3dmodel-create'
 source_glb_url = 'https://caskanatomy.info/open3dmodelfiles/upper-limb/upper-limb-glb.zip'
 existing = {p['sourceId'].strip().casefold() for p in atlas['parts']}
 existing_ids = {p['id'] for p in atlas['parts']}
+glb_bytes = args.glb.read_bytes()
+assert glb_bytes[:4] == b'glTF' and struct.unpack_from('<I', glb_bytes, 4)[0] == 2
+json_length, json_type = struct.unpack_from('<I4s', glb_bytes, 12)
+assert json_type == b'JSON'
+source = json.loads(glb_bytes[20:20 + json_length])
+binary_offset = 20 + json_length
+binary_length, binary_type = struct.unpack_from('<I4s', glb_bytes, binary_offset)
+assert binary_type == b'BIN\0'
+binary_offset += 8
+source_materials = {material['name']: material for material in source['materials']}
+texture_files = {}
+
+
+def source_texture(texture_index):
+    image_index = source['textures'][texture_index]['source']
+    if image_index in texture_files:
+        return texture_files[image_index]['url']
+    image = source['images'][image_index]
+    extension = {'image/jpeg': 'jpg', 'image/png': 'png'}[image['mimeType']]
+    view = source['bufferViews'][image['bufferView']]
+    assert view.get('buffer', 0) == 0
+    assert view.get('byteOffset', 0) + view['byteLength'] <= binary_length
+    start = binary_offset + view.get('byteOffset', 0)
+    data = glb_bytes[start:start + view['byteLength']]
+    assert len(data) == view['byteLength']
+    name = f'o3m-image-{image_index}.{extension}'
+    (args.atlas.parent / name).write_bytes(data)
+    record = {'url': '/models/' + name, 'sourceImage': image.get('name', name),
+              'sha256': hashlib.sha256(data).hexdigest(), 'bytes': len(data)}
+    texture_files[image_index] = record
+    return record['url']
+
+
 bpy.ops.import_scene.gltf(filepath=str(args.glb))
 new_chunks = []
 blob = bytearray()
 added = []
 concepts = defaultdict(list)
 triangles = 0
+texture_without_uv = set()
 
 
 def source_position(v):
@@ -82,6 +117,16 @@ palette = {
 def included(group, name):
     if name.casefold() in existing:
         return False
+    # Z-Anatomy already supplies the hand and wrist bones, often under spelled-
+    # out ordinal names (for example, "First" versus "1st"). Keep only the
+    # hand sesamoids, which have no Z-Anatomy counterpart.
+    if system_for(group) == 'skeletal' and name != 'Sesamoid bones of hand.r':
+        return False
+    # These publisher labels name vessels already present in the detailed atlas.
+    if re.match(r'Arm superficial vein-(Basilic|Cephalic|Median antebrachial|Median cubital) vein\.', name):
+        return False
+    if name == 'Brachiocephalic artery.r':
+        return False
     if group.startswith(('Back - ', 'Head and neck - ', 'Thorax - bones', 'Thorax - cartilages')):
         return False
     if not group.startswith(('Arm - ', 'Forearm - ', 'Hand and wrist - ', 'Pectoral girdle - ', 'Thorax - ')):
@@ -115,45 +160,71 @@ for obj in sorted((o for o in bpy.data.objects if o.type == 'MESH' and o.parent)
                 continue
             mat = obj.material_slots[slot].material if slot < len(obj.material_slots) else None
             mat_name = mat.name if mat else 'Unassigned'
+            if mat:
+                assert mat_name in source_materials, f'Material missing from publisher GLB: {mat_name}'
             part_id = 'O3M:' + side_name + (':' + mat_name if len(by_material) > 1 else '')
             assert part_id not in existing_ids, part_id
             existing_ids.add(part_id)
-            vertices, normals, indices = [], [], []
+            vertices, normals, uvs, indices = [], [], [], []
             lookup = {}
+            uv_layer = mesh.uv_layers.active
+            source_material = source_materials.get(mat_name, {})
+            pbr = source_material.get('pbrMetallicRoughness', {})
+            base_texture = pbr.get('baseColorTexture')
+            normal_texture = source_material.get('normalTexture')
+            if uv_layer and (base_texture or normal_texture):
+                assert base_texture is None or base_texture.get('texCoord', 0) == 0
+                assert normal_texture is None or normal_texture.get('texCoord', 0) == 0
+            if not uv_layer and (base_texture or normal_texture):
+                texture_without_uv.add(name)
             minimum, maximum = [math.inf] * 3, [-math.inf] * 3
             transform = obj.matrix_world
             normal_transform = transform.to_3x3().inverted_safe().transposed()
             reflected = transform.determinant() < 0
             for face in faces:
                 corners = list(face.vertices)
+                loops = list(face.loops)
                 if reflected != mirrored:
                     corners[1], corners[2] = corners[2], corners[1]
-                for src in corners:
-                    target = lookup.get(src)
+                    loops[1], loops[2] = loops[2], loops[1]
+                for src, loop in zip(corners, loops):
+                    uv = tuple(uv_layer.data[loop].uv) if uv_layer else (0.0, 0.0)
+                    key = (src, uv)
+                    target = lookup.get(key)
                     if target is None:
                         p = list(source_position(transform @ mesh.vertices[src].co))
                         n = list(source_position((normal_transform @ mesh.vertices[src].normal).normalized()))
                         if mirrored:
                             p[0], n[0] = -p[0], -n[0]
                         target = len(lookup)
-                        lookup[src] = target
+                        lookup[key] = target
                         vertices.extend(p)
                         normals.extend(max(-32767, min(32767, round(v * 32767))) for v in n)
+                        uvs.extend(uv)
                         for axis in range(3):
                             minimum[axis] = min(minimum[axis], p[axis])
                             maximum[axis] = max(maximum[axis], p[axis])
                     indices.append(target)
             if len(blob) > 6_000_000:
                 flush()
-            material_id = 'O3M:' + system + ':' + mat_name
+            material_id = 'O3M:' + system + ':' + mat_name + (':no-uv' if not uv_layer and (base_texture or normal_texture) else '')
             base_color = mat.diffuse_color if mat else (0.7, 0.7, 0.7, 1)
             source_color = [round(255 * max(0, min(1, c))) for c in base_color[:3]]
-            atlas['materials'][material_id] = {'color': palette[system], 'sourceColor': source_color}
+            material = {'color': palette[system], 'sourceColor': source_color}
+            if base_texture and uv_layer:
+                factor = pbr.get('baseColorFactor', [1, 1, 1, 1])
+                material['color'] = [round(255 * max(0, min(1, c))) for c in factor[:3]]
+                material['map'] = source_texture(base_texture['index'])
+            if normal_texture and uv_layer:
+                material['normalMap'] = source_texture(normal_texture['index'])
+                material['normalScale'] = normal_texture.get('scale', 1)
+            atlas['materials'][material_id] = material
             part = {
                 'id': part_id, 'conceptId': 'O3M:' + side_name,
                 'name': display_name + (f' · {mat_name}' if len(by_material) > 1 else ''),
                 'system': system, 'chunk': len(atlas['chunks']) + len(new_chunks),
                 'positions': append('f', vertices), 'normals': append('h', normals),
+                'uvs': append('f', uvs),
                 'indices': append('I', indices), 'vertexCount': len(lookup),
                 'indexCount': len(indices), 'bounds': [minimum, maximum],
                 'sourceId': name, 'material': material_id, 'groups': [group],
@@ -182,9 +253,11 @@ atlas['scope'] = 'Direct Z-Anatomy body plus original Open 3D Model upper-limb a
 atlas['provenance']['additionalSources'] = [{
     'url': source_url, 'archiveUrl': source_glb_url,
     'archiveSha256': args.zip_sha256, 'sourceFile': 'upper-limb.glb',
-    'sourceFileSha256': __import__('hashlib').sha256(args.glb.read_bytes()).hexdigest(),
+    'sourceFileSha256': hashlib.sha256(glb_bytes).hexdigest(),
     'sourceMeshNodes': 532, 'embeddedImages': 84,
-    'notes': 'The original GLB embeds image textures. The browser atlas currently displays its source material colors through the common anatomy palette; source images are not rendered.',
+    'preservedTextures': sorted(texture_files.values(), key=lambda item: item['url']),
+    'sourceMeshesWithoutTextureUvs': sorted(texture_without_uv),
+    'notes': 'UV maps and used base-color and normal textures are preserved from the original GLB.',
 }]
 args.atlas.write_text(json.dumps(atlas, separators=(',', ':')))
 print('HUMAN_ATLAS_O3M_BUILD=' + json.dumps({'addedSurfaces': len(added), 'addedConcepts': len(concepts), 'addedTriangles': triangles, 'newChunks': len(new_chunks), 'totalSurfaces': len(atlas['parts'])}))

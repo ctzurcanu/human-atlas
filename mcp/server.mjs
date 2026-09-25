@@ -4,7 +4,7 @@ import {pathToFileURL} from 'node:url';
 import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {StdioServerTransport} from '@modelcontextprotocol/sdk/server/stdio.js';
 import {z} from 'zod';
-import {anatomyOptions, anatomyView, DEPTH_LAYERS, EMBED_CONTROLS, HIERARCHIES, MODELS, REGIONS, searchAnatomy, SECTION_AXES, VIEWS} from './atlas-data.mjs';
+import {anatomyOptions, anatomyView, DEPTH_LAYERS, EMBED_CONTROLS, MODELS, REGIONS, searchAnatomy, SECTION_AXES, VIEWS} from './atlas-data.mjs';
 
 const UI_URI = 'ui://human-atlas/anatomy-view';
 const UI_MIME = 'text/html;profile=mcp-app';
@@ -39,14 +39,15 @@ export function createServer() {
 
   server.registerTool('show_anatomy', {
     title: 'Show Human Atlas 3D anatomy',
-    description: 'Create an interactive Human Atlas view and copyable iframe. Optionally select one or more exact structure names or IDs; search_anatomy resolves ambiguity. View options control Systems, Regions, Depth, visibility, Explode, cuts, camera and isolation. Omit structure for the whole model. Models local-male and local-female require the local development viewer on port 3016.',
+    description: 'Create an interactive Human Atlas view and copyable iframe. Optionally select one or more exact structure names or IDs; search_anatomy resolves ambiguity. View options control Systems, Regions, Depth, guest hierarchies, visibility, Explode, cuts, camera and isolation. Omit structure for the whole model. Models local-male and local-female require the local development viewer on port 3016.',
     inputSchema: {
       structure: z.string().min(1).optional().describe('Exact structure name, atlas concept ID, or piece ID.'),
       structures: z.array(z.string().min(1)).optional().describe('Additional structures to select together.'),
       model: modelSchema.default('male-detail'),
       view: z.enum(VIEWS).default('three-quarter').describe('Camera direction. Defaults to three-quarter.'),
       context: z.number().min(0).max(1).default(0.18).describe('Opacity of surrounding anatomy, 0 to 1.'),
-      hierarchy: z.enum(HIERARCHIES).default('systems').describe('Active hierarchy tab. Depth is unavailable for the cell model.'),
+      hierarchy: z.string().default('systems').describe('Active hierarchy: systems, regions, depth, guest:chakras, or guest:<id> for a supplied guest URL. Depth is unavailable for the cell model.'),
+      guestUrls: z.array(z.string().url()).optional().describe('Public JSON hierarchy URLs to add to the final Guest menu. Custom guest:<id> needs its JSON URL here.'),
       systems: z.array(z.string()).optional().describe('Visible system IDs. Omit for the model defaults; [] hides unselected anatomy.'),
       depthHidden: z.array(z.enum(DEPTH_LAYERS)).optional().describe('Depth layer IDs to hide.'),
       hidden: z.array(z.string()).optional().describe('Exact names, concept IDs, or piece IDs to hide.'),
@@ -56,10 +57,12 @@ export function createServer() {
       labels: z.boolean().default(true),
       isolate: z.boolean().default(false),
       rotate: z.boolean().default(false).describe('Auto rotate the view.'),
-      section: z.object({axis: z.enum(SECTION_AXES), position: z.number().min(0).max(1), flip: z.boolean().default(false)}).optional().describe('Enable a geometric cross-section.'),
+      section: z.object({axis: z.enum(SECTION_AXES), position: z.number().min(0).max(1), flip: z.boolean().default(false), azimuth: z.number().min(-180).max(180).optional(), elevation: z.number().min(-90).max(90).optional()}).optional().describe('Enable a geometric cross-section. Oblique uses azimuth and elevation in degrees.'),
+      sections: z.array(z.object({axis: z.enum(SECTION_AXES), position: z.number().min(0).max(1), flip: z.boolean().default(false), azimuth: z.number().min(-180).max(180).optional(), elevation: z.number().min(-90).max(90).optional()}).nullable()).min(1).max(2).optional().describe('One or two simultaneous geometric cuts. Null closes a cut while keeping its tab.'),
+      activeSection: z.number().int().min(0).max(1).optional().describe('Active section tab, zero based.'),
       camera: z.array(z.number()).optional().describe('Camera position and target as six numbers, optionally followed by two projection offsets.'),
       focus: z.boolean().optional().describe('Fit the selected anatomy in view.'),
-      controls: z.array(z.enum(EMBED_CONTROLS)).optional().describe('Controls visible in the iframe: model, search, study, systems, camera, explode, details, open, download. Omit for defaults; [] shows only the 3D view.'),
+      controls: z.array(z.enum(EMBED_CONTROLS)).optional().describe('Controls visible in the iframe: model, search, sections, study, systems, camera, explode, details, open, download. Omit for defaults; [] shows only the 3D view.'),
     },
     _meta: {ui: {resourceUri: UI_URI}},
     annotations: {readOnlyHint: true},

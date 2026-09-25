@@ -1,8 +1,9 @@
 import {SYSTEMS,type Atlas,type Part} from './anatomy';
 import {REGION_ORDER,buildAnatomyNodes,systemName,type AnatomyEntry,type AnatomyNode} from './anatomy-hierarchy';
 import {DEPTH_LAYERS,depthLayerFor} from './depth-layers';
+import type {ResolvedGuestNode} from './guest-hierarchy';
 
-export type ExplodeHierarchy='systems'|'regions'|'depth';
+export type ExplodeHierarchy='systems'|'regions'|'depth'|'guest';
 type Bounds={cx:number;cy:number;cz:number;width:number;height:number};
 type Node={parts:Part[];children:Node[];bounds:Bounds;name?:string};
 type Measured={node:Node;width:number;height:number;children:{measured:Measured;x:number;y:number}[]|null};
@@ -24,9 +25,23 @@ function anatomyNode(item:AnatomyNode):Node{
  return item.kind==='group'?node(item.parts,item.nodes.map(anatomyNode),item.name)
   :item.kind==='bilateral'?node(item.parts,item.entries.map(entryNode),item.name):entryNode(item.entry);
 }
-function hierarchyTree(atlas:Atlas,entries:AnatomyEntry[],visibleIds:Set<string>,mode:ExplodeHierarchy):Node|null{
+function hierarchyTree(atlas:Atlas,entries:AnatomyEntry[],visibleIds:Set<string>,mode:ExplodeHierarchy,guestNodes?:ResolvedGuestNode[]):Node|null{
  const visibleEntries=entries.flatMap(entry=>{const parts=entry.parts.filter(part=>visibleIds.has(part.id));return parts.length?[{...entry,parts}]:[]});
  if(!visibleEntries.length)return null;
+ if(mode==='guest'&&guestNodes){
+  const remaining=new Set(visibleIds);
+  const convert=(item:ResolvedGuestNode):Node|null=>{
+   const children=item.children.map(convert).filter((child):child is Node=>!!child);
+   const own=item.directParts.filter(part=>remaining.delete(part.id));
+   if(own.length)children.push(...own.map(part=>node([part])));
+   const parts=[...new Map(children.flatMap(child=>child.parts).map(part=>[part.id,part])).values()];
+   return parts.length?node(parts,children,item.name):null;
+  };
+  const categories=guestNodes.map(convert).filter((item):item is Node=>!!item);
+  const other=atlas.parts.filter(part=>remaining.has(part.id));
+  if(other.length)categories.push(node(other,other.map(part=>node([part])),'Other anatomy'));
+  return node(visibleEntries.flatMap(entry=>entry.parts),categories);
+ }
  if(mode==='systems'){
   const categories=SYSTEMS.map(system=>{
    const members=visibleEntries.filter(entry=>entry.system===system.id);
@@ -67,8 +82,8 @@ function pack(children:Measured[],aspect:number,gap:number){
 }
 
 /** Each slider interval separates one more tree level. Unopened descendants retain their assembled anatomy. */
-export function createHierarchicalExplosionLayout(atlas:Atlas,entries:AnatomyEntry[],visibleIds:Set<string>,mode:ExplodeHierarchy,aspect=1):HierarchicalExplosionLayout{
- const root=hierarchyTree(atlas,entries,visibleIds,mode),index=new Map(atlas.parts.map((part,i)=>[part.id,i]));
+export function createHierarchicalExplosionLayout(atlas:Atlas,entries:AnatomyEntry[],visibleIds:Set<string>,mode:ExplodeHierarchy,aspect=1,guestNodes?:ResolvedGuestNode[]):HierarchicalExplosionLayout{
+ const root=hierarchyTree(atlas,entries,visibleIds,mode,guestNodes),index=new Map(atlas.parts.map((part,i)=>[part.id,i]));
  const initial=new Float32Array(atlas.parts.length*3);
  atlas.parts.forEach((part,i)=>{initial[i*3]=partCenter(part,0);initial[i*3+1]=partCenter(part,1);initial[i*3+2]=partCenter(part,2);});
  if(!root)return {stages:[{positions:initial,width:0,height:0,groups:[],clusterIds:new Int32Array(atlas.parts.length).fill(-1),clusters:[]}],steps:0};
