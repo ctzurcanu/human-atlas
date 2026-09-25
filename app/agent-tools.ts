@@ -1,13 +1,56 @@
 import type {Atlas,Concept} from './anatomy';
+import {DEPTH_LAYERS} from './depth-layers';
+import {REGIONS,VIEWS} from './viewer-state';
+
 type Tool={name:string;description:string;inputSchema:object;annotations:{readOnlyHint:boolean};execute:(input:unknown)=>unknown};
+export type AgentViewChange={model?:string;structures?:string[];systems?:string[];depthHidden?:string[];hidden?:string[];hierarchy?:'systems'|'regions'|'depth';view?:string;region?:string;context?:number;skinOpacity?:number;explode?:number;labels?:boolean;isolate?:boolean;rotate?:boolean;section?:{axis:'axial'|'sagittal'|'coronal';position:number;flip:boolean}|null;camera?:number[];focus?:boolean};
+export type AgentActions={snapshot:()=>unknown;update:(change:AgentViewChange)=>unknown;command:(action:string)=>unknown|Promise<unknown>;url:()=>string};
+const models=['male-detail','male-full','male','female','embryo','cell','local-male','local-female'];
+const hierarchies=['systems','regions','depth'];
+const sectionAxes=['axial','sagittal','coronal'];
+const commands=['undo','redo','reset','focus','hide-selection','clear-selection','download-png'];
+const storageKey='human-atlas-bookmarks-v1';
 function record(input:unknown):Record<string,unknown>{if(!input||typeof input!=='object'||Array.isArray(input))throw new Error('Expected an object.');return input as Record<string,unknown>;}
-export function atlasTools(atlas:Atlas,inspect:(concept:Concept)=>void):Tool[]{return [
+function strings(value:unknown,name:string):string[]{if(!Array.isArray(value)||value.some(item=>typeof item!=='string'||!item.trim()))throw new Error(`${name} must be a list of names or IDs.`);return value;}
+function fraction(value:unknown,name:string):number{if(typeof value!=='number'||!Number.isFinite(value)||value<0||value>1)throw new Error(`${name} must be between 0 and 1.`);return value;}
+function parseChange(input:unknown,atlas:Atlas):AgentViewChange{
+ const data=record(input),change:AgentViewChange={};
+ const allowed=['model','structures','systems','depthHidden','hidden','hierarchy','view','region','context','skinOpacity','explode','labels','isolate','rotate','section','camera','focus'];
+ for(const key of Object.keys(data))if(!allowed.includes(key))throw new Error(`Unknown view setting: ${key}`);
+ if(data.model!==undefined){if(typeof data.model!=='string'||!models.includes(data.model))throw new Error('Unknown model.');change.model=data.model;}
+ for(const key of ['structures','hidden'] as const)if(data[key]!==undefined)change[key]=strings(data[key],key);
+ if(data.systems!==undefined){const systems=strings(data.systems,'systems'),available=new Set(atlas.parts.map(part=>part.system));if(systems.some(id=>!available.has(id as never)))throw new Error('Unknown system for this model.');change.systems=systems;}
+ if(data.depthHidden!==undefined){const ids=strings(data.depthHidden,'depthHidden'),known=new Set<string>(DEPTH_LAYERS.map(layer=>layer.id));if(ids.some(id=>!known.has(id))||ids.length&&atlas.scope==='cell')throw new Error('Unknown or unavailable depth layer.');change.depthHidden=ids;}
+ if(data.hierarchy!==undefined){if(typeof data.hierarchy!=='string'||!hierarchies.includes(data.hierarchy)||data.hierarchy==='depth'&&atlas.scope==='cell')throw new Error('Unknown hierarchy for this model.');change.hierarchy=data.hierarchy as AgentViewChange['hierarchy'];}
+ if(data.view!==undefined){if(typeof data.view!=='string'||!VIEWS.includes(data.view as never))throw new Error('Unknown view.');change.view=data.view;}
+ if(data.region!==undefined){if(typeof data.region!=='string'||!REGIONS.includes(data.region as never)||data.region!=='all'&&atlas.scope==='cell')throw new Error('Unknown region for this model.');change.region=data.region;}
+ for(const key of ['context','skinOpacity','explode'] as const)if(data[key]!==undefined)change[key]=fraction(data[key],key);
+ for(const key of ['labels','isolate','rotate','focus'] as const)if(data[key]!==undefined){if(typeof data[key]!=='boolean')throw new Error(`${key} must be true or false.`);change[key]=data[key];}
+ if(data.section!==undefined){if(data.section===null)change.section=null;else{const section=record(data.section);if(!sectionAxes.includes(String(section.axis)))throw new Error('Unknown section axis.');change.section={axis:section.axis as 'axial'|'sagittal'|'coronal',position:fraction(section.position,'section position'),flip:section.flip===undefined?false:section.flip===true};if(section.flip!==undefined&&typeof section.flip!=='boolean')throw new Error('Section flip must be true or false.');}}
+ if(data.camera!==undefined){const camera=data.camera;if(!Array.isArray(camera)||![6,8].includes(camera.length)||camera.some(n=>typeof n!=='number'||!Number.isFinite(n)||Math.abs(n)>=1000)||Math.hypot(camera[0]-camera[3],camera[1]-camera[4],camera[2]-camera[5])<=.001)throw new Error('Camera must contain a valid position and target.');change.camera=camera;}
+ return change;
+}
+function readBookmarks():{id:string;name:string;url:string;createdAt:number}[]{
+ try{const value=JSON.parse(localStorage.getItem(storageKey)??'[]');return Array.isArray(value)?value.filter(item=>{if(typeof item?.id!=='string'||typeof item?.name!=='string'||typeof item?.url!=='string')return false;try{return new URL(item.url).origin===location.origin;}catch{return false;}}):[];}catch{return [];}
+}
+function saveBookmarks(items:ReturnType<typeof readBookmarks>){localStorage.setItem(storageKey,JSON.stringify(items));}
+export function atlasTools(atlas:Atlas,inspect:(concept:Concept)=>void,actions?:AgentActions):Tool[]{const tools:Tool[]=[
  {name:'find_anatomy',description:'Find anatomical structures by name or source atlas identifier in this atlas.',inputSchema:{type:'object',properties:{query:{type:'string',minLength:1}},required:['query'],additionalProperties:false},annotations:{readOnlyHint:true},execute(input){const data=record(input);if(typeof data.query!=='string'||!data.query.trim())throw new Error('A nonempty query is required.');const q=data.query.toLowerCase().trim();return atlas.concepts.filter(c=>c.name.toLowerCase().includes(q)||c.id.toLowerCase().includes(q)).slice(0,30).map(c=>({id:c.id,name:c.name,pieces:c.elements.length}));}},
  {name:'inspect_anatomical_structure',description:'Select an atlas concept in the 3D anatomy and open its visible detail panel.',inputSchema:{type:'object',properties:{id:{type:'string'}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const data=record(input);if(typeof data.id!=='string')throw new Error('An atlas identifier is required.');const concept=atlas.concepts.find(c=>c.id===data.id);if(!concept)throw new Error('That structure is not present in this atlas.');inspect(concept);return {id:concept.id,name:concept.name,selectedPieces:concept.elements.length};}}
- ];}
-export function registerAtlasTools(atlas:Atlas,inspect:(concept:Concept)=>void){
+ ];
+ if(actions)tools.push(
+ {name:'get_anatomy_view',description:'Read the current model, selection, hierarchy, visibility, camera and shareable view URL.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(){return actions.snapshot();}},
+ {name:'set_anatomy_view',description:'Change selected structures, Systems/Regions/Depth, hidden layers or pieces, Explode, opacity, cuts, labels, isolation, rotation and camera. Omitted settings stay unchanged. To switch model, pass model alone.',inputSchema:{type:'object',properties:{model:{type:'string',enum:models},structures:{type:'array',items:{type:'string'}},systems:{type:'array',items:{type:'string'}},depthHidden:{type:'array',items:{type:'string',enum:DEPTH_LAYERS.map(layer=>layer.id)}},hidden:{type:'array',items:{type:'string'}},hierarchy:{type:'string',enum:hierarchies},view:{type:'string',enum:VIEWS},region:{type:'string',enum:REGIONS},context:{type:'number',minimum:0,maximum:1},skinOpacity:{type:'number',minimum:0,maximum:1},explode:{type:'number',minimum:0,maximum:1},labels:{type:'boolean'},isolate:{type:'boolean'},rotate:{type:'boolean'},section:{anyOf:[{type:'object',properties:{axis:{type:'string',enum:sectionAxes},position:{type:'number',minimum:0,maximum:1},flip:{type:'boolean'}},required:['axis','position'],additionalProperties:false},{type:'null'}]},camera:{type:'array',items:{type:'number'},minItems:6,maxItems:8},focus:{type:'boolean'}},additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const change=parseChange(input,atlas);if(change.model&&Object.keys(change).length>1)throw new Error('Change model in a separate call, then configure its view.');return actions.update(change);}},
+ {name:'act_on_anatomy_view',description:'Undo, redo, reset, focus, hide or clear selection, or download the current PNG.',inputSchema:{type:'object',properties:{action:{type:'string',enum:commands}},required:['action'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const action=record(input).action;if(typeof action!=='string'||!commands.includes(action))throw new Error('Unknown viewer action.');return actions.command(action);}},
+ {name:'list_saved_anatomy_views',description:'List views saved in this browser.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(){return readBookmarks();}},
+ {name:'save_anatomy_view',description:'Save the current view in this browser under a name.',inputSchema:{type:'object',properties:{name:{type:'string',minLength:1}},required:['name'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const name=record(input).name;if(typeof name!=='string'||!name.trim())throw new Error('A view name is required.');const item={id:crypto.randomUUID(),name:name.trim(),url:actions.url(),createdAt:Date.now()};saveBookmarks([item,...readBookmarks()].slice(0,100));return item;}},
+ {name:'open_saved_anatomy_view',description:'Open a saved view by ID in this browser.',inputSchema:{type:'object',properties:{id:{type:'string'}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const item=readBookmarks().find(item=>item.id===record(input).id);if(!item)throw new Error('Saved view not found.');location.assign(item.url);return item;}},
+ {name:'delete_saved_anatomy_view',description:'Delete a saved view by ID from this browser.',inputSchema:{type:'object',properties:{id:{type:'string'}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const id=record(input).id,items=readBookmarks();if(typeof id!=='string'||!items.some(item=>item.id===id))throw new Error('Saved view not found.');saveBookmarks(items.filter(item=>item.id!==id));return {id,deleted:true};}}
+ );
+ return tools;}
+export function registerAtlasTools(atlas:Atlas,inspect:(concept:Concept)=>void,actions?:AgentActions){
  const context=(document as Document&{modelContext?:{registerTool:(tool:Tool,options:{signal:AbortSignal})=>void|Promise<void>}}).modelContext;
  if(!context?.registerTool)return;const lifecycle=new AbortController();
- for(const tool of atlasTools(atlas,inspect)){try{void Promise.resolve(context.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{/* Optional browser capability; the visible UI remains available. */}}
+ for(const tool of atlasTools(atlas,inspect,actions)){try{void Promise.resolve(context.registerTool(tool,{signal:lifecycle.signal})).catch(()=>{});}catch{/* Optional browser capability; the visible UI remains available. */}}
  return()=>lifecycle.abort();
 }

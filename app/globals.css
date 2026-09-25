@@ -243,8 +243,10 @@ button,input,select,textarea{font-family:inherit}
 .hierarchy-tabs{display:flex;flex:1;gap:3px;padding:3px;border:1px solid var(--border);border-radius:9px;background:var(--secondary)}
 .hierarchy-tabs button{flex:1;min-width:0;padding:6px 4px;border-radius:6px;color:var(--muted-foreground);font-size:12px;font-weight:600;line-height:1.2;text-align:center}
 .hierarchy-tabs button.active{background:var(--card);color:var(--foreground);box-shadow:0 1px 4px #18253614}
+.depth-row{min-height:36px}.depth-row .tree-label{min-height:34px}.depth-index{flex:none;width:20px;color:var(--muted-foreground);font-size:10px;font-variant-numeric:tabular-nums;font-weight:400}
+.depth-leaf .tree-label{min-height:31px}
 .system-tree{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;margin-top:10px;padding:0 5px 8px 0;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
-.tree-row{display:flex;align-items:center;gap:4px;min-height:31px;padding-left:calc(7px * var(--tree-depth));border-radius:6px}
+.tree-row{display:flex;align-items:center;gap:4px;min-height:31px;padding-left:calc(11px * var(--tree-depth));border-radius:6px}
 .tree-row:hover{background:var(--accent)}
 .tree-label{display:flex;align-items:center;gap:5px;flex:1;min-width:0;min-height:29px;padding:3px 2px;text-align:left;border:0;background:none;color:var(--foreground);font-size:11px;cursor:pointer}
 .tree-root .tree-label,.tree-system .tree-label{font-size:12px;font-weight:600}
@@ -260,3 +262,60 @@ button.tree-check{display:inline-flex;align-items:center;justify-content:center;
 button.tree-check[data-state=true],button.tree-check[data-state=mixed]{background:var(--primary);border-color:var(--primary);color:var(--primary-foreground)}
 button.tree-check[data-state=mixed]{opacity:.7}
 @media(max-width:767px){.tree-row{min-height:38px}.tree-label{min-height:36px;font-size:12px}.tree-root .tree-label,.tree-system .tree-label{font-size:13px}button.tree-check{width:20px;height:20px}}
+
+/* Keep the viewer capsules five pixels from the edges and from one another. */
+@media(min-width:768px) and (min-height:601px){
+ .studio:not(.embedded){--viewer-sidebar-width:254px}
+ .studio:not(.embedded) .identity{top:5px;left:5px}
+ .studio:not(.embedded) .anatomy-choice [data-slot=select-trigger]{min-height:44px}
+ .studio:not(.embedded) .top-actions{top:5px;right:5px;gap:5px}
+ .studio:not(.embedded) .layers-panel,.studio:not(.embedded) .study-panel{top:54px;bottom:94px;left:5px;max-height:none}
+ .studio:not(.embedded) .layers-panel{width:var(--viewer-sidebar-width)}
+ .studio:not(.embedded) .bottom-dock{left:5px;bottom:5px;width:var(--viewer-sidebar-width);height:84px}
+ .studio:not(.embedded) .search-panel,.studio:not(.embedded) .share-view{top:54px;right:5px}
+ body:has(.studio:not(.embedded)) .detail-sheet{top:54px!important;right:5px!important;bottom:5px!important}
+}
+@media(min-width:768px) and (max-width:1000px) and (min-height:601px){.studio:not(.embedded){--viewer-sidebar-width:222px}}
+@media(max-width:767px){
+ .studio:not(.embedded) .identity{left:5px;top:max(5px,env(safe-area-inset-top))}
+ .studio:not(.embedded) .top-actions{right:5px;top:max(5px,env(safe-area-inset-top));gap:5px}
+ .studio:not(.embedded) .anatomy-choice [data-slot=select-trigger]{max-width:calc(100vw - 190px)}
+ .studio:not(.embedded) .search-panel,.studio:not(.embedded) .share-view{left:5px;right:5px;width:auto}
+}
+@media(max-width:767px) and (orientation:portrait){
+ .studio:not(.embedded) .bottom-dock{left:5px;bottom:calc(5px + env(safe-area-inset-bottom));width:calc(100% - 10px);height:84px}
+ .studio:not(.embedded) .layers-panel.mobile-open{left:5px;right:5px;bottom:calc(94px + env(safe-area-inset-bottom))}
+ .studio:not(.embedded) .search-panel,.studio:not(.embedded) .share-view{top:54px}
+ body:has(.studio:not(.embedded)) .detail-sheet{left:5px!important;right:5px!important;bottom:calc(94px + env(safe-area-inset-bottom))!important;width:auto!important}
+}
+@media(max-width:767px) and (orientation:landscape){
+ .studio:not(.embedded) .bottom-dock{left:5px;bottom:5px}
+ .studio:not(.embedded) .layers-panel.mobile-open{left:5px}
+ body:has(.studio:not(.embedded)) .detail-sheet{right:5px!important}
+}
+
+/* Model, Layers, and Reset share one capsule; Explode uses the full dock width. */
+.anatomy-choice{display:flex;align-items:center;width:254px;max-width:calc(100vw - 10px);height:44px;border:1px solid var(--border);border-radius:10px;background:var(--card);overflow:hidden}
+.anatomy-choice [data-slot=select-trigger],.studio:not(.embedded) .anatomy-choice [data-slot=select-trigger]{flex:1;width:0;min-width:0;max-width:none;min-height:42px;height:42px;border:0!important;border-radius:0;box-shadow:none;background:transparent!important;padding-inline:10px 7px}
+.anatomy-choice [data-slot=select-value]{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.anatomy-choice button.model-action{display:flex;align-items:center;justify-content:center;flex:none;width:44px;height:42px;border-left:1px solid var(--border);color:var(--muted-foreground)}
+.anatomy-choice button.model-action:hover,.anatomy-choice button.model-action[aria-expanded=true]{background:var(--accent);color:var(--foreground)}
+.bottom-dock{padding:10px 14px}.explode-label{margin-bottom:3px}.explode-slider-row{position:relative;display:block}.explode-control [data-slot=slider]{width:100%;padding:7px 0}
+.explode-ticks{position:relative;width:calc(100% - 16px);height:8px;margin:2px 8px 0;pointer-events:none}
+.explode-ticks span{position:absolute;top:0;width:1.5px;height:6px;transform:translateX(-50%);border-radius:1px;background:var(--muted-foreground);opacity:.65}
+.explode-ticks span:first-child,.explode-ticks span:last-child{height:8px;opacity:.9}
+.anatomy-labels .explosion-group-label rect{fill:var(--card);stroke:var(--border);stroke-width:1;opacity:.95}
+.anatomy-labels .explosion-group-label text{font:500 10px 'Helvetica Neue',Arial,sans-serif;fill:var(--foreground);stroke:none}
+@media(min-width:768px) and (min-height:601px){
+ .layers-panel.is-hidden{display:none}
+ .studio:not(.embedded) .anatomy-choice{width:var(--viewer-sidebar-width)}
+ .studio:not(.embedded) .bottom-dock{width:var(--viewer-sidebar-width);padding:10px 14px}
+}
+@media(max-width:767px){
+ .studio:not(.embedded) .identity{right:5px}
+ .studio:not(.embedded) .anatomy-choice{width:100%}
+ .studio:not(.embedded) .top-actions{top:54px}
+ .studio:not(.embedded) .search-panel,.studio:not(.embedded) .share-view{top:104px}
+ .anatomy-choice button.model-action{width:42px}
+ .anatomy-labels .explosion-group-label text{font-size:9px}
+}

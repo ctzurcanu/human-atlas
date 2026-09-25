@@ -21,7 +21,7 @@ export function localDescription(name:string,part:Part|undefined,path:AnatomyPat
  if(specific)return {text:specific};
  const subject=clean(name),kind=part?KIND[part.system]??'an anatomical structure':'an anatomical structure';
  const side=/\((left|right)\)$/i.exec(structureName(name))?.[1]?.toLowerCase();
- const groups=path.slice(2,-1).map(node=>node.label);
+ const groups=path.slice(2).map(node=>node.label);
  const region=groups.find(group=>/^(?:left|right) (?:upper|lower) limb$/i.test(group))??groups.find(group=>REGION.test(group));
  const parent=[...groups].reverse().find(group=>group.toLowerCase()!==subject.toLowerCase()&&!REGION.test(group));
  const subjectLabel=side?`${subject} on the ${side}`:subject;

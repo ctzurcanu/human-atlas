@@ -1,6 +1,6 @@
 # Human Atlas
 
-An interactive 3D anatomy explorer built with React, Three.js, and shadcn/ui. The default **Male · detailed** reference is built directly from Z-Anatomy and Open 3D Model publisher files: **4,405 selectable surfaces**, **3,801 named concepts**, and **5,764,617 triangles**. The standard BodyParts3D male and female references are also available.
+An interactive 3D anatomy explorer built with React, Three.js, and shadcn/ui. The default **Male · detailed** reference combines Z-Anatomy, Open 3D Model, and targeted BodyParts3D publisher geometry: **5,310 selectable surfaces**, **4,749 named concepts**, and **10,504,297 triangles**. The standard BodyParts3D male and partial female references are also available.
 
 **[Explore the live demo](https://ctzurcanu.github.io/human-atlas/)**
 
@@ -114,7 +114,9 @@ Human Atlas includes a local stdio MCP server. It searches the packaged anatomy 
 }
 ```
 
-The server provides `search_anatomy` for names and IDs and `show_anatomy` for an interactive view. For example, call `show_anatomy` with `{"structure":"Stomach","model":"male-detail","controls":["systems","open"]}` to show Systems without Explode. Omit `controls` for the default interface, or pass `[]` for a bare viewer. To select a precise side or variant, use the ID returned by `search_anatomy`, such as `ZA:Sternocostal head of pectoralis major muscle.l`. The view tool returns a deployed URL and copyable iframe code. MCP Apps-capable clients can display the interactive viewer inline; other clients can open the URL or use the iframe HTML. The MCP process runs locally; GitHub Pages hosts the viewer only.
+The server provides `get_anatomy_options` for valid model, system, depth, region, and control IDs; `search_anatomy` for names and IDs; and `show_anatomy` for an interactive view. For example, `{"structure":"Stomach","model":"male-detail","hierarchy":"depth","depthHidden":["skin"],"explode":0.5,"controls":["systems","explode","open"]}` selects the stomach in Depth and opens the hierarchy halfway. Omit `structure` to show the whole model, or pass `structures` to select several concepts. The view tool can also set visible systems, hidden pieces, region, camera, labels, skin opacity, isolation, and a cross-section. It returns a deployed URL and copyable iframe code. MCP Apps-capable clients can display the interactive viewer inline; other clients can open the URL or use the iframe HTML. The MCP process runs locally; GitHub Pages hosts the viewer only.
+
+In browsers that support WebMCP, the open viewer also exposes `get_anatomy_view`, `set_anatomy_view`, `act_on_anatomy_view`, and tools to list, save, open, or delete browser-local views. These live tools can change the current selection, Systems/Regions/Depth tab, visible systems and depth layers, hidden pieces, Explode, cuts, camera, opacity, labels, isolation, and rotation. Actions include undo, redo, reset, focus, hiding or clearing the selection, and PNG download. Browser-local saved views and PNG capture require the open browser; the standalone MCP server only generates shareable views.
 
 Run `npm run test:mcp` to verify tool calls, URL selection, and the UI resource.
 
@@ -136,7 +138,7 @@ The interface and 3D stage follow the operating system’s light/dark preference
 
 Open **Study** to choose body regions and camera directions, keep multiple structures solid against adjustable transparent context, peel system layers, or move axial/sagittal/coronal clipping planes. **Add to selection set** works in search; Shift-click adds meshes directly. **Focus selection** zooms in while retaining context. **Isolate selection set** removes all context. Undo/redo covers dissection and selection changes; continuous slider changes are grouped. Selected pieces survive broad layer peeling, but remain subject to cross-sections.
 
-Labels attach to actual triangle centroids, moving with the model. Dashed leaders and “behind” identify anchors obscured by selected geometry. Up to 20 labels are drawn simultaneously; every selected item remains listed in Study. Cuts expose open mesh boundaries without synthesizing tissue interiors. Regional filtering uses source memberships where provided and spatial bounds for older datasets. The whole-body surface is hidden in regional views.
+Labels attach to actual triangle centroids, moving with the model. Up to 20 labels are drawn simultaneously; every selected item remains listed in Study. Cuts expose open mesh boundaries without synthesizing tissue interiors. Regional filtering uses source memberships where provided and spatial bounds for older datasets. The whole-body surface is hidden in regional views.
 
 The platform and floor have been removed. Zoom is cursor-centered, supports close inspection, and limits zoom-out relative to the current fitted view.
 

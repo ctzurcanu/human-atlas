@@ -25,5 +25,5 @@ export function presetLayers(preset:LayerPreset,available:SystemId[]):SystemId[]
 
 export function applyLayerPreset(state:SceneState,preset:LayerPreset,available:SystemId[]):SceneState{
  return {...state,visible:presetLayers(preset,available),skinOpacity:preset==='skin'?1:preset==='all'?.1:0,
-  selected:[],isolate:false,contextOpacity:1,peel:0,explode:0,rotate:false,camera:undefined};
+  selected:[],isolate:false,contextOpacity:1,peel:0,depthHidden:[],explode:0,rotate:false,camera:undefined};
 }

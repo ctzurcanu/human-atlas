@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {Client} from '@modelcontextprotocol/sdk/client/index.js';
 import {InMemoryTransport} from '@modelcontextprotocol/sdk/inMemory.js';
-import {anatomyView, catalogue, resolveAnatomy} from './atlas-data.mjs';
+import {build} from 'esbuild';
+import {anatomyView, catalogue, DEPTH_LAYERS, resolveAnatomy} from './atlas-data.mjs';
 import {createServer} from './server.mjs';
 
 test('the requested structure becomes a selected, focused embed', () => {
@@ -94,6 +95,45 @@ test('exact IDs choose the requested side and bilateral names choose both', () =
   assert.throws(() => resolveAnatomy('not a modeled structure'), /No modeled structure matches/);
 });
 
+test('MCP views cover the shareable viewer settings and whole models', () => {
+  const whole=new URL(anatomyView({model:'female',hierarchy:'depth',depthHidden:['skin'],explode:.5,region:'lower-left',view:'back',skinOpacity:.35,labels:false,section:{axis:'sagittal',position:.4,flip:true},camera:[1,2,3,0,1,0],controls:['systems','explode','study']}).url);
+  assert.deepEqual(whole.searchParams.getAll('select'),[]);
+  for(const [key,value] of Object.entries({tree:'depth',depth:'skin',explode:'0.5',region:'lower-left',view:'back',skin:'0.35',labels:'0',cut:'sagittal',slice:'0.4',flip:'1',camera:'1,2,3,0,1,0',ui:'systems,explode,study'}))assert.equal(whole.searchParams.get(key),value,key);
+  assert.equal(new URL(anatomyView({rotate:true}).url).searchParams.get('rotate'),'1');
+  assert.throws(()=>anatomyView({rotate:true,explode:.5}),/Auto rotation/);
+  const selected=anatomyView({structures:['Stomach','Pancreas'],hidden:['ZA:Liver'],systems:['digestive'],isolate:true,context:.2,focus:false});
+  const url=new URL(selected.url);
+  assert.deepEqual(url.searchParams.getAll('select'),['ZA:Stomach','ZA:Pancreas']);
+  assert.ok(url.searchParams.getAll('hide').length>0);
+  assert.equal(url.searchParams.get('layers'),'digestive');
+  assert.equal(url.searchParams.get('isolate'),'1');
+  assert.equal(url.searchParams.has('focus'),false);
+  assert.equal(selected.selectedPieces.length,2);
+  assert.equal(new URL(anatomyView({model:'embryo',hierarchy:'depth',depthHidden:['skin']}).url).searchParams.get('depth'),'skin');
+  assert.throws(()=>anatomyView({model:'cell',hierarchy:'depth'}),/hierarchy/);
+  assert.throws(()=>anatomyView({depthHidden:['missing']}),/depth layer/);
+  assert.throws(()=>anatomyView({systems:['missing']}),/system/);
+  assert.throws(()=>anatomyView({isolate:true}),/Isolation/);
+});
+
+test('browser WebMCP exposes live view and saved view operations',async()=>{
+  const bundle=await build({entryPoints:['app/agent-tools.ts','app/depth-layers.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/agent-tools-test'});
+  const load=async suffix=>import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles.find(file=>file.path.endsWith(suffix)).text).toString('base64')}`);
+  const {atlasTools}=await load('agent-tools.js'),{DEPTH_LAYERS:browserLayers}=await load('depth-layers.js');
+  assert.deepEqual(DEPTH_LAYERS,browserLayers.map(layer=>layer.id));
+  const calls=[];
+  const actions={snapshot:()=>({model:'male-detail',hierarchy:'depth'}),update:change=>{calls.push(change);return change;},command:action=>{calls.push(action);return {action};},url:()=> 'http://localhost:3016/'};
+  const tools=atlasTools(catalogue('male-detail'),()=>{},actions),byName=name=>tools.find(tool=>tool.name===name);
+  assert.deepEqual(tools.map(tool=>tool.name),['find_anatomy','inspect_anatomical_structure','get_anatomy_view','set_anatomy_view','act_on_anatomy_view','list_saved_anatomy_views','save_anatomy_view','open_saved_anatomy_view','delete_saved_anatomy_view']);
+  assert.deepEqual(byName('get_anatomy_view').execute({}),{model:'male-detail',hierarchy:'depth'});
+  byName('set_anatomy_view').execute({hierarchy:'depth',structures:['Stomach'],depthHidden:['skin'],explode:.5,section:{axis:'coronal',position:.3,flip:true}});
+  assert.deepEqual(calls[0],{hierarchy:'depth',structures:['Stomach'],depthHidden:['skin'],explode:.5,section:{axis:'coronal',position:.3,flip:true}});
+  assert.throws(()=>byName('set_anatomy_view').execute({depthHidden:['missing']}),/depth layer/);
+  assert.throws(()=>byName('set_anatomy_view').execute({model:'female',explode:.2}),/separate call/);
+  byName('act_on_anatomy_view').execute({action:'reset'});
+  assert.equal(calls[1],'reset');
+});
+
 test('MCP discovery, tool call, and UI resource work together', async () => {
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
   const server = createServer();
@@ -101,10 +141,12 @@ test('MCP discovery, tool call, and UI resource work together', async () => {
   await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
   try {
     const tools = (await client.listTools()).tools;
-    assert.deepEqual(tools.map(tool => tool.name), ['search_anatomy', 'show_anatomy']);
+    assert.deepEqual(tools.map(tool => tool.name), ['get_anatomy_options','search_anatomy', 'show_anatomy']);
     assert.equal(tools.find(tool => tool.name === 'show_anatomy')._meta.ui.resourceUri, 'ui://human-atlas/anatomy-view');
     const found = await client.callTool({name: 'search_anatomy', arguments: {query: 'stomach'}});
     assert.equal(found.structuredContent.matches[0].id, 'ZA:Stomach');
+    const options = await client.callTool({name: 'get_anatomy_options', arguments: {model: 'female'}});
+    assert.ok(options.structuredContent.depthLayers.includes('superficial-muscles'));
     const shown = await client.callTool({name: 'show_anatomy', arguments: {structure: 'Stomach'}});
     assert.equal(shown.isError, undefined);
     assert.equal(new URL(shown.structuredContent.url).searchParams.get('select'), 'ZA:Stomach');

@@ -8,7 +8,7 @@ assert.deepEqual(selectionCenter(parts,['left'],offsets).toArray(),[12,3,4]);
 assert.deepEqual(selectionCenter(parts,['left','right'],offsets).toArray(),[5,5,2.5]);
 assert.equal(selectionCenter(parts,[],offsets),null);
 // Exercise the installed camera controller against a synthetic event target.
-const listeners=new Map();const element={style:{},clientWidth:1000,clientHeight:800,addEventListener:(n,f)=>listeners.set(n,f),removeEventListener:()=>{},getBoundingClientRect:()=>({left:0,top:0,width:1000,height:800})};
+const listeners=new Map();const ownerDocument={addEventListener:()=>{},removeEventListener:()=>{}};const element={style:{},ownerDocument,getRootNode:()=>ownerDocument,clientWidth:1000,clientHeight:800,addEventListener:(n,f)=>listeners.set(n,f),removeEventListener:()=>{},getBoundingClientRect:()=>({left:0,top:0,width:1000,height:800})};
 const camera=new PerspectiveCamera(34,1.25,.005,100);camera.position.set(0,0,4);const controls=new OrbitControls(camera,element);controls.zoomToCursor=true;controls.update();
 const pointer=new Vector2(.4,.2),ray=new Raycaster();ray.setFromCamera(pointer,camera);const point=new Vector3();ray.ray.intersectPlane(new Plane(new Vector3(0,0,1),0),point);
 const before=point.clone().project(camera),oldZ=camera.position.z;
