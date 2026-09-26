@@ -20,6 +20,17 @@ export function inRegion(p:Part,region='all'){
  const x=(p.bounds[0][0]+p.bounds[1][0])/2,y=(p.bounds[0][1]+p.bounds[1][1])/2;
  return region==='head-neck'?y>1.35:region==='torso'?y>=.75&&y<=1.4&&Math.abs(x)<.23:region.startsWith('upper')?y>.7&&Math.abs(x)>.18&&(region.endsWith('left')?x>0:x<0):y<.85&&(region.endsWith('left')?x>0:x<0);
 }
+function inSectionRegion(p:Part,region='all'){
+ if(inRegion(p,region))return true;
+ // A regional cut must include a neighboring structure where its actual
+ // geometry enters the cut volume (for example gluteal muscle above the hip).
+ // Source chapter tags alone omit that tissue and leave a false empty space.
+ if(region==='torso'&&!isSkinPart(p)&&p.regions?.some(item=>item.startsWith('lower-'))){
+  const [min,max]=p.bounds;
+  return min[0]<=.23&&max[0]>=-.23&&min[1]<=1.4&&max[1]>=.75&&min[2]<=.17&&max[2]>=-.17;
+ }
+ return false;
+}
 export function partVisible(p:Part,s:SceneState){
  if(p.suppressed)return false;
  const sets=visibilitySets(s);
@@ -37,7 +48,10 @@ export function sectionPartVisible(p:Part,s:SceneState){
  const sets=visibilitySets(s);
  if(p.suppressed)return false;
  if(s.isolate)return sets.selected.has(p.id);
- return sets.visible.has(p.system)&&!sets.hidden.has(p.id)&&!sets.depthHidden.has(depthLayerFor(p))&&inRegion(p,s.region)&&(!isSkinPart(p)||(s.skinOpacity??.1)>0);
+ // A single whole-body skin mesh is still one checked item in a section.
+ // Excluding it by region made 100% skin appear absent in every regional cut.
+ const wholeSkin=isSkinPart(p)&&/^(skin(?: of body)?|body surface)$/i.test(p.name)&&!p.regions?.length;
+ return sets.visible.has(p.system)&&!sets.hidden.has(p.id)&&!sets.depthHidden.has(depthLayerFor(p))&&(inSectionRegion(p,s.region)||wholeSkin)&&(!isSkinPart(p)||(s.skinOpacity??.1)>0);
 }
 export function resolveSelection(atlas:Atlas,terms:string[]){
  return [...new Set(terms.flatMap(term=>{

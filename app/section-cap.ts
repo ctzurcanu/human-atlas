@@ -17,10 +17,12 @@ export function sectionCapGeometry(source:T.BufferGeometry,worldPlane:T.Plane,ma
  const origin=normal.clone().multiplyScalar(-worldPlane.constant);
  const u=new T.Vector3().crossVectors(Math.abs(normal.y)>.9?new T.Vector3(0,0,1):new T.Vector3(0,1,0),normal).normalize();
  const v=new T.Vector3().crossVectors(normal,u).normalize();
- const nodes:Node[]=[],edges:Edge[]=[],nodeIds=new Map<string,number>();
- const quant=1e-4;
+ const nodes:Node[]=[],edges:Edge[]=[],nodeIds=new Map<string,number>(),edgeIds=new Set<string>();
+ const box=source.boundingBox??(source.computeBoundingBox(),source.boundingBox!);
+ const size=box.getSize(new T.Vector3()).length();
+ const quant=Math.max(1e-5,Math.min(1e-4,size*2e-5));
  const node=(p:Point)=>{const key=Math.round(p[0]/quant)+','+Math.round(p[1]/quant);let id=nodeIds.get(key);if(id===undefined){id=nodes.length;nodeIds.set(key,id);nodes.push({point:p,edges:[]});}return id;};
- const add=(p:Point,q:Point)=>{const a=node(p),b=node(q);if(a===b)return;const id=edges.length;edges.push({a,b,used:false});nodes[a].edges.push(id);nodes[b].edges.push(id);};
+ const add=(p:Point,q:Point)=>{const a=node(p),b=node(q);if(a===b)return;const key=a<b?`${a},${b}`:`${b},${a}`;if(edgeIds.has(key))return;edgeIds.add(key);const id=edges.length;edges.push({a,b,used:false});nodes[a].edges.push(id);nodes[b].edges.push(id);};
  const project=(p:T.Vector3):Point=>{p.applyMatrix4(matrix).sub(origin);return [p.dot(u),p.dot(v)];};
  const crossing=(a:number,b:number,da:number,db:number,out:Point[])=>{
   if(da*db>0||Math.abs(da)<1e-9&&Math.abs(db)<1e-9)return;

@@ -2,6 +2,7 @@ import {structureName,type Atlas,type SceneState} from './anatomy';
 import {REGIONS,REGION_NAMES,VIEWS} from './viewer-state';
 import {Slider} from '@/components/ui/slider';
 import {Button} from '@/components/ui/button';
+import {enabledSections} from './section-stack';
 interface Props{atlas:Atlas;state:SceneState;setState:(f:(s:SceneState)=>SceneState)=>void;close:()=>void;undo:()=>void;redo:()=>void;canUndo:boolean;canRedo:boolean;add:boolean;setAdd:(v:boolean)=>void;search:()=>void}
 export default function StudyTools({atlas,state:s,setState,close,undo,redo,canUndo,canRedo,add,setAdd,search}:Props){
  const cell=atlas.scope==='cell';
@@ -13,6 +14,6 @@ export default function StudyTools({atlas,state:s,setState,close,undo,redo,canUn
  {s.selected.length>20&&<p>20 labels are displayed at a time. Remove items to label the rest.</p>}
  <Button variant="outline" disabled={!s.selected.length} onClick={()=>setState(v=>({...v,focus:(v.focus??0)+1,camera:undefined}))}>Focus selection</Button><Button variant="outline" disabled={!s.selected.length} onClick={()=>setState(v=>({...v,isolate:!v.isolate,explode:0}))}>{s.isolate?'Restore context':'Isolate selection set'}</Button>
  <Button variant="ghost" disabled={!s.selected.length} onClick={()=>setState(v=>({...v,hidden:[...new Set([...(v.hidden??[]),...v.selected])],selected:[],isolate:false}))}>Hide selected pieces</Button>
- <label id="context-label">Surrounding {cell?'components':'tissue'} opacity · {Math.round((s.contextOpacity??1)*100)}%</label><Slider aria-labelledby="context-label" disabled={!s.selected.length} value={[(s.contextOpacity??1)*100]} onValueChange={v=>setState(s=>({...s,isolate:false,contextOpacity:(Array.isArray(v)?v[0]:v)/100}))}/><p>Selected {cell?'components':'anatomy'} stay solid. Hidden layers stay hidden.</p></fieldset>
+ {!enabledSections(s).length&&<><label id="context-label">Surrounding {cell?'components':'tissue'} opacity · {Math.round((s.contextOpacity??1)*100)}%</label><Slider aria-labelledby="context-label" disabled={!s.selected.length} value={[(s.contextOpacity??1)*100]} onValueChange={v=>setState(s=>({...s,isolate:false,contextOpacity:(Array.isArray(v)?v[0]:v)/100}))}/><p>Selected {cell?'components':'anatomy'} stay solid. Hidden layers stay hidden.</p></>}</fieldset>
  </div></section>;
 }

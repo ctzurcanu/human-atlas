@@ -60,6 +60,16 @@ const suppressed=new Set([
 ]);
 const licenseFor=name=>/^Kidney\.[lr]$/i.test(name)?'CC BY-NC 4.0':/^(Cochlea|Vestibule)\.[lr]$/i.test(name)?'CC BY-NC-SA 4.0':'CC BY-SA 4.0';
 function systemFor(name,material,matched){
+ // Publisher material names and the older atlas taxonomy sometimes describe
+ // the rendering pass or neighboring muscle instead of the actual structure.
+ // Anatomical nouns take precedence for the physical pieces; the .or/.ol
+ // origin markers remain annotations even when their label mentions a tendon.
+ const attachmentMarker=/\.(?:[oei]\d*[lr])$/i.test(name);
+ if(!attachmentMarker){
+  if(/\bfascia\b/i.test(name)&&!/tensor fasciae latae/i.test(name))return 'fascia';
+  if(/\b(?:bursa|bursae|iliopectineal arch|retinaculum|aponeurosis|tendon|tendinous|ligament)\b/i.test(name)&&!/\bnode of\b/i.test(name))return 'connective';
+  if(/\bmuscle\b/i.test(name)&&!/\b(?:nerve|artery|vein|node|branch)\b/i.test(name))return 'muscular';
+ }
  if(/^overlays?(?:\.\d+)?$/i.test(material))return 'attachments';
  if(matched)return matched.system;
  const text=`${name} ${material}`.toLowerCase();
@@ -227,8 +237,9 @@ for(const [stem,version,expectedSha=version] of files){
   // An explicit glTF baseColorFactor is part of the publisher's material,
   // including on untextured organs. The old importer silently replaced it
   // with the unrelated Z-Anatomy palette, washing out lungs and viscera.
-  const record={color:pbr.baseColorFactor?factor.slice(0,3).map(srgb):fallbackColor,roughness:pbr.roughnessFactor??1,metalness:pbr.metallicFactor??0};
-  if(m.alphaMode==='BLEND')record.opacity=factor[3];
+  const untexturedMuscle=system==='muscular'&&!pbr.baseColorTexture;
+  const record={color:untexturedMuscle?palette.muscular:pbr.baseColorFactor?factor.slice(0,3).map(srgb):fallbackColor,roughness:pbr.roughnessFactor??1,metalness:pbr.metallicFactor??0};
+  if(m.alphaMode==='BLEND'&&!untexturedMuscle)record.opacity=factor[3];
   if(pbr.baseColorTexture){const t=doc.textures[pbr.baseColorTexture.index];record.map=await imagePath(t.source);}
   if(m.normalTexture){const t=doc.textures[m.normalTexture.index];record.normalMap=await imagePath(t.source);record.normalScale=m.normalTexture.scale??1;}
   materials[key]=record;return key;
@@ -282,6 +293,11 @@ for(const [stem,version,expectedSha=version] of files){
      for(let v=0;v<vertexCount;v++)for(let axis=0;axis<3;axis++)colors[v*3+axis]=Math.round(Math.max(0,Math.min(1,sourceColors[v*width+axis]))*255);
      materials[materialId].vertexColors=true;
     }
+    // A few publisher ligament primitives assign an image but supply no UVs.
+    // Preserve their geometry and base color while avoiding undefined texture
+    // sampling; the audit reports these separately if a future import regresses.
+    const displayMaterialId=!uvs&&(materials[materialId].map||materials[materialId].normalMap)?`${materialId}:no-uv`:materialId;
+    if(displayMaterialId!==materialId)materials[displayMaterialId]={...materials[materialId],map:undefined,normalMap:undefined};
     let variants=[{region:null,indices,bounds}];
     // The reference viewer isolates regions of its derived outer surface.
     // Keep the original triangles and normals, but put them in regional pieces
@@ -305,7 +321,7 @@ for(const [stem,version,expectedSha=version] of files){
     for(const variant of variants){
      if(byteLength>5_000_000)await flush();
      const id=`REF:${stem}:${index}:${pi}${variant.region?`:${variant.region}`:''}`;
-     const part={id,conceptId,name:variant.region?`${display} · ${variant.region}`:mesh.primitives.length===1?display:`${display} · ${material.name??`surface ${pi+1}`}`,system,chunk:chunks.length,positions:append(positions),normals:append(normals),indices:append(variant.indices),vertexCount,indexCount:variant.indices.length,bounds:variant.bounds,material:materialId,sourceId:raw,suppressed:suppressed.has(raw),license:licenseFor(raw),provenance:{label:'Anatomy Atlas adapted anatomy',url:`${origin}/NOTICE.md`,detail:`${stem}.glb; ${licenseFor(raw)}; source object ${raw}${spinalCordTissues.has(raw)?'; fitted to the spinal dura centerline':''}.`}};
+     const part={id,conceptId,name:variant.region?`${display} · ${variant.region}`:mesh.primitives.length===1?display:`${display} · ${material.name??`surface ${pi+1}`}`,system,chunk:chunks.length,positions:append(positions),normals:append(normals),indices:append(variant.indices),vertexCount,indexCount:variant.indices.length,bounds:variant.bounds,material:displayMaterialId,sourceId:raw,suppressed:suppressed.has(raw),license:licenseFor(raw),provenance:{label:'Anatomy Atlas adapted anatomy',url:`${origin}/NOTICE.md`,detail:`${stem}.glb; ${licenseFor(raw)}; source object ${raw}${spinalCordTissues.has(raw)?'; fitted to the spinal dura centerline':''}.`}};
      if(uvs)part.uvs=append(uvs);if(colors)part.colors=append(colors);
      if(matched){if(matched.groups)part.groups=matched.groups;if(matched.depth!==undefined)part.depth=matched.depth;}
      part.regions=variant.region?[variant.region]:regionsFor(stem,variant.bounds,raw,matched);

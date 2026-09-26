@@ -2,6 +2,7 @@ import {useEffect,useState,type RefObject} from 'react';
 import {Crosshair,ExternalLink,EyeOff,Focus} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Slider} from '@/components/ui/slider';
+import {enabledSections} from './section-stack';
 import {SheetDescription,SheetTitle} from '@/components/ui/sheet';
 import {SYSTEMS,explanation,structureName,surfaceRole,type Part,type SceneState} from './anatomy';
 import {anatomyPath} from './anatomy-path';
@@ -61,11 +62,11 @@ export default function SelectionInspector({titleRef,choice,selectedParts,partBy
   <div className="detail-scroll" key={choice.id}>
    <nav className="structure-breadcrumbs" aria-label="Anatomical path">{path.map((node,index)=><span className="breadcrumb-step" key={`${index}:${node.label}`}>{index>0&&<span className="breadcrumb-separator" aria-hidden="true">›</span>}<a href={index===0?`https://en.wikipedia.org/wiki/${node.search}`:wikipediaSearch(node.search)} target="_blank" rel="noopener noreferrer" title={`Search Wikipedia for ${node.label}`}>{node.label}</a></span>)}</nav>
    {tags.length>0&&<div className="structure-tags">{tags.map(tag=><span className="structure-tag" key={tag}>{tag}</span>)}</div>}
-   <section className="inspection-section" aria-label={cell?'Surrounding components':'Surrounding anatomy'}>
+   {!enabledSections(state).length&&<section className="inspection-section" aria-label={cell?'Surrounding components':'Surrounding anatomy'}>
     <div className="inspection-heading"><strong>{cell?'Surrounding components':'Surrounding anatomy'}</strong><output>{context}%</output></div>
     <Slider aria-label={cell?'Surrounding components opacity':'Surrounding anatomy opacity'} min={0} max={100} step={1} value={[context]} onValueChange={value=>onOpacity(sliderValue(value))}/>
     <div className="inspection-range"><span>Selection only</span><span>{cell?'Full cell':'Full anatomy'}</span></div>
-   </section>
+   </section>}
    <section className="inspection-section" aria-label={cell?'Covering components':'Covering tissue'}>
     <div className="inspection-heading"><strong>{cell?'Covering components':'Covering tissue'}</strong></div>
     <div className="inspection-subheading"><span>Peel depth</span><output>{depth} / {covering.length}</output></div>

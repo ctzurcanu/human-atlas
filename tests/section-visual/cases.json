@@ -1,0 +1,12 @@
+[
+  {"id":"reference-axial","url":"?model=local-reference&region=torso&cut=axial&slice=0.70&flip=1&skin=1&view=superior&layers=integumentary,skeletal,muscular,arterial,venous,nervous,respiratory,digestive,connective"},
+  {"id":"reference-coronal","url":"?model=local-reference&region=torso&cut=coronal&slice=0.50&flip=1&skin=1&view=front&layers=integumentary,skeletal,muscular,arterial,venous,nervous,respiratory,digestive,connective"},
+  {"id":"reference-sagittal","url":"?model=local-reference&region=torso&cut=sagittal&slice=0.50&flip=1&skin=1&view=side&layers=integumentary,skeletal,muscular,arterial,venous,nervous,respiratory,digestive,connective"},
+  {"id":"reference-axial-turned","url":"?model=local-reference&region=torso&cut=axial&slice=0.70&flip=1&skin=1&view=three-quarter&layers=integumentary,skeletal,muscular,arterial,venous,nervous,respiratory,digestive,connective&camera=0.279405,1.502572,0.291785,-0.000595,1.052572,-0.008215,-0.009375,-0.045833"},
+  {"id":"reference-two-cuts","url":"?model=local-reference&region=torso&cut=axial&slice=0.70&flip=1&sections=2&cut2=sagittal&slice2=0.50&flip2=1&skin=1&view=three-quarter&layers=integumentary,skeletal,muscular,arterial,venous,nervous,respiratory,digestive,connective"},
+  {"id":"reference-skin-25","url":"?model=local-reference&region=torso&cut=axial&slice=0.70&flip=1&skin=0.25&view=superior&layers=integumentary,skeletal,muscular,arterial,venous,nervous,respiratory,digestive,connective"},
+  {"id":"reference-skin-25-turned","url":"?model=local-reference&region=torso&cut=axial&slice=0.70&flip=1&skin=0.25&view=three-quarter&layers=integumentary,skeletal,muscular,arterial,venous,nervous,respiratory,digestive,connective&camera=0.279405,1.502572,0.291785,-0.000595,1.052572,-0.008215,-0.009375,-0.045833"},
+  {"id":"male-full-axial","url":"?model=male-full&region=torso&cut=axial&slice=0.38&flip=1&skin=1&view=superior&layers=integumentary,skeletal,muscular,arterial,venous,nervous,respiratory,digestive"},
+  {"id":"female-axial","url":"?model=female&region=torso&cut=axial&slice=0.38&flip=1&skin=1&view=superior&layers=integumentary,skeletal,muscular,arterial,venous,nervous,respiratory,digestive"},
+  {"id":"local-male-axial","url":"?model=local-male&region=torso&cut=axial&slice=0.38&flip=1&skin=1&view=superior&layers=integumentary,skeletal,muscular,arterial,venous,nervous,respiratory,digestive"}
+]

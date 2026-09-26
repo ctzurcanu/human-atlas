@@ -13,14 +13,17 @@ import {selectionCenter} from './camera-pivot';
 import {PointerTap} from './pointer-tap';
 import {sectionDot,sectionFraction,sectionNormal,sectionPlaneEquation,sectionPoint,sectionRange,type Bounds3,type Point3} from './section-plane';
 import {sectionCapGeometry} from './section-cap';
+import {analyzeMeshTopology} from './mesh-topology';
 import {sectionCapProfile} from './section-cap-profile';
+import {sectionTissue} from './section-tissue';
+import {createStencilCaps} from './stencil-caps';
 import {sectionCapOpacity} from './section-opacity';
 import {sectionSetBounds} from './section-set';
 import {enabledSections} from './section-stack';
 import {SYSTEMS,structureName,type Atlas,type SceneState,type SystemId} from './anatomy';
 import {isSkinPart} from './depth-layers';
 interface Props {atlas:Atlas;state:SceneState;hierarchy:ExplodeHierarchy;guestHierarchy?:GuestHierarchy;sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onSelect:(id:string,add?:boolean)=>void;onCamera?:(camera:number[])=>void;onCovering?:(ids:string[])=>void;onExplosionSteps?:(steps:number)=>void;onCapture?:(capture:(()=>Promise<Blob>)|null)=>void;onProgress:(n:number)=>void;onError:(s:string)=>void}
-type SceneMaterial={color:number[];map?:string;normalMap?:string;normalScale?:number;roughness?:number;metalness?:number;opacity?:number;vertexColors?:boolean;proceduralMuscle?:boolean};
+type SceneMaterial={color:number[];map?:string;normalMap?:string;normalScale?:number;roughness?:number;metalness?:number;opacity?:number;vertexColors?:boolean};
 export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,sectionTool=false,onSectionPosition,onSelect,onCamera,onCovering,onExplosionSteps,onCapture,onProgress,onError}:Props){
  const guestNodes=useMemo(()=>guestHierarchy?resolveGuestHierarchy(atlas,guestHierarchy):undefined,[atlas,guestHierarchy]);
  const host=useRef<HTMLDivElement>(null),latest=useRef(state),hierarchyRef=useRef(hierarchy),guestNodesRef=useRef(guestNodes),guestKeyRef=useRef(''),sectionToolRef=useRef(sectionTool),sectionPositionRef=useRef(onSectionPosition),select=useRef(onSelect),cameraCallback=useRef(onCamera),coveringCallback=useRef(onCovering),stepsCallback=useRef(onExplosionSteps);
@@ -32,8 +35,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
   let renderer:T.WebGLRenderer;
   try{renderer=new T.WebGLRenderer({antialias:true,alpha:false,stencil:true,powerPreference:'high-performance'});}catch{onError('This browser could not start the 3D viewer. Please try a browser with WebGL enabled.');return;}
   const referenceModel=atlas.version==='Anatomy Atlas adapted GLB local import';
-  const stageInitialCut=referenceModel&&enabledSections(latest.current).length>0;
-  let stagedCapsReady=!stageInitialCut;
+  const pairedSkinPart=(part:typeof atlas.parts[number])=>referenceModel&&part.name.startsWith('Body surface (derived)')||atlas.version==='BodyParts3D 4.0'&&part.id==='FJ2810';
   renderer.setPixelRatio(Math.min(devicePixelRatio,innerWidth<768?1.5:2));renderer.setClearColor('#f2f3f3');renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=referenceModel ? .78 : .96;el.appendChild(renderer.domElement);
   renderer.domElement.setAttribute('aria-label',atlas.scope==='cell'?'Interactive human cell. Drag to orbit, pinch or scroll to zoom, and tap a component to inspect it.':'Interactive human anatomy. Drag to orbit, pinch or scroll to zoom, and tap a structure to inspect it.');
   const scene=new T.Scene(),camera=new T.PerspectiveCamera(34,1,.01,100),controls=new OrbitControls(camera,renderer.domElement);
@@ -128,18 +130,17 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
   };
   type InnerFace='skin'|'fascia'|'serosa';
   const innerFaceFor=(part:typeof atlas.parts[number]):InnerFace|undefined=>{
+   if(pairedSkinPart(part))return 'skin';
    if(!referenceModel)return;
-   // The derived mesh contains an outer and an inner shell. Topographic
-   // region overlays are exterior-only and must retain their source surface.
-   if(part.name.startsWith('Body surface (derived)'))return 'skin';
+   // Topographic overlays are exterior-only and retain their source surface.
    if(/\b(pleura|peritone\w*|pericardi\w*|omentum|mesenter\w*|mesocolon|serosa)\b/i.test(part.name))return 'serosa';
    if(part.system==='fascia'||/\b(fascia|aponeurosis|capsule|membrane)\b/i.test(part.name))return 'fascia';
   };
   const materialFor=(system:string,ghost=false,source?:SceneMaterial,skinSensitive=system==='integumentary'||system==='regions'||system==='cell-boundary',innerFace?:InnerFace)=>{
    const color=source?.color?`#${source.color.map(value=>Math.round(Math.max(0,Math.min(255,value))).toString(16).padStart(2,'0')).join('')}`:system==='tendon'?'#d6c8b0':system==='cartilage'?'#afc0cb':SYSTEMS.find(s=>s.id===system)?.color??'#aebbb8';
    const m=new T.MeshStandardMaterial({color,map:source?.map?textureFor(source.map):null,normalMap:source?.normalMap?textureFor(source.normalMap,true):null,normalScale:new T.Vector2(source?.normalScale??1,source?.normalScale??1),vertexColors:!!source?.vertexColors,metalness:referenceModel?Math.min(.08,source?.metalness??.02):source?.metalness??.02,roughness:referenceModel?Math.max(.63,source?.roughness??.76):source?.roughness??.76,side:T.DoubleSide,transparent:ghost,opacity:1,depthWrite:!ghost,clippingPlanes:clipPlanes});
-   if(innerFace&&!ghost)m.alphaHash=true;
-   m.customProgramCacheKey=()=>system+':'+ghost+':'+skinSensitive+':'+!!source?.proceduralMuscle+':'+innerFace;
+   const muscleSurface=system==='muscular'&&!source?.map;
+   m.customProgramCacheKey=()=>system+':'+ghost+':'+skinSensitive+':'+muscleSurface+':'+innerFace;
    m.onBeforeCompile=shader=>{
     shader.uniforms.contextOpacity=contextUniform;shader.uniforms.skinOpacity=skinUniform;shader.uniforms.partState={value:partTexture};shader.uniforms.selectionState={value:selectionTexture};shader.uniforms.rotationState={value:rotationTexture};shader.uniforms.stateWidth={value:width};shader.uniforms.selectionRotation=rotationUniform;shader.uniforms.selectionPivot=pivotUniform;
     shader.vertexShader='attribute float partIndex; uniform sampler2D partState; uniform sampler2D selectionState; uniform sampler2D rotationState; uniform float stateWidth; uniform vec4 selectionRotation; uniform vec3 selectionPivot; varying float partVisible; varying float partSelected; vec3 rotateSelected(vec3 v){return v+2.0*cross(selectionRotation.xyz,cross(selectionRotation.xyz,v)+selectionRotation.w*v);}\n'+shader.vertexShader;
@@ -149,7 +150,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
     shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif (partVisible < 0.5) discard;');
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
      float tissueAlpha = (partSelected > 0.5 ? 1.0 : contextOpacity) * ${skinSensitive?'skinOpacity':'1.0'} * ${(source?.opacity??1).toFixed(6)};
-     if (${ghost?'tissueAlpha >= 0.999 || tissueAlpha < 0.001':'tissueAlpha < 0.999'+(innerFace?' && sectionActive < 0.5':'')}) discard;
+     if (${ghost?'tissueAlpha >= 0.999 || tissueAlpha < 0.001':'tissueAlpha < 0.999'}) discard;
      diffuseColor.a = tissueAlpha;`);
     if(innerFace){
      shader.uniforms.sectionActive=sectionActiveUniform;
@@ -167,18 +168,17 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
        float fiber=innerFiber(p.zy*27.0)*w.x+innerFiber(p.xz*27.0)*w.y+innerFiber(p.xy*27.0)*w.z;
        ${innerFace==='skin'?'float lobe=smoothstep(.29,.51,cell);return mix(vec3(.71,.51,.47),vec3(.91,.73,.59),lobe)*(.96+.04*fiber);':innerFace==='fascia'?'return mix(vec3(.55,.48,.43),vec3(.83,.77,.67),fiber)*(.91+.09*cell);':'return mix(vec3(.62,.40,.38),vec3(.82,.64,.58),.65*cell+.35*fiber);'} }
      `+shader.fragmentShader;
-     if(ghost)shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif(sectionActive>0.5) discard;');
      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nif(sectionActive>0.5&&vInnerSide>0.5)diffuseColor.rgb=innerFaceColor(innerPosition,innerNormal);');
     }
     // Selection changes opacity only; tinting diffuseColor washes out source textures.
-    if(source?.proceduralMuscle){
-     shader.uniforms.muscleSurface={value:textureFor('/models/o3m-image-20.jpg')};
+    if(muscleSurface){
+     shader.uniforms.muscleSurface={value:textureFor('/models/muscle-surface-seamless.png')};
      shader.vertexShader='varying vec3 musclePosition; varying vec3 muscleNormal;\n'+shader.vertexShader;
      shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\nmuscleNormal=objectNormal;');
      shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nmusclePosition=position;');
      shader.fragmentShader=`uniform sampler2D muscleSurface;
       varying vec3 musclePosition; varying vec3 muscleNormal;
-      vec2 muscleUv(vec2 p){return vec2(.22)+vec2(.43,.48)*abs(fract(p*5.5)*2.0-1.0);}
+      vec2 muscleUv(vec2 p){return p*36.0;}
       vec3 muscleColor(){
        vec3 weight=pow(abs(normalize(muscleNormal)),vec3(4.0));weight/=max(weight.x+weight.y+weight.z,1e-5);
        return texture2D(muscleSurface,muscleUv(musclePosition.zy)).rgb*weight.x+
@@ -186,54 +186,76 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
         texture2D(muscleSurface,muscleUv(musclePosition.xy)).rgb*weight.z;
       }
      `+shader.fragmentShader;
-     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb*=mix(vec3(1.0),clamp(muscleColor()*1.65,vec3(.55),vec3(1.25)),.68);');
+     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb=mix(diffuseColor.rgb,muscleColor(),.83);');
     }
    };materials.push(m);return m;
   };
   const materialSpecs=new Map<string,{system:string;source?:SceneMaterial;skinSensitive?:boolean;innerFace?:InnerFace}>([...SYSTEMS.map(s=>s.id),'tendon','cartilage'].map(id=>[id,{system:id}]));
   materialSpecs.set('integumentary:internal',{system:'integumentary',skinSensitive:false});
+  if(atlas.version==='BodyParts3D 4.0')materialSpecs.set('integumentary:paired-skin',{system:'integumentary',skinSensitive:true,innerFace:'skin'});
+  const spleenColor:[number,number,number]=[203,168,94];
   for(const part of atlas.parts)if(part.material&&atlas.materials?.[part.material]){
    const source=atlas.materials[part.material];
    const internal=part.system==='integumentary'&&!isSkinPart(part);
    const innerFace=innerFaceFor(part);
-   materialSpecs.set(`source:${part.system}:${part.material}${internal?':internal':''}${innerFace?`:${innerFace}`:''}`,{system:part.system,skinSensitive:isSkinPart(part),innerFace,source:part.id.startsWith('ZA:')&&part.system==='muscular'&&!source.map?{...source,proceduralMuscle:true}:source});
+   const spleen=/^spleen(?:\s|$)/i.test(part.name);
+   materialSpecs.set(`source:${part.system}:${part.material}${internal?':internal':''}${innerFace?`:${innerFace}`:''}${spleen?':spleen':''}`,{system:part.system,skinSensitive:isSkinPart(part),innerFace,source:spleen?{...source,color:spleenColor,map:undefined,normalMap:undefined}:source});
   }
   const materialKeyFor=(part:typeof atlas.parts[number])=>{
    const innerFace=innerFaceFor(part);
-   return part.material&&atlas.materials?.[part.material]?`source:${part.system}:${part.material}${part.system==='integumentary'&&!isSkinPart(part)?':internal':''}${innerFace?`:${innerFace}`:''}`:part.tissue==='tendon'||part.tissue==='cartilage'?part.tissue:part.system==='integumentary'&&!isSkinPart(part)?'integumentary:internal':part.system;
+   const spleen=/^spleen(?:\s|$)/i.test(part.name);
+   if(pairedSkinPart(part)&&!part.material)return 'integumentary:paired-skin';
+   return part.material&&atlas.materials?.[part.material]?`source:${part.system}:${part.material}${part.system==='integumentary'&&!isSkinPart(part)?':internal':''}${innerFace?`:${innerFace}`:''}${spleen?':spleen':''}`:part.tissue==='tendon'||part.tissue==='cartilage'?part.tissue:part.system==='integumentary'&&!isSkinPart(part)?'integumentary:internal':part.system;
   };
   const mats=new Map([...materialSpecs].map(([key,{system,source,skinSensitive,innerFace}])=>[key,materialFor(system,false,source,skinSensitive,innerFace)])),ghostMats=new Map([...materialSpecs].map(([key,{system,source,skinSensitive,innerFace}])=>[key,materialFor(system,true,source,skinSensitive,innerFace)]));
-  // Tissue cut colors follow anatomy-atlas.brianp.chatgpt.site's CAPTISSUE palette. Its source
-  // textures live in GLBs; our Z-Anatomy meshes have no UV maps, so use a fine
-  // procedural cut-face grain instead of projecting unrelated surface textures.
-  const capPalette:Record<string,number>={muscular:0xB0605A,cardiac:0xAE3239,skeletal:0xCBA286,arterial:0xC8393F,venous:0x466FBA,nervous:0xE7C55C,lymphatic:0x7FB894,connective:0xB7B4AB,fascia:0xBEA99C,cartilage:0x86AEBD,tendon:0xC3B79B,digestive:0xBE8763,respiratory:0xBE8763,urinary:0xBE8763,endocrine:0xBE8763,integumentary:0xBBAA9F,sensory:0xB58BC4,attachments:0x8E5049};
+  // Cut patterns use plane coordinates, so source meshes need no UVs. Keep
+  // them on cap geometry; a cut texture must never stain the exterior mesh.
+  const capPalette:Record<string,number>={muscular:0xB0605A,cardiac:0xAE3239,skeletal:0xCBA286,arterial:0xC8393F,venous:0x466FBA,nervous:0xE7C55C,lymphatic:0x7FB894,connective:0xB7B4AB,fascia:0xBEA99C,serosa:0xBC8B82,adipose:0xD8BE91,cartilage:0x86AEBD,tendon:0xC3B79B,lung:0xD99DA3,liver:0xA85A62,spleen:0xCBA85E,cns:0xC4BBB2,organ:0xB98580,integumentary:0xBBAA9F,attachments:0x8E5049};
+  const stencilCaps=createStencilCaps(scene,clipPlanes as [T.Plane,T.Plane],url=>textureFor(url));
   const capMaterials=new Map<string,T.MeshStandardMaterial>(),capMeshes:T.Mesh[]=[];
+  const topologyCache=new WeakMap<T.BufferGeometry,ReturnType<typeof analyzeMeshTopology>>();
+  const topologyFor=(geometry:T.BufferGeometry)=>{let value=topologyCache.get(geometry);if(!value){value=analyzeMeshTopology(geometry);topologyCache.set(geometry,value);}return value;};
+  type CapCandidate={part:typeof atlas.parts[number];index:number;cutIndex:number;plane:T.Plane};
+  type CapJob={key:string;job:CapCandidate[];signature:string};
   let capGeneration=0,capTimer=0,capKey='';
-  const clearCaps=()=>{for(const mesh of capMeshes){scene.remove(mesh);mesh.geometry.dispose();}capMeshes.length=0;for(const material of capMaterials.values())material.dispose();capMaterials.clear();dirty=true;};
+  const capQueue:CapJob[]=[],pendingCapSignatures=new Map<string,string>();
+  const capSignatures=new Map<string,string>();
+  const clearCaps=()=>{for(const mesh of capMeshes){scene.remove(mesh);mesh.geometry.dispose();}capMeshes.length=0;capSignatures.clear();for(const material of capMaterials.values())material.dispose();capMaterials.clear();renderer.domElement.dataset.sectionCapCount='0';dirty=true;};
   const capMaterialFor=(part:typeof atlas.parts[number],cutIndex:number,opacity:number,cortex=false)=>{
-   const role=cortex?'skeletal-cortex':part.system==='connective'?/cartilage/i.test(part.material??part.name)?'cartilage':/tendon/i.test(part.material??part.name)?'tendon':'connective':part.system;
+   const role=cortex?'skeletal-cortex':sectionTissue(part);
    const profile=sectionCapProfile(part),priority=profile.thinShell||profile.hollowWall?0:role==='skeletal-cortex'?4:role==='skeletal'||role==='cartilage'||role==='arterial'||role==='venous'||role==='nervous'?3:role==='muscular'||role==='tendon'?1:2;
    const key=`${role}:${cutIndex}:${priority}:${opacity.toFixed(4)}`;let material=capMaterials.get(key);
-   if(!material){material=new T.MeshStandardMaterial({color:new T.Color(role==='skeletal'?0xC6A989:role==='skeletal-cortex'?0xE1D3BA:capPalette[role]??0x8B9099).multiplyScalar(role==='skeletal'?1:.82),roughness:.92,metalness:0,side:T.DoubleSide,transparent:opacity<.999,opacity,depthWrite:opacity>=.999,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2-priority*2,clippingPlanes:[clipPlanes[1-cutIndex]]});
+   const orientedMuscle=role==='muscular'||role==='cardiac';
+   const tilePath:Record<string,string>={adipose:'/models/adipose-cut-v2.png',lung:'/models/lung-cut-seamless.png',liver:'/models/liver-cut-seamless.png',spleen:'/models/spleen-cut-seamless.png',cns:'/models/cns-cut-seamless.png',organ:'/models/organ-cut-seamless.png'};
+   const tiled=orientedMuscle||!!tilePath[role];
+   if(!material){material=new T.MeshStandardMaterial({color:new T.Color(tiled?0xFFFFFF:role==='skeletal'?0xC6A989:role==='skeletal-cortex'?0xE1D3BA:capPalette[role]??0x8B9099).multiplyScalar(tiled||role==='skeletal'?1:.82),roughness:.92,metalness:0,side:T.DoubleSide,transparent:opacity<.999,opacity,depthWrite:opacity>=.999,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,clippingPlanes:[clipPlanes[1-cutIndex]]});
     const strength=role==='muscular'||role==='cardiac'?.5:role==='skeletal-cortex'||role==='nervous'?.18:role==='skeletal'?.04:.24;
     material.customProgramCacheKey=()=>`section-cap-${key}`;
     material.onBeforeCompile=shader=>{
      if(role==='skeletal')shader.uniforms.boneTile={value:textureFor('/models/cancellous-bone-seamless.png')};
+     if(orientedMuscle){
+      shader.uniforms.muscleAxial={value:textureFor('/models/muscle-axial-seamless.png')};
+      shader.uniforms.muscleCoronal={value:textureFor('/models/muscle-coronal-seamless.png')};
+      shader.uniforms.muscleSagittal={value:textureFor('/models/muscle-sagittal-seamless.png')};
+      shader.uniforms.cutPlaneNormal={value:clipPlanes[cutIndex].normal};
+     }else if(tilePath[role])shader.uniforms.cutTile={value:textureFor(tilePath[role])};
      shader.vertexShader='attribute vec2 cutUv; varying vec2 vCutUv;\n'+shader.vertexShader;
      shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvCutUv=cutUv;');
-     shader.fragmentShader=(role==='skeletal'?'uniform sampler2D boneTile;\n':'')+'varying vec2 vCutUv;\nfloat cutHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}\nfloat cutNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(cutHash(i),cutHash(i+vec2(1.0,0.0)),f.x),mix(cutHash(i+vec2(0.0,1.0)),cutHash(i+vec2(1.0,1.0)),f.x),f.y);}\n'+shader.fragmentShader;
-     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat tissueGrain=.65*cutNoise(vCutUv*260.0)+.35*cutNoise(vCutUv*920.0);diffuseColor.rgb*=1.0+'+strength.toFixed(3)+'*(tissueGrain-.5);'+(role==='skeletal'?'diffuseColor.rgb*=mix(vec3(1.0),texture2D(boneTile,vCutUv*26.0).rgb*1.4,.32);':''));
+     shader.fragmentShader=(role==='skeletal'?'uniform sampler2D boneTile;\n':'')+(orientedMuscle?'uniform sampler2D muscleAxial; uniform sampler2D muscleCoronal; uniform sampler2D muscleSagittal; uniform vec3 cutPlaneNormal;\n':tilePath[role]?'uniform sampler2D cutTile;\n':'')+'varying vec2 vCutUv;\nfloat cutHash(vec2 p){p=mod(p,vec2(97.0));return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}\nfloat cutNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.0-2.0*f);return mix(mix(cutHash(i),cutHash(i+vec2(1.0,0.0)),f.x),mix(cutHash(i+vec2(0.0,1.0)),cutHash(i+vec2(1.0,1.0)),f.x),f.y);}\n'+shader.fragmentShader;
+     const fibers='float cutFibers=.5+.5*sin(6.2831853*(vCutUv.x*160.0+.14*sin(6.2831853*vCutUv.y*20.0)));';
+     const tissuePattern=role==='fascia'||role==='tendon'||role==='integumentary'?`${fibers}diffuseColor.rgb*=.95+.10*cutFibers;`:role==='serosa'?'diffuseColor.rgb*=.97+.06*cutNoise(vCutUv*180.0);':'';
+     const tilePattern=orientedMuscle?'vec3 planeWeight=pow(abs(normalize(cutPlaneNormal)),vec3(4.0));planeWeight/=max(planeWeight.x+planeWeight.y+planeWeight.z,1e-5);vec3 tissueTile=texture2D(muscleSagittal,vCutUv*25.0).rgb*planeWeight.x+texture2D(muscleAxial,vCutUv*25.0).rgb*planeWeight.y+texture2D(muscleCoronal,vCutUv*25.0).rgb*planeWeight.z;diffuseColor.rgb=mix(diffuseColor.rgb,tissueTile,.88);':tilePath[role]?`diffuseColor.rgb=mix(diffuseColor.rgb,texture2D(cutTile,vCutUv*${role==='lung'?'20.0':'22.0'}).rgb,.88);`:'';
+     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\nfloat tissueGrain=.65*cutNoise(vCutUv*260.0)+.35*cutNoise(vCutUv*920.0);diffuseColor.rgb*=1.0+'+strength.toFixed(3)+'*(tissueGrain-.5);'+tissuePattern+tilePattern+(role==='skeletal'?'diffuseColor.rgb*=mix(vec3(1.0),texture2D(boneTile,vCutUv*26.0).rgb*1.4,.32);':''));
     };capMaterials.set(key,material);}
    return material;
   };
   const queueCaps=(s:SceneState)=>{
-   if(referenceModel&&!ready)return;
    const cuts=enabledSections(s);
-   const key=cuts.length?JSON.stringify([cuts,s.visible,s.hidden,s.depthHidden,s.region,s.isolate,s.selected,s.skinOpacity,s.contextOpacity,s.explode,loaded]):'';
-   if(key===capKey)return;capKey=key;
-   const generation=++capGeneration;clearTimeout(capTimer);clearCaps();
-   if(!cuts.length){stagedCapsReady=true;return;}
-   const candidates=cuts.flatMap(({index:cutIndex})=>{
+   const key=cuts.length?JSON.stringify([cuts,s.visible,s.hidden,s.depthHidden,s.region,s.isolate,s.selected,s.skinOpacity,s.contextOpacity,s.explode]):'';
+   const changed=key!==capKey;capKey=key;
+   if(changed){++capGeneration;clearTimeout(capTimer);capTimer=0;capQueue.length=0;pendingCapSignatures.clear();clearCaps();}
+   if(!cuts.length){stencilCaps.update([]);return;}
+   const candidates:CapCandidate[]=cuts.flatMap(({index:cutIndex})=>{
     const plane=clipPlanes[cutIndex].clone(),offset=-plane.constant,normal=plane.normal.toArray() as Point3;
     return atlas.parts.map((part,index)=>({part,index,cutIndex,plane})).filter(({part,index})=>{
      if(!pickers[index]||!sectionPartVisible(part,s)||sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1)<.001)return false;
@@ -242,25 +264,61 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
      return range.min<=offset+.0002&&range.max>=offset-.0002;
     });
    });
-   const jobs=new Map<string,typeof candidates>();
+   const gpuRoles=new Set(['integumentary','muscular','cardiac','skeletal','cartilage','adipose','lung','liver','spleen','cns','organ','nervous','lymphatic','arterial','venous','tendon','connective']);
+   const gpuCandidates=candidates.filter(({part})=>{
+    const profile=sectionCapProfile(part);
+    if(s.explode>.001||profile.thinShell&&!pairedSkinPart(part)||!gpuRoles.has(sectionTissue(part)))return false;
+    return sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1)>=.999;
+   });
+   const gpuStarted=performance.now();
+   stencilCaps.update(gpuCandidates.map(({part,index,cutIndex})=>{const profile=sectionCapProfile(part);return {part,index,cutIndex,geometry:pickers[index]!.geometry,matrix:pickers[index]!.matrixWorld,mode:profile.hollowWall||pairedSkinPart(part)?'wall' as const:'solid' as const,wallWidth:profile.width};}));
+   renderer.domElement.dataset.sectionGpuMs=(performance.now()-gpuStarted).toFixed(1);
+   renderer.domElement.dataset.sectionCapCount=String(capMeshes.length+stencilCaps.activeCount());
+   const gpuKeys=new Set(gpuCandidates.map(({index,cutIndex})=>`${cutIndex}:${index}`));
+   const jobs=new Map<string,CapCandidate[]>();
    for(const candidate of candidates){
-    const group=candidate.part.id.startsWith('REF:')&&candidate.part.system==='skeletal'&&s.explode<.001?candidate.part.conceptId:candidate.part.id;
-    const key=`${candidate.cutIndex}:${group}`;const job=jobs.get(key);if(job)job.push(candidate);else jobs.set(key,[candidate]);
+    if(gpuKeys.has(`${candidate.cutIndex}:${candidate.index}`))continue;
+    // Reference GLBs often split one organ or muscle into material primitives.
+    // Intersecting each primitive alone leaves artificial open cut edges.
+    const combinable=['skeletal','muscular','cardiac','digestive','respiratory','urinary','reproductive'].includes(candidate.part.system);
+    const group=candidate.part.id.startsWith('REF:')&&combinable&&s.explode<.001?candidate.part.conceptId:candidate.part.id;
+    const key=`${candidate.cutIndex}:${candidate.part.system}:${group}`;const job=jobs.get(key);if(job)job.push(candidate);else jobs.set(key,[candidate]);
    }
-   const cutJobs=[...jobs.values()];
-   capTimer=window.setTimeout(()=>{let cursor=0;const step=()=>{
-    if(disposed||generation!==capGeneration)return;
+   const selected=new Set(s.selected);
+   const rank=(part:typeof atlas.parts[number])=>selected.has(part.id)?-1:isSkinPart(part)?0:part.system==='fascia'?1:part.system==='muscular'?2:part.system==='skeletal'?3:4;
+   for(const [jobKey,job] of jobs){const signature=job.map(({index})=>index).join(',');
+    if(capSignatures.get(jobKey)===signature||pendingCapSignatures.get(jobKey)===signature)continue;
+    pendingCapSignatures.set(jobKey,signature);capQueue.push({key:jobKey,job,signature});
+   }
+   capQueue.sort((a,b)=>rank(a.job[0].part)-rank(b.job[0].part));
+   renderer.domElement.dataset.sectionPendingCount=String(capQueue.length);
+   renderer.domElement.dataset.sectionPendingParts=capQueue.map(({job})=>job[0].part.name).join(' | ');
+   if(capTimer||!capQueue.length)return;
+   const generation=capGeneration;
+   const step=()=>{
+    capTimer=0;if(disposed||generation!==capGeneration)return;
     const deadline=performance.now()+12;
-    while(cursor<cutJobs.length&&performance.now()<deadline){const job=cutJobs[cursor++],{part,index,cutIndex,plane}=job[0],picker=pickers[index];if(!picker)continue;
+    let processed=0;
+    while(capQueue.length&&(!processed||performance.now()<deadline)){const {key:jobKey,job,signature}=capQueue.shift()!;processed++;
+     if(pendingCapSignatures.get(jobKey)!==signature)continue;
+     pendingCapSignatures.delete(jobKey);
+     const {part,index,cutIndex,plane}=job[0],picker=pickers[index];if(!picker)continue;
+     const previous=capMeshes.findIndex(mesh=>mesh.userData.capJobKey===jobKey);
+     if(previous>=0){const mesh=capMeshes.splice(previous,1)[0];scene.remove(mesh);mesh.geometry.dispose();}
      const fragments=job.length>1?job.map(({index})=>{const geometry=pickers[index]!.geometry,partGeometry=new T.BufferGeometry();partGeometry.setAttribute('position',geometry.getAttribute('position'));partGeometry.setIndex(geometry.getIndex());return partGeometry;}):[];
      const joined=fragments.length?mergeGeometries(fragments):null;for(const fragment of fragments)fragment.dispose();
-     const profile=sectionCapProfile(part);
-     const geometry=sectionCapGeometry(joined??picker.geometry,plane,picker.matrixWorld,{...profile,outlineWidth:part.system==='skeletal'?.003:undefined,closureWidth:part.system==='skeletal'?.012:part.system==='muscular'?.016:undefined,closureFraction:part.system==='skeletal'||part.system==='muscular'?.3:undefined});joined?.dispose();if(!geometry)continue;
-     const opacity=sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1);
-     const material=capMaterialFor(part,cutIndex,opacity),mesh=new T.Mesh(geometry,part.system==='skeletal'?[material,capMaterialFor(part,cutIndex,opacity,true)]:material);mesh.renderOrder=3;mesh.frustumCulled=false;mesh.visible=stagedCapsReady;mesh.userData.partIndex=index;mesh.userData.cutIndex=cutIndex;scene.add(mesh);capMeshes.push(mesh);
+     const source=joined??picker.geometry,profile=sectionCapProfile(part,topologyFor(source));
+     const geometry=sectionCapGeometry(source,plane,picker.matrixWorld,{...profile,outlineWidth:part.system==='skeletal'?.003:undefined,closureWidth:profile.closureWidth??(part.system==='skeletal'?.012:part.system==='muscular'?.016:undefined),closureFraction:profile.closureFraction??(part.system==='skeletal'||part.system==='muscular'?.3:undefined)});joined?.dispose();
+     if(geometry){const opacity=sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1);
+      const material=capMaterialFor(part,cutIndex,opacity),mesh=new T.Mesh(geometry,part.system==='skeletal'?[material,capMaterialFor(part,cutIndex,opacity,true)]:material);mesh.renderOrder=0;mesh.frustumCulled=false;mesh.userData.partIndex=index;mesh.userData.cutIndex=cutIndex;mesh.userData.capJobKey=jobKey;scene.add(mesh);capMeshes.push(mesh);}
+     capSignatures.set(jobKey,signature);
     }
-    dirty=true;if(cursor<cutJobs.length)capTimer=window.setTimeout(step,0);else if(!stagedCapsReady){stagedCapsReady=true;for(const mesh of capMeshes)mesh.visible=true;lastState=null;dirty=true;}
-   };step();},0);
+    renderer.domElement.dataset.sectionCapCount=String(capMeshes.length+stencilCaps.activeCount());
+    renderer.domElement.dataset.sectionPendingCount=String(capQueue.length);
+    renderer.domElement.dataset.sectionPendingParts=capQueue.map(({job})=>job[0].part.name).join(' | ');
+    dirty=true;if(capQueue.length)capTimer=window.setTimeout(step,0);
+   };
+   capTimer=window.setTimeout(step,0);
   };
   const labelLayer=document.createElementNS('http://www.w3.org/2000/svg','svg');labelLayer.classList.add('anatomy-labels');labelLayer.setAttribute('aria-hidden','true');el.appendChild(labelLayer);
   const labelAnchors=new Map<number,T.Vector3>();
@@ -270,11 +328,20 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
   const chunkParts=Array.from({length:atlas.chunks.length},()=>[] as number[]);
   atlas.parts.forEach((part,index)=>chunkParts[part.chunk].push(index));
   const initiallySelected=new Set(latest.current.selected);
+  const initialCuts=enabledSections(latest.current),initialBounds=initialCuts.length?sectionSetBounds(atlas,latest.current):null;
+  const initialCutEquations=initialBounds?initialCuts.map(({section})=>sectionPlaneEquation(initialBounds,section)):[];
+  const cutCounts=chunkParts.map(parts=>parts.filter(i=>{
+   const part=atlas.parts[i];if(!sectionPartVisible(part,latest.current))return false;
+   return initialCutEquations.some(equation=>{const normal=equation.normal as Point3,range=sectionRange({min:part.bounds[0] as Point3,max:part.bounds[1] as Point3},normal);return range.min<=-equation.constant+.0002&&range.max>=-equation.constant-.0002;});
+  }).length);
+  const hasPairedSurface=atlas.parts.some(pairedSkinPart);
   const chunkOrder=chunkParts.map((_,index)=>index).sort((a,b)=>{
    const selected=(index:number)=>chunkParts[index].some(i=>initiallySelected.has(atlas.parts[i].id));
-   const surface=(index:number)=>chunkParts[index].filter(i=>isSkinPart(atlas.parts[i])).length;
+   const surface=(index:number)=>Number(chunkParts[index].some(i=>hasPairedSurface?pairedSkinPart(atlas.parts[i]):isSkinPart(atlas.parts[i])));
    const distal=(index:number)=>chunkParts[index].reduce((sum,i)=>{const c=centers[i];return sum+Math.hypot(c.x,(c.y-.9)*.55);},0)/Math.max(1,chunkParts[index].length);
-   return Number(selected(b))-Number(selected(a))||surface(b)-surface(a)||distal(b)-distal(a)||a-b;
+   // The visible outer boundary must arrive before deeper cut geometry, even
+   // when it contains fewer pieces than a neurovascular chunk.
+   return Number(selected(b))-Number(selected(a))||surface(b)-surface(a)||cutCounts[b]-cutCounts[a]||distal(b)-distal(a)||a-b;
   });
   const loadChunk=async(ci:number)=>{
    const chunk=atlas.chunks[ci],compressed=!!chunk.gzip&&typeof DecompressionStream!=='undefined';const response=await fetch(assetUrl(compressed?chunk.gzip!:chunk.url),{signal:abort.signal});const buffer=await decodeModelResponse(response,chunk.bytes,compressed);if(disposed)return;
@@ -389,6 +456,8 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
    // the full visible depth so hover and click resolve the same structure.
    raycaster.near=0;raycaster.far=Infinity;
    let nearest=Infinity,found=-1;
+   const stencilHit=stencilCaps.pick(raycaster.ray,index=>canPick(index,hasSolid));
+   if(stencilHit){nearest=stencilHit.distance;found=stencilHit.index;}
    // The visible cut face is its own mesh; raycasting only the source surface
    // misses the interior of a section and cannot identify the tissue there.
    for(const mesh of capMeshes){
@@ -399,7 +468,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
    }
    pickers.forEach((mesh,i)=>{
     if(!mesh||!canPick(i,hasSolid))return;
-    if(referenceModel&&enabledSections(latest.current).length&&atlas.parts[i].name.startsWith('Body surface (derived)'))return;
+    if(enabledSections(latest.current).length&&pairedSkinPart(atlas.parts[i]))return;
     if(!rotationPartIndices.has(i)){
      worldBox.copy(bounds[i]).translate(mesh.position);
      if(!raycaster.ray.intersectBox(worldBox,hitPoint))return;
@@ -475,9 +544,9 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
   const clock=new T.Clock();let lastExtent=-1,lastCamera:number[]|undefined,lastFocus=0,lastAreaKey='',lastRotationKey='',lastSectionOrientation='',lastSectionPoint:T.Vector3|undefined,selectionStencil=false;
   const animate=()=>{
    if(disposed)return;frame=requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05),s=latest.current;attachPreview();
-   const previewShell=(!ready||!stagedCapsReady)&&!s.selected.length&&(referenceModel||!enabledSections(s).length)&&atlas.parts.some(isSkinPart);
+   const previewShell=!ready&&!s.selected.length&&!enabledSections(s).length&&atlas.parts.some(isSkinPart);
    const nextSectionActive=enabledSections(s).length?1:0;if(sectionActiveUniform.value!==nextSectionActive){sectionActiveUniform.value=nextSectionActive;dirty=true;}
-   const nextContext=previewShell?1:s.selected.length?(s.contextOpacity??1):1,nextSkin=previewShell?1:(s.skinOpacity??.1);
+   const nextContext=previewShell||nextSectionActive?1:s.selected.length?(s.contextOpacity??1):1,nextSkin=previewShell?1:(s.skinOpacity??.1);
    if(contextUniform.value!==nextContext||skinUniform.value!==nextSkin){contextUniform.value=nextContext;skinUniform.value=nextSkin;dirty=true;}
    const nextStencil=s.selected.length>0&&nextContext<.999;
    if(nextStencil!==selectionStencil){selectionStencil=nextStencil;
@@ -588,7 +657,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
    return (await fetch(png)).blob();
   });
   const contextLost=(e:Event)=>{e.preventDefault();onError('The 3D session was paused by your device. Reload to continue.');};renderer.domElement.addEventListener('webglcontextlost',contextLost);
-  return()=>{onCapture?.(null);disposed=true;abort.abort();cancelAnimationFrame(frame);clearTimeout(capTimer);clearCaps();observer.disconnect();theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',sectionWheel,true);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());guideGeometry.dispose();guideBorder.geometry.dispose();guideBorder.material.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
+  return()=>{onCapture?.(null);disposed=true;abort.abort();cancelAnimationFrame(frame);clearTimeout(capTimer);clearCaps();stencilCaps.dispose();observer.disconnect();theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',sectionWheel,true);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());guideGeometry.dispose();guideBorder.geometry.dispose();guideBorder.material.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
  },[atlas]);
  return <div className="scene" ref={host}/>;
 }

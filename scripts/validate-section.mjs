@@ -46,10 +46,18 @@ const sternum=atlas.parts.find(part=>part.id==='ZA:Body of sternum:Bone-7');
 assert.ok(humerus&&femur&&sternum);
 const skin=atlas.parts.find(part=>part.system==='integumentary');assert.ok(skin);
 assert.equal(sectionCapOpacity(skin,{selected:[],contextOpacity:1,skinOpacity:.25}),.25,'skin cap follows skin opacity');
-assert.equal(sectionCapOpacity(skin,{selected:[],contextOpacity:.4,skinOpacity:.25}),.1,'skin cap combines context and skin opacity');
-assert.equal(sectionCapOpacity(humerus,{selected:[],contextOpacity:.2,skinOpacity:.25},.5),.1,'all caps follow context and source opacity');
+assert.equal(sectionCapOpacity(skin,{selected:[],contextOpacity:.4,skinOpacity:.25}),.25,'unselected view uses skin opacity without ghosting');
+assert.equal(sectionCapOpacity(humerus,{selected:[],contextOpacity:.2,skinOpacity:.25},.5),.5,'unselected view preserves source opacity without ghosting');
 assert.equal(sectionCapOpacity(humerus,{selected:[humerus.id],contextOpacity:.2,skinOpacity:.25},.5),.5,'selection preserves source translucency');
+assert.equal(sectionCapOpacity(skin,{selected:[humerus.id],contextOpacity:.2,skinOpacity:.25}),.05,'selection applies context to unselected skin');
+assert.equal(sectionCapOpacity(humerus,{selected:[skin.id],contextOpacity:.2,skinOpacity:1,section:{enabled:true,axis:'axial',position:.38}}),1,'section context stays opaque');
 assert.equal(sectionCapOpacity(skin,{selected:[skin.id],contextOpacity:.2,skinOpacity:.25}),.25,'selection preserves skin translucency');
+const standard=JSON.parse(readFileSync('public/models/atlas.json','utf8'));
+const standardSkin=standard.parts.find(part=>part.id==='FJ2810');assert.ok(standardSkin);
+assert.equal(sectionPartVisible(standardSkin,{selected:[],visible:['integumentary'],hidden:[],depthHidden:[],region:'torso',skinOpacity:1,isolate:false}),true,'checked whole-body skin participates in a regional section');
+const female=JSON.parse(readFileSync('public/models/atlas-hra-female.json','utf8'));
+const femaleSkin=female.parts.find(part=>part.name==='Skin of body');assert.ok(femaleSkin);
+assert.equal(sectionPartVisible(femaleSkin,{selected:[],visible:['integumentary'],hidden:[],depthHidden:[],region:'torso',skinOpacity:1,isolate:false}),true,'checked female whole-body skin participates in a regional section');
 const checked={selected:[sternum.id],visible:['skeletal'],hidden:[sternum.id],depthHidden:[],region:'all',skinOpacity:.1,isolate:false};
 assert.equal(sectionPartVisible(sternum,checked),false,'selection must not add an unchecked mesh to a section');
 assert.equal(sectionPartVisible(humerus,checked),true);
@@ -74,8 +82,36 @@ const capBundle=await build({entryPoints:['app/section-cap.ts'],bundle:true,plat
 const capModule=await import(`data:text/javascript;base64,${Buffer.from(capBundle.outputFiles[0].text).toString('base64')}`);
 const profileBundle=await build({entryPoints:['app/section-cap-profile.ts'],bundle:true,platform:'node',format:'esm',write:false,outfile:'/tmp/section-cap-profile-validation.js'});
 const {sectionCapProfile}=await import(`data:text/javascript;base64,${Buffer.from(profileBundle.outputFiles[0].text).toString('base64')}`);
+const tissueBundle=await build({entryPoints:['app/section-tissue.ts'],bundle:true,platform:'node',format:'esm',write:false,outfile:'/tmp/section-tissue-validation.js'});
+const {sectionTissue}=await import(`data:text/javascript;base64,${Buffer.from(tissueBundle.outputFiles[0].text).toString('base64')}`);
+const topologyBundle=await build({entryPoints:['app/mesh-topology.ts'],bundle:true,platform:'node',format:'esm',write:false});
+const {analyzeMeshTopology}=await import(`data:text/javascript;base64,${Buffer.from(topologyBundle.outputFiles[0].text).toString('base64')}`);
+assert.equal(sectionCapProfile(standardSkin).outermostOnly,true,'paired standard skin has one exterior cut edge');
+assert.equal(sectionCapProfile(femaleSkin).outermostOnly,false,'single female skin surface is not treated as a paired shell');
+const tissueCase=(name,system)=>({name,system,bounds:[[0,0,0],[.1,.1,.1]],id:'test'});
+for(const [name,system] of [['Jejunum','digestive'],['Stomach','digestive'],['Left atrium','cardiac'],['Nasal cavity','sensory'],['Trachea','respiratory'],['Abdominal aorta','arterial'],['Inferior vena cava','venous']])assert.ok(sectionCapProfile(tissueCase(name,system)).hollowWall,`${name} must have a wall cut and empty lumen`);
+for(const [name,system,role] of [['Liver','digestive','liver'],['Superior lobe of right lung','respiratory','lung'],['White matter of spinal cord','nervous','cns'],['Spleen','lymphatic','spleen'],['Rectus abdominis muscle (left)','muscular','muscular']]){
+ const part=tissueCase(name,system);assert.equal(sectionCapProfile(part).hollowWall,undefined,`${name} is solid tissue`);assert.equal(sectionTissue(part),role,`${name} cut texture`);
+}
 const capArea=geometry=>{const positions=geometry.getAttribute('position'),indices=geometry.getIndex();let area=0;for(let i=0;i<indices.count;i+=3){const points=Array.from({length:3},(_,j)=>new THREE.Vector3().fromBufferAttribute(positions,indices.getX(i+j)));area+=new THREE.Vector3().crossVectors(points[1].clone().sub(points[0]),points[2].clone().sub(points[0])).length()/2;}return area;};
 const cube=new THREE.BoxGeometry(1,1,1),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+const stencilBundle=await build({entryPoints:['app/stencil-caps.ts'],bundle:true,platform:'node',format:'esm',write:false,outfile:'/tmp/stencil-cap-validation.js'});
+const {createStencilCaps}=await import(`data:text/javascript;base64,${Buffer.from(stencilBundle.outputFiles[0].text).toString('base64')}`);
+const stencilScene=new THREE.Scene(),disabledPlane=new THREE.Plane(new THREE.Vector3(0,1,0),10000);
+const stencil=createStencilCaps(stencilScene,[plane,disabledPlane],()=>new THREE.Texture());
+const cubePart={id:'cube',name:'Cube',system:'skeletal',bounds:[[-.5,-.5,-.5],[.5,.5,.5]]};
+stencil.update([{part:cubePart,index:0,cutIndex:0,geometry:cube,matrix:new THREE.Matrix4(),mode:'solid'}]);
+assert.equal(stencil.pick(new THREE.Ray(new THREE.Vector3(0,2,0),new THREE.Vector3(0,-1,0)),()=>true)?.index,0,'GPU solid cap is pickable at its cut face');
+assert.equal(stencil.pick(new THREE.Ray(new THREE.Vector3(.8,2,0),new THREE.Vector3(0,-1,0)),()=>true),undefined,'GPU cap does not pick empty space outside the shell');
+stencil.update([{part:cubePart,index:1,cutIndex:0,geometry:cube,matrix:new THREE.Matrix4(),mode:'wall',wallWidth:.1}]);
+assert.equal(stencil.pick(new THREE.Ray(new THREE.Vector3(0,2,0),new THREE.Vector3(0,-1,0)),()=>true),undefined,'GPU wall cap does not make its lumen selectable');
+assert.equal(stencil.pick(new THREE.Ray(new THREE.Vector3(.45,2,0),new THREE.Vector3(0,-1,0)),()=>true)?.index,1,'GPU wall cap is pickable along the tissue wall');
+stencil.dispose();
+assert.equal(analyzeMeshTopology(cube).closed,true,'a UV-split cube still has a closed welded topology');
+const openSheet=new THREE.PlaneGeometry(1,1),sheetTopology=analyzeMeshTopology(openSheet);
+assert.ok(sheetTopology.boundaryRatio>.015,'an open sheet has source boundary edges');
+assert.equal(sectionCapProfile(humerus,sheetTopology).thinShell,true,'open geometry cannot receive a broad solid cap');
+openSheet.dispose();
 const cap=capModule.sectionCapGeometry(cube,plane,new THREE.Matrix4());
 assert.ok(cap&&cap.index.count>=6,'cube cut should have a filled cap');
 const positions=cap.getAttribute('position');for(let i=0;i<positions.count;i++)assert.ok(Math.abs(positions.getY(i)+.00015)<1e-5);
@@ -179,6 +215,13 @@ for(const id of ['ZA:Kidney.l','ZA:Spleen']){
 }
 if(existsSync('.local-models/reference.json')){
  const reference=JSON.parse(readFileSync('.local-models/reference.json'));
+ const gluteus=reference.parts.find(part=>part.name==='Gluteus maximus muscle (left)');assert.ok(gluteus);
+ assert.equal(sectionPartVisible(gluteus,{selected:[],visible:['muscular'],hidden:[],depthHidden:[],region:'torso',skinOpacity:1,isolate:false}),true,'torso sections include muscles crossing the hip boundary');
+ const legSurface=reference.parts.find(part=>part.name==='Body surface (derived) · lower-left');assert.ok(legSurface);
+ assert.equal(sectionPartVisible(legSurface,{selected:[],visible:['integumentary'],hidden:[],depthHidden:[],region:'torso',skinOpacity:1,isolate:false}),false,'torso sections exclude detached limb surface');
+ const node=reference.parts.find(part=>part.name==='Juxta-intestinal mesenteric nodes');assert.ok(node);
+ assert.equal(sectionTissue(node),'lymphatic','mesenteric nodes are lymph tissue, not serosa');
+ assert.equal(sectionCapProfile(node).thinShell,false,'mesenteric nodes are solid, not covering sheets');
  const skin=reference.parts.find(part=>part.name==='Body surface (derived) · torso');assert.ok(skin);
  const chunk=reference.chunks[skin.chunk],buffer=readFileSync('.'+chunk.url.replace('/local-models/','/.local-models/'));
  const source=new THREE.BufferGeometry();
@@ -198,10 +241,19 @@ if(existsSync('.local-models/reference.json')){
  for(const name of ['Jejunum','Transverse colon','Stomach','Oesophagus']){
   const part=reference.parts.find(item=>item.name===name);assert.ok(part,name);
   const profile=sectionCapProfile(part);assert.ok(profile.hollowWall,`${name} lumen must remain open`);
+  if(name==='Stomach')assert.ok(profile.width>=.007,'stomach cut needs a visibly thick wall');
   const data=readFileSync('.'+reference.chunks[part.chunk].url.replace('/local-models/','/.local-models/'));
   const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(data.buffer,data.byteOffset+part.positions,part.vertexCount*3),3));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(data.buffer,data.byteOffset+part.indices,part.indexCount),1));
   const middle=(part.bounds[0][1]+part.bounds[1][1])/2,cut=capModule.sectionCapGeometry(geometry,new THREE.Plane(new THREE.Vector3(0,-1,0),middle),new THREE.Matrix4(),profile);
   assert.ok(cut,`${name} should have a visible wall at its middle section`);
+  cut.dispose();geometry.dispose();
+ }
+ for(const name of ['Spleen','Suprarenal gland (left)','Suprarenal gland (right)']){
+  const part=reference.parts.find(item=>item.name===name);assert.ok(part,name);
+  const data=readFileSync('.'+reference.chunks[part.chunk].url.replace('/local-models/','/.local-models/'));
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(data.buffer,data.byteOffset+part.positions,part.vertexCount*3),3));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(data.buffer,data.byteOffset+part.indices,part.indexCount),1));
+  const middle=(part.bounds[0][1]+part.bounds[1][1])/2,cut=capModule.sectionCapGeometry(geometry,new THREE.Plane(new THREE.Vector3(0,-1,0),middle),new THREE.Matrix4(),sectionCapProfile(part,analyzeMeshTopology(geometry)));
+  assert.ok(cut?.userData.fillIndexCount>0,`${name} needs a solid section cap`);
   cut.dispose();geometry.dispose();
  }
  assert.equal(sectionCapProfile(reference.parts.find(part=>part.name==='Pancreas')).hollowWall,undefined,'solid digestive glands retain solid cuts');
