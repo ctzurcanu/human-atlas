@@ -29,7 +29,8 @@ export function parseGuestHierarchy(value:unknown):GuestHierarchy{
 
 export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy):ResolvedGuestNode[]{
  const compareDepth=createDepthOrder(atlas);
- const byName=new Map<string,Part[]>(),byId=new Map(atlas.parts.map(part=>[part.id,part]));
+ const availableParts=atlas.parts.filter(part=>!part.suppressed);
+ const byName=new Map<string,Part[]>(),byId=new Map(availableParts.map(part=>[part.id,part]));
  const concepts=new Map(atlas.concepts.map(concept=>[concept.id,concept]));
  for(const concept of atlas.concepts){const key=concept.name.toLocaleLowerCase();const members=byName.get(key)??[];for(const id of concept.elements){const part=byId.get(id);if(part)members.push(part);}byName.set(key,members);}
  const resolve=(node:GuestNode,path:string):ResolvedGuestNode=>{
@@ -38,7 +39,7 @@ export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy):Reso
    const concept=concepts.get(term);return concept?concept.elements.map(id=>byId.get(id)).filter((part):part is Part=>!!part):byId.has(term)?[byId.get(term)!]:byName.get(term.toLocaleLowerCase())??[];
   });
   const systems=new Set(node.systems??[]);
-  const directParts=[...new Map([...matched,...atlas.parts.filter(part=>systems.has(part.system))].map(part=>[part.id,part])).values()];
+  const directParts=[...new Map([...matched,...availableParts.filter(part=>systems.has(part.system))].map(part=>[part.id,part])).values()];
   const parts=[...new Map([...directParts,...children.flatMap(child=>child.parts)].map(part=>[part.id,part])).values()];
   return {id:path,name:node.name,parts,directParts,children};
  };
@@ -46,7 +47,7 @@ export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy):Reso
  const assigned=new Set(mapped.flatMap(node=>node.parts.map(part=>part.id)));
  return hierarchy.nodes.map((node,index)=>{
   if(!node.unmapped)return mapped.find(item=>item.id===String(index))!;
-  const parts=atlas.parts.filter(part=>!assigned.has(part.id));
+  const parts=availableParts.filter(part=>!assigned.has(part.id));
   const children=SYSTEMS.flatMap(system=>{
    const members=parts.filter(part=>part.system===system.id).sort((a,b)=>compareDepth({name:a.name,parts:[a]},{name:b.name,parts:[b]}));
    if(!members.length)return [];

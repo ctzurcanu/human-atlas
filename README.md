@@ -27,6 +27,14 @@ npm run dev
 
 Open http://localhost:3016. To build the static site, run `npm run build`; the output is in `dist/`.
 
+### Local Anatomy Atlas GLB model
+
+Run `npm run import:reference-glb` to download the 11 regional GLBs displayed by [Anatomy Atlas](https://anatomy-atlas.brianp.chatgpt.site/) and convert them into a separate **Male · reference GLBs** model. It preserves source triangles, UVs, embedded color and normal images, node transforms, and material factors. The importer separates the derived outer surface into six anatomical regions, puts 696 optional named skin regions under Skin in Systems, Regions, and Depth, classifies translucent overlay materials as optional attachments, and suppresses the publisher viewer's 41 duplicate source aliases. It fits the 27 straight spinal cord source extrusions into the modeled spinal dura; `npm run test:reference-import` checks that every one stays inside its local bounds. The model appears only in the development viewer; open `http://localhost:3016/?model=local-reference`. The importer can be rerun without downloading files already present.
+
+Systems, Regions, and Depth use one shared set of intermediate branches across models. Empty branches disappear, and unmatched structures go into an **Other** child of their nearest known parent. Source region groups add finer skin branches when available; mammary tissue, subcutaneous fat, and lacrimal glands stay outside Skin. Run `npm run test:hierarchies` to check that every available model part appears exactly once in each hierarchy.
+
+The download and converted data stay in `.local-models/`, which is ignored by Git and excluded from `dist/`. The source [NOTICE.md](https://anatomy-atlas.brianp.chatgpt.site/NOTICE.md) is saved in `.local-models/reference/source/NOTICE.md`. Most adapted anatomy is CC BY-SA 4.0; kidney and inner-ear components carry separate NonCommercial licenses. Keep that notice with any copy of the local model. This imports anatomy assets, not the reference viewer's software.
+
 ## Validate
 
 ```sh

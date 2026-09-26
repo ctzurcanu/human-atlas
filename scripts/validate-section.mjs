@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import {build} from 'esbuild';
-import {readFileSync} from 'node:fs';
+import {existsSync,readFileSync} from 'node:fs';
 import * as THREE from 'three';
+import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const bundle=await build({entryPoints:['app/section-plane.ts','app/viewer-state.ts','app/section-set.ts','app/section-stack.ts','app/section-opacity.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/section-validation'});
 const load=async suffix=>import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles.find(file=>file.path.endsWith(suffix)).text).toString('base64')}`);
@@ -47,7 +48,8 @@ const skin=atlas.parts.find(part=>part.system==='integumentary');assert.ok(skin)
 assert.equal(sectionCapOpacity(skin,{selected:[],contextOpacity:1,skinOpacity:.25}),.25,'skin cap follows skin opacity');
 assert.equal(sectionCapOpacity(skin,{selected:[],contextOpacity:.4,skinOpacity:.25}),.1,'skin cap combines context and skin opacity');
 assert.equal(sectionCapOpacity(humerus,{selected:[],contextOpacity:.2,skinOpacity:.25},.5),.1,'all caps follow context and source opacity');
-assert.equal(sectionCapOpacity(humerus,{selected:[humerus.id],contextOpacity:.2,skinOpacity:.25},.5),1,'selected caps remain solid like selected surfaces');
+assert.equal(sectionCapOpacity(humerus,{selected:[humerus.id],contextOpacity:.2,skinOpacity:.25},.5),.5,'selection preserves source translucency');
+assert.equal(sectionCapOpacity(skin,{selected:[skin.id],contextOpacity:.2,skinOpacity:.25}),.25,'selection preserves skin translucency');
 const checked={selected:[sternum.id],visible:['skeletal'],hidden:[sternum.id],depthHidden:[],region:'all',skinOpacity:.1,isolate:false};
 assert.equal(sectionPartVisible(sternum,checked),false,'selection must not add an unchecked mesh to a section');
 assert.equal(sectionPartVisible(humerus,checked),true);
@@ -70,6 +72,8 @@ const restoredPair=readViewUrl(new URL(viewUrl('http://localhost:3016/','male-de
 assert.deepEqual(restoredPair.sections,sectionPair);assert.equal(restoredPair.activeSection,1);assert.deepEqual(restoredPair.section,sectionPair[1]);
 const capBundle=await build({entryPoints:['app/section-cap.ts'],bundle:true,platform:'node',format:'esm',write:false,outfile:'/tmp/section-cap-validation.js'});
 const capModule=await import(`data:text/javascript;base64,${Buffer.from(capBundle.outputFiles[0].text).toString('base64')}`);
+const profileBundle=await build({entryPoints:['app/section-cap-profile.ts'],bundle:true,platform:'node',format:'esm',write:false,outfile:'/tmp/section-cap-profile-validation.js'});
+const {sectionCapProfile}=await import(`data:text/javascript;base64,${Buffer.from(profileBundle.outputFiles[0].text).toString('base64')}`);
 const capArea=geometry=>{const positions=geometry.getAttribute('position'),indices=geometry.getIndex();let area=0;for(let i=0;i<indices.count;i+=3){const points=Array.from({length:3},(_,j)=>new THREE.Vector3().fromBufferAttribute(positions,indices.getX(i+j)));area+=new THREE.Vector3().crossVectors(points[1].clone().sub(points[0]),points[2].clone().sub(points[0])).length()/2;}return area;};
 const cube=new THREE.BoxGeometry(1,1,1),plane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 const cap=capModule.sectionCapGeometry(cube,plane,new THREE.Matrix4());
@@ -88,6 +92,17 @@ const sheet=new THREE.PlaneGeometry(1,1),sheetCut=capModule.sectionCapGeometry(s
 assert.ok(sheetCut,'an open surface should retain a visible narrow cut edge');
 assert.ok(capArea(sheetCut)<.003,'an open surface must not become a broad filled cap');
 sheetCut.dispose();sheet.dispose();
+const openTube=new THREE.CylinderGeometry(.2,.2,.6,64,1,true);
+const tubeWall=capModule.sectionCapGeometry(openTube,plane,new THREE.Matrix4(),{hollowWall:true,width:.003});
+const tubeSolid=capModule.sectionCapGeometry(openTube,plane,new THREE.Matrix4());
+assert.ok(tubeWall&&tubeSolid&&tubeWall.userData.fillIndexCount===0,'an open canal needs a wall edge and an open lumen');
+assert.ok(capArea(tubeWall)<capArea(tubeSolid)*.1,'an open canal must not fill across its lumen');
+tubeWall.dispose();tubeSolid.dispose();openTube.dispose();
+const outerWall=new THREE.CylinderGeometry(.24,.24,.6,64,1,true),innerWall=new THREE.CylinderGeometry(.16,.16,.6,64,1,true),walledTube=mergeGeometries([outerWall,innerWall]);
+const annulus=capModule.sectionCapGeometry(walledTube,plane,new THREE.Matrix4(),{hollowWall:true,width:.003});
+assert.ok(annulus&&annulus.userData.fillIndexCount>0,'paired inner and outer wall contours should produce an annular tissue cap');
+assert.ok(capArea(annulus)<Math.PI*.24*.24*.75,'the annular tissue cap must preserve its central lumen');
+annulus.dispose();walledTube.dispose();outerWall.dispose();innerWall.dispose();
 const actualCut=(id,y,options={})=>{
  const part=atlas.parts.find(item=>item.id===id);assert.ok(part,id);
  const chunk=readFileSync('public'+atlas.chunks[part.chunk].url),source=new THREE.BufferGeometry();
@@ -143,12 +158,12 @@ for(const id of ['ZA:Pancreas','ZA:Spleen','ZA:Gallbladder','ZA:Kidney.l','ZA:Ki
  const part=atlas.parts.find(item=>item.id===id);assert.ok(part,id);
  assert.equal(boundaryEdges(part),0,`${id} has an open surface`);
 }
-for(const [id,y,limit] of [['ZA:Pleura',1.27,.005],['ZA:Greater omentum',1.1,.002],['ZA:Hypochondriac region.l',1.1,.002],['ZA:Transverse colon',1.1,.003]]){
+for(const [id,y,limit] of [['ZA:Pleura',1.27,.005],['ZA:Greater omentum',1.1,.002],['ZA:Hypochondriac region.l',1.1,.002]]){
  const part=atlas.parts.find(item=>item.id===id);assert.ok(part,id);
  const chunk=readFileSync('public'+atlas.chunks[part.chunk].url),source=new THREE.BufferGeometry();
  source.setAttribute('position',new THREE.BufferAttribute(new Float32Array(chunk.buffer,chunk.byteOffset+part.positions,part.vertexCount*3),3));
  source.setIndex(new THREE.BufferAttribute(new Uint32Array(chunk.buffer,chunk.byteOffset+part.indices,part.indexCount),1));
- const cut=capModule.sectionCapGeometry(source,new THREE.Plane(new THREE.Vector3(0,-1,0),y),new THREE.Matrix4(),{thinShell:id!=='ZA:Transverse colon',width:.0012});
+ const cut=capModule.sectionCapGeometry(source,new THREE.Plane(new THREE.Vector3(0,-1,0),y),new THREE.Matrix4(),{thinShell:true,width:.0012});
  assert.ok(cut,id+' should retain a cut edge');assert.ok(capArea(cut)<limit,id+' generated a false broad cut face');
  cut.dispose();source.dispose();
 }
@@ -161,5 +176,35 @@ for(const id of ['ZA:Kidney.l','ZA:Spleen']){
  const cut=capModule.sectionCapGeometry(source,new THREE.Plane(new THREE.Vector3(0,-1,0),middle),new THREE.Matrix4());
  assert.ok(cut&&capArea(cut)>.0005,id+' should retain a solid cut face');
  cut.dispose();source.dispose();
+}
+if(existsSync('.local-models/reference.json')){
+ const reference=JSON.parse(readFileSync('.local-models/reference.json'));
+ const skin=reference.parts.find(part=>part.name==='Body surface (derived) · torso');assert.ok(skin);
+ const chunk=reference.chunks[skin.chunk],buffer=readFileSync('.'+chunk.url.replace('/local-models/','/.local-models/'));
+ const source=new THREE.BufferGeometry();
+ source.setAttribute('position',new THREE.BufferAttribute(new Float32Array(buffer.buffer,buffer.byteOffset+skin.positions,skin.vertexCount*3),3));
+ source.setIndex(new THREE.BufferAttribute(new Uint32Array(buffer.buffer,buffer.byteOffset+skin.indices,skin.indexCount),1));
+ if(skin.sourceOffset)source.translate(...skin.sourceOffset);
+ for(const y of [1.41827,1.05257]){
+  const plane=new THREE.Plane(new THREE.Vector3(0,-1,0),y);
+  const shell=capModule.sectionCapGeometry(source,plane,new THREE.Matrix4(),sectionCapProfile(skin));
+  assert.ok(shell&&shell.userData.fillIndexCount===0,`Reference skin incorrectly fills the ${y} body interior`);
+  assert.ok(capArea(shell)<.02,`Reference skin cut is thicker than its wall at ${y}`);
+  if(y===1.05257){const allContours=capModule.sectionCapGeometry(source,plane,new THREE.Matrix4(),{thinShell:true,width:.0035});assert.ok(allContours&&capArea(shell)<capArea(allContours)*.8,'nested reference skin contours made a second cut ring');allContours.dispose();}
+  shell.dispose();
+ }
+ assert.equal(sectionCapOpacity(skin,{selected:[],contextOpacity:1,skinOpacity:.25}),.25,'reference skin wall follows skin opacity');
+ source.dispose();
+ for(const name of ['Jejunum','Transverse colon','Stomach','Oesophagus']){
+  const part=reference.parts.find(item=>item.name===name);assert.ok(part,name);
+  const profile=sectionCapProfile(part);assert.ok(profile.hollowWall,`${name} lumen must remain open`);
+  const data=readFileSync('.'+reference.chunks[part.chunk].url.replace('/local-models/','/.local-models/'));
+  const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(data.buffer,data.byteOffset+part.positions,part.vertexCount*3),3));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(data.buffer,data.byteOffset+part.indices,part.indexCount),1));
+  const middle=(part.bounds[0][1]+part.bounds[1][1])/2,cut=capModule.sectionCapGeometry(geometry,new THREE.Plane(new THREE.Vector3(0,-1,0),middle),new THREE.Matrix4(),profile);
+  assert.ok(cut,`${name} should have a visible wall at its middle section`);
+  cut.dispose();geometry.dispose();
+ }
+ assert.equal(sectionCapProfile(reference.parts.find(part=>part.name==='Pancreas')).hollowWall,undefined,'solid digestive glands retain solid cuts');
+ assert.equal(sectionCapProfile(reference.parts.find(part=>part.name==='Anterior papillary muscle of right ventricle')).hollowWall,undefined,'solid cardiac muscles retain solid cuts');
 }
 console.log('Sections, shared URLs, closed organs, and open-surface cut geometry passed.');

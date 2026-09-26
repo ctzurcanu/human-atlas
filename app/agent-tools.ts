@@ -6,7 +6,7 @@ type Tool={name:string;description:string;inputSchema:object;annotations:{readOn
 type AgentSection={axis:'axial'|'sagittal'|'coronal'|'oblique';position:number;flip:boolean;azimuth?:number;elevation?:number};
 export type AgentViewChange={model?:string;structures?:string[];systems?:string[];depthHidden?:string[];hidden?:string[];hierarchy?:string;guestUrl?:string;view?:string;region?:string;context?:number;skinOpacity?:number;explode?:number;labels?:boolean;isolate?:boolean;rotate?:boolean;section?:AgentSection|null;sections?:(AgentSection|null)[];activeSection?:number;camera?:number[];focus?:boolean};
 export type AgentActions={snapshot:()=>unknown;update:(change:AgentViewChange)=>unknown;command:(action:string)=>unknown|Promise<unknown>;url:()=>string};
-const models=['male-detail','male-full','male','female','embryo','cell','local-male','local-female'];
+const models=['male-detail','male-full','male','female','embryo','cell',...(import.meta.env?.DEV?['local-reference','local-male','local-female']:[])];
 const hierarchies=['systems','regions','depth'];
 const sectionAxes=['axial','sagittal','coronal','oblique'];
 const commands=['undo','redo','reset','focus','hide-selection','clear-selection','download-png'];

@@ -1,5 +1,5 @@
 import {isSurfaceSystem,type Atlas,type Part,type SceneState,type SystemId,type View} from './anatomy';
-import {DEPTH_LAYERS,depthLayerFor} from './depth-layers';
+import {DEPTH_LAYERS,depthLayerFor,isSkinPart} from './depth-layers';
 import type {SectionState} from './section-plane';
 export const REGIONS=['all','head-neck','torso','upper-right','upper-left','lower-right','lower-left'] as const;
 export const REGION_NAMES=['Whole body','Head & neck','Torso & pelvis','Right arm','Left arm','Right leg','Left leg'];
@@ -12,18 +12,23 @@ function visibilitySets(s:SceneState){
  return sets;
 }
 export function inRegion(p:Part,region='all'){
- if(region==='all')return true;if(p.system==='integumentary')return false;
+ if(region==='all')return true;
+ // Imported reference regions have separately tagged skin. Keep the single
+ // whole-body derived surface out of regional views, but retain local skin.
+ if(isSkinPart(p)&&/^(skin(?: of body)?|body surface)$/i.test(p.name)&&!p.regions?.length)return false;
  if(p.regions?.length)return p.regions.includes(region);
  const x=(p.bounds[0][0]+p.bounds[1][0])/2,y=(p.bounds[0][1]+p.bounds[1][1])/2;
  return region==='head-neck'?y>1.35:region==='torso'?y>=.75&&y<=1.4&&Math.abs(x)<.23:region.startsWith('upper')?y>.7&&Math.abs(x)>.18&&(region.endsWith('left')?x>0:x<0):y<.85&&(region.endsWith('left')?x>0:x<0);
 }
 export function partVisible(p:Part,s:SceneState){
+ if(p.suppressed)return false;
  const sets=visibilitySets(s);
  if(sets.selected.has(p.id))return true;
- if(p.suppressed||s.isolate||sets.hidden.has(p.id)||sets.depthHidden.has(depthLayerFor(p))||!sets.visible.has(p.system)||!inRegion(p,s.region))return false;
+ if(s.isolate||sets.hidden.has(p.id)||sets.depthHidden.has(depthLayerFor(p))||!sets.visible.has(p.system)||!inRegion(p,s.region))return false;
+ if(isSkinPart(p)&&(s.skinOpacity??.1)<=0)return false;
  // Some primary-source internal meshes protrude beyond the outer reference.
  // An intact, fully opaque surface should conceal unselected internal context.
- if(!isSurfaceSystem(p.system)&&sets.surface&&!sets.depthHidden.has('skin')&&(s.skinOpacity??0)>=.999&&(s.explode??0)<.001&&!s.sections?.some(section=>section.enabled)&&!s.section?.enabled)return false;
+ if(!isSkinPart(p)&&sets.surface&&!sets.depthHidden.has('skin')&&(s.skinOpacity??0)>=.999&&(s.explode??0)<.001&&!s.sections?.some(section=>section.enabled)&&!s.section?.enabled)return false;
  return true;
 }
 // Sections use the layer checkboxes as their source set, including pieces that
@@ -32,7 +37,7 @@ export function sectionPartVisible(p:Part,s:SceneState){
  const sets=visibilitySets(s);
  if(p.suppressed)return false;
  if(s.isolate)return sets.selected.has(p.id);
- return sets.visible.has(p.system)&&!sets.hidden.has(p.id)&&!sets.depthHidden.has(depthLayerFor(p))&&inRegion(p,s.region)&&(!isSurfaceSystem(p.system)||(s.skinOpacity??.1)>0);
+ return sets.visible.has(p.system)&&!sets.hidden.has(p.id)&&!sets.depthHidden.has(depthLayerFor(p))&&inRegion(p,s.region)&&(!isSkinPart(p)||(s.skinOpacity??.1)>0);
 }
 export function resolveSelection(atlas:Atlas,terms:string[]){
  return [...new Set(terms.flatMap(term=>{

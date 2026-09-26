@@ -5,7 +5,7 @@ type Node={point:Point;edges:number[]};
 type Edge={a:number;b:number;used:boolean};
 type Loop={points:Point[];area:number;parent:number;depth:number};
 type Contour={points:Point[];closed:boolean};
-export type SectionCapOptions={thinShell?:boolean;width?:number;outlineWidth?:number;closureWidth?:number;closureFraction?:number};
+export type SectionCapOptions={thinShell?:boolean;hollowWall?:boolean;width?:number;outlineWidth?:number;closureWidth?:number;closureFraction?:number;outermostOnly?:boolean};
 const area=(points:Point[])=>points.reduce((sum,p,i)=>{const q=points[(i+1)%points.length];return sum+p[0]*q[1]-q[0]*p[1];},0)/2;
 function contains(points:Point[],p:Point){let inside=false;for(let i=0,j=points.length-1;i<points.length;j=i++){const a=points[i],b=points[j];if((a[1]>p[1])!==(b[1]>p[1])&&p[0]<(b[0]-a[0])*(p[1]-a[1])/(b[1]-a[1])+a[0])inside=!inside;}return inside;}
 
@@ -105,6 +105,17 @@ export function sectionCapGeometry(source:T.BufferGeometry,worldPlane:T.Plane,ma
   if(Math.abs(signed)<1e-8||!tracedClosed&&Math.abs(signed)<rectangle*.025){ribbons.push({points:path,closed});continue;}
   loops.push({points:path,area:Math.abs(signed),parent:-1,depth:0});
  }
+ if(options.outermostOnly){
+  // The publisher's derived body surface includes nested cut contours. Only
+  // its exterior boundary represents skin; inner contours are not another
+  // layer of skin and must not form a second ring around the body cavity.
+  const exterior=ribbons.filter((contour,i)=>!ribbons.some((other,j)=>{
+   if(j===i||!other.closed||Math.abs(area(other.points))<=Math.abs(area(contour.points))+1e-7)return false;
+   const samples=contour.closed?[contour.points[0]]:[contour.points[Math.floor(contour.points.length*.25)],contour.points[Math.floor(contour.points.length*.5)],contour.points[Math.floor(contour.points.length*.75)]];
+   return samples.every(point=>contains(other.points,point));
+  }));
+  ribbons.splice(0,ribbons.length,...exterior);
+ }
  if(!loops.length&&!ribbons.length)return null;
  for(let i=0;i<loops.length;i++){
   let closest=-1,size=Infinity;
@@ -117,6 +128,7 @@ export function sectionCapGeometry(source:T.BufferGeometry,worldPlane:T.Plane,ma
  for(let i=0;i<loops.length;i++){
   const outer=loops[i];if(outer.depth%2)continue;
   const holes=loops.filter(loop=>loop.parent===i&&loop.depth%2).map(loop=>loop.points);
+  if(options.hollowWall&&!holes.length){ribbons.push({points:outer.points,closed:true});continue;}
   const points=[...outer.points,...holes.flat()],faces=T.ShapeUtils.triangulateShape(outer.points.map(p=>new T.Vector2(...p)),holes.map(hole=>hole.map(p=>new T.Vector2(...p))));
   if(!faces.length){ribbons.push({points:outer.points,closed:true},...holes.map(points=>({points,closed:true})));continue;}
   const expected=outer.area-holes.reduce((sum,hole)=>sum+Math.abs(area(hole)),0);
@@ -149,6 +161,7 @@ export function sectionCapGeometry(source:T.BufferGeometry,worldPlane:T.Plane,ma
  }
  if(!triangleIndices.length)return null;
  const cap=new T.BufferGeometry();cap.setAttribute('position',new T.Float32BufferAttribute(vertices,3));cap.setAttribute('normal',new T.Float32BufferAttribute(normals,3));cap.setAttribute('cutUv',new T.Float32BufferAttribute(uvs,2));cap.setAttribute('uv',new T.Float32BufferAttribute(uvs.map(value=>value*50),2));cap.setIndex(triangleIndices);
+ cap.userData={fillIndexCount,outlineIndexCount:triangleIndices.length-fillIndexCount,closedContours:loops.length,openContours:ribbons.filter(contour=>!contour.closed).length};
  if(options.outlineWidth){if(fillIndexCount)cap.addGroup(0,fillIndexCount,0);if(triangleIndices.length>fillIndexCount)cap.addGroup(fillIndexCount,triangleIndices.length-fillIndexCount,1);}
  cap.computeBoundingSphere();return cap;
 }

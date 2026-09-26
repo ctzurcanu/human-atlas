@@ -39,7 +39,7 @@ export function createServer() {
 
   server.registerTool('show_anatomy', {
     title: 'Show Human Atlas 3D anatomy',
-    description: 'Create an interactive Human Atlas view and copyable iframe. Optionally select one or more exact structure names or IDs; search_anatomy resolves ambiguity. View options control Systems, Regions, Depth, guest hierarchies, visibility, Explode, cuts, camera and isolation. Omit structure for the whole model. Models local-male and local-female require the local development viewer on port 3016.',
+    description: 'Create an interactive Human Atlas view and copyable iframe. Optionally select one or more exact structure names or IDs; search_anatomy resolves ambiguity. View options control Systems, Regions, Depth, guest hierarchies, visibility, Explode, cuts, camera and isolation. Omit structure for the whole model. Models local-reference, local-male and local-female require the local development viewer on port 3016.',
     inputSchema: {
       structure: z.string().min(1).optional().describe('Exact structure name, atlas concept ID, or piece ID.'),
       structures: z.array(z.string().min(1)).optional().describe('Additional structures to select together.'),

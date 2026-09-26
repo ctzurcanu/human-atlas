@@ -8,6 +8,7 @@ export const MODELS = {
   female: 'atlas-hra-female.json',
   embryo: 'atlas-embryo.json',
   cell: 'atlas-cell.json',
+  'local-reference': 'reference.json',
   'local-male': 'male.json',
   'local-female': 'female.json',
 };
@@ -121,7 +122,7 @@ export function anatomyView({structure, structures = [], model = 'male-detail', 
   if (isolate && !selected.length) throw new Error('Isolation requires a selected structure.');
   const parts = new Map(atlas.parts.map(part => [part.id, part]));
   const availableSystems = new Set(atlas.parts.map(part => part.system));
-  const visibleSystems = systems ?? (model==='cell'||model==='embryo'?[...availableSystems]:DEFAULT_LAYERS);
+  const visibleSystems = systems ?? (model==='cell'||model==='embryo'?[...availableSystems]:model==='local-reference'?[...DEFAULT_LAYERS,'integumentary']:DEFAULT_LAYERS);
   if (!Array.isArray(visibleSystems) || visibleSystems.some(id => !availableSystems.has(id))) throw new Error('Unknown system for this model.');
   const hiddenPieces = resolvePieces(hidden, model);
   const url = new URL(model.startsWith('local-')?'http://localhost:3016/':VIEWER_URL);
@@ -131,7 +132,7 @@ export function anatomyView({structure, structures = [], model = 'male-detail', 
   matches.forEach(concept => params.append('select', concept.id));
   params.set('layers', [...new Set(visibleSystems)].join(','));
   params.set('context', String(context));
-  params.set('skin', String(skinOpacity ?? (model==='cell'?.18:model==='male-full'?1:model.startsWith('local-')?0:.1)));
+  params.set('skin', String(skinOpacity ?? (model==='cell'?.18:model==='male-full'||model==='local-reference'?1:model.startsWith('local-')?0:.1)));
   params.set('region', region);
   if (hierarchy !== 'systems') params.set('tree', hierarchy);
   guestUrls.forEach(source=>params.append('guest',source));

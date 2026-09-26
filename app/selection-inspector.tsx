@@ -17,10 +17,8 @@ interface Props {
  state:SceneState;
  covering:string[];
  depth:number;
- allowFadedSelection:boolean;
  onOpacity:(value:number)=>void;
  onDepth:(value:number)=>void;
- onAllowFadedSelection:(value:boolean)=>void;
  onCenter:()=>void;
  onIsolate:()=>void;
  onHide:()=>void;
@@ -36,7 +34,7 @@ const wikipediaStructure=(name:string)=>{
 };
 const sliderValue=(value:number|readonly number[])=>typeof value==='number'?value:value[0];
 
-export default function SelectionInspector({titleRef,choice,selectedParts,partById,sex,scope,state,covering,depth,allowFadedSelection,onOpacity,onDepth,onAllowFadedSelection,onCenter,onIsolate,onHide,onChoosePart}:Props){
+export default function SelectionInspector({titleRef,choice,selectedParts,partById,sex,scope,state,covering,depth,onOpacity,onDepth,onCenter,onIsolate,onHide,onChoosePart}:Props){
  const title=structureName(choice.name);
  const cell=scope==='cell';
  const selected=selectedParts[0],systems=[...new Set(selectedParts.map(part=>part.system))].map(id=>SYSTEMS.find(item=>item.id===id)).filter(item=>!!item),system=systems[0];
@@ -77,10 +75,6 @@ export default function SelectionInspector({titleRef,choice,selectedParts,partBy
      <Button variant="outline" disabled={depth===0} onClick={()=>onDepth(depth-1)}>{previous?`Restore ${structureName(previous.name)}`:'Nothing to restore'}</Button>
      <Button variant="outline" disabled={depth>=covering.length} onClick={()=>onDepth(depth+1)}>{next?`Remove ${structureName(next.name)}`:'Nothing to remove'}</Button>
     </div>
-   </section>
-   <section className="inspection-section" aria-label={cell?'Select surrounding components':'Select surrounding tissue'}>
-    <label className="faded-selection"><input type="checkbox" checked={allowFadedSelection} onChange={event=>onAllowFadedSelection(event.target.checked)}/><span>Select surrounding {cell?'components':'tissue'}</span></label>
-    <p className="inspection-help">{allowFadedSelection?`Allow selecting faded ${cell?'components':'tissues'}.`:`Faded ${cell?'components':'tissues'} let clicks through.`}</p>
    </section>
    <SheetDescription className="structure-description">{description}</SheetDescription>
    {resolved.url&&<a className="context-note" href={resolved.url} target="_blank" rel="noopener noreferrer">Description from Wikipedia</a>}

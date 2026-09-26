@@ -28,6 +28,12 @@ export const DEPTH_LAYERS=[
 export type DepthLayerId=typeof DEPTH_LAYERS[number]['id'];
 
 const matches=(value:string,pattern:RegExp)=>pattern.test(value);
+export function isSkinPart(part:Part){
+ if(part.system==='regions'||part.system==='cell-boundary')return true;
+ if(part.system!=='integumentary')return false;
+ const name=structureName(part.name).toLowerCase();
+ return (part.groups??[]).some(group=>/^9: regions of human body$/i.test(group))||/^body surface\b/.test(name)||/\b(skin|hairs?|eyebrow|eyelash|nail|nipple|areola|areolar tubercle|lip)\b/.test(name);
+}
 const depthCache=new WeakMap<Part,DepthLayerId>();
 export function depthLayerFor(part:Part):DepthLayerId{
  const cached=depthCache.get(part);if(cached)return cached;
@@ -37,7 +43,14 @@ function classifyDepthLayer(part:Part):DepthLayerId{
  const name=structureName(part.name).toLowerCase();
  const groups=(part.groups??[]).join(' ').toLowerCase();
  switch(part.system){
-  case 'integumentary':case 'regions':case 'cell-boundary':return 'skin';
+  case 'regions':case 'cell-boundary':return 'skin';
+  case 'integumentary':
+   if(isSkinPart(part))return 'skin';
+   if(matches(name,/reference line|axillary line|reference plane/))return 'other';
+   if(matches(name,/ligament/))return 'ligaments';
+   if(matches(name,/adipose|breast fat/))return 'investing-fascia';
+   if(matches(name,/lacrimal gland/))return 'deep-organs';
+   return 'anterior-organs';
   case 'fascia':return matches(name,/pleura|peritone|pericardi|mesenter|omentum/)?'visceral-coverings':'investing-fascia';
   case 'venous':return matches(name,/\b(superficial|cephalic|basilic|saphenous|dorsal venous|cutaneous vein|median cubital)\b/)?'superficial-veins':'deep-vessels';
   case 'arterial':return 'deep-vessels';
