@@ -1,0 +1,6020 @@
+{
+  "source": "Z-Anatomy origin/end marker to bone contact",
+  "markerMaxDistanceMm": 1.5,
+  "entries": [
+    {
+      "marker": "(Opponens digiti minimi muscle of foot).ol",
+      "muscle": "(Opponens digiti minimi muscle of foot)",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fifth metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "(Opponens digiti minimi muscle of foot).or",
+      "muscle": "(Opponens digiti minimi muscle of foot)",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fifth metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Abductor digiti minimi of foot.el",
+      "muscle": "Abductor digiti minimi of foot",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fifth finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Abductor digiti minimi of foot.er",
+      "muscle": "Abductor digiti minimi of foot",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fifth finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Abductor digiti minimi of hand.el",
+      "muscle": "Abductor digiti minimi of hand",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fifth finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Abductor digiti minimi of hand.er",
+      "muscle": "Abductor digiti minimi of hand",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fifth finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Abductor digiti minimi of hand.ol",
+      "muscle": "Abductor digiti minimi of hand",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Pisiform bone (left)"
+      ]
+    },
+    {
+      "marker": "Abductor digiti minimi of hand.or",
+      "muscle": "Abductor digiti minimi of hand",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Pisiform bone (right)"
+      ]
+    },
+    {
+      "marker": "Abductor hallucis.el",
+      "muscle": "Abductor hallucis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Abductor hallucis.er",
+      "muscle": "Abductor hallucis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Abductor hallucis.ol",
+      "muscle": "Abductor hallucis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Calcaneus (left)"
+      ]
+    },
+    {
+      "marker": "Abductor hallucis.or",
+      "muscle": "Abductor hallucis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Calcaneus (right)"
+      ]
+    },
+    {
+      "marker": "Abductor pollicis longus.el",
+      "muscle": "Abductor pollicis longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "First metacarpal bone (left)"
+      ]
+    },
+    {
+      "marker": "Abductor pollicis longus.er",
+      "muscle": "Abductor pollicis longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "First metacarpal bone (right)"
+      ]
+    },
+    {
+      "marker": "Abductor pollicis longus.ol",
+      "muscle": "Abductor pollicis longus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Ulna (left)",
+        "Radius (left)"
+      ]
+    },
+    {
+      "marker": "Abductor pollicis longus.or",
+      "muscle": "Abductor pollicis longus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Ulna (right)",
+        "Radius (right)"
+      ]
+    },
+    {
+      "marker": "Acromial part of deltoid muscle.ol",
+      "muscle": "Acromial part of deltoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Acromial part of deltoid muscle.or",
+      "muscle": "Acromial part of deltoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Adductor longus.el",
+      "muscle": "Adductor longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Adductor longus.er",
+      "muscle": "Adductor longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Adductor longus.ol",
+      "muscle": "Adductor longus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Adductor longus.or",
+      "muscle": "Adductor longus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Adductor magnus.el",
+      "muscle": "Adductor magnus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Adductor magnus.er",
+      "muscle": "Adductor magnus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Adductor magnus.ol",
+      "muscle": "Adductor magnus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Adductor magnus.or",
+      "muscle": "Adductor magnus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Adductor pollicis.e1l",
+      "muscle": "Adductor pollicis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Adductor pollicis.e1r",
+      "muscle": "Adductor pollicis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Adductor pollicis.el",
+      "muscle": "Adductor pollicis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Capitate bone (left)"
+      ]
+    },
+    {
+      "marker": "Adductor pollicis.er",
+      "muscle": "Adductor pollicis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Capitate bone (right)"
+      ]
+    },
+    {
+      "marker": "Anconeus muscle.el",
+      "muscle": "Anconeus muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Ulna (left)"
+      ]
+    },
+    {
+      "marker": "Anconeus muscle.er",
+      "muscle": "Anconeus muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Ulna (right)"
+      ]
+    },
+    {
+      "marker": "Anconeus muscle.ol",
+      "muscle": "Anconeus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Anconeus muscle.or",
+      "muscle": "Anconeus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Anterior belly of digastric muscle.el",
+      "muscle": "Anterior belly of digastric muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Anterior belly of digastric muscle.er",
+      "muscle": "Anterior belly of digastric muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Articularis genus muscle.ol",
+      "muscle": "Articularis genus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Articularis genus muscle.or",
+      "muscle": "Articularis genus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Ascending part of trapezius muscle.ol",
+      "muscle": "Ascending part of trapezius muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Clavicle (left)"
+      ]
+    },
+    {
+      "marker": "Ascending part of trapezius muscle.or",
+      "muscle": "Ascending part of trapezius muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Clavicle (right)"
+      ]
+    },
+    {
+      "marker": "Biceps brachii muscle.el",
+      "muscle": "Biceps brachii muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Radius (left)"
+      ]
+    },
+    {
+      "marker": "Biceps brachii muscle.er",
+      "muscle": "Biceps brachii muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Radius (right)"
+      ]
+    },
+    {
+      "marker": "Biceps femoris muscle.el",
+      "muscle": "Biceps femoris muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fibula (left)"
+      ]
+    },
+    {
+      "marker": "Biceps femoris muscle.er",
+      "muscle": "Biceps femoris muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fibula (right)"
+      ]
+    },
+    {
+      "marker": "Brachialis muscle.el",
+      "muscle": "Brachialis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Ulna (left)"
+      ]
+    },
+    {
+      "marker": "Brachialis muscle.er",
+      "muscle": "Brachialis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Ulna (right)"
+      ]
+    },
+    {
+      "marker": "Brachialis muscle.ol",
+      "muscle": "Brachialis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Brachialis muscle.or",
+      "muscle": "Brachialis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Brachioradialis muscle.el",
+      "muscle": "Brachioradialis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Radius (left)"
+      ]
+    },
+    {
+      "marker": "Brachioradialis muscle.er",
+      "muscle": "Brachioradialis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Radius (right)"
+      ]
+    },
+    {
+      "marker": "Brachioradialis muscle.ol",
+      "muscle": "Brachioradialis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Brachioradialis muscle.or",
+      "muscle": "Brachioradialis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Bucinator.o1l",
+      "muscle": "Bucinator",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Bucinator.o1r",
+      "muscle": "Bucinator",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Bucinator.ol",
+      "muscle": "Bucinator",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Maxilla (left)"
+      ]
+    },
+    {
+      "marker": "Bucinator.or",
+      "muscle": "Bucinator",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Maxilla (right)"
+      ]
+    },
+    {
+      "marker": "Clavicular part of deltoid muscle.ol",
+      "muscle": "Clavicular part of deltoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Clavicle (left)"
+      ]
+    },
+    {
+      "marker": "Clavicular part of deltoid muscle.or",
+      "muscle": "Clavicular part of deltoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Clavicle (right)"
+      ]
+    },
+    {
+      "marker": "Common extensor tendon.ol",
+      "muscle": "Common extensor tendon",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Common extensor tendon.or",
+      "muscle": "Common extensor tendon",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Common flexor tendon.ol",
+      "muscle": "Common flexor tendon",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Common flexor tendon.or",
+      "muscle": "Common flexor tendon",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Coracobrachialis muscle.ol",
+      "muscle": "Coracobrachialis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Coracobrachialis muscle.or",
+      "muscle": "Coracobrachialis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Deep head of flexor pollicis brevis.o1l",
+      "muscle": "Deep head of flexor pollicis brevis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "First metacarpal bone (left)"
+      ]
+    },
+    {
+      "marker": "Deep head of flexor pollicis brevis.o1r",
+      "muscle": "Deep head of flexor pollicis brevis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "First metacarpal bone (right)"
+      ]
+    },
+    {
+      "marker": "Deep head of flexor pollicis brevis.ol",
+      "muscle": "Deep head of flexor pollicis brevis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Trapezium bone (left)"
+      ]
+    },
+    {
+      "marker": "Deep head of flexor pollicis brevis.or",
+      "muscle": "Deep head of flexor pollicis brevis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Trapezium bone (right)"
+      ]
+    },
+    {
+      "marker": "Deltoid muscle.el",
+      "muscle": "Deltoid muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Deltoid muscle.er",
+      "muscle": "Deltoid muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Depressor anguli oris.ol",
+      "muscle": "Depressor anguli oris",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Depressor anguli oris.or",
+      "muscle": "Depressor anguli oris",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Depressor labii inferioris.ol",
+      "muscle": "Depressor labii inferioris",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Depressor labii inferioris.or",
+      "muscle": "Depressor labii inferioris",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Depressor septi nasi.ol",
+      "muscle": "Depressor septi nasi",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Maxilla (left)"
+      ]
+    },
+    {
+      "marker": "Depressor septi nasi.or",
+      "muscle": "Depressor septi nasi",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Maxilla (right)"
+      ]
+    },
+    {
+      "marker": "Descending part of trapezius muscle.ol",
+      "muscle": "Descending part of trapezius muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Descending part of trapezius muscle.or",
+      "muscle": "Descending part of trapezius muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Diaphragm.o1l",
+      "muscle": "Diaphragm",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Vertebra L1"
+      ]
+    },
+    {
+      "marker": "Diaphragm.o1r",
+      "muscle": "Diaphragm",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Vertebra L1"
+      ]
+    },
+    {
+      "marker": "Diaphragm.o2l",
+      "muscle": "Diaphragm",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Vertebra L2"
+      ]
+    },
+    {
+      "marker": "Diaphragm.o2r",
+      "muscle": "Diaphragm",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Vertebra L2"
+      ]
+    },
+    {
+      "marker": "Diaphragm.o3l",
+      "muscle": "Diaphragm",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Vertebra L3"
+      ]
+    },
+    {
+      "marker": "Diaphragm.o3r",
+      "muscle": "Diaphragm",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Vertebra L3"
+      ]
+    },
+    {
+      "marker": "Diaphragm.o4l",
+      "muscle": "Diaphragm",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Twelfth rib (left)"
+      ]
+    },
+    {
+      "marker": "Diaphragm.o4r",
+      "muscle": "Diaphragm",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Twelfth rib (right)"
+      ]
+    },
+    {
+      "marker": "Diaphragm.o5l",
+      "muscle": "Diaphragm",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Eleventh rib (left)"
+      ]
+    },
+    {
+      "marker": "Diaphragm.o5r",
+      "muscle": "Diaphragm",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Eleventh rib (right)"
+      ]
+    },
+    {
+      "marker": "Diaphragm.ol",
+      "muscle": "Diaphragm",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Xiphoid process",
+        "Tenth rib (left)"
+      ]
+    },
+    {
+      "marker": "Diaphragm.or",
+      "muscle": "Diaphragm",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Xiphoid process",
+        "Tenth rib (right)"
+      ]
+    },
+    {
+      "marker": "Dorsal interossei muscles of hand.o1l",
+      "muscle": "Dorsal interossei muscles of hand",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fourth metacarpal bone (left)"
+      ]
+    },
+    {
+      "marker": "Dorsal interossei muscles of hand.o1r",
+      "muscle": "Dorsal interossei muscles of hand",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fourth metacarpal bone (right)"
+      ]
+    },
+    {
+      "marker": "Dorsal interossei muscles of hand.o2l",
+      "muscle": "Dorsal interossei muscles of hand",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Third metacarpal bone (left)"
+      ]
+    },
+    {
+      "marker": "Dorsal interossei muscles of hand.o2r",
+      "muscle": "Dorsal interossei muscles of hand",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Third metacarpal bone (right)"
+      ]
+    },
+    {
+      "marker": "Dorsal interossei muscles of hand.o3l",
+      "muscle": "Dorsal interossei muscles of hand",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Second metacarpal bone (left)"
+      ]
+    },
+    {
+      "marker": "Dorsal interossei muscles of hand.o3r",
+      "muscle": "Dorsal interossei muscles of hand",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Second metacarpal bone (right)"
+      ]
+    },
+    {
+      "marker": "Dorsal interossei muscles of hand.o4l",
+      "muscle": "Dorsal interossei muscles of hand",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "First metacarpal bone (left)"
+      ]
+    },
+    {
+      "marker": "Dorsal interossei muscles of hand.o4r",
+      "muscle": "Dorsal interossei muscles of hand",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "First metacarpal bone (right)"
+      ]
+    },
+    {
+      "marker": "Dorsal interossei muscles of hand.ol",
+      "muscle": "Dorsal interossei muscles of hand",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fifth metacarpal bone (left)"
+      ]
+    },
+    {
+      "marker": "Dorsal interossei muscles of hand.or",
+      "muscle": "Dorsal interossei muscles of hand",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fifth metacarpal bone (right)"
+      ]
+    },
+    {
+      "marker": "Erector spinae.ol",
+      "muscle": "Erector spinae",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Erector spinae.or",
+      "muscle": "Erector spinae",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Extensor carpi radialis brevis.el",
+      "muscle": "Extensor carpi radialis brevis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Third metacarpal bone (left)"
+      ]
+    },
+    {
+      "marker": "Extensor carpi radialis brevis.er",
+      "muscle": "Extensor carpi radialis brevis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Third metacarpal bone (right)"
+      ]
+    },
+    {
+      "marker": "Extensor carpi radialis longus.el",
+      "muscle": "Extensor carpi radialis longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Second metacarpal bone (left)"
+      ]
+    },
+    {
+      "marker": "Extensor carpi radialis longus.er",
+      "muscle": "Extensor carpi radialis longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Second metacarpal bone (right)"
+      ]
+    },
+    {
+      "marker": "Extensor carpi radialis longus.ol",
+      "muscle": "Extensor carpi radialis longus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Extensor carpi radialis longus.or",
+      "muscle": "Extensor carpi radialis longus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Extensor carpi ulnaris.el",
+      "muscle": "Extensor carpi ulnaris",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Triquetrum bone (left)"
+      ]
+    },
+    {
+      "marker": "Extensor carpi ulnaris.er",
+      "muscle": "Extensor carpi ulnaris",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Triquetrum bone (right)"
+      ]
+    },
+    {
+      "marker": "Extensor carpi ulnaris.ol",
+      "muscle": "Extensor carpi ulnaris",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Ulna (left)"
+      ]
+    },
+    {
+      "marker": "Extensor carpi ulnaris.or",
+      "muscle": "Extensor carpi ulnaris",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Ulna (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum brevis.e1l",
+      "muscle": "Extensor digitorum brevis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of third finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum brevis.e1r",
+      "muscle": "Extensor digitorum brevis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of third finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum brevis.e2l",
+      "muscle": "Extensor digitorum brevis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fourth finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum brevis.e2r",
+      "muscle": "Extensor digitorum brevis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fourth finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum brevis.el",
+      "muscle": "Extensor digitorum brevis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of second finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum brevis.er",
+      "muscle": "Extensor digitorum brevis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of second finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.e1l",
+      "muscle": "Extensor digitorum longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of third finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.e1r",
+      "muscle": "Extensor digitorum longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of third finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.e2l",
+      "muscle": "Extensor digitorum longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fourth finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.e2r",
+      "muscle": "Extensor digitorum longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fourth finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.e3l",
+      "muscle": "Extensor digitorum longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fifth finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.e3r",
+      "muscle": "Extensor digitorum longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fifth finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.e4l",
+      "muscle": "Extensor digitorum longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fifth finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.e4r",
+      "muscle": "Extensor digitorum longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fifth finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.el",
+      "muscle": "Extensor digitorum longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of second finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.er",
+      "muscle": "Extensor digitorum longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of second finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.o1l",
+      "muscle": "Extensor digitorum longus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fibula (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.o1r",
+      "muscle": "Extensor digitorum longus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fibula (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.ol",
+      "muscle": "Extensor digitorum longus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Tibia (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum longus.or",
+      "muscle": "Extensor digitorum longus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Tibia (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e1l",
+      "muscle": "Extensor digitorum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fourth finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e1r",
+      "muscle": "Extensor digitorum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fourth finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e2l",
+      "muscle": "Extensor digitorum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of third finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e2r",
+      "muscle": "Extensor digitorum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of third finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e3l",
+      "muscle": "Extensor digitorum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of second finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e3r",
+      "muscle": "Extensor digitorum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of second finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e4l",
+      "muscle": "Extensor digitorum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fifth finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e4r",
+      "muscle": "Extensor digitorum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fifth finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e5l",
+      "muscle": "Extensor digitorum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fourth finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e5r",
+      "muscle": "Extensor digitorum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fourth finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e6l",
+      "muscle": "Extensor digitorum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of third finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e6r",
+      "muscle": "Extensor digitorum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of third finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e7l",
+      "muscle": "Extensor digitorum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of second finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.e7r",
+      "muscle": "Extensor digitorum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of second finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.el",
+      "muscle": "Extensor digitorum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fifth finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Extensor digitorum.er",
+      "muscle": "Extensor digitorum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fifth finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Extensor hallucis brevis.ol",
+      "muscle": "Extensor hallucis brevis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Calcaneus (left)"
+      ]
+    },
+    {
+      "marker": "Extensor hallucis brevis.or",
+      "muscle": "Extensor hallucis brevis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Calcaneus (right)"
+      ]
+    },
+    {
+      "marker": "Extensor hallucis longus.el",
+      "muscle": "Extensor hallucis longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Extensor hallucis longus.er",
+      "muscle": "Extensor hallucis longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Extensor hallucis longus.ol",
+      "muscle": "Extensor hallucis longus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fibula (left)"
+      ]
+    },
+    {
+      "marker": "Extensor hallucis longus.or",
+      "muscle": "Extensor hallucis longus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fibula (right)"
+      ]
+    },
+    {
+      "marker": "Extensor indicis.el",
+      "muscle": "Extensor indicis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of second finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Extensor indicis.er",
+      "muscle": "Extensor indicis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of second finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Extensor indicis.ol",
+      "muscle": "Extensor indicis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Ulna (left)"
+      ]
+    },
+    {
+      "marker": "Extensor indicis.or",
+      "muscle": "Extensor indicis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Ulna (right)"
+      ]
+    },
+    {
+      "marker": "Extensor pollicis brevis.el",
+      "muscle": "Extensor pollicis brevis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Extensor pollicis brevis.er",
+      "muscle": "Extensor pollicis brevis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Extensor pollicis brevis.ol",
+      "muscle": "Extensor pollicis brevis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Radius (left)"
+      ]
+    },
+    {
+      "marker": "Extensor pollicis brevis.or",
+      "muscle": "Extensor pollicis brevis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Radius (right)"
+      ]
+    },
+    {
+      "marker": "Extensor pollicis longus.el",
+      "muscle": "Extensor pollicis longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of first finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Extensor pollicis longus.er",
+      "muscle": "Extensor pollicis longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of first finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Extensor pollicis longus.ol",
+      "muscle": "Extensor pollicis longus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Ulna (left)"
+      ]
+    },
+    {
+      "marker": "Extensor pollicis longus.or",
+      "muscle": "Extensor pollicis longus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Ulna (right)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.o1l",
+      "muscle": "External abdominal oblique muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Sixth rib (left)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.o1r",
+      "muscle": "External abdominal oblique muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Sixth rib (right)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.o2l",
+      "muscle": "External abdominal oblique muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Seventh rib (left)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.o2r",
+      "muscle": "External abdominal oblique muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Seventh rib (right)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.o3l",
+      "muscle": "External abdominal oblique muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Eighth rib (left)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.o3r",
+      "muscle": "External abdominal oblique muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Eighth rib (right)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.o4l",
+      "muscle": "External abdominal oblique muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.o4r",
+      "muscle": "External abdominal oblique muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.o5l",
+      "muscle": "External abdominal oblique muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.o5r",
+      "muscle": "External abdominal oblique muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.ol",
+      "muscle": "External abdominal oblique muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fifth rib (left)"
+      ]
+    },
+    {
+      "marker": "External abdominal oblique muscle.or",
+      "muscle": "External abdominal oblique muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fifth rib (right)"
+      ]
+    },
+    {
+      "marker": "Fibularis brevis muscle.el",
+      "muscle": "Fibularis brevis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fifth metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Fibularis brevis muscle.er",
+      "muscle": "Fibularis brevis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fifth metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Fibularis brevis muscle.ol",
+      "muscle": "Fibularis brevis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fibula (left)"
+      ]
+    },
+    {
+      "marker": "Fibularis brevis muscle.or",
+      "muscle": "Fibularis brevis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fibula (right)"
+      ]
+    },
+    {
+      "marker": "Fibularis longus muscle.ol",
+      "muscle": "Fibularis longus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fibula (left)"
+      ]
+    },
+    {
+      "marker": "Fibularis longus muscle.or",
+      "muscle": "Fibularis longus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fibula (right)"
+      ]
+    },
+    {
+      "marker": "Fibularis tertius muscle.el",
+      "muscle": "Fibularis tertius muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fifth metatarsal bone (left)",
+        "Fourth metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Fibularis tertius muscle.er",
+      "muscle": "Fibularis tertius muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fifth metatarsal bone (right)",
+        "Fourth metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Fibularis tertius muscle.ol",
+      "muscle": "Fibularis tertius muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fibula (left)"
+      ]
+    },
+    {
+      "marker": "Fibularis tertius muscle.or",
+      "muscle": "Fibularis tertius muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fibula (right)"
+      ]
+    },
+    {
+      "marker": "Flexor carpi ulnaris.el",
+      "muscle": "Flexor carpi ulnaris",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Pisiform bone (left)"
+      ]
+    },
+    {
+      "marker": "Flexor carpi ulnaris.er",
+      "muscle": "Flexor carpi ulnaris",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Pisiform bone (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digiti minimi of foot.el",
+      "muscle": "Flexor digiti minimi of foot",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fifth finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digiti minimi of foot.er",
+      "muscle": "Flexor digiti minimi of foot",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fifth finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digiti minimi of hand.el",
+      "muscle": "Flexor digiti minimi of hand",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fifth finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digiti minimi of hand.er",
+      "muscle": "Flexor digiti minimi of hand",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of fifth finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digiti minimi of hand.ol",
+      "muscle": "Flexor digiti minimi of hand",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hamate bone (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digiti minimi of hand.or",
+      "muscle": "Flexor digiti minimi of hand",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hamate bone (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum brevis.e1l",
+      "muscle": "Flexor digitorum brevis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of third finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum brevis.e1r",
+      "muscle": "Flexor digitorum brevis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of third finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum brevis.e2l",
+      "muscle": "Flexor digitorum brevis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fifth finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum brevis.e2r",
+      "muscle": "Flexor digitorum brevis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fifth finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum brevis.el",
+      "muscle": "Flexor digitorum brevis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of second finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum brevis.er",
+      "muscle": "Flexor digitorum brevis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of second finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum brevis.ol",
+      "muscle": "Flexor digitorum brevis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Calcaneus (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum brevis.or",
+      "muscle": "Flexor digitorum brevis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Calcaneus (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum longus.e1l",
+      "muscle": "Flexor digitorum longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of third finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum longus.e1r",
+      "muscle": "Flexor digitorum longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of third finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum longus.e2l",
+      "muscle": "Flexor digitorum longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fourth finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum longus.e2r",
+      "muscle": "Flexor digitorum longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fourth finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum longus.e3l",
+      "muscle": "Flexor digitorum longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fifth finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum longus.e3r",
+      "muscle": "Flexor digitorum longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fifth finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum longus.el",
+      "muscle": "Flexor digitorum longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of second finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum longus.er",
+      "muscle": "Flexor digitorum longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of second finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum longus.ol",
+      "muscle": "Flexor digitorum longus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Tibia (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum longus.or",
+      "muscle": "Flexor digitorum longus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Tibia (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum profundus.e1l",
+      "muscle": "Flexor digitorum profundus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fourth finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum profundus.e1r",
+      "muscle": "Flexor digitorum profundus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fourth finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum profundus.e2l",
+      "muscle": "Flexor digitorum profundus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of third finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum profundus.e2r",
+      "muscle": "Flexor digitorum profundus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of third finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum profundus.e3l",
+      "muscle": "Flexor digitorum profundus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of second finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum profundus.e3r",
+      "muscle": "Flexor digitorum profundus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of second finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum profundus.el",
+      "muscle": "Flexor digitorum profundus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fifth finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum profundus.er",
+      "muscle": "Flexor digitorum profundus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of fifth finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum superficialis.e1l",
+      "muscle": "Flexor digitorum superficialis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fourth finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum superficialis.e1r",
+      "muscle": "Flexor digitorum superficialis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fourth finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum superficialis.e2l",
+      "muscle": "Flexor digitorum superficialis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of third finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum superficialis.e2r",
+      "muscle": "Flexor digitorum superficialis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of third finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum superficialis.e3l",
+      "muscle": "Flexor digitorum superficialis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of second finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum superficialis.e3r",
+      "muscle": "Flexor digitorum superficialis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of second finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum superficialis.el",
+      "muscle": "Flexor digitorum superficialis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fifth finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum superficialis.er",
+      "muscle": "Flexor digitorum superficialis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Middle phalanx of fifth finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum superficialis.ol",
+      "muscle": "Flexor digitorum superficialis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Radius (left)"
+      ]
+    },
+    {
+      "marker": "Flexor digitorum superficialis.or",
+      "muscle": "Flexor digitorum superficialis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Radius (right)"
+      ]
+    },
+    {
+      "marker": "Flexor hallucis longus.el",
+      "muscle": "Flexor hallucis longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of first finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Flexor hallucis longus.er",
+      "muscle": "Flexor hallucis longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of first finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Flexor hallucis longus.ol",
+      "muscle": "Flexor hallucis longus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fibula (left)"
+      ]
+    },
+    {
+      "marker": "Flexor hallucis longus.or",
+      "muscle": "Flexor hallucis longus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fibula (right)"
+      ]
+    },
+    {
+      "marker": "Flexor pollicis longus.el",
+      "muscle": "Flexor pollicis longus",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of first finger of hand (left)"
+      ]
+    },
+    {
+      "marker": "Flexor pollicis longus.er",
+      "muscle": "Flexor pollicis longus",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Distal phalanx of first finger of hand (right)"
+      ]
+    },
+    {
+      "marker": "Flexor pollicis longus.o1l",
+      "muscle": "Flexor pollicis longus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Radius (left)"
+      ]
+    },
+    {
+      "marker": "Flexor pollicis longus.o1r",
+      "muscle": "Flexor pollicis longus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Radius (right)"
+      ]
+    },
+    {
+      "marker": "Flexor pollicis longus.ol",
+      "muscle": "Flexor pollicis longus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Ulna (left)"
+      ]
+    },
+    {
+      "marker": "Flexor pollicis longus.or",
+      "muscle": "Flexor pollicis longus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Ulna (right)"
+      ]
+    },
+    {
+      "marker": "Frontalis muscle.ol",
+      "muscle": "Frontalis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Frontal bone"
+      ]
+    },
+    {
+      "marker": "Frontalis muscle.or",
+      "muscle": "Frontalis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Frontal bone"
+      ]
+    },
+    {
+      "marker": "Geniohyoid muscle.ol",
+      "muscle": "Geniohyoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Geniohyoid muscle.or",
+      "muscle": "Geniohyoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Gluteus maximus muscle.el",
+      "muscle": "Gluteus maximus muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Gluteus maximus muscle.er",
+      "muscle": "Gluteus maximus muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Gluteus maximus muscle.ol",
+      "muscle": "Gluteus maximus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Gluteus maximus muscle.or",
+      "muscle": "Gluteus maximus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Gluteus medius muscle.el",
+      "muscle": "Gluteus medius muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Gluteus medius muscle.er",
+      "muscle": "Gluteus medius muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Gluteus medius muscle.ol",
+      "muscle": "Gluteus medius muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Gluteus medius muscle.or",
+      "muscle": "Gluteus medius muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Gluteus minimus muscle.ol",
+      "muscle": "Gluteus minimus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Gluteus minimus muscle.or",
+      "muscle": "Gluteus minimus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Gracilis muscle.el",
+      "muscle": "Gracilis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Tibia (left)"
+      ]
+    },
+    {
+      "marker": "Gracilis muscle.er",
+      "muscle": "Gracilis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Tibia (right)"
+      ]
+    },
+    {
+      "marker": "Gracilis muscle.ol",
+      "muscle": "Gracilis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Gracilis muscle.or",
+      "muscle": "Gracilis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Iliacus muscle.ol",
+      "muscle": "Iliacus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Iliacus muscle.or",
+      "muscle": "Iliacus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Iliocostalis colli muscle.el",
+      "muscle": "Iliocostalis colli muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C4"
+      ]
+    },
+    {
+      "marker": "Iliocostalis colli muscle.er",
+      "muscle": "Iliocostalis colli muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C4"
+      ]
+    },
+    {
+      "marker": "Iliopsoas muscle.el",
+      "muscle": "Iliopsoas muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Iliopsoas muscle.er",
+      "muscle": "Iliopsoas muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Inferior gemellus muscle.ol",
+      "muscle": "Inferior gemellus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Inferior gemellus muscle.or",
+      "muscle": "Inferior gemellus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Infraspinatus muscle.el",
+      "muscle": "Infraspinatus muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Infraspinatus muscle.er",
+      "muscle": "Infraspinatus muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Infraspinatus muscle.ol",
+      "muscle": "Infraspinatus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Infraspinatus muscle.or",
+      "muscle": "Infraspinatus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Internal abdominal oblique muscle.o1l",
+      "muscle": "Internal abdominal oblique muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Tenth rib (left)"
+      ]
+    },
+    {
+      "marker": "Internal abdominal oblique muscle.o1r",
+      "muscle": "Internal abdominal oblique muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Tenth rib (right)"
+      ]
+    },
+    {
+      "marker": "Internal abdominal oblique muscle.o2l",
+      "muscle": "Internal abdominal oblique muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Tenth rib (left)"
+      ]
+    },
+    {
+      "marker": "Internal abdominal oblique muscle.o2r",
+      "muscle": "Internal abdominal oblique muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Tenth rib (right)"
+      ]
+    },
+    {
+      "marker": "Internal abdominal oblique muscle.o3l",
+      "muscle": "Internal abdominal oblique muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Internal abdominal oblique muscle.o3r",
+      "muscle": "Internal abdominal oblique muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Internal abdominal oblique muscle.o4l",
+      "muscle": "Internal abdominal oblique muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Eleventh rib (left)"
+      ]
+    },
+    {
+      "marker": "Internal abdominal oblique muscle.o4r",
+      "muscle": "Internal abdominal oblique muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Eleventh rib (right)"
+      ]
+    },
+    {
+      "marker": "Internal abdominal oblique muscle.ol",
+      "muscle": "Internal abdominal oblique muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Twelfth rib (left)"
+      ]
+    },
+    {
+      "marker": "Internal abdominal oblique muscle.or",
+      "muscle": "Internal abdominal oblique muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Twelfth rib (right)"
+      ]
+    },
+    {
+      "marker": "Lateral head of flexor hallucis brevis.el",
+      "muscle": "Lateral head of flexor hallucis brevis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Lateral head of flexor hallucis brevis.er",
+      "muscle": "Lateral head of flexor hallucis brevis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Lateral head of flexor hallucis brevis.o1l",
+      "muscle": "Lateral head of flexor hallucis brevis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "First metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Lateral head of flexor hallucis brevis.o1r",
+      "muscle": "Lateral head of flexor hallucis brevis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "First metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Lateral head of flexor hallucis brevis.ol",
+      "muscle": "Lateral head of flexor hallucis brevis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Medial cuneiform bone (left)"
+      ]
+    },
+    {
+      "marker": "Lateral head of flexor hallucis brevis.or",
+      "muscle": "Lateral head of flexor hallucis brevis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Medial cuneiform bone (right)"
+      ]
+    },
+    {
+      "marker": "Lateral head of gastrocnemius.ol",
+      "muscle": "Lateral head of gastrocnemius",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Lateral head of gastrocnemius.or",
+      "muscle": "Lateral head of gastrocnemius",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Lateral head of triceps brachii.ol",
+      "muscle": "Lateral head of triceps brachii",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Lateral head of triceps brachii.or",
+      "muscle": "Lateral head of triceps brachii",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Lateral pterygoid muscle.o1l",
+      "muscle": "Lateral pterygoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Maxilla (left)"
+      ]
+    },
+    {
+      "marker": "Lateral pterygoid muscle.o1r",
+      "muscle": "Lateral pterygoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Maxilla (right)"
+      ]
+    },
+    {
+      "marker": "Lateral pterygoid muscle.ol",
+      "muscle": "Lateral pterygoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Maxilla (left)",
+        "Palatine bone (left)"
+      ]
+    },
+    {
+      "marker": "Lateral pterygoid muscle.or",
+      "muscle": "Lateral pterygoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Maxilla (right)",
+        "Palatine bone (right)"
+      ]
+    },
+    {
+      "marker": "Latissimus dorsi muscle.el",
+      "muscle": "Latissimus dorsi muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Latissimus dorsi muscle.er",
+      "muscle": "Latissimus dorsi muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Latissimus dorsi muscle.ol",
+      "muscle": "Latissimus dorsi muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Latissimus dorsi muscle.or",
+      "muscle": "Latissimus dorsi muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Levator anguli oris.ol",
+      "muscle": "Levator anguli oris",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Maxilla (left)"
+      ]
+    },
+    {
+      "marker": "Levator anguli oris.or",
+      "muscle": "Levator anguli oris",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Maxilla (right)"
+      ]
+    },
+    {
+      "marker": "Levator ani.ol",
+      "muscle": "Levator ani",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Levator ani.or",
+      "muscle": "Levator ani",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Levator labii superioris.ol",
+      "muscle": "Levator labii superioris",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Maxilla (left)",
+        "Zygomatic bone (left)"
+      ]
+    },
+    {
+      "marker": "Levator labii superioris.or",
+      "muscle": "Levator labii superioris",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Maxilla (right)",
+        "Zygomatic bone (right)"
+      ]
+    },
+    {
+      "marker": "Levator nasolabialis.ol",
+      "muscle": "Levator nasolabialis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Maxilla (left)"
+      ]
+    },
+    {
+      "marker": "Levator nasolabialis.or",
+      "muscle": "Levator nasolabialis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Maxilla (right)"
+      ]
+    },
+    {
+      "marker": "Levator scapulae.el",
+      "muscle": "Levator scapulae",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Levator scapulae.er",
+      "muscle": "Levator scapulae",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Levator scapulae.o1l",
+      "muscle": "Levator scapulae",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Axis (C2)"
+      ]
+    },
+    {
+      "marker": "Levator scapulae.o1r",
+      "muscle": "Levator scapulae",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Axis (C2)"
+      ]
+    },
+    {
+      "marker": "Levator scapulae.o2l",
+      "muscle": "Levator scapulae",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Vertebra C3"
+      ]
+    },
+    {
+      "marker": "Levator scapulae.o2r",
+      "muscle": "Levator scapulae",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Vertebra C3"
+      ]
+    },
+    {
+      "marker": "Levator scapulae.o3l",
+      "muscle": "Levator scapulae",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Vertebra C4"
+      ]
+    },
+    {
+      "marker": "Levator scapulae.o3r",
+      "muscle": "Levator scapulae",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Vertebra C4"
+      ]
+    },
+    {
+      "marker": "Levator scapulae.ol",
+      "muscle": "Levator scapulae",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Atlas (C1)"
+      ]
+    },
+    {
+      "marker": "Levator scapulae.or",
+      "muscle": "Levator scapulae",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Atlas (C1)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e10l",
+      "muscle": "Levatores longi costarum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Twelfth rib (left)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e10r",
+      "muscle": "Levatores longi costarum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Twelfth rib (right)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e1l",
+      "muscle": "Levatores longi costarum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Third rib (left)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e1r",
+      "muscle": "Levatores longi costarum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Third rib (right)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e2l",
+      "muscle": "Levatores longi costarum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fourth rib (left)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e2r",
+      "muscle": "Levatores longi costarum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fourth rib (right)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e3l",
+      "muscle": "Levatores longi costarum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fifth rib (left)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e3r",
+      "muscle": "Levatores longi costarum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fifth rib (right)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e4l",
+      "muscle": "Levatores longi costarum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Sixth rib (left)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e4r",
+      "muscle": "Levatores longi costarum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Sixth rib (right)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e5l",
+      "muscle": "Levatores longi costarum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Seventh rib (left)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e5r",
+      "muscle": "Levatores longi costarum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Seventh rib (right)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e6l",
+      "muscle": "Levatores longi costarum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Eighth rib (left)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e6r",
+      "muscle": "Levatores longi costarum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Eighth rib (right)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e7l",
+      "muscle": "Levatores longi costarum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Ninth rib (left)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e7r",
+      "muscle": "Levatores longi costarum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Ninth rib (right)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e8l",
+      "muscle": "Levatores longi costarum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Tenth rib (left)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e8r",
+      "muscle": "Levatores longi costarum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Tenth rib (right)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e9l",
+      "muscle": "Levatores longi costarum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Eleventh rib (left)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.e9r",
+      "muscle": "Levatores longi costarum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Eleventh rib (right)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.el",
+      "muscle": "Levatores longi costarum",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Second rib (left)"
+      ]
+    },
+    {
+      "marker": "Levatores longi costarum.er",
+      "muscle": "Levatores longi costarum",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Second rib (right)"
+      ]
+    },
+    {
+      "marker": "Long head of biceps brachii.ol",
+      "muscle": "Long head of biceps brachii",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Long head of biceps brachii.or",
+      "muscle": "Long head of biceps brachii",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Long head of biceps femoris.ol",
+      "muscle": "Long head of biceps femoris",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Long head of biceps femoris.or",
+      "muscle": "Long head of biceps femoris",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Long head of triceps brachii.ol",
+      "muscle": "Long head of triceps brachii",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Long head of triceps brachii.or",
+      "muscle": "Long head of triceps brachii",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Long plantar ligament.o1l",
+      "muscle": "Long plantar ligament",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "First metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Long plantar ligament.o1r",
+      "muscle": "Long plantar ligament",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "First metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Long plantar ligament.o2l",
+      "muscle": "Long plantar ligament",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Second metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Long plantar ligament.o2r",
+      "muscle": "Long plantar ligament",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Second metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Long plantar ligament.o3l",
+      "muscle": "Long plantar ligament",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Third metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Long plantar ligament.o3r",
+      "muscle": "Long plantar ligament",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Third metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Long plantar ligament.o4l",
+      "muscle": "Long plantar ligament",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fourth metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Long plantar ligament.o4r",
+      "muscle": "Long plantar ligament",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fourth metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Long plantar ligament.ol",
+      "muscle": "Long plantar ligament",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Calcaneus (left)"
+      ]
+    },
+    {
+      "marker": "Long plantar ligament.or",
+      "muscle": "Long plantar ligament",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Calcaneus (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e10l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Eighth rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e10r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Eighth rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e11l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T8"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e11r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T8"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e12l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Seventh rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e12r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Seventh rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e13l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T7"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e13r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T7"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e14l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Sixth rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e14r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Sixth rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e15l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T6"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e15r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T6"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e16l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fifth rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e16r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fifth rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e17l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T5"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e17r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T5"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e18l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fourth rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e18r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fourth rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e19l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T4"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e19r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T4"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e1l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra L2"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e1r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra L2"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e20l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Third rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e20r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Third rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e21l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T3"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e21r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T3"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e22l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Second rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e22r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Second rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e23l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T2"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e23r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T2"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e24l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "First rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e24r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "First rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e25l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T1"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e25r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T1"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e26l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Twelfth rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e26r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Twelfth rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e2l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra L1"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e2r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra L1"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e3l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T12"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e3r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T12"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e4l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Eleventh rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e4r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Eleventh rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e5l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T11"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e5r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T11"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e6l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Tenth rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e6r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Tenth rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e7l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T10"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e7r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T10"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e8l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Ninth rib (left)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e8r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Ninth rib (right)"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e9l",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T9"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.e9r",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra T9"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.el",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra L3"
+      ]
+    },
+    {
+      "marker": "Longissimus thoracis muscle.er",
+      "muscle": "Longissimus thoracis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra L3"
+      ]
+    },
+    {
+      "marker": "Masseter.el",
+      "muscle": "Masseter",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Masseter.er",
+      "muscle": "Masseter",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Masseter.o1l",
+      "muscle": "Masseter",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Temporal bone (left)"
+      ]
+    },
+    {
+      "marker": "Masseter.o1r",
+      "muscle": "Masseter",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Temporal bone (right)"
+      ]
+    },
+    {
+      "marker": "Masseter.ol",
+      "muscle": "Masseter",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Temporal bone (left)",
+        "Zygomatic bone (left)"
+      ]
+    },
+    {
+      "marker": "Masseter.or",
+      "muscle": "Masseter",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Temporal bone (right)",
+        "Zygomatic bone (right)"
+      ]
+    },
+    {
+      "marker": "Medial head of flexor hallucis brevis.el",
+      "muscle": "Medial head of flexor hallucis brevis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of foot (left)"
+      ]
+    },
+    {
+      "marker": "Medial head of flexor hallucis brevis.er",
+      "muscle": "Medial head of flexor hallucis brevis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Proximal phalanx of first finger of foot (right)"
+      ]
+    },
+    {
+      "marker": "Medial head of gastrocnemius.ol",
+      "muscle": "Medial head of gastrocnemius",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Medial head of gastrocnemius.or",
+      "muscle": "Medial head of gastrocnemius",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Medial head of triceps brachii.ol",
+      "muscle": "Medial head of triceps brachii",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Medial head of triceps brachii.or",
+      "muscle": "Medial head of triceps brachii",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Medial pterygoid muscle.el",
+      "muscle": "Medial pterygoid muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Medial pterygoid muscle.er",
+      "muscle": "Medial pterygoid muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Medial pterygoid muscle.ol",
+      "muscle": "Medial pterygoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Sphenoid bone"
+      ]
+    },
+    {
+      "marker": "Medial pterygoid muscle.or",
+      "muscle": "Medial pterygoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Sphenoid bone"
+      ]
+    },
+    {
+      "marker": "Mentalis muscle.ol",
+      "muscle": "Mentalis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Mentalis muscle.or",
+      "muscle": "Mentalis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Mylohyoid muscle.ol",
+      "muscle": "Mylohyoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Mylohyoid muscle.or",
+      "muscle": "Mylohyoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Nasalis muscle.ol",
+      "muscle": "Nasalis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Nasal bone (left)"
+      ]
+    },
+    {
+      "marker": "Nasalis muscle.or",
+      "muscle": "Nasalis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Nasal bone (right)"
+      ]
+    },
+    {
+      "marker": "Oblique head of adductor hallucis.el",
+      "muscle": "Oblique head of adductor hallucis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Sesamoid bones of foot (left)",
+        "First metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Oblique head of adductor hallucis.er",
+      "muscle": "Oblique head of adductor hallucis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Sesamoid bones of foot (right)",
+        "First metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Oblique head of adductor hallucis.o1l",
+      "muscle": "Oblique head of adductor hallucis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fourth metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Oblique head of adductor hallucis.o1r",
+      "muscle": "Oblique head of adductor hallucis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fourth metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Oblique head of adductor hallucis.ol",
+      "muscle": "Oblique head of adductor hallucis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Cuboid bone (left)",
+        "Fourth metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Oblique head of adductor hallucis.or",
+      "muscle": "Oblique head of adductor hallucis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Cuboid bone (right)",
+        "Fourth metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Obliquus inferior capitis muscle.el",
+      "muscle": "Obliquus inferior capitis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Axis (C2)"
+      ]
+    },
+    {
+      "marker": "Obliquus inferior capitis muscle.er",
+      "muscle": "Obliquus inferior capitis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Axis (C2)"
+      ]
+    },
+    {
+      "marker": "Obliquus inferior capitis muscle.ol",
+      "muscle": "Obliquus inferior capitis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Atlas (C1)"
+      ]
+    },
+    {
+      "marker": "Obliquus inferior capitis muscle.or",
+      "muscle": "Obliquus inferior capitis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Atlas (C1)"
+      ]
+    },
+    {
+      "marker": "Obliquus superior capitis muscle.ol",
+      "muscle": "Obliquus superior capitis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Obliquus superior capitis muscle.or",
+      "muscle": "Obliquus superior capitis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Obturator externus.ol",
+      "muscle": "Obturator externus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Obturator externus.or",
+      "muscle": "Obturator externus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Obturator internus.ol",
+      "muscle": "Obturator internus",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Obturator internus.or",
+      "muscle": "Obturator internus",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Occipitalis muscle.ol",
+      "muscle": "Occipitalis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Occipital bone",
+        "Parietal bone (left)"
+      ]
+    },
+    {
+      "marker": "Occipitalis muscle.or",
+      "muscle": "Occipitalis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Occipital bone",
+        "Parietal bone (right)"
+      ]
+    },
+    {
+      "marker": "Omohyoid muscle.ol",
+      "muscle": "Omohyoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Omohyoid muscle.or",
+      "muscle": "Omohyoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Opponens digiti minimi muscle of hand.ol",
+      "muscle": "Opponens digiti minimi muscle of hand",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hamate bone (left)"
+      ]
+    },
+    {
+      "marker": "Opponens digiti minimi muscle of hand.or",
+      "muscle": "Opponens digiti minimi muscle of hand",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hamate bone (right)"
+      ]
+    },
+    {
+      "marker": "Orbicularis oris muscle.ol",
+      "muscle": "Orbicularis oris muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Orbicularis oris muscle.or",
+      "muscle": "Orbicularis oris muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Orbital part of orbicularis oculi.ol",
+      "muscle": "Orbital part of orbicularis oculi",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Maxilla (left)"
+      ]
+    },
+    {
+      "marker": "Orbital part of orbicularis oculi.or",
+      "muscle": "Orbital part of orbicularis oculi",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Maxilla (right)"
+      ]
+    },
+    {
+      "marker": "Patellar ligament.el",
+      "muscle": "Patellar ligament",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Tibia (left)"
+      ]
+    },
+    {
+      "marker": "Patellar ligament.er",
+      "muscle": "Patellar ligament",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Tibia (right)"
+      ]
+    },
+    {
+      "marker": "Patellar ligament.ol",
+      "muscle": "Patellar ligament",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Patella (left)"
+      ]
+    },
+    {
+      "marker": "Patellar ligament.or",
+      "muscle": "Patellar ligament",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Patella (right)"
+      ]
+    },
+    {
+      "marker": "Pectineus muscle.ol",
+      "muscle": "Pectineus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Pectineus muscle.or",
+      "muscle": "Pectineus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Pectoralis major muscle.el",
+      "muscle": "Pectoralis major muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Pectoralis major muscle.er",
+      "muscle": "Pectoralis major muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Pectoralis major muscle.ol",
+      "muscle": "Pectoralis major muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Clavicle (left)"
+      ]
+    },
+    {
+      "marker": "Pectoralis major muscle.or",
+      "muscle": "Pectoralis major muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Clavicle (right)"
+      ]
+    },
+    {
+      "marker": "Pectoralis minor muscle.e1l",
+      "muscle": "Pectoralis minor muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fourth rib (left)"
+      ]
+    },
+    {
+      "marker": "Pectoralis minor muscle.e1r",
+      "muscle": "Pectoralis minor muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fourth rib (right)"
+      ]
+    },
+    {
+      "marker": "Pectoralis minor muscle.e2l",
+      "muscle": "Pectoralis minor muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fifth rib (left)"
+      ]
+    },
+    {
+      "marker": "Pectoralis minor muscle.e2r",
+      "muscle": "Pectoralis minor muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fifth rib (right)"
+      ]
+    },
+    {
+      "marker": "Pectoralis minor muscle.el",
+      "muscle": "Pectoralis minor muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Third rib (left)"
+      ]
+    },
+    {
+      "marker": "Pectoralis minor muscle.er",
+      "muscle": "Pectoralis minor muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Third rib (right)"
+      ]
+    },
+    {
+      "marker": "Pectoralis minor muscle.ol",
+      "muscle": "Pectoralis minor muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Pectoralis minor muscle.or",
+      "muscle": "Pectoralis minor muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Piriformis muscle.ol",
+      "muscle": "Piriformis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Sacrum"
+      ]
+    },
+    {
+      "marker": "Piriformis muscle.or",
+      "muscle": "Piriformis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Sacrum"
+      ]
+    },
+    {
+      "marker": "Plantaris muscle.ol",
+      "muscle": "Plantaris muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Plantaris muscle.or",
+      "muscle": "Plantaris muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Popliteus muscle.el",
+      "muscle": "Popliteus muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Tibia (left)"
+      ]
+    },
+    {
+      "marker": "Popliteus muscle.er",
+      "muscle": "Popliteus muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Tibia (right)"
+      ]
+    },
+    {
+      "marker": "Popliteus muscle.ol",
+      "muscle": "Popliteus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Popliteus muscle.or",
+      "muscle": "Popliteus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Procerus muscle.el",
+      "muscle": "Procerus muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Nasal bone (left)"
+      ]
+    },
+    {
+      "marker": "Procerus muscle.ol",
+      "muscle": "Procerus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Frontal bone"
+      ]
+    },
+    {
+      "marker": "Procerus muscle.or",
+      "muscle": "Procerus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Frontal bone"
+      ]
+    },
+    {
+      "marker": "Pronator teres.el",
+      "muscle": "Pronator teres",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Radius (left)"
+      ]
+    },
+    {
+      "marker": "Pronator teres.er",
+      "muscle": "Pronator teres",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Radius (right)"
+      ]
+    },
+    {
+      "marker": "Pronator teres.ol",
+      "muscle": "Pronator teres",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Pronator teres.or",
+      "muscle": "Pronator teres",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Quadratus femoris muscle.el",
+      "muscle": "Quadratus femoris muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Quadratus femoris muscle.er",
+      "muscle": "Quadratus femoris muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Quadratus femoris muscle.ol",
+      "muscle": "Quadratus femoris muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Quadratus femoris muscle.or",
+      "muscle": "Quadratus femoris muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Quadriceps femoris muscle.el",
+      "muscle": "Quadriceps femoris muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Patella (left)"
+      ]
+    },
+    {
+      "marker": "Quadriceps femoris muscle.er",
+      "muscle": "Quadriceps femoris muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Patella (right)"
+      ]
+    },
+    {
+      "marker": "Rectus abdominis muscle.el",
+      "muscle": "Rectus abdominis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Xiphoid process"
+      ]
+    },
+    {
+      "marker": "Rectus abdominis muscle.er",
+      "muscle": "Rectus abdominis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Xiphoid process"
+      ]
+    },
+    {
+      "marker": "Rectus abdominis muscle.ol",
+      "muscle": "Rectus abdominis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Xiphoid process"
+      ]
+    },
+    {
+      "marker": "Rectus abdominis muscle.or",
+      "muscle": "Rectus abdominis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Xiphoid process"
+      ]
+    },
+    {
+      "marker": "Rectus anterior capitis muscle.el",
+      "muscle": "Rectus anterior capitis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Atlas (C1)"
+      ]
+    },
+    {
+      "marker": "Rectus anterior capitis muscle.er",
+      "muscle": "Rectus anterior capitis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Atlas (C1)"
+      ]
+    },
+    {
+      "marker": "Rectus anterior capitis muscle.ol",
+      "muscle": "Rectus anterior capitis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Rectus anterior capitis muscle.or",
+      "muscle": "Rectus anterior capitis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Rectus femoris muscle.ol",
+      "muscle": "Rectus femoris muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Rectus femoris muscle.or",
+      "muscle": "Rectus femoris muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Rectus lateralis capitis muscle.ol",
+      "muscle": "Rectus lateralis capitis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Rectus lateralis capitis muscle.or",
+      "muscle": "Rectus lateralis capitis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Rectus posterior major capitis muscle.el",
+      "muscle": "Rectus posterior major capitis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Axis (C2)"
+      ]
+    },
+    {
+      "marker": "Rectus posterior major capitis muscle.er",
+      "muscle": "Rectus posterior major capitis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Axis (C2)"
+      ]
+    },
+    {
+      "marker": "Rectus posterior major capitis muscle.ol",
+      "muscle": "Rectus posterior major capitis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Rectus posterior major capitis muscle.or",
+      "muscle": "Rectus posterior major capitis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Rectus posterior minor capitis muscle.el",
+      "muscle": "Rectus posterior minor capitis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Atlas (C1)"
+      ]
+    },
+    {
+      "marker": "Rectus posterior minor capitis muscle.er",
+      "muscle": "Rectus posterior minor capitis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Atlas (C1)"
+      ]
+    },
+    {
+      "marker": "Rectus posterior minor capitis muscle.ol",
+      "muscle": "Rectus posterior minor capitis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Rectus posterior minor capitis muscle.or",
+      "muscle": "Rectus posterior minor capitis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Rhomboid major muscle.el",
+      "muscle": "Rhomboid major muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Rhomboid major muscle.er",
+      "muscle": "Rhomboid major muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Rhomboid minor muscle.el",
+      "muscle": "Rhomboid minor muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Rhomboid minor muscle.er",
+      "muscle": "Rhomboid minor muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Sartorius muscle.el",
+      "muscle": "Sartorius muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Tibia (left)"
+      ]
+    },
+    {
+      "marker": "Sartorius muscle.er",
+      "muscle": "Sartorius muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Tibia (right)"
+      ]
+    },
+    {
+      "marker": "Sartorius muscle.ol",
+      "muscle": "Sartorius muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Sartorius muscle.or",
+      "muscle": "Sartorius muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Scalenus anterior muscle.e1l",
+      "muscle": "Scalenus anterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C5"
+      ]
+    },
+    {
+      "marker": "Scalenus anterior muscle.e1r",
+      "muscle": "Scalenus anterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C5"
+      ]
+    },
+    {
+      "marker": "Scalenus anterior muscle.e2l",
+      "muscle": "Scalenus anterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C6"
+      ]
+    },
+    {
+      "marker": "Scalenus anterior muscle.e2r",
+      "muscle": "Scalenus anterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C6"
+      ]
+    },
+    {
+      "marker": "Scalenus anterior muscle.el",
+      "muscle": "Scalenus anterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C4"
+      ]
+    },
+    {
+      "marker": "Scalenus anterior muscle.er",
+      "muscle": "Scalenus anterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C4"
+      ]
+    },
+    {
+      "marker": "Scalenus anterior muscle.ol",
+      "muscle": "Scalenus anterior muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "First rib (left)"
+      ]
+    },
+    {
+      "marker": "Scalenus anterior muscle.or",
+      "muscle": "Scalenus anterior muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "First rib (right)"
+      ]
+    },
+    {
+      "marker": "Scalenus medius muscle.el",
+      "muscle": "Scalenus medius muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C6"
+      ]
+    },
+    {
+      "marker": "Scalenus medius muscle.er",
+      "muscle": "Scalenus medius muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C6"
+      ]
+    },
+    {
+      "marker": "Scalenus medius muscle.ol",
+      "muscle": "Scalenus medius muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "First rib (left)"
+      ]
+    },
+    {
+      "marker": "Scalenus medius muscle.or",
+      "muscle": "Scalenus medius muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "First rib (right)"
+      ]
+    },
+    {
+      "marker": "Scalenus posterior muscle.el",
+      "muscle": "Scalenus posterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C5"
+      ]
+    },
+    {
+      "marker": "Scalenus posterior muscle.er",
+      "muscle": "Scalenus posterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Vertebra C5"
+      ]
+    },
+    {
+      "marker": "Scapular spinal part of deltoid muscle.ol",
+      "muscle": "Scapular spinal part of deltoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Scapular spinal part of deltoid muscle.or",
+      "muscle": "Scapular spinal part of deltoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Semimembranosus muscle.el",
+      "muscle": "Semimembranosus muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Tibia (left)"
+      ]
+    },
+    {
+      "marker": "Semimembranosus muscle.er",
+      "muscle": "Semimembranosus muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Tibia (right)"
+      ]
+    },
+    {
+      "marker": "Semimembranosus muscle.ol",
+      "muscle": "Semimembranosus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Semimembranosus muscle.or",
+      "muscle": "Semimembranosus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Semitendinosus muscle.el",
+      "muscle": "Semitendinosus muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Tibia (left)"
+      ]
+    },
+    {
+      "marker": "Semitendinosus muscle.er",
+      "muscle": "Semitendinosus muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Tibia (right)"
+      ]
+    },
+    {
+      "marker": "Semitendinosus muscle.ol",
+      "muscle": "Semitendinosus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Semitendinosus muscle.or",
+      "muscle": "Semitendinosus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.e3l",
+      "muscle": "Serratus anterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fourth rib (left)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.e3r",
+      "muscle": "Serratus anterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fourth rib (right)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.e4l",
+      "muscle": "Serratus anterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fifth rib (left)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.e4r",
+      "muscle": "Serratus anterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fifth rib (right)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.e5l",
+      "muscle": "Serratus anterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Sixth rib (left)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.e5r",
+      "muscle": "Serratus anterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Sixth rib (right)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.e6l",
+      "muscle": "Serratus anterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Seventh rib (left)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.e6r",
+      "muscle": "Serratus anterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Seventh rib (right)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.e7l",
+      "muscle": "Serratus anterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Eighth rib (left)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.e7r",
+      "muscle": "Serratus anterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Eighth rib (right)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.el",
+      "muscle": "Serratus anterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "First rib (left)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.er",
+      "muscle": "Serratus anterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "First rib (right)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.ol",
+      "muscle": "Serratus anterior muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Serratus anterior muscle.or",
+      "muscle": "Serratus anterior muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Soleus muscle.o1l",
+      "muscle": "Soleus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Tibia (left)"
+      ]
+    },
+    {
+      "marker": "Soleus muscle.o1r",
+      "muscle": "Soleus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Tibia (right)"
+      ]
+    },
+    {
+      "marker": "Soleus muscle.ol",
+      "muscle": "Soleus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Fibula (left)"
+      ]
+    },
+    {
+      "marker": "Soleus muscle.or",
+      "muscle": "Soleus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Fibula (right)"
+      ]
+    },
+    {
+      "marker": "Spinalis capitis muscle.el",
+      "muscle": "Spinalis capitis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Spinalis capitis muscle.er",
+      "muscle": "Spinalis capitis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Splenius colli muscle.e1l",
+      "muscle": "Splenius colli muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Atlas (C1)"
+      ]
+    },
+    {
+      "marker": "Splenius colli muscle.e1r",
+      "muscle": "Splenius colli muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Atlas (C1)"
+      ]
+    },
+    {
+      "marker": "Splenius colli muscle.el",
+      "muscle": "Splenius colli muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Axis (C2)"
+      ]
+    },
+    {
+      "marker": "Splenius colli muscle.er",
+      "muscle": "Splenius colli muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Axis (C2)"
+      ]
+    },
+    {
+      "marker": "Sternocleidomastoid muscle.el",
+      "muscle": "Sternocleidomastoid muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Temporal bone (left)",
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Sternocleidomastoid muscle.er",
+      "muscle": "Sternocleidomastoid muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Temporal bone (right)",
+        "Occipital bone"
+      ]
+    },
+    {
+      "marker": "Sternocleidomastoid muscle.o1l",
+      "muscle": "Sternocleidomastoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Clavicle (left)"
+      ]
+    },
+    {
+      "marker": "Sternocleidomastoid muscle.o1r",
+      "muscle": "Sternocleidomastoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Clavicle (right)"
+      ]
+    },
+    {
+      "marker": "Sternocleidomastoid muscle.ol",
+      "muscle": "Sternocleidomastoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Manubrium of sternum"
+      ]
+    },
+    {
+      "marker": "Sternocleidomastoid muscle.or",
+      "muscle": "Sternocleidomastoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Manubrium of sternum"
+      ]
+    },
+    {
+      "marker": "Sternocostal head of pectoralis major muscle.e1l",
+      "muscle": "Sternocostal head of pectoralis major muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Body of sternum",
+        "Manubrium of sternum"
+      ]
+    },
+    {
+      "marker": "Sternocostal head of pectoralis major muscle.e1r",
+      "muscle": "Sternocostal head of pectoralis major muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Body of sternum",
+        "Manubrium of sternum"
+      ]
+    },
+    {
+      "marker": "Sternocostal head of pectoralis major muscle.e2l",
+      "muscle": "Sternocostal head of pectoralis major muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Body of sternum",
+        "Manubrium of sternum"
+      ]
+    },
+    {
+      "marker": "Sternocostal head of pectoralis major muscle.e2r",
+      "muscle": "Sternocostal head of pectoralis major muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Manubrium of sternum",
+        "Body of sternum"
+      ]
+    },
+    {
+      "marker": "Sternocostal head of pectoralis major muscle.el",
+      "muscle": "Sternocostal head of pectoralis major muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Sixth rib (left)",
+        "Body of sternum"
+      ]
+    },
+    {
+      "marker": "Sternocostal head of pectoralis major muscle.er",
+      "muscle": "Sternocostal head of pectoralis major muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Sixth rib (right)",
+        "Body of sternum"
+      ]
+    },
+    {
+      "marker": "Sternohyoid muscle.ol",
+      "muscle": "Sternohyoid muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Clavicle (left)",
+        "Manubrium of sternum"
+      ]
+    },
+    {
+      "marker": "Sternohyoid muscle.or",
+      "muscle": "Sternohyoid muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Clavicle (right)",
+        "Manubrium of sternum"
+      ]
+    },
+    {
+      "marker": "Subclavius muscle.ol",
+      "muscle": "Subclavius muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Clavicle (left)"
+      ]
+    },
+    {
+      "marker": "Subclavius muscle.or",
+      "muscle": "Subclavius muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Clavicle (right)"
+      ]
+    },
+    {
+      "marker": "Subscapularis muscle.el",
+      "muscle": "Subscapularis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Subscapularis muscle.er",
+      "muscle": "Subscapularis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Subscapularis muscle.ol",
+      "muscle": "Subscapularis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Subscapularis muscle.or",
+      "muscle": "Subscapularis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Superior gemellus muscle.ol",
+      "muscle": "Superior gemellus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Superior gemellus muscle.or",
+      "muscle": "Superior gemellus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Supinator.el",
+      "muscle": "Supinator",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Radius (left)"
+      ]
+    },
+    {
+      "marker": "Supinator.er",
+      "muscle": "Supinator",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Radius (right)"
+      ]
+    },
+    {
+      "marker": "Supinator.ol",
+      "muscle": "Supinator",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Ulna (left)"
+      ]
+    },
+    {
+      "marker": "Supinator.or",
+      "muscle": "Supinator",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Ulna (right)"
+      ]
+    },
+    {
+      "marker": "Supraspinatus muscle.el",
+      "muscle": "Supraspinatus muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Supraspinatus muscle.er",
+      "muscle": "Supraspinatus muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Supraspinatus muscle.ol",
+      "muscle": "Supraspinatus muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Supraspinatus muscle.or",
+      "muscle": "Supraspinatus muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Temporalis muscle.el",
+      "muscle": "Temporalis muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Temporalis muscle.er",
+      "muscle": "Temporalis muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Mandible"
+      ]
+    },
+    {
+      "marker": "Temporalis muscle.o1l",
+      "muscle": "Temporalis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Frontal bone",
+        "Parietal bone (left)"
+      ]
+    },
+    {
+      "marker": "Temporalis muscle.o1r",
+      "muscle": "Temporalis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Frontal bone",
+        "Parietal bone (right)"
+      ]
+    },
+    {
+      "marker": "Temporalis muscle.o2l",
+      "muscle": "Temporalis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Frontal bone",
+        "Temporal bone (left)",
+        "Parietal bone (left)"
+      ]
+    },
+    {
+      "marker": "Temporalis muscle.o2r",
+      "muscle": "Temporalis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Frontal bone",
+        "Temporal bone (right)",
+        "Parietal bone (right)"
+      ]
+    },
+    {
+      "marker": "Temporalis muscle.o3l",
+      "muscle": "Temporalis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Sphenoid bone",
+        "Temporal bone (left)",
+        "Frontal bone"
+      ]
+    },
+    {
+      "marker": "Temporalis muscle.o3r",
+      "muscle": "Temporalis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Sphenoid bone",
+        "Temporal bone (right)",
+        "Frontal bone",
+        "Parietal bone (right)"
+      ]
+    },
+    {
+      "marker": "Temporalis muscle.o4l",
+      "muscle": "Temporalis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Temporal bone (left)",
+        "Sphenoid bone",
+        "Parietal bone (left)"
+      ]
+    },
+    {
+      "marker": "Temporalis muscle.o4r",
+      "muscle": "Temporalis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Temporal bone (right)",
+        "Parietal bone (right)",
+        "Sphenoid bone"
+      ]
+    },
+    {
+      "marker": "Tensor fasciae latae.ol",
+      "muscle": "Tensor fasciae latae",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Tensor fasciae latae.or",
+      "muscle": "Tensor fasciae latae",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Teres major muscle.ol",
+      "muscle": "Teres major muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Teres major muscle.or",
+      "muscle": "Teres major muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Teres minor muscle.el",
+      "muscle": "Teres minor muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Humerus (left)"
+      ]
+    },
+    {
+      "marker": "Teres minor muscle.er",
+      "muscle": "Teres minor muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Humerus (right)"
+      ]
+    },
+    {
+      "marker": "Teres minor muscle.ol",
+      "muscle": "Teres minor muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Teres minor muscle.or",
+      "muscle": "Teres minor muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Tibialis anterior muscle.e1l",
+      "muscle": "Tibialis anterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "First metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Tibialis anterior muscle.e1r",
+      "muscle": "Tibialis anterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "First metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Tibialis anterior muscle.el",
+      "muscle": "Tibialis anterior muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Medial cuneiform bone (left)"
+      ]
+    },
+    {
+      "marker": "Tibialis anterior muscle.er",
+      "muscle": "Tibialis anterior muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Medial cuneiform bone (right)"
+      ]
+    },
+    {
+      "marker": "Tibialis anterior muscle.ol",
+      "muscle": "Tibialis anterior muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Tibia (left)"
+      ]
+    },
+    {
+      "marker": "Tibialis anterior muscle.or",
+      "muscle": "Tibialis anterior muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Tibia (right)"
+      ]
+    },
+    {
+      "marker": "Tibialis posterior muscle.ol",
+      "muscle": "Tibialis posterior muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Tibia (left)"
+      ]
+    },
+    {
+      "marker": "Tibialis posterior muscle.or",
+      "muscle": "Tibialis posterior muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Tibia (right)"
+      ]
+    },
+    {
+      "marker": "Transverse head of adductor hallucis.e1l",
+      "muscle": "Transverse head of adductor hallucis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fifth metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Transverse head of adductor hallucis.e1r",
+      "muscle": "Transverse head of adductor hallucis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fifth metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Transverse head of adductor hallucis.e2l",
+      "muscle": "Transverse head of adductor hallucis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Fourth metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Transverse head of adductor hallucis.e2r",
+      "muscle": "Transverse head of adductor hallucis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Fourth metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Transverse head of adductor hallucis.e3l",
+      "muscle": "Transverse head of adductor hallucis",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Third metatarsal bone (left)"
+      ]
+    },
+    {
+      "marker": "Transverse head of adductor hallucis.e3r",
+      "muscle": "Transverse head of adductor hallucis",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Third metatarsal bone (right)"
+      ]
+    },
+    {
+      "marker": "Transverse head of adductor hallucis.ol",
+      "muscle": "Transverse head of adductor hallucis",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Sesamoid bones of foot (left)"
+      ]
+    },
+    {
+      "marker": "Transverse head of adductor hallucis.or",
+      "muscle": "Transverse head of adductor hallucis",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Sesamoid bones of foot (right)"
+      ]
+    },
+    {
+      "marker": "Transverse part of trapezius muscle.ol",
+      "muscle": "Transverse part of trapezius muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Scapula (left)"
+      ]
+    },
+    {
+      "marker": "Transverse part of trapezius muscle.or",
+      "muscle": "Transverse part of trapezius muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Scapula (right)"
+      ]
+    },
+    {
+      "marker": "Transversus abdominis muscle.ol",
+      "muscle": "Transversus abdominis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Hip bone (left)"
+      ]
+    },
+    {
+      "marker": "Transversus abdominis muscle.or",
+      "muscle": "Transversus abdominis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Hip bone (right)"
+      ]
+    },
+    {
+      "marker": "Transversus thoracis muscle.o1l",
+      "muscle": "Transversus thoracis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Body of sternum",
+        "Xiphoid process"
+      ]
+    },
+    {
+      "marker": "Transversus thoracis muscle.o1r",
+      "muscle": "Transversus thoracis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Xiphoid process",
+        "Body of sternum"
+      ]
+    },
+    {
+      "marker": "Transversus thoracis muscle.ol",
+      "muscle": "Transversus thoracis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Body of sternum",
+        "Xiphoid process"
+      ]
+    },
+    {
+      "marker": "Transversus thoracis muscle.or",
+      "muscle": "Transversus thoracis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Xiphoid process",
+        "Body of sternum"
+      ]
+    },
+    {
+      "marker": "Triceps brachii muscle.el",
+      "muscle": "Triceps brachii muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Ulna (left)"
+      ]
+    },
+    {
+      "marker": "Triceps brachii muscle.er",
+      "muscle": "Triceps brachii muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Ulna (right)"
+      ]
+    },
+    {
+      "marker": "Triceps surae muscle.el",
+      "muscle": "Triceps surae muscle",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Calcaneus (left)"
+      ]
+    },
+    {
+      "marker": "Triceps surae muscle.er",
+      "muscle": "Triceps surae muscle",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Calcaneus (right)"
+      ]
+    },
+    {
+      "marker": "Trochanteric insertion.el",
+      "muscle": "Trochanteric insertion",
+      "side": "left",
+      "site": "insertion",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Trochanteric insertion.er",
+      "muscle": "Trochanteric insertion",
+      "side": "right",
+      "site": "insertion",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Ulnar head of flexor carpi ulnaris.ol",
+      "muscle": "Ulnar head of flexor carpi ulnaris",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Ulna (left)"
+      ]
+    },
+    {
+      "marker": "Ulnar head of flexor carpi ulnaris.or",
+      "muscle": "Ulnar head of flexor carpi ulnaris",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Ulna (right)"
+      ]
+    },
+    {
+      "marker": "Vastus intermedius muscle.ol",
+      "muscle": "Vastus intermedius muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Vastus intermedius muscle.or",
+      "muscle": "Vastus intermedius muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Vastus lateralis muscle.ol",
+      "muscle": "Vastus lateralis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Vastus lateralis muscle.or",
+      "muscle": "Vastus lateralis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Vastus medialis muscle.ol",
+      "muscle": "Vastus medialis muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Femur (left)"
+      ]
+    },
+    {
+      "marker": "Vastus medialis muscle.or",
+      "muscle": "Vastus medialis muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Femur (right)"
+      ]
+    },
+    {
+      "marker": "Zygomaticus major muscle.ol",
+      "muscle": "Zygomaticus major muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Zygomatic bone (left)"
+      ]
+    },
+    {
+      "marker": "Zygomaticus major muscle.or",
+      "muscle": "Zygomaticus major muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Zygomatic bone (right)"
+      ]
+    },
+    {
+      "marker": "Zygomaticus minor muscle.ol",
+      "muscle": "Zygomaticus minor muscle",
+      "side": "left",
+      "site": "origin",
+      "bones": [
+        "Zygomatic bone (left)"
+      ]
+    },
+    {
+      "marker": "Zygomaticus minor muscle.or",
+      "muscle": "Zygomaticus minor muscle",
+      "side": "right",
+      "site": "origin",
+      "bones": [
+        "Zygomatic bone (right)"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+import assert from 'node:assert/strict';
+import {expandRelationshipSelection} from '../app/relationship-selection.ts';
+
+const graph={stomach:['esophagus','duodenum','vagus'],esophagus:['stomach'],duodenum:['jejunum','stomach'],vagus:['stomach','heart'],jejunum:['ileum'],heart:['vagus']};
+const related=id=>graph[id]??[];
+const first=expandRelationshipSelection(['stomach'],null,related);
+assert.deepEqual(first.selected,['stomach','esophagus','duodenum','vagus']);
+assert.equal(first.expansion.depth,1);
+const second=expandRelationshipSelection(first.selected,first.expansion,related);
+assert.deepEqual(second.selected,['stomach','esophagus','duodenum','vagus','jejunum','heart']);
+const third=expandRelationshipSelection(second.selected,second.expansion,related);
+assert.deepEqual(third.selected,[...second.selected,'ileum']);
+const fourth=expandRelationshipSelection(third.selected,third.expansion,related);
+assert.equal(fourth.expansion.exhausted,true);
+assert.deepEqual(fourth.selected,third.selected);
+const changed=expandRelationshipSelection(['duodenum'],third.expansion,related);
+assert.deepEqual(changed.selected,['duodenum','jejunum','stomach']);
+assert.deepEqual(expandRelationshipSelection([],third.expansion,related),{selected:[],expansion:null});
+console.log('Relationship selection expands one step per click, deduplicates cycles, and resets on a new anchor.');

@@ -20,12 +20,15 @@
     "import:reference-glb": "node scripts/import-reference-glb.mjs && node scripts/audit-meshes.mjs local-reference",
     "test:reference-import": "node scripts/validate-reference-import.mjs",
     "test:hierarchies": "node scripts/validate-hierarchy-taxonomy.mjs",
+    "test:relations": "node scripts/validate-anatomical-relations.mjs",
+    "test:relationship-selection": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/validate-relationship-selection.mjs",
+    "build:anatomical-attachments": "node scripts/build-anatomical-attachments.mjs",
     "import:cell": "node scripts/import-cell.mjs && node scripts/audit-meshes.mjs cell",
     "import:primary-male": "node scripts/import-primary-male.mjs && node scripts/audit-meshes.mjs male-detail",
     "import:primary-female": "node scripts/import-primary-female.mjs && node scripts/audit-meshes.mjs female",
     "import:primary-female-muscles": "node scripts/run-female-muscles.mjs",
     "import:primary-standard": "node scripts/import-primary-standard.mjs && node scripts/audit-meshes.mjs male",
-    "build:complete-male": "node scripts/build-complete-male.mjs && node scripts/audit-meshes.mjs male-full"
+    "build:complete-male": "node scripts/build-complete-male.mjs && node scripts/audit-meshes.mjs male-full && node scripts/build-anatomical-attachments.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
