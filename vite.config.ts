@@ -23,4 +23,4 @@ function localModels():Plugin{
   });
  }};
 }
-export default defineConfig({base:process.env.VITE_BASE_PATH||'/',root:path('./web'),publicDir:path('./public'),plugins:[react(),localModels()],resolve:{alias:{'@':path('./')}},css:{postcss:{plugins:[tailwindcss()]}},server:{watch:{usePolling:true}},build:{outDir:path('./dist'),emptyOutDir:true}});
+export default defineConfig({base:process.env.VITE_BASE_PATH||'/',root:path('./web'),publicDir:path('./public'),plugins:[react(),localModels()],resolve:{alias:{'@':path('./')}},css:{postcss:{plugins:[tailwindcss()]}},server:{allowedHosts:true,watch:{usePolling:true}},build:{outDir:path('./dist'),emptyOutDir:true}});

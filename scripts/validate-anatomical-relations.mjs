@@ -139,8 +139,13 @@ assert.ok(has(related(standard,'Distal part of jejunum'),'after','Proximal part 
 assert.deepEqual(link(related(standard,'Distal part of ileum'),'after','Ascending colon')?.via,['Caecum']);
 const standardStomach=related(standard,'Stomach');
 assert.ok(has(standardStomach,'before','Esophagus'));
-assert.equal(standardStomach.filter(relation=>relation.target.name==='Splenic artery').length,1);
+const splenicParts=standard.filter(part=>part.conceptId===standard.find(candidate=>candidate.name==='Splenic artery')?.conceptId);
+assert.deepEqual(standardStomach.filter(relation=>relation.target.name==='Splenic artery').map(relation=>relation.target.id).sort(),splenicParts.map(part=>part.id).sort());
 assert.ok(has(related(standard,'Left femur'),'articulates','Left tibia'));
+assert.ok(has(related(standard,'Left lens'),'contains','Suspensory ligament of left lens'));
+assert.ok(!has(related(standard,'Left lens'),'contains','Suspensory ligament of right lens'));
+assert.ok(has(related(standard,'Suspensory ligament of left lens'),'partOf','Left lens'));
+assert.ok(!has(related(standard,'Suspensory ligament of left lens'),'partOf','Right lens'));
 assert.deepEqual(link(related(standard,'Left kidney'),'after','Left ureter')?.via,['Renal pelvis']);
 assert.ok(has(related(standard,'Left testis'),'after','Left epididymis'));
 const female=parts('public/models/atlas-hra-female.json');

@@ -443,7 +443,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
    }
    dirty=true;
   };
-  const pressPoints=new Map<number,{x:number;y:number;lastX:number;lastY:number;anchored:boolean;rotating:boolean}>();
+  const pressPoints=new Map<number,{x:number;y:number;lastX:number;anchored:boolean;rotating:boolean}>();
   const solidContext=()=> (latest.current.skinOpacity??.1)<.95&&atlas.parts.some((p,i)=>!isSkinPart(p)&&data[i*4+3]>.5);
   const canPick=(i:number,hasSolid:boolean)=>{
    const part=atlas.parts[i],selected=latest.current.selected.includes(part.id);
@@ -482,14 +482,14 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
    if(found<0&&amount>.45&&!enabledSections(latest.current).length)found=findTarget(clientX-rect.left,clientY-rect.top,radius,i=>canPick(i,hasSolid));
    return found;
   };
-  const down=(e:PointerEvent)=>{const toggling=e.ctrlKey||e.metaKey,rotating=!toggling&&!sectionToolRef.current&&amount>.04&&!latest.current.isolate&&rotationPartIndices.size>0&&e.button===0;pressPoints.set(e.pointerId,{x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,anchored:false,rotating});hover.hidden=true;tap.down(e.pointerId,e.clientX,e.clientY,e.pointerType==='touch'?16:10);if(rotating||toggling){e.preventDefault();e.stopImmediatePropagation();renderer.domElement.setPointerCapture(e.pointerId);}};
+  const down=(e:PointerEvent)=>{const toggling=e.ctrlKey||e.metaKey,rotating=!toggling&&!sectionToolRef.current&&amount>.04&&!latest.current.isolate&&rotationPartIndices.size>0&&e.button===0;pressPoints.set(e.pointerId,{x:e.clientX,y:e.clientY,lastX:e.clientX,anchored:false,rotating});hover.hidden=true;tap.down(e.pointerId,e.clientX,e.clientY,e.pointerType==='touch'?16:10);if(rotating||toggling){e.preventDefault();e.stopImmediatePropagation();renderer.domElement.setPointerCapture(e.pointerId);}};
   const move=(e:PointerEvent)=>{
    tap.move(e.pointerId,e.clientX,e.clientY);
    const press=pressPoints.get(e.pointerId);
    if(press?.rotating){
     e.preventDefault();e.stopImmediatePropagation();
-    const dx=e.clientX-press.lastX,dy=e.clientY-press.lastY;press.lastX=e.clientX;press.lastY=e.clientY;
-    if(dx||dy){const up=new T.Vector3(0,1,0).applyQuaternion(camera.quaternion),right=new T.Vector3(1,0,0).applyQuaternion(camera.quaternion);selectedRotation.premultiply(new T.Quaternion().setFromAxisAngle(up,dx*.009)).premultiply(new T.Quaternion().setFromAxisAngle(right,dy*.009)).normalize();syncSelectedRotation();}
+    const dx=e.clientX-press.lastX;press.lastX=e.clientX;
+    if(dx){selectedRotation.premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),dx*.009)).normalize();syncSelectedRotation();}
     hover.hidden=true;renderer.domElement.style.cursor='grabbing';return;
    }
    if(e.buttons&&press&&!press.anchored&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>8){press.anchored=true;anchorSelection();}
@@ -537,6 +537,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
      const label=document.createElementNS('http://www.w3.org/2000/svg','text');label.setAttribute('x',String(screenX));label.setAttribute('y',String(screenY-3));label.setAttribute('text-anchor','middle');label.textContent=name;element.appendChild(label);const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=group.name;element.appendChild(title);labelLayer.appendChild(element);
     }
    }
+   if(s.selectionGroup||s.selected.length>32)return;
    const anchors:LabelAnchor[]=[],named=new Set<string>();
    for(const id of s.selected.slice(0,80)){const i=partIndices.get(id)??-1,mesh=pickers[i];if(i<0||!mesh||data[i*4+3]<.5)continue;
     const name=structureName(atlas.parts[i].name);if(named.has(name))continue;

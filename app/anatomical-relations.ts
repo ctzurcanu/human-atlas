@@ -321,6 +321,8 @@ const sideOf=(name:string):'left'|'right'|null=>{
  if(suffix)return suffix[1].toLowerCase()==='l'?'left':'right';
  const m=clean(name).match(/\((left|right)\)$/i)??clean(name).match(/^(left|right)\s/i);
  if(m)return m[1].toLowerCase() as 'left'|'right';
+ const embedded=clean(name).match(/\bof (left|right)\s/i);
+ if(embedded)return embedded[1].toLowerCase() as 'left'|'right';
  const abbreviated=clean(name).match(/\s([LR])$/i);
  return abbreviated?abbreviated[1].toLowerCase()==='l'?'left':'right':null;
 };
@@ -342,22 +344,24 @@ const vascularIdentity=(name:string)=>{
 };
 const statedVascularParent=(name:string)=>clean(name).match(/\b(?:branch(?:es)?|tributar(?:y|ies)) of (.+)$/i)?.[1]??null;
 
-const targetIndexes=new WeakMap<Part[],{exact:Map<string,Part[]>;base:Map<string,Part[]>}>();
-function targets(query:string,source:Part,parts:Part[],accept:(part:Part)=>boolean=()=>true):Part[]{
+const targetIndexes=new WeakMap<Part[],{exact:Map<string,Part[]>;base:Map<string,Part[]>;concept:Map<string,Part[]>}>();
+function targets(query:string,source:Part,parts:Part[],accept:(part:Part)=>boolean=()=>true,allBonePieces=false,allAliases=false,allConceptPieces=false):Part[]{
  const side=partSide(source);
  const q=query.replace('{side}',side??'left');
  const alternatives=query.includes('{side}')&&side===null?[q,query.replace('{side}','right')]:[q];
  let index=targetIndexes.get(parts);
- if(!index){index={exact:new Map(),base:new Map()};for(const part of parts){const exact=key(part.name),base=baseName(part.name);const exactGroup=index.exact.get(exact)??[];exactGroup.push(part);index.exact.set(exact,exactGroup);const baseGroup=index.base.get(base)??[];baseGroup.push(part);index.base.set(base,baseGroup);}targetIndexes.set(parts,index);}
+ if(!index){index={exact:new Map(),base:new Map(),concept:new Map()};for(const part of parts){const exact=key(part.name),base=baseName(part.name);const exactGroup=index.exact.get(exact)??[];exactGroup.push(part);index.exact.set(exact,exactGroup);const baseGroup=index.base.get(base)??[];baseGroup.push(part);index.base.set(base,baseGroup);const conceptGroup=index.concept.get(part.conceptId)??[];conceptGroup.push(part);index.concept.set(part.conceptId,conceptGroup);}targetIndexes.set(parts,index);}
  const matches=(part:Part,alt:string)=>accept(part)&&(!sideOf(alt)||!partSide(part)||partSide(part)===sideOf(alt))&&(!side||!partSide(part)||partSide(part)===side);
  const exact=alternatives.flatMap(alt=>(index.exact.get(alt.toLowerCase())??[]).filter(part=>matches(part,alt)));
- const matched=exact.length?exact:alternatives.flatMap(alt=>(index.base.get(baseName(alt))??[]).filter(part=>matches(part,alt)));
+ const matched=exact.length&&!allAliases?exact:[...exact,...alternatives.flatMap(alt=>(index.base.get(baseName(alt))??[]).filter(part=>matches(part,alt)))];
  const byConcept=new Map<string,Part>();
  for(const part of matched.filter(part=>part.id!==source.id)){
   const previous=byConcept.get(part.conceptId);
   if(!previous||part.vertexCount>previous.vertexCount)byConcept.set(part.conceptId,part);
  }
- return [...byConcept.values()];
+ const resolved=[...byConcept.values()];
+ if(allConceptPieces)return resolved.flatMap(part=>(index.concept.get(part.conceptId)??[]).filter(candidate=>candidate.id!==source.id&&accept(candidate)&&sameSide(source,candidate)));
+ return allBonePieces?resolved.flatMap(part=>isBone(part)?(index.concept.get(part.conceptId)??[]).filter(candidate=>candidate.id!==source.id&&isBone(candidate)&&accept(candidate)&&sameSide(source,candidate)):[part]):resolved;
 }
 
 function digestiveStages(parts:Part[]):string[][]{
@@ -377,6 +381,8 @@ function digestiveStages(parts:Part[]):string[][]{
 
 function routeRelations(source:Part,parts:Part[],routes:string[][][]):ResolvedRelation[]{
  const sourceKey=baseName(source.name);
+ const intestinalPart=sourceKey.match(/^(?:proximal|middle|distal) part of (jejunum|ileum)$/);
+ if(intestinalPart&&parts.some(part=>part.system==='digestive'&&baseName(part.name)===intestinalPart[1]))return [];
  const side=partSide(source);
  const result:ResolvedRelation[]=[];
  const sameSide=(group:string[])=>group.filter(label=>!side||!sideOf(label)||sideOf(label)===side);
@@ -389,7 +395,7 @@ function routeRelations(source:Part,parts:Part[],routes:string[][][]):ResolvedRe
     const group=sameSide(route[step]);
     const wholeIntestine=['jejunum','ileum'].includes(baseName(group[0]??''));
     const labels=wholeIntestine&&targets(group[0],source,parts).length?[group[0]]:group;
-    const matches=labels.flatMap(label=>targets(label,source,parts));
+    const matches=labels.flatMap(label=>targets(label,source,parts,undefined,false,true,true));
     if(matches.length){
      for(const target of matches)result.push({kind,target,...(via.length?{via:direction===1?via:[...via].reverse()}:{})});
      break;
@@ -413,7 +419,7 @@ function downstreamShortcuts(source:Part,parts:Part[]):ResolvedRelation[]{
   const intermediary=targets(middle,source,parts);
   if(!intermediary.length)continue;
   const kind=sourceKey===first.toLowerCase()?'after':'before';
-  for(const target of targets(kind==='after'?last:first,source,parts)){
+  for(const target of targets(kind==='after'?last:first,source,parts,undefined,false,false,true)){
    result.push({kind,target,via:[middle],viaModeled:true});
   }
  }
@@ -432,7 +438,7 @@ function branchRelations(source:Part,parts:Part[],branches:[string[],string[][]]
   const identity=labels.map(label=>`${baseName(label)}:${sideOf(label)??''}`).join('|');
   if(visited.has(identity))return;
   const nextVisited=new Set(visited);nextVisited.add(identity);
-  const matches=labels.flatMap(label=>targets(label,source,parts));
+  const matches=labels.flatMap(label=>targets(label,source,parts,undefined,false,true,true));
   if(matches.length){
    for(const target of matches)result.push({kind,target,...(via.length?{via:kind==='before'?[...via].reverse():via}:{})});
    return;
@@ -463,7 +469,7 @@ function namedVascularRelations(source:Part,parts:Part[]):Relations{
 }
 
 const sameSide=(a:Part,b:Part)=>!partSide(a)||!partSide(b)||partSide(a)===partSide(b);
-const matchesBone=(bone:Part,label:string)=>bone.system==='skeletal'&&baseName(bone.name)===baseName(label);
+const matchesBone=(bone:Part,label:string)=>isBone(bone)&&baseName(bone.name)===baseName(label);
 const jointGroups=(part:Part)=>Object.keys(jointBones).filter(joint=>(part.groups??[]).some(group=>group.toLowerCase()===joint));
 
 function physicalRelations(source:Part,parts:Part[]):Relations{
@@ -474,7 +480,7 @@ function physicalRelations(source:Part,parts:Part[]):Relations{
   result.connects=specific??[];
   result.joint=joints.flatMap(joint=>jointBones[joint]).filter(bone=>!result.connects?.includes(bone));
  }
- if(source.system==='skeletal'){
+ if(isBone(source)){
   const relatedJoints=Object.entries(jointBones).filter(([,bones])=>bones.some(bone=>matchesBone(source,bone))).map(([joint])=>joint);
   result.articulates=relatedJoints.flatMap(joint=>jointBones[joint].filter(bone=>!matchesBone(source,bone)));
   const jointStructures=parts.filter(part=>part.system==='connective'&&/ligament|capsule/i.test(part.name)&&sameSide(source,part)&&jointGroups(part).some(joint=>relatedJoints.includes(joint)));
@@ -487,6 +493,9 @@ function physicalRelations(source:Part,parts:Part[]):Relations{
   for(const [tendon,bonesAndMuscles] of Object.entries(namedTendons)){
    if(bonesAndMuscles.some(label=>matchesBone(source,label)))result.connectedBy=[...(result.connectedBy??[]),...parts.filter(part=>baseName(part.name)===tendon&&sameSide(source,part)).map(part=>part.name)];
   }
+  for(const [ligament,bones] of Object.entries(ligamentAttachments)){
+   if(bones.some(label=>matchesBone(source,label)))result.connectedBy=[...(result.connectedBy??[]),...parts.filter(part=>baseName(part.name)===ligament&&sameSide(source,part)).map(part=>part.name)];
+  }
  }
  const tendon=/\btendon\b/i.test(source.name)&&!/\btendon sheath\b/i.test(source.name);
  if(tendon){
@@ -495,25 +504,34 @@ function physicalRelations(source:Part,parts:Part[]):Relations{
   if(of)result.connects.push(of,`${of} muscle`);
   if(/·\s*Tendon$/i.test(source.name))result.connects.push(...parts.filter(part=>part.conceptId===source.conceptId&&part.id!==source.id&&!/·\s*Tendon$/i.test(part.name)).map(part=>part.name));
  }
- if(source.system==='fascia'){
+ if(source.system==='fascia'||source.system==='connective'&&/fascia|aponeurosis/i.test(source.name)){
   result.continuous=fascialContinuity.filter(pair=>pair.some(name=>name.toLowerCase()===sourceBase)).flatMap(pair=>pair.filter(name=>name.toLowerCase()!==sourceBase));
-  result.covers=fascialCoverings[sourceBase]??[];
+  const covered=fascialCoverings[sourceBase]??[];
+  result.covers=parts.filter(part=>part.system==='muscular'&&sameSide(source,part)&&covered.some(muscle=>baseName(part.name)===muscle.toLowerCase()||baseName(part.name).endsWith(` of ${muscle.toLowerCase()}`))).map(part=>part.name);
   if(sourceBase==='fascia lata')result.continuous.push('Iliotibial tract');
-  if(sourceBase==='tensor fasciae latae')result.continuous.push('Iliotibial tract');
+  if(sourceBase==='tensor fasciae latae'&&!isTendon(source))result.continuous.push('Iliotibial tract');
  }
- if(source.system==='muscular'){
+ if(source.system==='muscular'&&!isTendon(source)){
   result.coveredBy=Object.entries(fascialCoverings).filter(([,muscles])=>muscles.some(muscle=>sourceBase===muscle.toLowerCase()||sourceBase.endsWith(` of ${muscle.toLowerCase()}`))).map(([fascia])=>fascia);
-  result.connectedBy=parts.filter(part=>part.system==='muscular'&&/\btendon\b/i.test(part.name)&&part.conceptId===source.conceptId&&part.id!==source.id).map(part=>part.name);
-  if(sourceBase==='iliotibial tract')result.continuous=['Fascia lata','Tensor fasciae latae'];
+  result.connectedBy=parts.filter(part=>isTendon(part)&&part.id!==source.id&&sameSide(source,part)&&(part.conceptId===source.conceptId||baseName(part.name).replace(/^tendon of (?:left|right) /,'tendon of ')===`tendon of ${sourceBase}`)).map(part=>part.name);
+  if(sourceBase==='tensor fasciae latae')result.continuous=['Iliotibial tract'];
  }
+ if(sourceBase==='iliotibial tract')result.continuous=['Fascia lata','Tensor fasciae latae'];
  return result;
 }
 
 const networkCache=new WeakMap<Part,Map<string,ResolvedRelation[]>>();
 const isCartilage=(part:Part)=>/cartilage/i.test(part.name)&&!part.name.toLowerCase().includes('perichondular');
 const isTendon=(part:Part)=>/\btendon\b/i.test(part.name)&&!/\btendon sheath\b/i.test(part.name);
-export const isAnatomicalBone=(part:Part)=>part.system==='skeletal'&&!isCartilage(part)&&!/perichondular|gingiva|\bteeth\b|\btooth\b|bone tissue|bone marrow/i.test(part.name);
+export const isAnatomicalBone=(part:Part)=>part.system==='skeletal'&&!isCartilage(part)&&!/perichondular|gingiva|\bteeth\b|\btooth\b|bone tissue|bone marrow|·\s*(?:suture|ligament)\b/i.test(part.name);
 const isBone=isAnatomicalBone;
+const canCarryFunctionalLinks=(part:Part)=>part.system!=='attachments'&&part.system!=='regions'&&!/·\s*(?:ligament|suture)\b/i.test(part.name)&&(part.system!=='muscular'||!isTendon(part))&&(part.system!=='skeletal'||isBone(part));
+function explicitRelations(part:Part):Relations{
+ if(!canCarryFunctionalLinks(part))return {};
+ const name=withoutSide(part.name);
+ return explicit[name]??(name.endsWith(' of stomach')?explicit.stomach:undefined)??
+  (['jejunum','ileum'].find(base=>belongsTo(name,base))?explicit[name.includes('jejunum')?'jejunum':'ileum']:undefined)??{};
+}
 const structuralCache=new WeakMap<Part,Map<string,ResolvedRelation[]>>();
 const genericGroups=/^\d+:|^(?:head|neck|trunk|abdomen|thorax|pelvis|upper limb|lower limb|skin|muscles|nerves|arteries|veins|skeletal system|digestive system|respiratory system|central nervous system|peripheral nervous system|endocrine glands|visceral systems)$/i;
 const sideNeutralSourceId=(part:Part)=>part.id.startsWith('HRA:')?(part.sourceId??part.id).replace(/_([LR])(?=_|$)/i,'_{side}'):'';
@@ -534,7 +552,7 @@ function structuralNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
    const sourcePairKey=sideNeutralSourceId(source);
    const peers=(byName.get(baseName(source.name))??[]).filter(part=>part.system===source.system&&partSide(part)&&partSide(part)!==side&&(part.name.match(/\s*·\s*([^·]+)$/)?.[1]??'')===role&&(part.system!=='attachments'||(part.name.match(/\.([eo]\d*)[lr]$/i)?.[1]??'')===site)&&(!sourcePairKey||sideNeutralSourceId(part)===sourcePairKey));
    const opposite=peers.sort((a,b)=>b.vertexCount-a.vertexCount)[0];
-   if(opposite)add(source,'counterpart',opposite);
+   if(opposite){add(source,'counterpart',opposite);add(opposite,'counterpart',source);}
   }
   if(source.system==='attachments'){
    const site=source.name.match(/\.([oe])\d*[lr]$/i)?.[1]?.toLowerCase();
@@ -683,7 +701,12 @@ function skeletalNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
  for(const group of byConcept.values())for(const members of [group.filter(isBone),group.filter(part=>muscleBodyIds.has(part.id))]){
   if(members.length<2)continue;
   const union=members.flatMap(part=>graph.get(part.id)??[]);
-  for(const member of members)for(const relation of union)add(member,relation.kind,relation.target);
+  const memberIds=new Set(members.map(part=>part.id));
+  for(const member of members)for(const relation of union){
+   const reverse=(graph.get(relation.target.id)??[]).filter(link=>memberIds.has(link.target.id));
+   add(member,relation.kind,relation.target);
+   for(const link of reverse)add(relation.target,link.kind,member);
+  }
  }
  if(parts[0])networkCache.set(parts[0],graph);
  return graph;
@@ -714,6 +737,7 @@ function nerveRelations(source:Part,parts:Part[]):Relations{
 }
 
 function muscleNerves(source:Part):string[]{
+ if(source.system!=='muscular'||isTendon(source))return [];
  const groups=source.groups??[];
  const upper=groups.some(group=>/upper limb|muscles of hand/i.test(group));
  const lower=groups.some(group=>/lower limb|muscles of foot/i.test(group));
@@ -731,16 +755,16 @@ function muscleNerves(source:Part):string[]{
  return direct;
 }
 
-function reverseFunctionalRelations(source:Part,parts:Part[]):Relations{
- if(!['nervous','arterial','venous'].includes(source.system))return {};
- const result:Relations={};
- if(source.system==='nervous')result.innervates=parts.filter(part=>part.system==='muscular'&&sameSide(source,part)&&muscleNerves(part).some(nerve=>baseName(nerve)===baseName(source.name))).map(part=>part.name);
+function reverseFunctionalRelations(source:Part,parts:Part[]):ResolvedRelation[]{
+ if(!['nervous','arterial','venous'].includes(source.system))return [];
+ const result:ResolvedRelation[]=[];
+ if(source.system==='nervous')for(const part of parts.filter(part=>part.system==='muscular'&&sameSide(source,part)&&muscleNerves(part).some(nerve=>baseName(nerve)===baseName(source.name))))result.push({kind:'innervates',target:part});
  const kind=source.system==='nervous'?'innervation':source.system==='arterial'?'arterial':'venous';
  const reverse=source.system==='nervous'?'innervates':source.system==='arterial'?'supplies':'drains';
  for(const part of parts){
-  const lookup=explicit[withoutSide(part.name)];
+  const lookup=explicitRelations(part);
   if(!lookup?.[kind]||!sameSide(source,part))continue;
-  if(lookup[kind].some(query=>targets(query,part,parts).some(target=>target.id===source.id)))result[reverse]=[...(result[reverse]??[]),part.name];
+  if(lookup[kind].some(query=>targets(query,part,parts).some(target=>target.conceptId===source.conceptId)))result.push({kind:reverse,target:part});
  }
  return result;
 }
@@ -751,22 +775,21 @@ function accepts(kind:RelationKind,source:Part,target:Part):boolean{
  if(kind==='venous')return target.system==='venous';
  if(kind==='innervates')return target.system==='muscular'&&!/·\s*Tendon$/i.test(target.name)||['digestive','respiratory','cardiac','urinary','skeletal'].includes(target.system);
  if(kind==='supplies'||kind==='drains')return !['arterial','venous','nervous','attachments','regions'].includes(target.system);
- if(kind==='articulates')return target.system==='skeletal';
- if(kind==='connects')return target.system==='skeletal'||target.system==='muscular';
+ if(kind==='articulates')return isBone(target);
+ if(kind==='connects')return isBone(target)||target.system==='muscular';
  if(kind==='connectedBy')return target.system==='connective'||target.system==='muscular'&&/\btendon\b/i.test(target.name);
- if(kind==='joint')return source.system==='skeletal'?target.system==='connective':target.system==='skeletal';
+ if(kind==='joint')return isBone(source)?target.system==='connective':isBone(target);
  if(kind==='continuous')return target.system==='fascia'||target.system==='connective'||baseName(target.name)==='iliotibial tract';
- if(kind==='covers')return target.system==='muscular'&&!/·\s*Tendon$/i.test(target.name);
+ if(kind==='covers')return target.system==='muscular';
  if(kind==='coveredBy')return target.system==='fascia';
  return true;
 }
 
 export function anatomicalRelations(source:Part,allParts:Iterable<Part>):ResolvedRelation[]{
  const parts=Array.isArray(allParts)?allParts:[...allParts];
- const name=withoutSide(source.name);
- const lookup:Relations=explicit[name]??(name.endsWith(' of stomach')?explicit.stomach:undefined)??
-  (['jejunum','ileum'].find(base=>belongsTo(name,base))?explicit[name.includes('jejunum')?'jejunum':'ileum']:undefined)??{};
- const mapped:Relations={...lookup,innervation:[...(lookup.innervation??[]),...muscleNerves(source)]};
+ const lookup=explicitRelations(source);
+ const namedMuscleNerve=source.system==='muscular'&&!isTendon(source)?[`Nerve to ${baseName(source.name).replace(/ muscle$/,'')} muscle`]:[];
+ const mapped:Relations={...lookup,innervation:[...(lookup.innervation??[]),...muscleNerves(source),...namedMuscleNerve]};
  const route=routeRelations(source,parts,[digestiveStages(parts),airwayRoute,leftAirwayRoute,arterialRoute,legArterialRoute,legVenousRoute,armArterialRoute,armVenousRoute,portalVenousRoute,portalMesentericRoute,greatSaphenousRoute,smallSaphenousRoute,rightHeartRoute,inferiorCavaRoute,leftHeartRoute,urinaryRoute,spermRoute]);
  const branches=branchRelations(source,parts,[...airwayBranches,...arterialBranches,...nerveBranches]);
  const namedVessels=namedVascularRelations(source,parts);
@@ -776,14 +799,14 @@ export function anatomicalRelations(source:Part,allParts:Iterable<Part>):Resolve
  const result:ResolvedRelation[]=[];
  const seen=new Set<string>();
  const needsSkeletalNetwork=['skeletal','muscular','fascia','connective','arterial','venous','nervous'].includes(source.system);
- for(const relation of [...route,...branches,...downstreamShortcuts(source,parts),...(structuralNetwork(parts).get(source.id)??[]),...(needsSkeletalNetwork?skeletalNetwork(parts).get(source.id)??[]:[])]){
+ for(const relation of [...route,...branches,...downstreamShortcuts(source,parts),...(structuralNetwork(parts).get(source.id)??[]),...(needsSkeletalNetwork?skeletalNetwork(parts).get(source.id)??[]:[]),...reverse]){
   if(!accepts(relation.kind,source,relation.target))continue;
   const token=`${relation.kind}:${relation.target.id}`;
   if(!seen.has(token)){seen.add(token);result.push(relation);}
  }
  for(const kind of ['before','after','innervation','arterial','venous','innervates','supplies','drains','articulates','connects','connectedBy','joint','continuous','covers','coveredBy'] as const){
-  for(const query of [...(namedVessels[kind]??[]),...(nerves[kind]??[]),...(physical[kind]??[]),...(reverse[kind]??[]),...(mapped[kind]??[])]){
-   for(const target of targets(query,source,parts,part=>accepts(kind,source,part))){
+  for(const query of [...(namedVessels[kind]??[]),...(nerves[kind]??[]),...(physical[kind]??[]),...(mapped[kind]??[])]){
+   for(const target of targets(query,source,parts,part=>accepts(kind,source,part),kind==='articulates'||kind==='connects'||kind==='joint',false,['before','after','innervation','arterial','venous'].includes(kind))){
     const token=`${kind}:${target.id}`;
     if(!seen.has(token)){seen.add(token);result.push({kind,target});}
    }

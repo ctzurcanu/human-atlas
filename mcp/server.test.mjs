@@ -3,7 +3,7 @@ import {test} from 'node:test';
 import {Client} from '@modelcontextprotocol/sdk/client/index.js';
 import {InMemoryTransport} from '@modelcontextprotocol/sdk/inMemory.js';
 import {build} from 'esbuild';
-import {anatomyView, catalogue, DEPTH_LAYERS, resolveAnatomy} from './atlas-data.mjs';
+import {anatomyView, catalogue, DEPTH_LAYERS, resolveAnatomy,searchAnatomy} from './atlas-data.mjs';
 import {createServer} from './server.mjs';
 
 test('the requested structure becomes a selected, focused embed', () => {
@@ -89,6 +89,10 @@ test('embed controls can hide the explode dock while keeping systems available',
 test('exact IDs choose the requested side and bilateral names choose both', () => {
   const id = 'ZA:Sternocostal head of pectoralis major muscle.l';
   assert.deepEqual(resolveAnatomy(id).map(c => c.id), [id]);
+  assert.deepEqual(resolveAnatomy(`Atlas:${id}`).map(c => c.id), [id]);
+  assert.equal(searchAnatomy(`Atlas:${id}`)[0]?.id,id);
+  assert.equal(resolveAnatomy('TA98:A05.5.01.001')[0]?.id,'ZA:Stomach');
+  assert.equal(resolveAnatomy('UBERON:0000305','embryo')[0]?.id,'HRA:VH_F_amnion');
   const left = anatomyView({structure: id});
   assert.deepEqual(new URL(left.url).searchParams.getAll('select'), [id]);
   assert.deepEqual(resolveAnatomy('left sternocostal head of pectoralis major muscle').map(c => c.id), [id]);

@@ -2,36 +2,75 @@ import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import {build} from 'esbuild';
 
-const bundle=await build({entryPoints:['app/anatomy-hierarchy.ts','app/depth-layers.ts','app/anatomy.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/hierarchy-taxonomy-validation'});
+const bundle=await build({entryPoints:['app/anatomy-hierarchy.ts','app/anatomical-terminology.ts','app/hierarchy-choice.ts','app/hierarchy-navigation.ts','app/depth-layers.ts','app/anatomy.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/hierarchy-taxonomy-validation'});
 const load=async name=>import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles.find(file=>file.path.endsWith(name)).text).toString('base64')}`);
-const {REGION_ORDER,SKIN_DETAIL_NAMES,buildAnatomyNodes,depthPathFor,displaySystemFor,hierarchyEntries,regionPathFor,systemPathFor}=await load('anatomy-hierarchy.js');
+const {MAJOR_SYSTEMS,REGION_ORDER,SKIN_DETAIL_NAMES,buildAnatomyNodes,depthPathFor,displaySystemFor,hierarchyEntries,majorSystemFor,regionPathFor,systemPathFor}=await load('anatomy-hierarchy.js');
 const {DEPTH_LAYERS,depthLayerFor,isSkinPart}=await load('depth-layers.js');
 const {SYSTEMS}=await load('anatomy.js');
+const {anatomyNodeChoice}=await load('hierarchy-choice.js');
+const {atlasIdentifier,terminologyTitle}=await load('anatomical-terminology.js');
+const {hierarchyNavigation,hierarchyAncestors}=await load('hierarchy-navigation.js');
+const ta98=JSON.parse(readFileSync('app/data/ta98-metadata.json','utf8'));
+assert.deepEqual(MAJOR_SYSTEMS.map(system=>system.name),[
+ 'Respiratory system','Digestive system','Circulatory system','Urinary system',
+ 'Integumentary system','Skeletal system','Muscular system','Endocrine system',
+ 'Exocrine system','Lymphatic system','Nervous system','Reproductive system',
+]);
+assert.deepEqual(ta98.byGroup.All,{ta98:'A01.0.00.000',tha:'THA:8719',fma:'FMA:20394',latin:'corpus humanum'});
+assert.equal(ta98.byConcept['ZA:Stomach'].latin,'gaster');
+assert.equal(ta98.byGroup['Pectoral region'].ta98,'A01.2.03.005');
+assert.equal(ta98.byGroup['Pectoral region'].latin,'regio pectoralis');
+assert.match(terminologyTitle('Stomach',ta98.byConcept['ZA:Stomach']),/TA98:A05\.\d\.\d{2}\.\d{3}/);
+assert.match(terminologyTitle('Stomach',ta98.byConcept['ZA:Stomach']),/La:gaster/);
+assert.equal(ta98.byConcept['HRA:VH_F_skin'].latin,'cutis');
+assert.equal(ta98.byConcept['HRA:VH_F_skin'].ontology,'UBERON:0002097');
+assert.equal(ta98.byConcept['HRA:VH_F_areolar_tubercles_L'].ontology,'UBERON:0011828');
+assert.equal(ta98.byConcept['HRA:VH_F_areola_R'].fma,'FMA:223677');
+assert.equal(ta98.byConcept['HRA:VH_F_amnion'].ontology,'UBERON:0000305');
+assert.equal(ta98.byConcept['ZA:Abducens nerve (VI).l'].ta98,'A14.2.01.098');
+assert.equal(ta98.byConcept['ZA:External abdominal oblique muscle.l'].ta98,'A04.5.01.008');
+assert.equal(ta98.byConcept['ZA:External abdominal oblique muscle.ol'],undefined,'Attachment annotations must not inherit the muscle TA98 ID');
+for(const term of Object.values(ta98.byConcept))if(term.ta98){
+ assert.match(term.ta98,/^A\d{2}\.\d\.\d{2}\.\d{3}$/);
+ assert.match(term.tha,/^THA:\d+$/);
+ assert.ok(term.latin);
+}
 const canonical=new Set([
  ...REGION_ORDER,...SYSTEMS.map(system=>system.name),'Skin','Body surface','Named skin regions','Left arm','Right arm','Left leg','Right leg',
  'Hand & wrist','Forearm & elbow','Shoulder','Upper arm','Foot','Thigh & hip','Lower leg',
- 'Head','Neck','Brain','Skull','Face & senses','Scalp & epicranium','Back & spine','Pelvis','Abdomen','Chest','Other',
- 'Mammary gland','Lacrimal glands','Subcutaneous tissue',
+ 'Head','Neck','Brain','Skull','Face & senses','Scalp & epicranium','Back & spine','Pelvis','Abdomen','Chest',
+ 'Mammary gland','Lacrimal glands','Subcutaneous tissue','Bones','Cartilage','Tendons','Muscles','Fascia','Heart','Arteries','Veins','Sensory organs',
+ 'Hair & nails','Joints and ligaments','Muscle attachments',
+ 'Digestive tract','Accessory digestive organs','Lungs','Airways','Kidneys','Urinary tract',
+ 'Lymph nodes','Lymphatic organs and vessels','Endocrine glands','Salivary glands','Skin glands',
+ 'Central nervous system','Peripheral nervous system','Placenta & pregnancy',
+ 'Female genital system','Male genital system',
  'Cell boundary','Nucleus','Cytoplasm',...SKIN_DETAIL_NAMES,
 ]);
 function leaves(nodes){return nodes.flatMap(node=>node.kind==='group'?leaves(node.nodes):node.kind==='bilateral'?node.entries.flatMap(entry=>entry.parts):node.entry.parts);}
-function inspect(nodes){
+function inspect(nodes,knownParents){
  for(const node of nodes){
   if(node.kind!=='group')continue;
   assert(node.parts.length>0,`${node.name}: empty intermediate node`);
-  assert(canonical.has(node.name),`${node.name}: noncanonical middle node`);
+  assert(canonical.has(node.name)||knownParents.has(node.name)||node.terminology.ta98,`${node.name}: unresolvable middle node`);
   assert.deepEqual(node.parts.map(part=>part.id).sort(),leaves(node.nodes).map(part=>part.id).sort(),`${node.name}: parent and leaf membership differ`);
-  if(node.name==='Other')assert(node.nodes.every(child=>child.kind!=='group'),'Other should contain unmatched leaves directly');
-  else assert(node.nodes.every(child=>child.kind==='group'),'Unassigned leaves must be under Other');
-  inspect(node.nodes);
+  const firstLeaf=node.nodes.findIndex(child=>child.kind==='entry'||child.kind==='bilateral');
+  if(firstLeaf>=0)assert(node.nodes.slice(firstLeaf).every(child=>child.kind!=='group'),'Groups must precede leaves without an Other wrapper');
+  const choice=anatomyNodeChoice(node,`test:${node.id}`);
+  assert.deepEqual(choice.elements.sort(),node.parts.map(part=>part.id).sort(),`${node.name}: selectable membership differs`);
+  assert.equal(choice.children.length,node.nodes.length,`${node.name}: details must list every direct child`);
+  inspect(node.nodes,knownParents);
  }
 }
 function verify(atlas,name){
  const entries=hierarchyEntries(atlas),available=atlas.parts.filter(part=>!part.suppressed);
+ const knownParents=new Set(entries.flatMap(entry=>entry.ancestry));
  const expected=available.map(part=>part.id).sort();
  assert.deepEqual(entries.flatMap(entry=>entry.parts).map(part=>part.id).sort(),expected,`${name}: entry coverage`);
  const modes={
-  systems:()=>[...new Set(entries.map(entry=>displaySystemFor(entry.system)))].flatMap(system=>buildAnatomyNodes(entries.filter(entry=>displaySystemFor(entry.system)===system),entry=>systemPathFor(entry,atlas.scope))),
+  systems:()=>atlas.scope==='cell'
+   ?[...new Set(entries.map(entry=>entry.system))].flatMap(system=>buildAnatomyNodes(entries.filter(entry=>entry.system===system),entry=>systemPathFor(entry,atlas.scope)))
+   :MAJOR_SYSTEMS.flatMap(system=>buildAnatomyNodes(entries.filter(entry=>majorSystemFor(entry)===system.id),entry=>systemPathFor(entry,atlas.scope))),
   regions:()=>[...new Set(entries.map(entry=>entry.region))].flatMap(region=>buildAnatomyNodes(entries.filter(entry=>entry.region===region),regionPathFor)),
   depth:()=>DEPTH_LAYERS.flatMap(layer=>{
    const members=entries.flatMap(entry=>{const parts=entry.parts.filter(part=>depthLayerFor(part)===layer.id);return parts.length?[{...entry,parts}]:[];});
@@ -39,15 +78,35 @@ function verify(atlas,name){
   }),
  };
  for(const [mode,make] of Object.entries(modes)){
-  const nodes=make();inspect(nodes);
+  const nodes=make();inspect(nodes,knownParents);
   assert.deepEqual(leaves(nodes).map(part=>part.id).sort(),expected,`${name}: ${mode} has missing or duplicated items`);
+  const root=hierarchyNavigation(atlas,mode),leafPaths=new Map();
+  const walk=(node,path)=>{
+   assert(atlasIdentifier(node.id),`${name}: ${mode} node ${node.name} has no ID`);
+   if(!node.children){for(const id of node.elements)leafPaths.set(id,[...path,node]);return;}
+   assert(node.children.length,`${name}: ${mode} has an empty group ${node.name}`);
+   for(const child of node.children)walk(child,[...path,node]);
+  };
+  walk(root,[]);
+  assert.deepEqual([...leafPaths.keys()].sort(),expected,`${name}: ${mode} navigation is missing leaves`);
+  for(const id of expected.filter((_,index)=>index%Math.max(1,Math.floor(expected.length/50))===0)){
+   const path=leafPaths.get(id),leaf=path.at(-1);
+   assert.deepEqual(hierarchyAncestors(root,{id:leaf.id,name:leaf.name,elements:[id]}).map(item=>item.name),path.slice(0,-1).map(item=>item.name),`${name}: ${mode} breadcrumb differs for ${id}`);
+  }
+ }
+ if(name==='male-detail'&&existsSync('public/assets/chakras.json')){
+  const guest=JSON.parse(readFileSync('public/assets/chakras.json','utf8'));
+  const root=hierarchyNavigation(atlas,`guest:${guest.id}`,guest),ids=new Set();
+  const walk=node=>{assert(atlasIdentifier(node.id),`Chakras: ${node.name} has no ID`);if(node.children)node.children.forEach(walk);else node.elements.forEach(id=>ids.add(id));};
+  walk(root);
+  assert.deepEqual([...ids].sort(),expected,'Chakras hierarchy leaves do not cover the model');
  }
  if(name==='local-reference'){
   const skin=available.filter(part=>depthLayerFor(part)==='skin');
   assert.equal(skin.length,702,'All reference skin must be in the Skin depth layer');
   assert(skin.every(part=>displaySystemFor(part.system)==='integumentary'),'All reference skin must be under Body surface in Systems');
  }
- const expectedSkin={'male-detail':494,male:5,female:7,'local-male':2,'local-female':3,'local-reference':702};
+ const expectedSkin={'male-detail':493,male:4,female:7,'local-male':2,'local-female':3,'local-reference':702};
  if(name in expectedSkin)assert.equal(available.filter(isSkinPart).length,expectedSkin[name],`${name}: skin classification changed`);
  for(const part of available.filter(part=>part.system==='integumentary'||part.system==='regions')){
   assert.equal(depthLayerFor(part)==='skin',isSkinPart(part),`${name}: ${part.name} has wrong skin depth`);
@@ -68,6 +127,21 @@ const loaded=new Map();
 for(const [name,file] of catalogues)if(existsSync(file)){
  const atlas=JSON.parse(readFileSync(file));loaded.set(name,atlas);verify(atlas,name);
 }
+function systemOf(model,label){
+ const entry=hierarchyEntries(loaded.get(model)).find(entry=>entry.name.toLowerCase()===label.toLowerCase());
+ assert(entry,`${model}: missing ${label}`);
+ return majorSystemFor(entry);
+}
+assert.equal(systemOf('male','Third ventricle'),'nervous');
+assert.equal(systemOf('male','Gingiva of upper jaw'),'digestive');
+assert.equal(systemOf('male','Check ligament of left lateral rectus'),'nervous');
+assert.equal(systemOf('female','Parotid gland (left)'),'exocrine');
+assert.equal(systemOf('female','Mammary lobe'),'exocrine');
+assert.equal(systemOf('female','Nipple (left)'),'integumentary');
+assert.equal(systemOf('male-detail','Stomach'),'digestive');
+assert.equal(systemOf('male-detail','Left coronary artery'),'circulatory');
+assert.equal(systemPathFor(hierarchyEntries(loaded.get('female')).find(entry=>entry.name==='Celiac trunk'))[0],'Arteries');
+assert.equal(systemOf('local-reference','Body surface (derived)'),'integumentary');
 if(loaded.has('male-detail')&&loaded.has('local-reference')){
  const detailed=loaded.get('male-detail'),reference=loaded.get('local-reference');
  const byName=new Map(hierarchyEntries(detailed).filter(entry=>systemPathFor(entry,detailed.scope)[0]==='Skin').map(entry=>[entry.name,entry]));

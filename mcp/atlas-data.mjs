@@ -1,5 +1,8 @@
 import {readFileSync} from 'node:fs';
 
+const terminology=JSON.parse(readFileSync(new URL('../app/data/ta98-metadata.json',import.meta.url),'utf8'));
+const terminologyOf=id=>terminology.byConcept[id]??(/^FMA:?\d+$/.test(id)?{ta98:null,tha:null,fma:`FMA:${id.replace(/^FMA:?/,'')}`,latin:null}:null);
+
 export const VIEWER_URL = 'https://ctzurcanu.github.io/human-atlas/';
 export const MODELS = {
   'male-detail': 'atlas-male-complete.json',
@@ -43,10 +46,11 @@ export function anatomyOptions(model = 'male-detail') {
 const normalize = value => value.trim().toLocaleLowerCase().replace(/\s+/g, ' ');
 const plainName = value => normalize(value.replace(/\s*\((?:left|right)\)$/i, ''));
 const termsFor = value => {
-  const term = normalize(value);
+  const term = normalize(value).replace(/^atlas:/, '');
   const side = /^(left|right)\s+(.+)$/.exec(term);
   return side ? [term, `${side[2]} (${side[1]})`] : [term];
 };
+const terminologyValues = id => {const term=terminologyOf(id);return term?[term.ta98,term.ta98&&`TA98:${term.ta98}`,term.tha,term.fma,term.ontology,term.latin,term.latin&&`La:${term.latin}`].filter(Boolean):[];};
 
 export function searchAnatomy(query, model = 'male-detail', limit = 20) {
   const terms = termsFor(query);
@@ -54,7 +58,7 @@ export function searchAnatomy(query, model = 'male-detail', limit = 20) {
   if (!term) throw new Error('Enter an anatomical structure or atlas ID.');
   const atlas = catalogue(model);
   return atlas.concepts
-    .filter(concept => normalize(concept.name).includes(term) || normalize(concept.id).includes(term))
+    .filter(concept => normalize(concept.name).includes(term) || normalize(concept.id).includes(term) || terminologyValues(concept.id).some(value=>normalize(value).includes(term)))
     .sort((a, b) => {
       const score = concept => normalize(concept.id) === term || normalize(concept.name) === term ? 0
         : plainName(concept.name) === term ? 1
@@ -62,7 +66,7 @@ export function searchAnatomy(query, model = 'male-detail', limit = 20) {
       return score(a) - score(b) || a.name.length - b.name.length || a.name.localeCompare(b.name) || a.id.localeCompare(b.id);
     })
     .slice(0, limit)
-    .map(concept => ({id: concept.id, name: concept.name, pieces: concept.elements.length}));
+    .map(concept => ({id: concept.id, name: concept.name, pieces: concept.elements.length, terminology:terminologyOf(concept.id)}));
 }
 
 export function resolveAnatomy(structure, model = 'male-detail') {
@@ -76,6 +80,9 @@ export function resolveAnatomy(structure, model = 'male-detail') {
   if (exact.length > 1) throw new Error(`Several structures have that name. Use an exact atlas ID: ${exact.slice(0, 8).map(c => c.id).join(', ')}`);
   const bilateral = atlas.concepts.filter(concept => plainName(concept.name) === term);
   if (bilateral.length === 2 && bilateral.some(c => /\(left\)$/i.test(c.name)) && bilateral.some(c => /\(right\)$/i.test(c.name))) return bilateral;
+  const byTerminology = atlas.concepts.filter(concept=>terminologyValues(concept.id).some(value=>normalize(value)===term));
+  if(byTerminology.length===1)return byTerminology;
+  if(byTerminology.length>1)throw new Error(`Several structures share that terminology ID or Latin name. Use an exact atlas ID: ${byTerminology.slice(0,8).map(c=>c.id).join(', ')}`);
   const suggestions = searchAnatomy(structure, model, 8);
   throw new Error(suggestions.length
     ? `No exact structure match for "${structure}". Search results: ${suggestions.map(c => `${c.name} [${c.id}]`).join('; ')}`
@@ -151,7 +158,7 @@ export function anatomyView({structure, structures = [], model = 'male-detail', 
   const iframe = `<iframe src="${url.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}" title="Human Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:600px;border:0" allowfullscreen></iframe>`;
   return {
     model,
-    structures: matches.map(concept => ({id: concept.id, name: concept.name, pieces: concept.elements.length})),
+    structures: matches.map(concept => ({id: concept.id, name: concept.name, pieces: concept.elements.length, terminology:terminologyOf(concept.id)})),
     systems: [...new Set(selected.map(id => parts.get(id)?.system).filter(Boolean))],
     selectedPieces: selected,
     hiddenPieces,

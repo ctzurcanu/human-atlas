@@ -1,5 +1,5 @@
 import {SYSTEMS,type Atlas,type Part} from './anatomy';
-import {REGION_ORDER,buildAnatomyNodes,systemName,type AnatomyEntry,type AnatomyNode} from './anatomy-hierarchy';
+import {MAJOR_SYSTEMS,REGION_ORDER,buildAnatomyNodes,depthPathFor,majorSystemFor,regionPathFor,systemPathFor,type AnatomyEntry,type AnatomyNode} from './anatomy-hierarchy';
 import {DEPTH_LAYERS,depthLayerFor} from './depth-layers';
 import type {ResolvedGuestNode} from './guest-hierarchy';
 
@@ -43,9 +43,9 @@ function hierarchyTree(atlas:Atlas,entries:AnatomyEntry[],visibleIds:Set<string>
   return node(visibleEntries.flatMap(entry=>entry.parts),categories);
  }
  if(mode==='systems'){
-  const categories=SYSTEMS.map(system=>{
-   const members=visibleEntries.filter(entry=>entry.system===system.id);
-   return members.length?node(members.flatMap(entry=>entry.parts),buildAnatomyNodes(members,entry=>atlas.scope==='cell'?[]:[entry.region,...entry.location]).map(anatomyNode),system.name):null;
+  const categories=(atlas.scope==='cell'?SYSTEMS:MAJOR_SYSTEMS).map(system=>{
+   const members=visibleEntries.filter(entry=>atlas.scope==='cell'?entry.system===system.id:majorSystemFor(entry)===system.id);
+   return members.length?node(members.flatMap(entry=>entry.parts),buildAnatomyNodes(members,entry=>systemPathFor(entry,atlas.scope)).map(anatomyNode),system.name):null;
   }).filter((item):item is Node=>!!item);
   return node(visibleEntries.flatMap(entry=>entry.parts),categories);
  }
@@ -53,13 +53,13 @@ function hierarchyTree(atlas:Atlas,entries:AnatomyEntry[],visibleIds:Set<string>
   const names=atlas.scope==='cell'?['Cell boundary','Nucleus','Cytoplasm']:REGION_ORDER;
   const categories=names.map(name=>{
    const members=visibleEntries.filter(entry=>entry.region===name);
-   return members.length?node(members.flatMap(entry=>entry.parts),buildAnatomyNodes(members,entry=>[...entry.location,systemName(entry.system)]).map(anatomyNode),name):null;
+   return members.length?node(members.flatMap(entry=>entry.parts),buildAnatomyNodes(members,regionPathFor).map(anatomyNode),name):null;
   }).filter((item):item is Node=>!!item);
   return node(visibleEntries.flatMap(entry=>entry.parts),categories);
  }
  const categories=DEPTH_LAYERS.map(layer=>{
   const members=visibleEntries.flatMap(entry=>{const parts=entry.parts.filter(part=>depthLayerFor(part)===layer.id);return parts.length?[{...entry,parts}]:[]});
-  return members.length?node(members.flatMap(entry=>entry.parts),buildAnatomyNodes(members,entry=>[entry.region,...entry.location.filter(name=>name.toLowerCase()!==layer.name.toLowerCase())]).map(anatomyNode),layer.name):null;
+  return members.length?node(members.flatMap(entry=>entry.parts),buildAnatomyNodes(members,entry=>depthPathFor(entry,layer.name)).map(anatomyNode),layer.name):null;
  }).filter((item):item is Node=>!!item);
  return node(visibleEntries.flatMap(entry=>entry.parts),categories);
 }

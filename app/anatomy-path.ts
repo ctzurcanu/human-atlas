@@ -1,4 +1,5 @@
-import {SYSTEMS,type Part} from './anatomy';
+import {SYSTEMS,structureName,type Part} from './anatomy';
+import {MAJOR_SYSTEMS,majorSystemFor} from './anatomy-hierarchy';
 
 export interface AnatomyPathNode {label:string;search:string}
 
@@ -16,9 +17,9 @@ const pathKey=(label:string)=>label.replace(/^\s*(?:left|right)\s+/i,'').replace
 export function anatomyPath(name:string,selectedParts:Part[],allParts:Iterable<Part>,sex:'male'|'female',scope?:string):AnatomyPathNode[]{
  const root=scope==='cell'?'Human Cell':scope==='embryo'?'Embryo':sex==='male'?'Human Male':'Human Female';
  const path:AnatomyPathNode[]=[{label:root,search:scope==='cell'?'Cell_(biology)':scope==='embryo'?'Embryo':sex==='male'?'Man':'Woman'}];
- const systemIds=[...new Set(selectedParts.map(part=>part.system))];
- const system=systemIds.length===1?SYSTEMS.find(item=>item.id===systemIds[0]):undefined;
- if(system)path.push({label:system.name.replace(/\b\w/g,letter=>letter.toUpperCase()),search:system.name});
+ const systemIds=[...new Set(selectedParts.map(part=>scope==='cell'?part.system:majorSystemFor({name:structureName(part.name),system:part.system,parts:[part]})))];
+ const system=systemIds.length===1?(scope==='cell'?SYSTEMS:MAJOR_SYSTEMS).find(item=>item.id===systemIds[0]):undefined;
+ if(system)path.push({label:system.name,search:system.name});
 
  const first=selectedParts[0];
  const shared=first?.groups?.filter(group=>selectedParts.every(part=>part.groups?.includes(group)))??[];

@@ -18,10 +18,10 @@ export const DEPTH_LAYERS=[
  {id:'lymphatic',name:'Lymph nodules & vessels'},
  {id:'deep-nerves',name:'Deep nerves'},
  {id:'ligaments',name:'Ligaments'},
- {id:'other',name:'Muscle attachments & other annotations'},
+ {id:'other',name:'Muscle attachments and annotations'},
  {id:'thoracic-bones',name:'Thoracic cage bones, capsules & cartilages'},
  {id:'limb-bones',name:'Bones of the limbs'},
- {id:'other-bones',name:'Other bones'},
+ {id:'other-bones',name:'Bones outside spine and skull'},
  {id:'spine',name:'Spine'},
  {id:'skull',name:'Skull'},
 ] as const;
