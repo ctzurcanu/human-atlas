@@ -31,7 +31,8 @@ test('served catalogues select publisher-source male and female assets', () => {
   assert.equal(catalogue('male-detail').source, 'Z-Anatomy + Open 3D Model + BodyParts3D 4.0');
   assert.equal(catalogue('male-full').source, 'Z-Anatomy + Open 3D Model + BodyParts3D 4.0');
   const male = catalogue('male-detail');
-  assert.equal(male.parts.length, 5209);
+  assert.equal(male.parts.length, 5208);
+  assert.equal(male.parts.some(part => /^pubic hairs?$/i.test(part.name)), false);
   for (const [structure, system] of [
     ['Ureter (left)', 'urinary'],
     ['Femoral artery (right)', 'arterial'],

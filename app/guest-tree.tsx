@@ -3,9 +3,10 @@ import {Check,ChevronDown,ChevronRight,Minus} from 'lucide-react';
 import type {Atlas,Concept,Part,SceneState} from './anatomy';
 import {depthLayerFor} from './depth-layers';
 import {resolveGuestHierarchy,type GuestHierarchy,type ResolvedGuestNode} from './guest-hierarchy';
+import {displayLaterality,lateralityClass} from './laterality';
 
 type Update=SceneState|((state:SceneState)=>SceneState);
-type Props={atlas:Atlas;hierarchy:GuestHierarchy;state:SceneState;setState:(update:Update)=>void;onChoose:(concept:Concept)=>void};
+type Props={atlas:Atlas;hierarchy:GuestHierarchy;state:SceneState;setState:(update:Update)=>void;onChoose:(concept:Concept,toggle?:boolean)=>void};
 const style=(depth:number)=>({'--tree-depth':depth} as CSSProperties);
 
 export default function GuestTree({atlas,hierarchy,state,setState,onChoose}:Props){
@@ -33,13 +34,13 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose}:Prop
   </button>;
  };
  const renderNode=(node:ResolvedGuestNode,depth:number)=>{
-  const open=expanded.has(node.id),hasChildren=node.children.length>0;
-  const chooseDirect=()=>onChoose({id:`guest:${hierarchy.id}:${node.id}`,name:node.name,elements:node.directParts.map(part=>part.id)});
+  const open=expanded.has(node.id),hasChildren=node.children.length>0,display=displayLaterality(node.name);
+  const chooseDirect=(toggle=false)=>onChoose({id:`guest:${hierarchy.id}:${node.id}`,name:node.name,elements:node.directParts.map(part=>part.id)},toggle);
   return <div key={node.id}>
    <div className={`tree-row ${hasChildren?'tree-region':'tree-leaf'} ${node.parts.length?'':'guest-unmodeled'}`} style={style(depth)}>
     {hasChildren&&<button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${node.name}`} aria-expanded={open} onClick={()=>toggleOpen(node.id)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>}
-    <button type="button" className="tree-label" title={node.directParts.length?`Select ${node.name}`:node.parts.length?node.name:`${node.name} · no matching structure in this model`} aria-expanded={hasChildren&&!node.directParts.length?open:undefined} onClick={()=>node.directParts.length?chooseDirect():hasChildren?toggleOpen(node.id):undefined}>
-     <span className="tree-name">{node.name}</span>{node.parts.length>0&&<span className="tree-count">{node.parts.length.toLocaleString()}</span>}
+    <button type="button" className="tree-label" title={node.directParts.length?`Select ${node.name}`:node.parts.length?node.name:`${node.name} · no matching structure in this model`} aria-label={node.name} aria-expanded={hasChildren&&!node.directParts.length?open:undefined} onClick={event=>node.directParts.length?chooseDirect(event.ctrlKey||event.metaKey):hasChildren?toggleOpen(node.id):undefined} onContextMenu={event=>{if(event.ctrlKey&&node.directParts.length){event.preventDefault();chooseDirect(true);}}}>
+     <span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span>{node.parts.length>0&&<span className="tree-count">{node.parts.length.toLocaleString()}</span>}
     </button>
     {check(node.name,node.parts)}
    </div>

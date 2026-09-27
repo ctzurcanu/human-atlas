@@ -4,9 +4,10 @@ import {type Atlas,type Concept,type Part,type SceneState} from './anatomy';
 import {DEPTH_LAYERS,depthLayerFor} from './depth-layers';
 import {createDepthOrder} from './depth-sort';
 import {buildAnatomyNodes,depthPathFor,entryLabel,hierarchyEntries,type AnatomyEntry,type AnatomyNode} from './anatomy-hierarchy';
+import {displayLaterality,lateralityClass} from './laterality';
 
 type Update=SceneState|((state:SceneState)=>SceneState);
-type Props={atlas:Atlas;state:SceneState;setState:(update:Update)=>void;onChoose:(concept:Concept)=>void};
+type Props={atlas:Atlas;state:SceneState;setState:(update:Update)=>void;onChoose:(concept:Concept,toggle?:boolean)=>void};
 
 export default function DepthTree({atlas,state,setState,onChoose}:Props){
  const hierarchy=useMemo(()=>hierarchyEntries(atlas),[atlas]);
@@ -62,19 +63,19 @@ export default function DepthTree({atlas,state,setState,onChoose}:Props){
  };
  const rowStyle=(depth:number)=>({'--tree-depth':depth} as CSSProperties);
  const entryRow=(entry:AnatomyEntry,depth:number,key:string)=>{
-  const name=entryLabel(entry);
+  const name=entryLabel(entry),display=displayLaterality(name);
   return <div className="tree-row tree-leaf depth-leaf" style={rowStyle(depth)} key={`${key}:${entry.id}`}>
-   <button type="button" className="tree-label" title={name} onClick={()=>onChoose({id:entry.id,name,elements:entry.parts.map(part=>part.id)})}><span className="tree-name">{name}</span>{entry.parts.length>1&&<span className="tree-count">{entry.parts.length}</span>}</button>
+   <button type="button" className="tree-label" title={name} aria-label={name} onClick={event=>onChoose({id:entry.id,name,elements:entry.parts.map(part=>part.id)},event.ctrlKey||event.metaKey)} onContextMenu={event=>{if(event.ctrlKey){event.preventDefault();onChoose({id:entry.id,name,elements:entry.parts.map(part=>part.id)},true);}}}><span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span>{entry.parts.length>1&&<span className="tree-count">{entry.parts.length}</span>}</button>
    {check(name,entry.parts,()=>toggleParts(entry.parts))}
   </div>;
  };
  const renderNode=(node:AnatomyNode,depth:number,parentKey:string):ReactNode=>{
   const key=`${parentKey}:${node.id}`;
   if(node.kind==='entry')return entryRow(node.entry,depth,key);
-  const open=expanded.has(key);
+  const open=expanded.has(key),display=displayLaterality(node.name);
   return <div key={key}>
    <div className={`tree-row ${node.kind==='bilateral'?'tree-bilateral':'tree-region'}`} style={rowStyle(depth)}>
-    <button type="button" className="tree-label" aria-expanded={open} onClick={()=>toggleOpen(key)} title={node.name}><span className="tree-chevron">{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</span><span className="tree-name">{node.name}</span><span className="tree-count">{node.parts.length.toLocaleString()}</span></button>
+    <button type="button" className="tree-label" aria-expanded={open} aria-label={node.name} onClick={()=>toggleOpen(key)} title={node.name}><span className="tree-chevron">{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</span><span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span><span className="tree-count">{node.parts.length.toLocaleString()}</span></button>
     {check(node.name,node.parts,()=>toggleParts(node.parts))}
    </div>
    {open&&(node.kind==='group'?node.nodes.map(child=>renderNode(child,depth+1,key)):node.entries.map(entry=>entryRow(entry,depth+1,key)))}

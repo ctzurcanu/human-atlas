@@ -29,7 +29,7 @@ for(let i=0;i<stomachIndices.length;i+=3)for(let side=0;side<3;side++){
  stomachEdges.set(key,(stomachEdges.get(key)??0)+1);
 }
 assert([...stomachEdges.values()].filter(count=>count===1).length<=24,'Replacement stomach has a large open boundary; review its source mesh');
-assert.equal(detail.parts.length,5192,'Unexpected detailed-source catalogue');
+assert.equal(detail.parts.length,5191,'Unexpected detailed-source catalogue');
 assert.equal(standard.version,'BodyParts3D 4.0','Unexpected supplement source');
 assert.equal(added.length,17,'The BodyParts3D supplement changed; review the merge');
 const existingParts=new Set(detail.parts.map(part=>part.id));

@@ -216,7 +216,8 @@ h1 .edition{font-family:inherit;font-weight:500;font-size:10px;letter-spacing:.0
 button,input,select,textarea{font-family:inherit}
 
 .structure-tags,.structure-breadcrumbs{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
-.structure-title-row{display:flex;align-items:flex-start;gap:7px;min-width:0}.structure-title-row .structure-title{flex:1;min-width:0;padding-right:0!important}.structure-wikipedia{display:inline-flex;align-items:center;justify-content:center;flex:none;width:27px;height:27px;border:1px solid var(--border);border-radius:7px;color:var(--muted-foreground);text-decoration:none}.structure-wikipedia:hover{background:var(--accent);color:var(--foreground)}
+.structure-title-row{display:flex;align-items:flex-start;gap:7px;min-width:0}.structure-title-row .structure-title{flex:1;min-width:0;padding-right:0!important}.structure-title-link{color:inherit;text-decoration:none;text-decoration-color:transparent;text-underline-offset:3px}.structure-title-link:hover,.structure-title-link:focus-visible{color:inherit;text-decoration:underline;text-decoration-color:var(--primary)}
+.structure-title.side-left,.structure-title.side-right{color:color-mix(in srgb,var(--foreground) 72%,var(--laterality-color))!important}
 .structure-tag,.structure-breadcrumbs a{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);border-radius:999px;background:var(--secondary);padding:4px 8px;color:var(--foreground);font-size:11px;line-height:1.2;text-decoration:none}
 .structure-tag .system-dot{display:inline-block;width:6px;height:6px;border-radius:50%;flex:none}
 .structure-tag:hover,.structure-breadcrumbs a:hover{background:var(--accent)}
@@ -364,6 +365,18 @@ body:has(.studio[data-front-panel=details]) .detail-sheet{z-index:70!important}
 .anatomical-relation-item small{color:var(--muted-foreground);font-size:11px;line-height:1.25}
 .anatomical-relation-links button{max-width:100%;padding:4px 7px;border:1px solid var(--border)!important;border-radius:6px;background:var(--secondary)!important;color:var(--foreground)!important;text-align:left;line-height:1.3}
 .anatomical-relation-links button:hover{border-color:var(--primary)!important;background:var(--accent)!important}
+/* Side color is a display cue; structure names and selection IDs remain complete. */
+:root{--laterality-blue:#6b9fd3;--laterality-red:#d88383}
+.tree-name.side-left,.tree-name.side-right,.search-result-name.side-left,.search-result-name.side-right,.selection-list span.side-left,.selection-list span.side-right,.member-list span.side-left,.member-list span.side-right,.structure-breadcrumbs a.side-left,.structure-breadcrumbs a.side-right{border-radius:4px;padding-inline:3px;background:color-mix(in srgb,var(--card) 84%,var(--laterality-color));color:color-mix(in srgb,var(--foreground) 76%,var(--laterality-color))}
+.side-left{--laterality-color:var(--laterality-blue)}
+.side-right{--laterality-color:var(--laterality-red)}
+.anatomical-relation-links button.side-left,.anatomical-relation-links button.side-right{background:color-mix(in srgb,var(--secondary) 78%,var(--laterality-color))!important;border-color:color-mix(in srgb,var(--border) 65%,var(--laterality-color))!important;color:color-mix(in srgb,var(--foreground) 78%,var(--laterality-color))!important}
+.anatomical-relation-links button.side-left:hover,.anatomical-relation-links button.side-right:hover{background:color-mix(in srgb,var(--accent) 65%,var(--laterality-color))!important}
+.part-hover.side-left,.part-hover.side-right{background:color-mix(in srgb,#202e3b 82%,var(--laterality-color))}
+.anatomy-labels .selected-anatomy-label rect.side-left,.anatomy-labels .selected-anatomy-label rect.side-right,.anatomy-labels .explosion-group-label.side-left rect,.anatomy-labels .explosion-group-label.side-right rect{fill:color-mix(in srgb,var(--card) 84%,var(--laterality-color));stroke:var(--laterality-color)}
+.anatomy-labels .selected-anatomy-label text.side-left,.anatomy-labels .selected-anatomy-label text.side-right,.anatomy-labels .explosion-group-label.side-left text,.anatomy-labels .explosion-group-label.side-right text{fill:color-mix(in srgb,var(--foreground) 76%,var(--laterality-color))}
+.anatomy-labels .selected-anatomy-label line.side-left,.anatomy-labels .selected-anatomy-label line.side-right{stroke:var(--laterality-color)}
+.anatomy-labels .selected-anatomy-label circle.side-left,.anatomy-labels .selected-anatomy-label circle.side-right{fill:var(--laterality-color)}
 .detail-actions{display:block;gap:0}
 .detail-action-pill{display:flex;width:100%;padding:3px;border:1px solid var(--border);border-radius:999px;background:var(--secondary)}
 .detail-actions .detail-action-pill button{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;height:42px;padding:0;border:0!important;border-radius:999px;background:transparent;color:var(--foreground);cursor:pointer}

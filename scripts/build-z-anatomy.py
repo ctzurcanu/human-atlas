@@ -166,6 +166,9 @@ def flush():
 # retaining its original object name, material, collections, and transform.
 depsgraph = bpy.context.evaluated_depsgraph_get()
 for obj in sorted((o for o in bpy.data.objects if o.type in ('MESH', 'CURVE')), key=lambda o: o.name):
+    if obj.name.casefold() in ('pubic hair', 'pubic hairs'):
+        skipped.append({'name': obj.name, 'reason': 'Excluded pubic hair'})
+        continue
     if obj.name.endswith('.g') or any(slot.material and slot.material.name in ('Text', 'Lines', 'Planes', 'Directions', 'Movement') for slot in obj.material_slots):
         skipped.append({'name': obj.name, 'reason': 'Reference lettering or diagram'})
         continue

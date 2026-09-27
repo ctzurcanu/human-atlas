@@ -1,4 +1,6 @@
-export interface LabelAnchor {id:string;x:number;y:number;text:string}
+import type {Laterality} from './laterality';
+
+export interface LabelAnchor {id:string;x:number;y:number;text:string;fullText?:string;laterality?:Laterality}
 export interface LabelPlacement extends LabelAnchor {side:'left'|'right';label:string;left:number;right:number;top:number;bottom:number;leaderX:number;leaderY:number}
 export interface LabelArea {left:number;right:number;top:number;bottom:number}
 

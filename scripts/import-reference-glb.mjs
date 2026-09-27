@@ -247,7 +247,7 @@ for(const [stem,version,expectedSha=version] of files){
  function localMatrix(node){return node.matrix?new Matrix4().fromArray(node.matrix):new Matrix4().compose(new Vector3().fromArray(node.translation??[0,0,0]),new Quaternion().fromArray(node.rotation??[0,0,0,1]),new Vector3().fromArray(node.scale??[1,1,1]));}
  async function visit(index,parent,label){
   const node=doc.nodes[index],world=parent.clone().multiply(localMatrix(node)),name=node.name??label;
-  if(node.mesh!==undefined){
+  if(node.mesh!==undefined&&!/^pubic hairs?(?:\.[lr])?$/i.test(name)){
    const raw=name??`${stem} mesh ${index}`,matched=sourceFor(raw),display=title(raw),mesh=doc.meshes[node.mesh],normalMatrix=new Matrix3().getNormalMatrix(world),mirrored=world.determinant()<0;
    if(matched)sourceMatches++;
    for(let pi=0;pi<mesh.primitives.length;pi++){

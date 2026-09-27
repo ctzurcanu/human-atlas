@@ -30,8 +30,9 @@ for(const tree of ['isa','partof']){
 const ids=new Set(Object.keys(curated));
 assert.equal(ids.size,2234,'Curated BodyParts3D element count changed');
 for(const id of ids)assert.ok([...members.values()].some(set=>set.has(id)),`No publisher metadata for ${id}`);
+ids.delete('FJ2815'); // Pubic hair is intentionally absent from the viewer model.
 const concepts=[...members].map(([id,set])=>({id,name:names.get(id),elements:[...set].filter(id=>ids.has(id)).sort()})).filter(c=>c.elements.length).sort((a,b)=>a.id.localeCompare(b.id));
-assert.equal(concepts.length,3432,'Publisher concept count changed');
+assert.equal(concepts.length,3429,'Filtered publisher concept count changed');
 const elements=[...ids].sort().map(id=>({id,name:names.get(curated[id].conceptId)??id,conceptId:curated[id].conceptId}));
 assert.ok(elements.every(e=>concepts.some(c=>c.id===e.conceptId&&c.elements.includes(e.id))));
 await fs.writeFile(path.join(out,'concept-map.json'),JSON.stringify({elements,concepts}));

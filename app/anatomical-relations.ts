@@ -313,11 +313,11 @@ const explicit:Record<string,Relations>={
  'descending part of trapezius muscle':{innervation:['Accessory nerve (XI)']},
 };
 
-const clean=(name:string)=>structureName(name).replace(/\.(?:[eo][lr]|[eo]\d[lr])$/i,'').replace(/^\((.+)\)(\s*\((?:left|right)\))$/i,'$1$2').replace(/^\((.+)\)$/,'$1').replace(/\s+/g,' ').trim();
+const clean=(name:string)=>structureName(name).replace(/\.[eo]\d*[lr]$/i,'').replace(/^\((.+)\)(\s*\((?:left|right)\))$/i,'$1$2').replace(/^\((.+)\)$/,'$1').replace(/\s+/g,' ').trim();
 const key=(name:string)=>clean(name).toLowerCase();
 const sideOf=(name:string):'left'|'right'|null=>{
  if(/^(?:left|right) (?:atrium|ventricle)$/i.test(clean(name)))return null;
- const suffix=structureName(name).match(/\.[eo]\d?([lr])$/i);
+ const suffix=structureName(name).match(/\.[eo]\d*([lr])$/i);
  if(suffix)return suffix[1].toLowerCase()==='l'?'left':'right';
  const m=clean(name).match(/\((left|right)\)$/i)??clean(name).match(/^(left|right)\s/i);
  if(m)return m[1].toLowerCase() as 'left'|'right';
@@ -342,12 +342,16 @@ const vascularIdentity=(name:string)=>{
 };
 const statedVascularParent=(name:string)=>clean(name).match(/\b(?:branch(?:es)?|tributar(?:y|ies)) of (.+)$/i)?.[1]??null;
 
+const targetIndexes=new WeakMap<Part[],{exact:Map<string,Part[]>;base:Map<string,Part[]>}>();
 function targets(query:string,source:Part,parts:Part[],accept:(part:Part)=>boolean=()=>true):Part[]{
  const side=partSide(source);
  const q=query.replace('{side}',side??'left');
  const alternatives=query.includes('{side}')&&side===null?[q,query.replace('{side}','right')]:[q];
- const exact=parts.filter(part=>accept(part)&&alternatives.some(alt=>key(part.name)===alt.toLowerCase()&&(!sideOf(alt)||!partSide(part)||partSide(part)===sideOf(alt)))&&(!side||!partSide(part)||partSide(part)===side));
- const matched=exact.length?exact:parts.filter(part=>accept(part)&&alternatives.some(alt=>baseName(part.name)===baseName(alt)&&(!sideOf(alt)||!partSide(part)||partSide(part)===sideOf(alt)))&&(!side||!partSide(part)||partSide(part)===side));
+ let index=targetIndexes.get(parts);
+ if(!index){index={exact:new Map(),base:new Map()};for(const part of parts){const exact=key(part.name),base=baseName(part.name);const exactGroup=index.exact.get(exact)??[];exactGroup.push(part);index.exact.set(exact,exactGroup);const baseGroup=index.base.get(base)??[];baseGroup.push(part);index.base.set(base,baseGroup);}targetIndexes.set(parts,index);}
+ const matches=(part:Part,alt:string)=>accept(part)&&(!sideOf(alt)||!partSide(part)||partSide(part)===sideOf(alt))&&(!side||!partSide(part)||partSide(part)===side);
+ const exact=alternatives.flatMap(alt=>(index.exact.get(alt.toLowerCase())??[]).filter(part=>matches(part,alt)));
+ const matched=exact.length?exact:alternatives.flatMap(alt=>(index.base.get(baseName(alt))??[]).filter(part=>matches(part,alt)));
  const byConcept=new Map<string,Part>();
  for(const part of matched.filter(part=>part.id!==source.id)){
   const previous=byConcept.get(part.conceptId);
@@ -526,14 +530,14 @@ function structuralNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
   const side=partSide(source);
   if(side){
    const role=source.name.match(/\s*·\s*([^·]+)$/)?.[1]??'';
-   const site=source.system==='attachments'?source.name.match(/\.([eo]\d?)[lr]$/i)?.[1]??'':'';
+   const site=source.system==='attachments'?source.name.match(/\.([eo]\d*)[lr]$/i)?.[1]??'':'';
    const sourcePairKey=sideNeutralSourceId(source);
-   const peers=(byName.get(baseName(source.name))??[]).filter(part=>part.system===source.system&&partSide(part)&&partSide(part)!==side&&(part.name.match(/\s*·\s*([^·]+)$/)?.[1]??'')===role&&(part.system!=='attachments'||(part.name.match(/\.([eo]\d?)[lr]$/i)?.[1]??'')===site)&&(!sourcePairKey||sideNeutralSourceId(part)===sourcePairKey));
+   const peers=(byName.get(baseName(source.name))??[]).filter(part=>part.system===source.system&&partSide(part)&&partSide(part)!==side&&(part.name.match(/\s*·\s*([^·]+)$/)?.[1]??'')===role&&(part.system!=='attachments'||(part.name.match(/\.([eo]\d*)[lr]$/i)?.[1]??'')===site)&&(!sourcePairKey||sideNeutralSourceId(part)===sourcePairKey));
    const opposite=peers.sort((a,b)=>b.vertexCount-a.vertexCount)[0];
    if(opposite)add(source,'counterpart',opposite);
   }
   if(source.system==='attachments'){
-   const site=source.name.match(/\.([oe])\d?[lr]$/i)?.[1]?.toLowerCase();
+   const site=source.name.match(/\.([oe])\d*[lr]$/i)?.[1]?.toLowerCase();
    if(site)for(const muscle of (byMuscleCore.get(baseName(source.name).replace(/ muscle$/,''))??[]).filter(part=>!/\btendon\b/i.test(part.name)&&sameSide(source,part)).sort((a,b)=>b.vertexCount-a.vertexCount).slice(0,1)){
     add(source,site==='o'?'originFor':'insertionFor',muscle);
     add(muscle,site==='o'?'originSites':'insertionSites',source);
@@ -572,6 +576,9 @@ function skeletalNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
  const muscleBodyIds=new Set(muscleBodies.map(part=>part.id));
  const tendons=parts.filter(isTendon);
  const fasciae=parts.filter(part=>part.system==='fascia'||baseName(part.name)==='iliotibial tract');
+ const bonesByName=new Map<string,Part[]>();
+ for(const bone of bones){const name=baseName(bone.name),group=bonesByName.get(name)??[];group.push(bone);bonesByName.set(name,group);}
+ const muscleNameCache=new Map<string,Part[]>();
  const byConcept=new Map<string,Part[]>();
  for(const part of parts){
   const group=byConcept.get(part.conceptId)??[];
@@ -585,14 +592,15 @@ function skeletalNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
   }
   return [...found.values()];
  };
- const boneNamed=(name:string,side:'left'|'right'|null)=>canonical(bones.filter(part=>baseName(part.name)===baseName(name)&&(!side||!partSide(part)||partSide(part)===side)));
+ const boneNamed=(name:string,side:'left'|'right'|null)=>canonical((bonesByName.get(baseName(name))??[]).filter(part=>!side||!partSide(part)||partSide(part)===side));
  const muscleNamed=(name:string,side:'left'|'right'|null)=>{
   const wanted=baseName(name).replace(/ muscle$/,'');
-  return canonical(muscleBodies.filter(part=>{
-   if(side&&partSide(part)&&partSide(part)!==side)return false;
+  let candidates=muscleNameCache.get(wanted);
+  if(!candidates){candidates=muscleBodies.filter(part=>{
    const key=baseName(part.name).replace(/ muscle$/,'');
    return key===wanted||key.endsWith(` of ${wanted}`);
-  }));
+  });muscleNameCache.set(wanted,candidates);}
+  return canonical(candidates.filter(part=>!side||!partSide(part)||partSide(part)===side));
  };
  for(const muscle of muscleBodies)for(const tendon of (byConcept.get(muscle.conceptId)??[]).filter(isTendon)){
   add(muscle,'tendons',tendon);add(tendon,'muscles',muscle);

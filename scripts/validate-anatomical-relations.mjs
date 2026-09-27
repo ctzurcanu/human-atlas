@@ -80,6 +80,8 @@ const rectus=related(detailed,'Rectus femoris muscle (left) · Biarticular');
 assert.ok(!related(detailed,'(Abdominal part of pectoralis major muscle) (left) · Adductor').some(relation=>relation.kind==='partOf'&&['nervous','attachments'].includes(relation.target.system)));
 assert.ok(has(related(detailed,'(Abdominal part of pectoralis major muscle).ol'),'originFor','(Abdominal part of pectoralis major muscle) (left) · Adductor'));
 assert.ok(has(related(detailed,'(Abdominal part of pectoralis major muscle).ol'),'counterpart','(Abdominal part of pectoralis major muscle).or'));
+assert.ok(has(related(detailed,'External abdominal oblique muscle.o3r'),'counterpart','External abdominal oblique muscle.o3l'));
+assert.ok(has(related(detailed,'Longissimus thoracis muscle.e10l'),'counterpart','Longissimus thoracis muscle.e10r'));
 assert.ok(has(related(detailed,'(Abdominal part of pectoralis major muscle) (left) · Adductor'),'originSites','(Abdominal part of pectoralis major muscle).ol'));
 assert.ok(has(related(detailed,'Abductor hallucis.el'),'insertionFor','Abductor hallucis (left) · Abductor'));
 assert.ok(has(related(detailed,'Anterior papillary muscle of right ventricle'),'partOf','Right ventricle'));
