@@ -1,5 +1,5 @@
-import {useState} from 'react';
-import {Plus,X} from 'lucide-react';
+import {useEffect,useRef,useState,type PointerEvent as ReactPointerEvent} from 'react';
+import {GripVertical,Play,Plus,SkipBack,SkipForward,Square,StepBack,StepForward,X} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Dialog,DialogContent,DialogDescription,DialogFooter,DialogHeader,DialogTitle} from '@/components/ui/dialog';
 import type {SceneState} from './anatomy';
@@ -8,6 +8,7 @@ type ToolType='slides'|'quiz'|'layers';
 type CapturedScene={model:string;hierarchy:string;guestSources:string[];state:SceneState};
 type SavedView={id:string;name:string;url:string;model:string;addedAt:string;scene?:CapturedScene};
 type ToolDocument={schemaVersion:1;type:ToolType;views:SavedView[]};
+type ViewDrag={id:string;pointerId:number;startY:number;insertion:number};
 const STORAGE_KEY='human-atlas-advanced-tools-v1';
 const emptyDocument:ToolDocument={schemaVersion:1,type:'slides',views:[]};
 const validType=(value:unknown):value is ToolType=>value==='slides'||value==='quiz'||value==='layers';
@@ -24,16 +25,24 @@ function readDocument():ToolDocument{
  return emptyDocument;
 }
 
-interface Props{close:()=>void;currentViewUrl:()=>string;captureScene:()=>CapturedScene;model:string;viewName:string}
-export default function AdvancedTools({close,currentViewUrl,captureScene,model,viewName}:Props){
+interface Props{close:()=>void;currentViewUrl:()=>string;captureScene:()=>CapturedScene;model:string;viewName:string;ready:boolean}
+export default function AdvancedTools({close,currentViewUrl,captureScene,model,viewName,ready}:Props){
  const [document,setDocument]=useState<ToolDocument>(readDocument);
  const [editorOpen,setEditorOpen]=useState(false);
  const [editorText,setEditorText]=useState('');
  const [editorError,setEditorError]=useState('');
+ const [newViewName,setNewViewName]=useState('');
+ const [slideIndex,setSlideIndex]=useState<number|null>(null);
+ const [draggingId,setDraggingId]=useState<string|null>(null);
+ const [dropIndex,setDropIndex]=useState<number|null>(null);
+ const dragRef=useRef<ViewDrag|null>(null);
+ const listRef=useRef<HTMLDivElement>(null);
+ const sceneAnimationRef=useRef<Animation|null>(null);
  const update=(next:ToolDocument)=>{setDocument(next);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next));}catch{/* The current session still retains the document. */}};
  const addView=()=>{
-  const next:SavedView={id:crypto.randomUUID(),name:viewName||`View ${document.views.length+1}`,url:currentViewUrl(),model,addedAt:new Date().toISOString(),scene:captureScene()};
+  const next:SavedView={id:crypto.randomUUID(),name:newViewName.trim()||viewName||`View ${document.views.length+1}`,url:currentViewUrl(),model,addedAt:new Date().toISOString(),scene:captureScene()};
   update({...document,views:[...document.views,next]});
+  setNewViewName('');
  };
  const openEditor=()=>{setEditorText(JSON.stringify(document,null,2));setEditorError('');setEditorOpen(true);};
  const applyEditor=()=>{
@@ -43,20 +52,94 @@ export default function AdvancedTools({close,currentViewUrl,captureScene,model,v
    update(parsed);setEditorOpen(false);
   }catch(error){setEditorError(error instanceof Error?error.message:'Invalid JSON.');}
  };
- const openView=(view:SavedView)=>{location.assign(view.url);};
+ const openView=(view:SavedView)=>{history.pushState(null,'',view.url);window.dispatchEvent(new PopStateEvent('popstate'));};
+ const showSlide=(index:number)=>{
+  const count=document.views.length;if(!count)return;
+  const next=(index%count+count)%count,view=document.views[next];
+  const sameModel=new URL(view.url).searchParams.get('model')===new URL(location.href).searchParams.get('model');
+  sceneAnimationRef.current?.cancel();
+  if(sameModel&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+   const scene=window.document.querySelector<HTMLElement>('.scene');
+   if(scene?.animate){const animation=scene.animate([{opacity:.4},{opacity:1}],{duration:280,easing:'ease-out'});sceneAnimationRef.current=animation;animation.onfinish=()=>{if(sceneAnimationRef.current===animation)sceneAnimationRef.current=null;};}
+  }
+  setSlideIndex(next);openView(view);
+ };
+ const stopSlides=()=>{sceneAnimationRef.current?.cancel();sceneAnimationRef.current=null;setSlideIndex(null);};
+ useEffect(()=>{
+  if(slideIndex===null)return;
+  const onKey=(event:KeyboardEvent)=>{
+   if(event.defaultPrevented||event.altKey||event.ctrlKey||event.metaKey)return;
+   const target=event.target;
+   if(target instanceof HTMLElement&&(target.isContentEditable||target.closest('input,textarea,select,[role="textbox"]')))return;
+   const next=event.code==='Space'||event.key==='ArrowRight'||event.key==='>';
+   const previous=event.key==='ArrowLeft'||event.key==='<';
+   const stop=event.key==='ArrowDown';
+   if(!next&&!previous&&!stop)return;
+   event.preventDefault();
+   if(event.repeat)return;
+   if(stop)stopSlides();else showSlide(slideIndex+(next?1:-1));
+  };
+  window.addEventListener('keydown',onKey);
+  return()=>window.removeEventListener('keydown',onKey);
+ },[slideIndex,document.views]);
+ const moveView=(id:string,target:number)=>{
+  const from=document.views.findIndex(view=>view.id===id);
+  if(from<0||target<0||target>=document.views.length||from===target)return;
+  const views=[...document.views],picked=views.splice(from,1)[0];views.splice(target,0,picked);
+  update({...document,views});
+ };
+ const insertionAt=(y:number)=>{
+  const rows=listRef.current?.querySelectorAll<HTMLLIElement>('li[data-view-id]');
+  if(!rows)return 0;
+  for(let index=0;index<rows.length;index++){const rect=rows[index].getBoundingClientRect();if(y<rect.top+rect.height/2)return index;}
+  return rows.length;
+ };
+ const startDrag=(event:ReactPointerEvent<HTMLButtonElement>,view:SavedView,index:number)=>{
+  if(event.button!==0)return;
+  event.preventDefault();event.currentTarget.setPointerCapture(event.pointerId);
+  dragRef.current={id:view.id,pointerId:event.pointerId,startY:event.clientY,insertion:index};
+  setDraggingId(view.id);
+ };
+ const dragMove=(event:ReactPointerEvent<HTMLButtonElement>)=>{
+  const drag=dragRef.current;if(!drag||drag.pointerId!==event.pointerId)return;
+  event.preventDefault();
+  const list=listRef.current;if(list){const rect=list.getBoundingClientRect();if(event.clientY<rect.top+12)list.scrollTop-=14;else if(event.clientY>rect.bottom-12)list.scrollTop+=14;}
+  if(Math.abs(event.clientY-drag.startY)<4&&dropIndex===null)return;
+  drag.insertion=insertionAt(event.clientY);setDropIndex(drag.insertion);
+ };
+ const endDrag=(event:ReactPointerEvent<HTMLButtonElement>,cancel=false)=>{
+  const drag=dragRef.current;if(!drag||drag.pointerId!==event.pointerId)return;
+  if(event.currentTarget.hasPointerCapture(event.pointerId))event.currentTarget.releasePointerCapture(event.pointerId);
+  if(!cancel&&Math.abs(event.clientY-drag.startY)>=4){
+   const from=document.views.findIndex(view=>view.id===drag.id),insertion=insertionAt(event.clientY);
+   moveView(drag.id,insertion>from?insertion-1:insertion);
+  }
+  dragRef.current=null;setDraggingId(null);setDropIndex(null);
+ };
  return <>
   <section className="advanced-panel glass" aria-label="Advanced tools">
-   <div className="advanced-grid">
+   {slideIndex!==null&&document.views[slideIndex]?<div className="advanced-playback" role="toolbar" aria-label="Slide playback">
+    <Button variant="ghost" onClick={()=>showSlide(0)} disabled={slideIndex===0} aria-label="First slide" title="First slide"><SkipBack size={18}/></Button>
+    <Button variant="ghost" onClick={()=>showSlide(slideIndex-1)} aria-label="Previous slide" title="Previous slide (←)"><StepBack size={19}/></Button>
+    <div className="advanced-slide-caption" aria-live="polite"><span className="advanced-slide-count">{slideIndex+1}/{document.views.length}</span><span className="advanced-slide-name" title={document.views[slideIndex].name}>{document.views[slideIndex].name}</span></div>
+    <Button variant="ghost" onClick={stopSlides} aria-label="Stop slides" title="Stop slides (↓)"><Square size={18} fill="currentColor"/></Button>
+    <Button variant="ghost" onClick={()=>showSlide(slideIndex+1)} aria-label="Next slide" title="Next slide (Space or →)"><StepForward size={19}/></Button>
+    <Button variant="ghost" onClick={()=>showSlide(document.views.length-1)} disabled={slideIndex>=document.views.length-1} aria-label="Last slide" title="Last slide"><SkipForward size={18}/></Button>
+   </div>:<div className="advanced-grid">
     <div className="advanced-controls">
      <select id="advanced-type" aria-label="Advanced tool type" value={document.type} onChange={event=>update({...document,type:event.target.value as ToolType})}><option value="slides">Slides</option><option value="quiz">Quiz</option><option value="layers">Layers</option></select>
+     <div className="advanced-add-row">
+      <input type="text" aria-label="Name for new view" placeholder="View name" value={newViewName} onChange={event=>setNewViewName(event.target.value)}/>
+      <Button variant="outline" onClick={addView} disabled={!ready} aria-label="Add present view" title="Add present view"><Plus size={18}/></Button>
+     </div>
      <div className="advanced-actions" role="toolbar" aria-label="Advanced tool actions">
       <Button variant="outline" onClick={openEditor} aria-label="Open JSON editor" title="Open JSON editor"><span className="advanced-code-icon" aria-hidden="true">{'<>'}</span></Button>
-      <Button variant="outline" onClick={addView} aria-label="Add present view" title="Add present view"><Plus size={18}/><span className="sr-only">Add view</span></Button>
-      <Button variant="ghost" onClick={close} aria-label="Close advanced tools" title="Close advanced tools"><X size={17}/></Button>
+      <Button variant="outline" onClick={()=>showSlide(0)} disabled={document.type!=='slides'||document.views.length===0} aria-label="Play slides" title="Play slides"><Play size={17}/></Button>
      </div>
     </div>
-    <div className="advanced-view-list" aria-label="Added views"><ol>{document.views.map((view,index)=><li key={view.id}><button type="button" onClick={()=>openView(view)} title={`Open ${view.name}`}><span className="advanced-view-number">{index+1}</span><span className="advanced-view-name">{view.name}</span></button></li>)}</ol></div>
-   </div>
+    <div ref={listRef} className="advanced-view-list" aria-label="Added views"><ol>{document.views.map((view,index)=><li key={view.id} data-view-id={view.id} data-dragging={draggingId===view.id} data-drop-before={dropIndex===index} data-drop-after={dropIndex===document.views.length&&index===document.views.length-1}><button type="button" className="advanced-drag-handle" aria-label={`Reorder ${view.name}`} title="Drag to reorder; arrow keys also work" onPointerDown={event=>startDrag(event,view,index)} onPointerMove={dragMove} onPointerUp={event=>endDrag(event)} onPointerCancel={event=>endDrag(event,true)} onKeyDown={event=>{if(event.key==='ArrowUp'||event.key==='ArrowDown'){event.preventDefault();moveView(view.id,index+(event.key==='ArrowUp'?-1:1));}}}><GripVertical size={15}/></button><button type="button" className="advanced-view-open" onClick={()=>openView(view)} title={`Open ${view.name}`}><span className="advanced-view-number">{index+1}</span><span className="advanced-view-name">{view.name}</span></button></li>)}</ol></div>
+   </div>}
+   <Button variant="ghost" className="advanced-close" onClick={close} aria-label="Close advanced tools" title="Close advanced tools"><X size={17}/></Button>
   </section>
   <Dialog open={editorOpen} onOpenChange={setEditorOpen}><DialogContent className="advanced-json-dialog" showCloseButton={false}><DialogHeader><DialogTitle>Advanced tools JSON</DialogTitle><DialogDescription>Edit the current type and saved views.</DialogDescription></DialogHeader><textarea aria-label="Advanced tools JSON" spellCheck={false} value={editorText} onChange={event=>{setEditorText(event.target.value);setEditorError('');}}/>{editorError&&<p className="advanced-json-error" role="alert">{editorError}</p>}<DialogFooter><Button variant="outline" onClick={()=>setEditorOpen(false)}>Cancel</Button><Button onClick={applyEditor}>Apply JSON</Button></DialogFooter></DialogContent></Dialog>
  </>;

@@ -10,6 +10,7 @@ import {hierarchyEntries} from './anatomy-hierarchy';
 import {resolveGuestHierarchy,type GuestHierarchy} from './guest-hierarchy';
 import {decodeModelResponse} from './model-download';
 import {selectionCenter} from './camera-pivot';
+import {orbitAroundPointer} from './pointer-orbit';
 import {layoutAnatomyLabels,type LabelAnchor} from './label-layout';
 import {displayLaterality,lateralityClass} from './laterality';
 import {PointerTap} from './pointer-tap';
@@ -434,7 +435,6 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
    coveringCallback.current?.([...candidates].sort((a,b)=>a[1]-b[1]).map(([i])=>atlas.parts[i].id));
   };
   const selectionPivot=()=>amount>.05&&!latest.current.isolate?null:selectionCenter(atlas.parts,latest.current.selected,data);
-  const anchorSelection=()=>{const pivot=selectionPivot();if(pivot){controls.target.copy(pivot);controls.update();}};
   const syncSelectedRotation=()=>{
    const box=new T.Box3();for(const i of rotationPartIndices)box.union(bounds[i].clone().translate(new T.Vector3(data[i*4],data[i*4+1],data[i*4+2])));
    const pivot=box.isEmpty()?null:box.getCenter(new T.Vector3());pivotUniform.value.copy(pivot??new T.Vector3());rotationUniform.value.set(selectedRotation.x,selectedRotation.y,selectedRotation.z,selectedRotation.w);
@@ -443,7 +443,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
    }
    dirty=true;
   };
-  const pressPoints=new Map<number,{x:number;y:number;lastX:number;anchored:boolean;rotating:boolean}>();
+  const pressPoints=new Map<number,{x:number;y:number;lastX:number;lastY:number;rotating:boolean;orbitCandidate:boolean;orbiting:boolean;pivot?:T.Vector3}>();
   const solidContext=()=> (latest.current.skinOpacity??.1)<.95&&atlas.parts.some((p,i)=>!isSkinPart(p)&&data[i*4+3]>.5);
   const canPick=(i:number,hasSolid:boolean)=>{
    const part=atlas.parts[i],selected=latest.current.selected.includes(part.id);
@@ -451,8 +451,9 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
    const alpha=selected?1:contextUniform.value*(isSkinPart(part)?skinUniform.value:1)*(atlas.materials?.[part.material??'']?.opacity??1);
    return alpha>.001;
   };
-  const pickAt=(clientX:number,clientY:number,radius=16)=>{
+  const pickAt=(clientX:number,clientY:number,radius=16,pivotOut?:T.Vector3)=>{
    const rect=renderer.domElement.getBoundingClientRect(),hasSolid=solidContext();
+   pivotOut?.set(NaN,NaN,NaN);
    pointer.set((clientX-rect.left)/rect.width*2-1,-(clientY-rect.top)/rect.height*2+1);
    raycaster.setFromCamera(pointer,camera);
    // Covering scans may leave a short ray range; a pointer pick always checks
@@ -460,14 +461,14 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
    raycaster.near=0;raycaster.far=Infinity;
    let nearest=Infinity,found=-1;
    const stencilHit=stencilCaps.pick(raycaster.ray,index=>canPick(index,hasSolid));
-   if(stencilHit){nearest=stencilHit.distance;found=stencilHit.index;}
+   if(stencilHit){nearest=stencilHit.distance;found=stencilHit.index;if(pivotOut)raycaster.ray.at(nearest,pivotOut);}
    // The visible cut face is its own mesh; raycasting only the source surface
    // misses the interior of a section and cannot identify the tissue there.
    for(const mesh of capMeshes){
     const index=mesh.userData.partIndex as number,cutIndex=mesh.userData.cutIndex as number;
     if(!mesh.visible||!canPick(index,hasSolid))continue;
     const hit=raycaster.intersectObject(mesh,false).find(candidate=>clipPlanes.every((plane,i)=>i===cutIndex||plane.distanceToPoint(candidate.point)>=-.00001));
-    if(hit&&hit.distance<nearest){nearest=hit.distance;found=index;}
+    if(hit&&hit.distance<nearest){nearest=hit.distance;found=index;pivotOut?.copy(hit.point);}
    }
    pickers.forEach((mesh,i)=>{
     if(!mesh||!canPick(i,hasSolid))return;
@@ -477,12 +478,21 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
      if(!raycaster.ray.intersectBox(worldBox,hitPoint))return;
     }
     const hit=raycaster.intersectObject(mesh,false).find(candidate=>keptBySections(candidate.point));
-    if(hit&&hit.distance<nearest){nearest=hit.distance;found=i;}
+    if(hit&&hit.distance<nearest){nearest=hit.distance;found=i;pivotOut?.copy(hit.point);}
    });
    if(found<0&&amount>.45&&!enabledSections(latest.current).length)found=findTarget(clientX-rect.left,clientY-rect.top,radius,i=>canPick(i,hasSolid));
    return found;
   };
-  const down=(e:PointerEvent)=>{const toggling=e.ctrlKey||e.metaKey,rotating=!toggling&&!sectionToolRef.current&&amount>.04&&!latest.current.isolate&&rotationPartIndices.size>0&&e.button===0;pressPoints.set(e.pointerId,{x:e.clientX,y:e.clientY,lastX:e.clientX,anchored:false,rotating});hover.hidden=true;tap.down(e.pointerId,e.clientX,e.clientY,e.pointerType==='touch'?16:10);if(rotating||toggling){e.preventDefault();e.stopImmediatePropagation();renderer.domElement.setPointerCapture(e.pointerId);}};
+  const pointerPivot=(clientX:number,clientY:number)=>{
+   const point=new T.Vector3();pickAt(clientX,clientY,16,point);
+   if(Number.isFinite(point.x))return point;
+   const rect=renderer.domElement.getBoundingClientRect();
+   pointer.set((clientX-rect.left)/rect.width*2-1,-(clientY-rect.top)/rect.height*2+1);
+   raycaster.setFromCamera(pointer,camera);
+   const plane=new T.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(new T.Vector3()),controls.target);
+   return raycaster.ray.intersectPlane(plane,point)??controls.target.clone();
+  };
+  const down=(e:PointerEvent)=>{const toggling=e.ctrlKey||e.metaKey,rotating=!toggling&&!sectionToolRef.current&&amount>.04&&!latest.current.isolate&&rotationPartIndices.size>0&&e.button===0,orbitCandidate=!toggling&&!rotating&&!sectionToolRef.current&&(amount<=.04||latest.current.isolate)&&e.button===0&&e.pointerType!=='touch';pressPoints.set(e.pointerId,{x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,rotating,orbitCandidate,orbiting:false});hover.hidden=true;tap.down(e.pointerId,e.clientX,e.clientY,e.pointerType==='touch'?16:10);if(rotating||toggling||orbitCandidate){e.preventDefault();e.stopImmediatePropagation();renderer.domElement.setPointerCapture(e.pointerId);}};
   const move=(e:PointerEvent)=>{
    tap.move(e.pointerId,e.clientX,e.clientY);
    const press=pressPoints.get(e.pointerId);
@@ -492,7 +502,15 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
     if(dx){selectedRotation.premultiply(new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),dx*.009)).normalize();syncSelectedRotation();}
     hover.hidden=true;renderer.domElement.style.cursor='grabbing';return;
    }
-   if(e.buttons&&press&&!press.anchored&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>8){press.anchored=true;anchorSelection();}
+   if(press?.orbitCandidate){
+    if(!press.orbiting&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>8){press.pivot=pointerPivot(press.x,press.y);press.orbiting=true;}
+    if(press.orbiting&&press.pivot){
+     e.preventDefault();e.stopImmediatePropagation();
+     const dx=e.clientX-press.lastX,dy=e.clientY-press.lastY;press.lastX=e.clientX;press.lastY=e.clientY;
+     if(dx||dy){const rect=renderer.domElement.getBoundingClientRect();pointer.set((press.x-rect.left)/rect.width*2-1,-(press.y-rect.top)/rect.height*2+1);orbitAroundPointer(camera,controls.target,press.pivot,pointer,dx,dy,rect.height,controls.minPolarAngle,controls.maxPolarAngle);controls.update();dirty=true;}
+     hover.hidden=true;renderer.domElement.style.cursor='grabbing';return;
+    }
+   }
    if(e.buttons||!ready||sectionToolRef.current&&!enabledSections(latest.current).length||e.pointerType==='touch'){hover.hidden=true;renderer.domElement.style.cursor=e.buttons?'grabbing':'default';return;}
    const rect=el.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top,index=pickAt(e.clientX,e.clientY);
    hover.hidden=index<0;renderer.domElement.style.cursor='default';
@@ -501,7 +519,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
   const cancel=(e:PointerEvent)=>{pressPoints.delete(e.pointerId);tap.cancel(e.pointerId);hover.hidden=true;renderer.domElement.style.cursor='default';};
   const leave=()=>{hover.hidden=true;renderer.domElement.style.cursor='default';};
   const up=(e:PointerEvent)=>{
-   const press=pressPoints.get(e.pointerId);pressPoints.delete(e.pointerId);if(press?.rotating){e.preventDefault();e.stopImmediatePropagation();}const validTap=tap.up(e.pointerId,e.clientX,e.clientY);if(!validTap||!ready)return;const rect=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);
+   const press=pressPoints.get(e.pointerId);pressPoints.delete(e.pointerId);if(press?.rotating||press?.orbitCandidate){e.preventDefault();e.stopImmediatePropagation();}if(press?.orbiting){tap.cancel(e.pointerId);cameraCallback.current?.(cameraValues());return;}const validTap=tap.up(e.pointerId,e.clientX,e.clientY);if(!validTap||!ready)return;const rect=renderer.domElement.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);
    // Covering-tissue scans shorten raycaster.far; each click must trace the
    // entire visible anatomy, including structures beyond the last scan point.
    raycaster.near=0;raycaster.far=Infinity;
