@@ -1,5 +1,6 @@
 export interface RelationshipExpansion {
  anchorId:string;
+ anchorIds:string[];
  selectedKey:string;
  frontier:string[];
  exhausted:boolean;
@@ -16,7 +17,8 @@ export function expandRelationshipSelection(
  if(!selected.length)return {selected,expansion:null};
  const continuing=previous?.selectedKey===selected.join('|');
  const anchorId=continuing?previous.anchorId:selected[0];
- const frontier=continuing?previous.frontier:[anchorId];
+ const anchorIds=continuing?previous.anchorIds:selected;
+ const frontier=continuing?previous.frontier:anchorIds;
  const seen=new Set(selected);
  const added:string[]=[];
  for(const sourceId of frontier){
@@ -27,5 +29,5 @@ export function expandRelationshipSelection(
   }
  }
  const expanded=added.length?[...selected,...added]:selected;
- return {selected:expanded,expansion:{anchorId,selectedKey:expanded.join('|'),frontier:added,exhausted:added.length===0,depth:(continuing?previous.depth:0)+1}};
+ return {selected:expanded,expansion:{anchorId,anchorIds,selectedKey:expanded.join('|'),frontier:added,exhausted:added.length===0,depth:(continuing?previous.depth:0)+1}};
 }

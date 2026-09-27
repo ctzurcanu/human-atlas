@@ -15,5 +15,8 @@ assert.equal(fourth.expansion.exhausted,true);
 assert.deepEqual(fourth.selected,third.selected);
 const changed=expandRelationshipSelection(['duodenum'],third.expansion,related);
 assert.deepEqual(changed.selected,['duodenum','jejunum','stomach']);
+const concept=expandRelationshipSelection(['stomach','duodenum'],null,related);
+assert.deepEqual(concept.selected,['stomach','duodenum','esophagus','vagus','jejunum']);
+assert.deepEqual(concept.expansion.anchorIds,['stomach','duodenum']);
 assert.deepEqual(expandRelationshipSelection([],third.expansion,related),{selected:[],expansion:null});
 console.log('Relationship selection expands one step per click, deduplicates cycles, and resets on a new anchor.');
