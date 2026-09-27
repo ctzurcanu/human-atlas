@@ -25,8 +25,8 @@ function readDocument():ToolDocument{
  return emptyDocument;
 }
 
-interface Props{close:()=>void;currentViewUrl:()=>string;captureScene:()=>CapturedScene;model:string;viewName:string;ready:boolean}
-export default function AdvancedTools({close,currentViewUrl,captureScene,model,viewName,ready}:Props){
+interface Props{close:()=>void;currentViewUrl:()=>string;captureScene:()=>CapturedScene;openView:(url:string,animate:boolean)=>void;model:string;viewName:string;ready:boolean}
+export default function AdvancedTools({close,currentViewUrl,captureScene,openView:openSavedView,model,viewName,ready}:Props){
  const [document,setDocument]=useState<ToolDocument>(readDocument);
  const [editorOpen,setEditorOpen]=useState(false);
  const [editorText,setEditorText]=useState('');
@@ -37,7 +37,6 @@ export default function AdvancedTools({close,currentViewUrl,captureScene,model,v
  const [dropIndex,setDropIndex]=useState<number|null>(null);
  const dragRef=useRef<ViewDrag|null>(null);
  const listRef=useRef<HTMLDivElement>(null);
- const sceneAnimationRef=useRef<Animation|null>(null);
  const update=(next:ToolDocument)=>{setDocument(next);try{localStorage.setItem(STORAGE_KEY,JSON.stringify(next));}catch{/* The current session still retains the document. */}};
  const addView=()=>{
   const next:SavedView={id:crypto.randomUUID(),name:newViewName.trim()||viewName||`View ${document.views.length+1}`,url:currentViewUrl(),model,addedAt:new Date().toISOString(),scene:captureScene()};
@@ -52,19 +51,14 @@ export default function AdvancedTools({close,currentViewUrl,captureScene,model,v
    update(parsed);setEditorOpen(false);
   }catch(error){setEditorError(error instanceof Error?error.message:'Invalid JSON.');}
  };
- const openView=(view:SavedView)=>{history.pushState(null,'',view.url);window.dispatchEvent(new PopStateEvent('popstate'));};
+ const openView=(view:SavedView,animate=false)=>openSavedView(view.url,animate);
  const showSlide=(index:number)=>{
   const count=document.views.length;if(!count)return;
   const next=(index%count+count)%count,view=document.views[next];
   const sameModel=new URL(view.url).searchParams.get('model')===new URL(location.href).searchParams.get('model');
-  sceneAnimationRef.current?.cancel();
-  if(sameModel&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-   const scene=window.document.querySelector<HTMLElement>('.scene');
-   if(scene?.animate){const animation=scene.animate([{opacity:.4},{opacity:1}],{duration:280,easing:'ease-out'});sceneAnimationRef.current=animation;animation.onfinish=()=>{if(sceneAnimationRef.current===animation)sceneAnimationRef.current=null;};}
-  }
-  setSlideIndex(next);openView(view);
+  setSlideIndex(next);openView(view,sameModel&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
  };
- const stopSlides=()=>{sceneAnimationRef.current?.cancel();sceneAnimationRef.current=null;setSlideIndex(null);};
+ const stopSlides=()=>setSlideIndex(null);
  useEffect(()=>{
   if(slideIndex===null)return;
   const onKey=(event:KeyboardEvent)=>{

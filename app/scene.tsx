@@ -25,15 +25,18 @@ import {sectionSetBounds} from './section-set';
 import {enabledSections} from './section-stack';
 import {SYSTEMS,structureName,type Atlas,type SceneState,type SystemId} from './anatomy';
 import {isSkinPart} from './depth-layers';
-interface Props {atlas:Atlas;state:SceneState;hierarchy:ExplodeHierarchy;guestHierarchy?:GuestHierarchy;sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onSelect:(id:string,toggle?:boolean)=>void;onHidePart:(id:string)=>void;onCamera?:(camera:number[])=>void;onCovering?:(ids:string[])=>void;onExplosionSteps?:(steps:number)=>void;onCapture?:(capture:(()=>Promise<Blob>)|null)=>void;onProgress:(n:number)=>void;onError:(s:string)=>void}
+interface Props {atlas:Atlas;state:SceneState;hierarchy:ExplodeHierarchy;guestHierarchy?:GuestHierarchy;cameraTransition?:{id:number;from:number[]};sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onSelect:(id:string,toggle?:boolean)=>void;onHidePart:(id:string)=>void;onCamera?:(camera:number[])=>void;onCovering?:(ids:string[])=>void;onExplosionSteps?:(steps:number)=>void;onCapture?:(capture:(()=>Promise<Blob>)|null)=>void;onProgress:(n:number)=>void;onError:(s:string)=>void}
 type SceneMaterial={color:number[];map?:string;normalMap?:string;normalScale?:number;roughness?:number;metalness?:number;opacity?:number;vertexColors?:boolean};
-export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,sectionTool=false,onSectionPosition,onSelect,onHidePart,onCamera,onCovering,onExplosionSteps,onCapture,onProgress,onError}:Props){
+export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,cameraTransition,sectionTool=false,onSectionPosition,onSelect,onHidePart,onCamera,onCovering,onExplosionSteps,onCapture,onProgress,onError}:Props){
  const guestNodes=useMemo(()=>guestHierarchy?resolveGuestHierarchy(atlas,guestHierarchy):undefined,[atlas,guestHierarchy]);
- const host=useRef<HTMLDivElement>(null),latest=useRef(state),hierarchyRef=useRef(hierarchy),guestNodesRef=useRef(guestNodes),guestKeyRef=useRef(''),sectionToolRef=useRef(sectionTool),sectionPositionRef=useRef(onSectionPosition),select=useRef(onSelect),hidePart=useRef(onHidePart),cameraCallback=useRef(onCamera),coveringCallback=useRef(onCovering),stepsCallback=useRef(onExplosionSteps);
- latest.current=state;hierarchyRef.current=hierarchy;guestNodesRef.current=guestNodes;guestKeyRef.current=guestHierarchy?JSON.stringify(guestHierarchy):'';sectionToolRef.current=sectionTool;sectionPositionRef.current=onSectionPosition;select.current=onSelect;hidePart.current=onHidePart;cameraCallback.current=onCamera;coveringCallback.current=onCovering;stepsCallback.current=onExplosionSteps;
+ const host=useRef<HTMLDivElement>(null),latest=useRef(state),transitionRef=useRef(cameraTransition),hierarchyRef=useRef(hierarchy),guestNodesRef=useRef(guestNodes),guestKeyRef=useRef(''),sectionToolRef=useRef(sectionTool),sectionPositionRef=useRef(onSectionPosition),select=useRef(onSelect),hidePart=useRef(onHidePart),cameraCallback=useRef(onCamera),coveringCallback=useRef(onCovering),stepsCallback=useRef(onExplosionSteps);
+ latest.current=state;transitionRef.current=cameraTransition;hierarchyRef.current=hierarchy;guestNodesRef.current=guestNodes;guestKeyRef.current=guestHierarchy?JSON.stringify(guestHierarchy):'';sectionToolRef.current=sectionTool;sectionPositionRef.current=onSectionPosition;select.current=onSelect;hidePart.current=onHidePart;cameraCallback.current=onCamera;coveringCallback.current=onCovering;stepsCallback.current=onExplosionSteps;
  useEffect(()=>{
   const el=host.current!;let disposed=false,frame=0,dirty=true,ready=false,lastView='',lastReset=-1,lastIsolate='',lastSelection='',lastRegion='',layoutKey='',amount=0;
   let lastState:SceneState|null=null;
+  let lastTransitionId=0;
+  let cameraTween:{from:number[];to:number[];start:number;duration:number}|null=null;
+  const cancelCameraTween=()=>{if(cameraTween){cameraTween=null;controls.enableDamping=true;}};
   const abort=new AbortController();
   let renderer:T.WebGLRenderer;
   try{renderer=new T.WebGLRenderer({antialias:true,alpha:false,stencil:true,powerPreference:'high-performance'});}catch{onError('This browser could not start the 3D viewer. Please try a browser with WebGL enabled.');return;}
@@ -492,7 +495,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
    const plane=new T.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(new T.Vector3()),controls.target);
    return raycaster.ray.intersectPlane(plane,point)??controls.target.clone();
   };
-  const down=(e:PointerEvent)=>{const toggling=e.ctrlKey||e.metaKey,rotating=!toggling&&!sectionToolRef.current&&amount>.04&&!latest.current.isolate&&rotationPartIndices.size>0&&e.button===0,orbitCandidate=!toggling&&!rotating&&!sectionToolRef.current&&(amount<=.04||latest.current.isolate)&&e.button===0&&e.pointerType!=='touch';pressPoints.set(e.pointerId,{x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,rotating,orbitCandidate,orbiting:false});hover.hidden=true;tap.down(e.pointerId,e.clientX,e.clientY,e.pointerType==='touch'?16:10);if(rotating||toggling||orbitCandidate){e.preventDefault();e.stopImmediatePropagation();renderer.domElement.setPointerCapture(e.pointerId);}};
+  const down=(e:PointerEvent)=>{cancelCameraTween();const toggling=e.ctrlKey||e.metaKey,rotating=!toggling&&!sectionToolRef.current&&amount>.04&&!latest.current.isolate&&rotationPartIndices.size>0&&e.button===0,orbitCandidate=!toggling&&!rotating&&!sectionToolRef.current&&(amount<=.04||latest.current.isolate)&&e.button===0&&e.pointerType!=='touch';pressPoints.set(e.pointerId,{x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,rotating,orbitCandidate,orbiting:false});hover.hidden=true;tap.down(e.pointerId,e.clientX,e.clientY,e.pointerType==='touch'?16:10);if(rotating||toggling||orbitCandidate){e.preventDefault();e.stopImmediatePropagation();renderer.domElement.setPointerCapture(e.pointerId);}};
   const move=(e:PointerEvent)=>{
    tap.move(e.pointerId,e.clientX,e.clientY);
    const press=pressPoints.get(e.pointerId);
@@ -531,6 +534,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
   const preventContextMenu=(e:MouseEvent)=>{if(e.ctrlKey)e.preventDefault();};
   renderer.domElement.addEventListener('contextmenu',preventContextMenu);
   renderer.domElement.addEventListener('pointerdown',down,true);renderer.domElement.addEventListener('pointermove',move);renderer.domElement.addEventListener('pointerup',up);renderer.domElement.addEventListener('pointercancel',cancel);renderer.domElement.addEventListener('pointerleave',leave);
+  renderer.domElement.addEventListener('wheel',cancelCameraTween);
   const sectionWheel=(event:WheelEvent)=>{const section=latest.current.section;if(!sectionToolRef.current||!section?.enabled||event.ctrlKey||event.metaKey)return;event.preventDefault();event.stopImmediatePropagation();sectionPositionRef.current?.(Math.max(0,Math.min(1,section.position+Math.sign(event.deltaY)*Math.min(.04,Math.abs(event.deltaY)/2500))));};
   renderer.domElement.addEventListener('wheel',sectionWheel,{capture:true,passive:false});
   const drawLabels=(s:SceneState)=>{
@@ -583,6 +587,10 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
   const clock=new T.Clock();let lastExtent=-1,lastCamera:number[]|undefined,lastFocus=0,lastAreaKey='',lastRotationKey='',lastSectionOrientation='',lastSectionPoint:T.Vector3|undefined,selectionStencil=false;
   const animate=()=>{
    if(disposed)return;frame=requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05),s=latest.current;attachPreview();
+   const transition=transitionRef.current;
+   if(transition?.id!==lastTransitionId&&transition?.id&&s.camera?.length===8){
+    lastTransitionId=transition.id;cameraTween={from:transition.from,to:s.camera,start:performance.now(),duration:900};lastCamera=s.camera;controls.enableDamping=false;
+   }else if(!transition&&cameraTween)cancelCameraTween();
    const previewShell=!ready&&!s.selected.length&&!enabledSections(s).length&&atlas.parts.some(isSkinPart);
    const nextSectionActive=enabledSections(s).length?1:0;if(sectionActiveUniform.value!==nextSectionActive){sectionActiveUniform.value=nextSectionActive;dirty=true;}
    const nextContext=previewShell||nextSectionActive?1:s.selected.length?(s.contextOpacity??1):1,nextSkin=previewShell?1:(s.skinOpacity??.1);
@@ -639,7 +647,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
     lastIsolate=isolateKey;
    }
    const selectionKey=s.selected.join(',')+':'+s.reset;if(selectionKey!==lastSelection||moving&&s.selected.length>0){const pivot=selectionPivot();if(pivot){controls.target.copy(pivot);controls.update();}lastSelection=selectionKey;dirty=true;}
-   const canOrbit=amount<=.04||s.isolate;controls.enableRotate=canOrbit;controls.mouseButtons.LEFT=canOrbit?T.MOUSE.ROTATE:T.MOUSE.PAN;controls.touches.ONE=canOrbit?T.TOUCH.ROTATE:T.TOUCH.PAN;controls.autoRotate=s.rotate&&!s.isolate&&canOrbit;controls.autoRotateSpeed=.65;controls.update();if(controls.autoRotate)dirty=true;
+   const canOrbit=amount<=.04||s.isolate;controls.enableRotate=canOrbit;controls.mouseButtons.LEFT=canOrbit?T.MOUSE.ROTATE:T.MOUSE.PAN;controls.touches.ONE=canOrbit?T.TOUCH.ROTATE:T.TOUCH.PAN;controls.autoRotate=s.rotate&&!s.isolate&&canOrbit&&!cameraTween;controls.autoRotateSpeed=.65;controls.update();if(controls.autoRotate)dirty=true;
    if(!s.camera)lastCamera=undefined;
    if(s.camera&&s.camera!==lastCamera){camera.position.fromArray(s.camera);controls.target.fromArray(s.camera,3);camera.clearViewOffset();if(s.camera.length===8)camera.setViewOffset(el.clientWidth,el.clientHeight,s.camera[6]*el.clientWidth,s.camera[7]*el.clientHeight,el.clientWidth,el.clientHeight);controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.05);controls.update();lastCamera=s.camera;dirty=true;}
    const section=s.section?.enabled?s.section:enabledSections(s)[0]?.section,orientation=section?.enabled?[section.axis,section.azimuth??'',section.elevation??'',section.flip].join(':'):'';
@@ -664,6 +672,20 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
     lastSectionPoint=point;
    }else if(lastSectionOrientation){camera.up.set(0,1,0);if(!s.camera)fit(s.view,Math.min(1,amount*6));lastSectionPoint=undefined;dirty=true;}
    lastSectionOrientation=orientation;
+   if(cameraTween){
+    const {from,to,start,duration}=cameraTween,progress=Math.min(1,(performance.now()-start)/duration),mix=progress*progress*(3-2*progress);
+    const fromTarget=new T.Vector3().fromArray(from,3),toTarget=new T.Vector3().fromArray(to,3);
+    const fromOffset=new T.Vector3().fromArray(from).sub(fromTarget),toOffset=new T.Vector3().fromArray(to).sub(toTarget);
+    const fromDistance=Math.max(.0001,fromOffset.length()),toDistance=Math.max(.0001,toOffset.length());
+    const rotation=new T.Quaternion().setFromUnitVectors(fromOffset.normalize(),toOffset.normalize());
+    const direction=fromOffset.applyQuaternion(new T.Quaternion().slerp(rotation,mix));
+    const distance=Math.exp(T.MathUtils.lerp(Math.log(fromDistance),Math.log(toDistance),mix));
+    controls.target.copy(fromTarget.lerp(toTarget,mix));camera.position.copy(controls.target).addScaledVector(direction,distance);
+    const offsetX=T.MathUtils.lerp(from[6],to[6],mix),offsetY=T.MathUtils.lerp(from[7],to[7],mix);
+    camera.clearViewOffset();if(offsetX||offsetY)camera.setViewOffset(el.clientWidth,el.clientHeight,offsetX*el.clientWidth,offsetY*el.clientHeight,el.clientWidth,el.clientHeight);
+    controls.maxDistance=Math.max(controls.maxDistance,distance*1.05);controls.update();dirty=true;
+    if(progress===1)cancelCameraTween();
+   }
    // Keep depth precision near the anatomy as the camera moves. A fixed tiny near
    // plane causes close skin and muscle surfaces to fight at whole-body distances.
    const near=Math.max(.00001,Math.min(.05,camera.position.distanceTo(controls.target)/500));
@@ -696,7 +718,7 @@ export default function AnatomyScene({atlas,state,hierarchy,guestHierarchy,secti
    return (await fetch(png)).blob();
   });
   const contextLost=(e:Event)=>{e.preventDefault();onError('The 3D session was paused by your device. Reload to continue.');};renderer.domElement.addEventListener('webglcontextlost',contextLost);
-  return()=>{onCapture?.(null);disposed=true;abort.abort();cancelAnimationFrame(frame);clearTimeout(capTimer);clearCaps();stencilCaps.dispose();observer.disconnect();theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());guideGeometry.dispose();guideBorder.geometry.dispose();guideBorder.material.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
+  return()=>{onCapture?.(null);disposed=true;abort.abort();cancelAnimationFrame(frame);clearTimeout(capTimer);clearCaps();stencilCaps.dispose();observer.disconnect();theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',cancelCameraTween);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());guideGeometry.dispose();guideBorder.geometry.dispose();guideBorder.material.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
  },[atlas]);
  return <div className="scene" ref={host}/>;
 }
