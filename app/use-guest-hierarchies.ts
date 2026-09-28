@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {assetUrl} from './asset-url';
+import {viewParameters} from './view-url';
 import {parseGuestHierarchy,type GuestHierarchy} from './guest-hierarchy';
 export const BUILT_IN_GUESTS=['genes','cell-types','physiology','dermatomes-myotomes','drugs','physical-exercise','chakras'] as const;
 const names=['Genes','Cell Types','Physiology','Dermatomes and Myotomes','Drugs','Physical Exercise','Chakras'];
@@ -44,7 +45,7 @@ export function useGuestHierarchies(){
  },[]);
  const ensure=useCallback(async(id:string)=>{const index=(BUILT_IN_GUESTS as readonly string[]).indexOf(id);if(index<0)return;try{return await load(builtIns[index]);}catch(cause){setError(cause instanceof Error?cause.message:'Could not load hierarchy.');throw cause;}},[load]);
  useEffect(()=>{
-  const params=new URLSearchParams(location.search),id=params.get('tree')?.replace(/^guest:/,'');
+  const params=viewParameters(location.href),id=params.get('tree')?.replace(/^guest:/,'');
   const inputs=[builtIns[BUILT_IN_GUESTS.indexOf('chakras')],...(id&&(BUILT_IN_GUESTS as readonly string[]).includes(id)?[builtIns[(BUILT_IN_GUESTS as readonly string[]).indexOf(id)]]:[]),...params.getAll('guest')];
   void Promise.allSettled(inputs.map(input=>load(input).catch(cause=>{setError(cause instanceof Error?cause.message:'Could not load a guest hierarchy.');throw cause;})));
  },[load]);

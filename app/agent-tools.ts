@@ -1,4 +1,5 @@
 import {validCamera} from '../shared/camera-frame.mjs';
+import {compactViewUrl} from './view-url';
 import type {Atlas,Concept} from './anatomy';
 import {DEPTH_LAYERS} from './depth-layers';
 import {REGIONS,VIEWS} from './viewer-state';
@@ -50,7 +51,7 @@ export function atlasTools(atlas:Atlas,inspect:(concept:Concept)=>void,actions?:
  {name:'act_on_anatomy_view',description:'Undo, redo, reset, focus, expand selected anatomy through its relationships one step per call, hide or clear selection, or download the current PNG.',inputSchema:{type:'object',properties:{action:{type:'string',enum:commands}},required:['action'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const action=record(input).action;if(typeof action!=='string'||!commands.includes(action))throw new Error('Unknown viewer action.');return actions.command(action);}},
  {name:'list_saved_anatomy_views',description:'List views saved in this browser.',inputSchema:{type:'object',properties:{},additionalProperties:false},annotations:{readOnlyHint:true},execute(){return readBookmarks();}},
  {name:'save_anatomy_view',description:'Save the current view in this browser under a name.',inputSchema:{type:'object',properties:{name:{type:'string',minLength:1}},required:['name'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const name=record(input).name;if(typeof name!=='string'||!name.trim())throw new Error('A view name is required.');const item={id:crypto.randomUUID(),name:name.trim(),url:actions.url(),createdAt:Date.now()};saveBookmarks([item,...readBookmarks()].slice(0,100));return item;}},
- {name:'open_saved_anatomy_view',description:'Open a saved view by ID in this browser.',inputSchema:{type:'object',properties:{id:{type:'string'}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const item=readBookmarks().find(item=>item.id===record(input).id);if(!item)throw new Error('Saved view not found.');location.assign(item.url);return item;}},
+ {name:'open_saved_anatomy_view',description:'Open a saved view by ID in this browser.',inputSchema:{type:'object',properties:{id:{type:'string'}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const item=readBookmarks().find(item=>item.id===record(input).id);if(!item)throw new Error('Saved view not found.');location.assign(compactViewUrl(item.url));return item;}},
  {name:'delete_saved_anatomy_view',description:'Delete a saved view by ID from this browser.',inputSchema:{type:'object',properties:{id:{type:'string'}},required:['id'],additionalProperties:false},annotations:{readOnlyHint:false},execute(input){const id=record(input).id,items=readBookmarks();if(typeof id!=='string'||!items.some(item=>item.id===id))throw new Error('Saved view not found.');saveBookmarks(items.filter(item=>item.id!==id));return {id,deleted:true};}}
  );
  return tools;}

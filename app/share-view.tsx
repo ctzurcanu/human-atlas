@@ -3,6 +3,7 @@ import {createPortal} from 'react-dom';
 import {BookmarkPlus,Copy,ExternalLink,Trash2,X} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {DEFAULT_EMBED_UI,EMBED_UI,embedUrl,iframeCode,type EmbedUi} from './embed';
+import {compactViewUrl} from './view-url';
 
 interface Bookmark {id:string;name:string;url:string;createdAt:number}
 const storageKey='human-atlas-bookmarks-v1';
@@ -35,7 +36,7 @@ export default function ShareView({viewUrl,defaultName,close}:Props){
   <div className="share-view-content">
   <section className="bookmark-section" aria-label="Save current view"><h3>Save current view</h3><p>Your model, camera angle, zoom, selection, and layers are saved in this browser.</p>
    <div className="bookmark-add"><input aria-label="Name this view" placeholder="Name this view" value={name} onChange={e=>setName(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')save();}}/><Button variant="outline" onClick={save}><BookmarkPlus size={15}/> Save view</Button></div>
-   {bookmarks.length>0&&<><h4>Saved views</h4><ul>{bookmarks.map(item=><li key={item.id}><Button variant="ghost" onClick={()=>location.assign(item.url)} title={item.url}>{item.name}</Button><Button variant="ghost" className="icon-button" onClick={()=>{if(persist(bookmarks.filter(bookmark=>bookmark.id!==item.id)))setStatus('Saved view removed.');}} aria-label={`Remove ${item.name}`}><Trash2 size={15}/></Button></li>)}</ul></>}
+   {bookmarks.length>0&&<><h4>Saved views</h4><ul>{bookmarks.map(item=><li key={item.id}><Button variant="ghost" onClick={()=>location.assign(compactViewUrl(item.url))} title={item.url}>{item.name}</Button><Button variant="ghost" className="icon-button" onClick={()=>{if(persist(bookmarks.filter(bookmark=>bookmark.id!==item.id)))setStatus('Saved view removed.');}} aria-label={`Remove ${item.name}`}><Trash2 size={15}/></Button></li>)}</ul></>}
   </section>
   <p role="status">{status}</p>
   <h3 className="share-subheading">Share this view</h3>

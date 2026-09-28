@@ -6,6 +6,7 @@ import type {SceneState} from './anatomy';
 import ConnectTools from './connect-tools';
 import type {AtlasConnection} from './use-atlas-connection';
 import type {AdvancedPresentation} from './connect-state';
+import {compactViewUrl} from './view-url';
 
 type ToolType='slides'|'quiz'|'layers'|'connect';
 type CapturedScene={model:string;hierarchy:string;guestSources:string[];state:SceneState};
@@ -24,7 +25,7 @@ function validateDocument(value:unknown):value is ToolDocument{
  });
 }
 function readDocument():ToolDocument{
- try{const saved=localStorage.getItem(STORAGE_KEY);if(saved){const parsed:unknown=JSON.parse(saved);if(validateDocument(parsed))return parsed;}}catch{/* Storage may be unavailable in an embedded viewer. */}
+ try{const saved=localStorage.getItem(STORAGE_KEY);if(saved){const parsed:unknown=JSON.parse(saved);if(validateDocument(parsed))return {...parsed,views:parsed.views.map(view=>({...view,url:compactViewUrl(view.url)}))};}}catch{/* Storage may be unavailable in an embedded viewer. */}
  return emptyDocument;
 }
 
@@ -44,7 +45,7 @@ export default function AdvancedTools({close,currentViewUrl,captureScene,openVie
  useEffect(()=>{if(connection.role==='host'&&connection.controlsOpen){setDocument(current=>({...current,type:'connect'}));setSlideIndex(null);}},[connection.controlsOpen,connection.role]);
  useEffect(()=>{
   if(!remotePresentation)return;
-  setDocument({...remotePresentation.document,views:remotePresentation.document.views.map(view=>{const url=new URL(view.url);return {...view,url:new URL(url.pathname+url.search,location.origin).href};})});
+  setDocument({...remotePresentation.document,views:remotePresentation.document.views.map(view=>{const url=new URL(view.url);return {...view,url:compactViewUrl(new URL(url.pathname+url.search+url.hash,location.origin).href)};})});
   setSlideIndex(remotePresentation.slideIndex);
  },[remotePresentation]);
  const [draggingId,setDraggingId]=useState<string|null>(null);
@@ -66,10 +67,10 @@ export default function AdvancedTools({close,currentViewUrl,captureScene,openVie
   try{
    const parsed:unknown=JSON.parse(editorText);
    if(!validateDocument(parsed))throw new Error('Use schemaVersion 1, a valid type, and views with same-site URLs.');
-   update(parsed);setEditorOpen(false);
+   update({...parsed,views:parsed.views.map(view=>({...view,url:compactViewUrl(view.url)}))});setEditorOpen(false);
   }catch(error){setEditorError(error instanceof Error?error.message:'Invalid JSON.');}
  };
- const openView=(view:SavedView,animate=false)=>openSavedView(view.url,animate);
+ const openView=(view:SavedView,animate=false)=>openSavedView(compactViewUrl(view.url),animate);
  const clickView=(view:SavedView)=>{
   cancelViewClick();
   viewClickRef.current=setTimeout(()=>{viewClickRef.current=null;openView(view);},300);

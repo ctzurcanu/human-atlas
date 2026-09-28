@@ -1,3 +1,4 @@
+import {compactViewUrl} from './view-url';
 export const EMBED_UI=[
  {id:'model',label:'Model picker'},
  {id:'search',label:'Search'},
@@ -24,7 +25,7 @@ export function embedUrl(viewUrl:string,ui?:readonly EmbedUi[]){
  const url=new URL(viewUrl);
  url.searchParams.set('embed','1');
  if(ui)url.searchParams.set('ui',ui.join(','));
- return url.href;
+ return compactViewUrl(url.href);
 }
 
 export function iframeCode(viewUrl:string,ui?:readonly EmbedUi[],height=600){

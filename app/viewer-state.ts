@@ -2,6 +2,7 @@ import {isSurfaceSystem,type Atlas,type Part,type SceneState,type SystemId,type 
 import {DEPTH_LAYERS,depthLayerFor,isSkinPart} from './depth-layers';
 import type {SectionState} from './section-plane';
 import {validCamera} from '../shared/camera-frame.mjs';
+import {compactViewUrl,viewParameters} from './view-url';
 export const REGIONS=['all','head-neck','torso','upper-right','upper-left','lower-right','lower-left'] as const;
 export const REGION_NAMES=['Whole body','Head & neck','Torso & pelvis','Right arm','Left arm','Right leg','Left leg'];
 export const VIEWS:View[]=['three-quarter','front','back','side','right','superior','inferior'];
@@ -63,7 +64,7 @@ export function resolveSelection(atlas:Atlas,terms:string[]){
 }
 const number=(text:string|null,min:number,max:number,fallback:number)=>{if(text===null)return fallback;const n=Number(text);return Number.isFinite(n)?Math.min(max,Math.max(min,n)):fallback;};
 export function readViewUrl(search:string,atlas:Atlas,base:SceneState):SceneState{
- const q=new URLSearchParams(search),view=q.get('view') as View,region=q.get('region')??'all',cam=(q.get('frame')??q.get('camera'))?.split(',').map(Number);
+ const q=viewParameters(search),view=q.get('view') as View,region=q.get('region')??'all',cam=(q.get('frame')??q.get('camera'))?.split(',').map(Number);
  const readSection=(suffix:string):SectionState=>{const axis=q.get('cut'+suffix);return {enabled:['axial','sagittal','coronal','oblique'].includes(axis??''),axis:axis==='sagittal'||axis==='coronal'||axis==='oblique'?axis:'axial',position:number(q.get('slice'+suffix),0,1,.38),flip:axis?q.get('flip'+suffix)==='1':true,...(axis==='oblique'?{azimuth:number(q.get('azimuth'+suffix),-180,180,35),elevation:number(q.get('elevation'+suffix),-90,90,30)}:{})};};
  const sections=[readSection('')];if(q.get('sections')==='2'||q.has('cut2'))sections.push(readSection('2'));
  const activeSection=sections.length===2&&q.get('sectionTab')==='2'?1:0;
@@ -76,5 +77,5 @@ export function viewUrl(base:string,model:string,s:SceneState,camera?:number[]){
  const sections=s.sections?.length?s.sections.slice(0,2):[s.section].filter((section):section is NonNullable<typeof section>=>!!section);
  const writeSection=(section:SectionState|undefined,suffix:string)=>{if(!section?.enabled)return;q.set('cut'+suffix,section.axis);q.set('slice'+suffix,String(section.position));if(section.flip)q.set('flip'+suffix,'1');if(section.axis==='oblique'){q.set('azimuth'+suffix,String(section.azimuth??35));q.set('elevation'+suffix,String(section.elevation??30));}};
  writeSection(sections[0],'');if(sections.length===2){q.set('sections','2');writeSection(sections[1],'2');if(s.activeSection===1)q.set('sectionTab','2');}
- if(camera)q.set(camera.length===12?'frame':'camera',camera.map(n=>Number(n.toFixed(8))).join(','));return url.href;
+ if(camera)q.set(camera.length===12?'frame':'camera',camera.map(n=>Number(n.toFixed(8))).join(','));return compactViewUrl(url.href);
 }
