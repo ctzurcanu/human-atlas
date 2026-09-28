@@ -21,6 +21,8 @@ export function validSnapshot(value){
  if(['labels','selectionGroup','inspectorOpen'].some(key=>state[key]!==undefined&&typeof state[key]!=='boolean'))return false;
  if(['focus','peel'].some(key=>state[key]!==undefined&&!number(state[key],0,10000)))return false;
  if(['contextOpacity','skinOpacity'].some(key=>state[key]!==undefined&&!number(state[key],0,1)))return false;
+ if(state.guestView!==undefined&&!text(state.guestView,80)||state.guestQuery!==undefined&&!text(state.guestQuery,200))return false;
+ if(state.guestExtensions!==undefined&&!strings(state.guestExtensions,2000))return false;
  if(state.region!==undefined&&!['all','head-neck','torso','upper-right','upper-left','lower-right','lower-left'].includes(state.region))return false;
  if(['hidden','depthHidden'].some(key=>state[key]!==undefined&&!strings(state[key])))return false;
  if(state.camera!==undefined&&!validCamera(state.camera))return false;

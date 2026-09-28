@@ -1,0 +1,4411 @@
+[
+  {
+    "names": [
+      "vertebra c7"
+    ],
+    "term": "A02.2.02.301",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "exact",
+    "note": "C7 is the TA98 vertebra prominens."
+  },
+  {
+    "names": [
+      "coccyx"
+    ],
+    "term": "A02.2.06.001",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "sacrum"
+    ],
+    "term": "A02.2.05.001",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "atlas (c1)"
+    ],
+    "term": "A02.2.02.101",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "axis (c2)"
+    ],
+    "term": "A02.2.02.201",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "os coxa"
+    ],
+    "term": "A02.5.01.001",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "sesamoid bones of hand"
+    ],
+    "term": "A02.4.11.001",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "sesamoid bones of foot"
+    ],
+    "term": "A02.5.19.001",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "anterior cells of ethmoid bone"
+    ],
+    "term": "A02.1.07.008",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "middle cells of ethmoid bone"
+    ],
+    "term": "A02.1.07.009",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "posterior cells of ethmoid bone"
+    ],
+    "term": "A02.1.07.010",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "nasal septal cartilage"
+    ],
+    "term": "A06.1.01.013",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "sinus of frontal bone"
+    ],
+    "term": "A02.1.03.029",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "sinus of sphenoid bone"
+    ],
+    "term": "A02.1.05.016",
+    "systems": [
+      "skeletal",
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "arytenoid cartilage"
+    ],
+    "term": "A06.2.04.001",
+    "systems": [
+      "skeletal",
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "The extract spells the TA98 preferred English name arythenoid cartilage; Latin cartilago arytenoidea identifies the same structure."
+  },
+  {
+    "names": [
+      "bucinator"
+    ],
+    "term": "A04.1.03.036",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "anconeous"
+    ],
+    "term": "A04.6.02.023",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "external pterygoideus"
+    ],
+    "term": "A04.1.04.006",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "internal pterygoideus"
+    ],
+    "term": "A04.1.04.009",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "scalene anterior"
+    ],
+    "term": "A04.2.01.004",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "scalene middle"
+    ],
+    "term": "A04.2.01.005",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "scalene posterior"
+    ],
+    "term": "A04.2.01.006",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "subclavian"
+    ],
+    "term": "A04.4.01.007",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "outer intercostals"
+    ],
+    "term": "A04.4.01.012",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "inner intercostals"
+    ],
+    "term": "A04.4.01.013",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "innermost intercostals"
+    ],
+    "term": "A04.4.01.014",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "levator palpebrae"
+    ],
+    "term": "A15.2.07.020",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "frontalis",
+      "frontalis muscle"
+    ],
+    "term": "A04.1.03.004",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "occipitalis muscle"
+    ],
+    "term": "A04.1.03.005",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "obliquus inferior capitis",
+      "obliquus inferior capitis muscle"
+    ],
+    "term": "A04.2.02.007",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "obliquus superior capitis",
+      "obliquus superior capitis muscle"
+    ],
+    "term": "A04.2.02.006",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "rectus anterior capitis muscle"
+    ],
+    "term": "A04.2.02.002",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "rectus lateralis capitis muscle"
+    ],
+    "term": "A04.2.02.003",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "rectus posterior major capitis muscle"
+    ],
+    "term": "A04.2.02.004",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "rectus posterior minor capitis muscle"
+    ],
+    "term": "A04.2.02.005",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "iliocostalis colli muscle"
+    ],
+    "term": "A04.3.02.009",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "longissimus colli muscle"
+    ],
+    "term": "A04.3.02.013",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "semispinalis colli muscle"
+    ],
+    "term": "A04.3.02.208",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "spinalis colli muscle"
+    ],
+    "term": "A04.3.02.017",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "splenius colli muscle"
+    ],
+    "term": "A04.3.02.104",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "interspinales colli muscles"
+    ],
+    "term": "A04.3.02.304",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "interspinales lumborum muscles"
+    ],
+    "term": "A04.3.02.302",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "interspinales thoracis muscles"
+    ],
+    "term": "A04.3.02.303",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "bicep brachii long head"
+    ],
+    "term": "A04.6.02.014",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "bicep brachii short head"
+    ],
+    "term": "A04.6.02.015",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "biceps femoris longus"
+    ],
+    "term": "A04.7.02.033",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "biceps femoris short"
+    ],
+    "term": "A04.7.02.034",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "triceps long head"
+    ],
+    "term": "A04.6.02.020",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "triceps lateral head"
+    ],
+    "term": "A04.6.02.021",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "triceps medial head"
+    ],
+    "term": "A04.6.02.022",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "inferior head of lateral pterygoid muscle"
+    ],
+    "term": "A04.1.04.008",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "superior head of lateral pterygoid muscle"
+    ],
+    "term": "A04.1.04.007",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "abdominal head of pectoralis major muscle"
+    ],
+    "term": "A04.4.01.005",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "scapular spinal part of deltoid muscle"
+    ],
+    "term": "A04.6.02.005",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "flexor digitorum superficialis humero-ulnar head"
+    ],
+    "term": "A04.6.02.034",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "flexor digitorum superficialis radial head"
+    ],
+    "term": "A04.6.02.035",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "masseter deep"
+    ],
+    "term": "A04.1.04.004",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "nasalis alar"
+    ],
+    "term": "A04.1.03.011",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "aponeurosis palmaris"
+    ],
+    "term": "A04.6.03.012",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "superior pharyngeal constrictor"
+    ],
+    "term": "A05.3.01.103",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "middle pharyngeal constrictor"
+    ],
+    "term": "A05.3.01.108",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "inferior pharyngeal constrictor"
+    ],
+    "term": "A05.3.01.111",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "levatores breves costarum"
+    ],
+    "term": "A04.4.01.011",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "levatores longi costarum"
+    ],
+    "term": "A04.4.01.010",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "abductor digiti minimi of hand",
+      "abductor digiti minimi hand"
+    ],
+    "term": "A04.6.02.062",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "abductor digiti minimi of foot"
+    ],
+    "term": "A04.7.02.063",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "flexor digiti minimi of hand",
+      "flexor digiti minimi brevis of hand",
+      "flexor digiti minimi brevis arm"
+    ],
+    "term": "A04.6.02.063",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "flexor digiti minimi of foot"
+    ],
+    "term": "A04.7.02.066",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "opponens digiti minimi muscle of hand"
+    ],
+    "term": "A04.6.02.064",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "opponens digiti minimi muscle of foot"
+    ],
+    "term": "A04.7.02.065",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "dorsal interossei muscles of hand"
+    ],
+    "term": "A04.6.02.066",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "dorsal interossei muscles of foot"
+    ],
+    "term": "A04.7.02.070",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "palmar interossei muscles"
+    ],
+    "term": "A04.6.02.067",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "plantar interossei muscles",
+      "interosseous plantar"
+    ],
+    "term": "A04.7.02.071",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "lumbrical muscles of hand"
+    ],
+    "term": "A04.6.02.065",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "lumbrical muscles of foot"
+    ],
+    "term": "A04.7.02.069",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "extensor retinaculum of wrist"
+    ],
+    "term": "A04.6.03.010",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "flexor retinaculum of wrist",
+      "flexor retinaculum of right wrist",
+      "flexor retinaculum of left wrist",
+      "flexor retinaculum arm"
+    ],
+    "term": "A04.6.03.013",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "flexor retinaculum of ankle",
+      "flexor retinaculum foot"
+    ],
+    "term": "A04.7.03.026",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "inferior extensor retinaculum of ankle",
+      "inferoir extensor retinaculum"
+    ],
+    "term": "A04.7.03.027",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "superior extensor retinaculum of ankle"
+    ],
+    "term": "A04.7.03.025",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "interosseous membrane leg"
+    ],
+    "term": "A03.6.05.002",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "acetubular labrum"
+    ],
+    "term": "A03.6.07.008",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "ishiofemoral ligament"
+    ],
+    "term": "A03.6.07.006",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "annular ligament of radius",
+      "radial annular ligament"
+    ],
+    "term": "A03.5.09.007",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "posterior tibiotalar ligament"
+    ],
+    "term": "A03.6.10.007",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "anterior tibiotalar ligament"
+    ],
+    "term": "A03.6.10.006",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "tibiocalcaneal ligament"
+    ],
+    "term": "A03.6.10.005",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "tibionavicular ligament"
+    ],
+    "term": "A03.6.10.004",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "conoid ligament (part of coracoclavicular ligament)"
+    ],
+    "term": "A03.5.03.006",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "trapezoid ligament (part of coracoclavicular ligament)"
+    ],
+    "term": "A03.5.03.005",
+    "systems": [
+      "connective",
+      "muscular",
+      "sensory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "deep brachial artery"
+    ],
+    "term": "A12.2.09.020",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "deep femoral artery"
+    ],
+    "term": "A12.2.16.020",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "deep palmar arterial arch"
+    ],
+    "term": "A12.2.09.038",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "superficial palmar arterial arch"
+    ],
+    "term": "A12.2.09.056",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "dorsal carpal network",
+      "dorsal carpal anastomosis"
+    ],
+    "term": "A12.2.09.033",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "anterior recurrent tibial artery"
+    ],
+    "term": "A12.2.16.043",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "brachiocephalic artery"
+    ],
+    "term": "A12.2.04.004",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "radial recrurrent artery"
+    ],
+    "term": "A12.2.09.028",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "proper hepatic artery"
+    ],
+    "term": "A12.2.12.029",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "plantar arch"
+    ],
+    "term": "A12.2.16.065",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "deep femoral vein"
+    ],
+    "term": "A12.3.11.024",
+    "systems": [
+      "venous"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "lesser saphenous vein"
+    ],
+    "term": "A12.3.11.010",
+    "systems": [
+      "venous"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "portal vein"
+    ],
+    "term": "A12.3.12.001",
+    "systems": [
+      "venous"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "superficial palmar venous arch"
+    ],
+    "term": "A12.3.08.026",
+    "systems": [
+      "venous"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "esophagus"
+    ],
+    "term": "A05.4.01.001",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "parotid salivary gland"
+    ],
+    "term": "A05.1.02.003",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "sublingual salivary gland"
+    ],
+    "term": "A05.1.02.008",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "submandibular salivary gland"
+    ],
+    "term": "A05.1.02.011",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "uvula of palate"
+    ],
+    "term": "A05.2.01.004",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "stomach body"
+    ],
+    "term": "A05.5.01.012",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "stomach fundus"
+    ],
+    "term": "A05.5.01.009",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "stomach pyloric"
+    ],
+    "term": "A05.5.01.014",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "common bile duct"
+    ],
+    "term": "A05.8.02.013",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "hepatic flexure of colon"
+    ],
+    "term": "A05.7.03.003",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "splenic flexure of colon"
+    ],
+    "term": "A05.7.03.005",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "superior surface of tongue"
+    ],
+    "term": "A05.1.04.004",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "capsule of the liver"
+    ],
+    "term": "A05.8.01.054",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "duodenal ampulla"
+    ],
+    "term": "A05.6.02.003",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "uncinate process of pancreas"
+    ],
+    "term": "A05.9.01.003",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "adenoids"
+    ],
+    "term": "A05.3.01.006",
+    "systems": [
+      "digestive",
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "lung hilus"
+    ],
+    "term": "A06.5.01.015",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "eustachian tube"
+    ],
+    "term": "A15.3.02.073",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "kidney capsule"
+    ],
+    "term": "A08.1.01.013",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "bladder"
+    ],
+    "term": "A08.3.01.001",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "fundus of urinary bladder"
+    ],
+    "term": "A08.3.01.004",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "trigone of urinary bladder"
+    ],
+    "term": "A08.3.01.024",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "ureteral orifice"
+    ],
+    "term": "A08.3.01.026",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "parathyroid glands"
+    ],
+    "term": "A11.4.00.001",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "ovarian ligament"
+    ],
+    "term": "A09.1.01.017",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "fallopian tube"
+    ],
+    "term": "A09.1.02.001",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "deferent duct"
+    ],
+    "term": "A09.3.05.001",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "uterine cervix"
+    ],
+    "term": "A09.1.03.010",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "external cervical os"
+    ],
+    "term": "A09.1.03.015",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "corpus cavernosum of penis"
+    ],
+    "term": "A09.4.01.014",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "corpus spongiosum of penis"
+    ],
+    "term": "A09.4.01.015",
+    "systems": [
+      "respiratory",
+      "urinary",
+      "endocrine",
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "ampulla of left uterine tube",
+      "ampulla of right uterine tube"
+    ],
+    "term": "A09.1.02.006",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "isthmus of left uterine tube",
+      "isthmus of right uterine tube"
+    ],
+    "term": "A09.1.02.007",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "infundibulum of left uterine tube",
+      "infundibulum of right uterine tube"
+    ],
+    "term": "A09.1.02.003",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "fimbria of left uterine tube",
+      "fimbria of right uterine tube"
+    ],
+    "term": "A09.1.02.004",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "suspensory ligament of left ovary",
+      "suspensory ligament of right ovary"
+    ],
+    "term": "A09.1.01.018F",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "large intestine cecum"
+    ],
+    "term": "A05.7.02.001",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "large intestine anus"
+    ],
+    "term": "A05.7.05.013",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "large intestine rectum"
+    ],
+    "term": "A05.7.04.001",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "small intestine jejunum"
+    ],
+    "term": "A05.6.03.001",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "small intestine ileum",
+      "small intestine illium"
+    ],
+    "term": "A05.6.04.001",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "intestine duodenum",
+      "stomach duodenum"
+    ],
+    "term": "A05.6.02.001",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "large intestine ascending colon"
+    ],
+    "term": "A05.7.03.002",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "large intestine descending colon"
+    ],
+    "term": "A05.7.03.006",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "large intestine sigmoid colon"
+    ],
+    "term": "A05.7.03.007",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "large intestine transverse colon"
+    ],
+    "term": "A05.7.03.004",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "pattern": "costal cartilage \\d{1,2}",
+    "term": "A02.3.01.005",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 collective or repeated generic structure."
+  },
+  {
+    "pattern": "metacarpal \\d{1,2}",
+    "term": "A02.4.09.001",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 collective or repeated generic structure."
+  },
+  {
+    "pattern": "(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) metacarpal bone",
+    "term": "A02.4.09.001",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member; retain mesh identity under the TA98 parent."
+  },
+  {
+    "pattern": "metatarsal \\d{1,2}",
+    "term": "A02.5.17.001",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 collective or repeated generic structure."
+  },
+  {
+    "pattern": "(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) metatarsal bone",
+    "term": "A02.5.17.001",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member; retain mesh identity under the TA98 parent."
+  },
+  {
+    "pattern": "costal cartilage of (?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) rib",
+    "term": "A02.3.01.005",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Individual rib cartilage; TA98 supplies a generic cartilage term."
+  },
+  {
+    "names": [
+      "first rib",
+      "rib 01"
+    ],
+    "term": "A02.3.02.014",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "second rib",
+      "rib 02"
+    ],
+    "term": "A02.3.02.018",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "pattern": "rib 0?[3-7]|(?:third|fourth|fifth|sixth|seventh) rib",
+    "term": "A02.3.01.002",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered true rib; specific first/second rib TA98 terms are handled separately."
+  },
+  {
+    "pattern": "(?:eighth|ninth|tenth) rib|rib (?:0?[89]|10)",
+    "term": "A02.3.01.003",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered false rib."
+  },
+  {
+    "pattern": "(?:eleventh|twelfth) rib|rib 1[12]",
+    "term": "A02.3.01.004",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered floating rib."
+  },
+  {
+    "pattern": "vertebra c\\d{1,2}",
+    "term": "A02.2.02.001",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered vertebra under the TA98 regional vertebral collective."
+  },
+  {
+    "pattern": "vertebra t\\d{1,2}",
+    "term": "A02.2.03.001",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered vertebra under the TA98 regional vertebral collective."
+  },
+  {
+    "pattern": "vertebra l\\d{1,2}",
+    "term": "A02.2.04.001",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered vertebra under the TA98 regional vertebral collective."
+  },
+  {
+    "pattern": "proximal phalanx hand [1-5]|proximal phalanx of (?:first|second|third|fourth|fifth) finger of hand",
+    "term": "A02.4.10.002",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered digit phalanx; hand/foot are explicitly distinguished. Retain the modeled digit identity beneath the TA98 generic phalanx."
+  },
+  {
+    "pattern": "middle phalanx hand [1-5]|middle phalanx of (?:first|second|third|fourth|fifth) finger of hand",
+    "term": "A02.4.10.003",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered digit phalanx; hand/foot are explicitly distinguished. Retain the modeled digit identity beneath the TA98 generic phalanx."
+  },
+  {
+    "pattern": "distal phalanx hand [1-5]|distal phalanx of (?:first|second|third|fourth|fifth) finger of hand",
+    "term": "A02.4.10.004",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered digit phalanx; hand/foot are explicitly distinguished. Retain the modeled digit identity beneath the TA98 generic phalanx."
+  },
+  {
+    "pattern": "proximal phalanx foot [1-5]|proximal phalanx of (?:first|second|third|fourth|fifth) finger of foot",
+    "term": "A02.5.18.002",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered digit phalanx; hand/foot are explicitly distinguished. Retain the modeled digit identity beneath the TA98 generic phalanx."
+  },
+  {
+    "pattern": "middle phalanx foot [1-5]|middle phalanx of (?:first|second|third|fourth|fifth) finger of foot",
+    "term": "A02.5.18.003",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered digit phalanx; hand/foot are explicitly distinguished. Retain the modeled digit identity beneath the TA98 generic phalanx."
+  },
+  {
+    "pattern": "distal phalanx foot [1-5]|distal phalanx of (?:first|second|third|fourth|fifth) finger of foot",
+    "term": "A02.5.18.004",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered digit phalanx; hand/foot are explicitly distinguished. Retain the modeled digit identity beneath the TA98 generic phalanx."
+  },
+  {
+    "pattern": "[1-4](?:st|nd|rd|th) dorsal interosseus of hand",
+    "term": "A04.6.02.066",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered member of a TA98 muscle collective; limb stated in the source name."
+  },
+  {
+    "pattern": "[1-4](?:st|nd|rd|th) palmar interosseus of hand",
+    "term": "A04.6.02.067",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered member of a TA98 muscle collective; limb stated in the source name."
+  },
+  {
+    "pattern": "[1-4](?:st|nd|rd|th) lumbrical of hand",
+    "term": "A04.6.02.065",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered member of a TA98 muscle collective; limb stated in the source name."
+  },
+  {
+    "pattern": "[1-4](?:st|nd|rd|th) dorsal interosseus of foot",
+    "term": "A04.7.02.070",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered member of a TA98 muscle collective; limb stated in the source name."
+  },
+  {
+    "pattern": "[1-4](?:st|nd|rd|th) plantar interosseus of foot",
+    "term": "A04.7.02.071",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered member of a TA98 muscle collective; limb stated in the source name."
+  },
+  {
+    "pattern": "[1-4](?:st|nd|rd|th) lumbrical of foot",
+    "term": "A04.7.02.069",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered member of a TA98 muscle collective; limb stated in the source name."
+  },
+  {
+    "names": [
+      "iliocostalis thoracis muscle"
+    ],
+    "term": "A04.3.02.005",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Source subdivides this muscle; retain the mesh beneath the verified muscle without claiming an exact TA98 leaf match."
+  },
+  {
+    "names": [
+      "multifidus colli muscle"
+    ],
+    "term": "A04.3.02.202",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Source subdivides this muscle; retain the mesh beneath the verified muscle without claiming an exact TA98 leaf match."
+  },
+  {
+    "names": [
+      "masseter superior"
+    ],
+    "term": "A04.1.04.002",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Source subdivides this muscle; retain the mesh beneath the verified muscle without claiming an exact TA98 leaf match."
+  },
+  {
+    "names": [
+      "common tendon of biceps brachii"
+    ],
+    "term": "A04.6.02.013",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Source subdivides this muscle; retain the mesh beneath the verified muscle without claiming an exact TA98 leaf match."
+  },
+  {
+    "names": [
+      "common tendon of triceps brachii"
+    ],
+    "term": "A04.6.02.019",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Source subdivides this muscle; retain the mesh beneath the verified muscle without claiming an exact TA98 leaf match."
+  },
+  {
+    "names": [
+      "common tendon of flexor carpi ulnaris"
+    ],
+    "term": "A04.6.02.030",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Source subdivides this muscle; retain the mesh beneath the verified muscle without claiming an exact TA98 leaf match."
+  },
+  {
+    "names": [
+      "common tendon of extensor carpi ulnaris"
+    ],
+    "term": "A04.6.02.045",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Source subdivides this muscle; retain the mesh beneath the verified muscle without claiming an exact TA98 leaf match."
+  },
+  {
+    "names": [
+      "tendon of extensor digitorum longus"
+    ],
+    "term": "A04.7.02.038",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Source subdivides this muscle; retain the mesh beneath the verified muscle without claiming an exact TA98 leaf match."
+  },
+  {
+    "names": [
+      "intermediate tendon of digastric muscle"
+    ],
+    "term": "A04.2.03.002",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Source subdivides this muscle; retain the mesh beneath the verified muscle without claiming an exact TA98 leaf match."
+  },
+  {
+    "names": [
+      "superior glenohumeral ligament",
+      "middle glenohumeral ligament",
+      "inferior glenohumeral ligament"
+    ],
+    "term": "A03.5.08.003",
+    "systems": [
+      "connective",
+      "respiratory",
+      "digestive",
+      "urinary",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure; the source subdivision lacks a confidently matched distinct TA98 entity."
+  },
+  {
+    "names": [
+      "elbow capsule"
+    ],
+    "term": "A03.5.09.001",
+    "systems": [
+      "connective",
+      "respiratory",
+      "digestive",
+      "urinary",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure; the source subdivision lacks a confidently matched distinct TA98 entity."
+  },
+  {
+    "names": [
+      "knee joint capsule"
+    ],
+    "term": "A03.6.08.001",
+    "systems": [
+      "connective",
+      "respiratory",
+      "digestive",
+      "urinary",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure; the source subdivision lacks a confidently matched distinct TA98 entity."
+  },
+  {
+    "names": [
+      "cartilage of left main bronchus"
+    ],
+    "term": "A06.4.01.004",
+    "systems": [
+      "connective",
+      "respiratory",
+      "digestive",
+      "urinary",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure; the source subdivision lacks a confidently matched distinct TA98 entity."
+  },
+  {
+    "names": [
+      "cartilage of right main bronchus"
+    ],
+    "term": "A06.4.01.003",
+    "systems": [
+      "connective",
+      "respiratory",
+      "digestive",
+      "urinary",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure; the source subdivision lacks a confidently matched distinct TA98 entity."
+  },
+  {
+    "names": [
+      "proximal part of ileum",
+      "middle part of ileum"
+    ],
+    "term": "A05.6.04.001",
+    "systems": [
+      "connective",
+      "respiratory",
+      "digestive",
+      "urinary",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure; the source subdivision lacks a confidently matched distinct TA98 entity."
+  },
+  {
+    "names": [
+      "proximal part of jejunum",
+      "middle part of jejunum",
+      "distal part of jejunum"
+    ],
+    "term": "A05.6.03.001",
+    "systems": [
+      "connective",
+      "respiratory",
+      "digestive",
+      "urinary",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure; the source subdivision lacks a confidently matched distinct TA98 entity."
+  },
+  {
+    "names": [
+      "outer cortex of kidney"
+    ],
+    "term": "A08.1.01.015",
+    "systems": [
+      "connective",
+      "respiratory",
+      "digestive",
+      "urinary",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure; the source subdivision lacks a confidently matched distinct TA98 entity."
+  },
+  {
+    "names": [
+      "breast fat",
+      "interlobar adipose tissue of left mammary gland",
+      "interlobar adipose tissue of right mammary gland"
+    ],
+    "term": "A16.0.02.001",
+    "systems": [
+      "connective",
+      "respiratory",
+      "digestive",
+      "urinary",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure; the source subdivision lacks a confidently matched distinct TA98 entity."
+  },
+  {
+    "names": [
+      "renal pyramid"
+    ],
+    "term": "A08.1.01.029",
+    "systems": [
+      "urinary"
+    ],
+    "kind": "parent",
+    "note": "A single modeled member of the TA98 plural collective."
+  },
+  {
+    "names": [
+      "renal column"
+    ],
+    "term": "A08.1.01.019",
+    "systems": [
+      "urinary"
+    ],
+    "kind": "parent",
+    "note": "A single modeled member of the TA98 plural collective."
+  },
+  {
+    "names": [
+      "minor calyx"
+    ],
+    "term": "A08.1.05.007",
+    "systems": [
+      "urinary"
+    ],
+    "kind": "parent",
+    "note": "A single modeled member of the TA98 plural collective."
+  },
+  {
+    "names": [
+      "major calyx"
+    ],
+    "term": "A08.1.05.003",
+    "systems": [
+      "urinary"
+    ],
+    "kind": "parent",
+    "note": "A single modeled member of the TA98 plural collective."
+  },
+  {
+    "pattern": "dorsal carpometacarpal ligament \\d{1,2}",
+    "term": "A03.5.11.302",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 ligament collective."
+  },
+  {
+    "pattern": "palmar carpometacarpal ligament \\d{1,2}",
+    "term": "A03.5.11.303",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 ligament collective."
+  },
+  {
+    "pattern": "dorsal metacarpal ligament \\d{1,2}",
+    "term": "A03.5.11.402",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 ligament collective."
+  },
+  {
+    "pattern": "palmar metacarpal ligament \\d{1,2}",
+    "term": "A03.5.11.403",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 ligament collective."
+  },
+  {
+    "pattern": "interosseous metacarpal ligament \\d{1,2}",
+    "term": "A03.5.11.404",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 ligament collective."
+  },
+  {
+    "pattern": "dorsal intercarpal ligament \\d{1,2}",
+    "term": "A03.5.11.104",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 ligament collective."
+  },
+  {
+    "pattern": "interosseous intercarpal ligament \\d{1,2}",
+    "term": "A03.5.11.106",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 ligament collective."
+  },
+  {
+    "pattern": "dorsal tarsometatarsal ligament \\d{1,2}",
+    "term": "A03.6.10.602",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 ligament collective."
+  },
+  {
+    "pattern": "plantar tarsometatarsal ligament \\d{1,2}",
+    "term": "A03.6.10.603",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 ligament collective."
+  },
+  {
+    "pattern": "dorsal metatarsal ligament \\d{1,2}",
+    "term": "A03.6.10.703",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Numbered mesh member of the TA98 ligament collective."
+  },
+  {
+    "pattern": "deep transverse metacarpal ligament [1-4]",
+    "term": "A03.5.11.504",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Source divides the transverse ligament into numbered mesh pieces."
+  },
+  {
+    "pattern": "deep transverse metatarsal ligament [1-4]",
+    "term": "A03.6.10.804",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Source divides the transverse ligament into numbered mesh pieces."
+  },
+  {
+    "pattern": "intervertebral disc [ctl]\\d{1,2}-[ctls]\\d{1,2}",
+    "term": "A03.2.02.003",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Level-specific disc under the generic TA98 intervertebral disc."
+  },
+  {
+    "pattern": "nucleus pulposus [ctl]\\d{1,2}-[ctls]\\d{1,2}",
+    "term": "A03.2.02.005",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Level-specific nucleus pulposus beneath its TA98 generic term."
+  },
+  {
+    "names": [
+      "renal vein",
+      "right renal vein",
+      "left renal vein"
+    ],
+    "term": "A12.3.09.009",
+    "systems": [
+      "venous"
+    ],
+    "kind": "parent",
+    "note": "Single side or vessel represented within a TA98 venous collective."
+  },
+  {
+    "names": [
+      "intrarenal veins of left kidney",
+      "intrarenal veins of right kidney"
+    ],
+    "term": "A08.1.04.001",
+    "systems": [
+      "venous"
+    ],
+    "kind": "parent",
+    "note": "Single side or vessel represented within a TA98 venous collective."
+  },
+  {
+    "names": [
+      "anterior tibial vein"
+    ],
+    "term": "A12.3.11.031",
+    "systems": [
+      "venous"
+    ],
+    "kind": "parent",
+    "note": "Single side or vessel represented within a TA98 venous collective."
+  },
+  {
+    "names": [
+      "posterior tibial vein"
+    ],
+    "term": "A12.3.11.032",
+    "systems": [
+      "venous"
+    ],
+    "kind": "parent",
+    "note": "Single side or vessel represented within a TA98 venous collective."
+  },
+  {
+    "names": [
+      "brachial vein"
+    ],
+    "term": "A12.3.08.029",
+    "systems": [
+      "venous"
+    ],
+    "kind": "parent",
+    "note": "Single side or vessel represented within a TA98 venous collective."
+  },
+  {
+    "names": [
+      "radial vein"
+    ],
+    "term": "A12.3.08.031",
+    "systems": [
+      "venous"
+    ],
+    "kind": "parent",
+    "note": "Single side or vessel represented within a TA98 venous collective."
+  },
+  {
+    "names": [
+      "ulnar vein"
+    ],
+    "term": "A12.3.08.030",
+    "systems": [
+      "venous"
+    ],
+    "kind": "parent",
+    "note": "Single side or vessel represented within a TA98 venous collective."
+  },
+  {
+    "names": [
+      "apical segmental bronchus of right lung (bi)"
+    ],
+    "term": "A06.4.02.003",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "posterior segmental bronchus of right lung (bii)"
+    ],
+    "term": "A06.4.02.004",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "anterior segmental bronchus of right lung (biii)"
+    ],
+    "term": "A06.4.02.005",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "lateral segmental bronchus of right lung (biv)"
+    ],
+    "term": "A06.4.02.007",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "medial segmental bronchus of right lung (bv)"
+    ],
+    "term": "A06.4.02.008",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "superior segmental bronchus of right lung (bvi)"
+    ],
+    "term": "A06.4.02.010",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "medial basal segmental bronchus of right lung (bvii)"
+    ],
+    "term": "A06.4.02.011",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "anterior basal segmental bronchus of right lung (bviii)"
+    ],
+    "term": "A06.4.02.012",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "lateral basal segmental bronchus of right lung (bix)"
+    ],
+    "term": "A06.4.02.013",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "posterior basal segmental bronchus of right lung (bx)"
+    ],
+    "term": "A06.4.02.014",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "apicoposterior segmental bronchus of left lung (bi+bii)"
+    ],
+    "term": "A06.4.02.016",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "anterior segmental bronchus of left lung (biii)"
+    ],
+    "term": "A06.4.02.017",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "superior segmental bronchus of left lung (bvi)"
+    ],
+    "term": "A06.4.02.021",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "medial basal segmental bronchus of left lung (bvii)"
+    ],
+    "term": "A06.4.02.022",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "anterior basal segmental bronchus of left lung (bviii)"
+    ],
+    "term": "A06.4.02.023",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "lateral basal segmental bronchus of left lung (bix)"
+    ],
+    "term": "A06.4.02.024",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "posterior basal segmental bronchus of left lung (bx)"
+    ],
+    "term": "A06.4.02.025",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Side-qualified segmental bronchus; validated against the distinct right/left TA98 lobar parents."
+  },
+  {
+    "names": [
+      "left posterior lateral segment of liver (ii)"
+    ],
+    "term": "A05.8.01.039",
+    "systems": [
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "left anterior lateral segment of liver (iii)"
+    ],
+    "term": "A05.8.01.040",
+    "systems": [
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "left medial segment of liver (iv)"
+    ],
+    "term": "A05.8.01.042",
+    "systems": [
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "posterior segment of liver (i)"
+    ],
+    "term": "A05.8.01.044",
+    "systems": [
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "anterior medial segment of liver (v)"
+    ],
+    "term": "A05.8.01.047",
+    "systems": [
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "posterior medial segment of liver (viii)"
+    ],
+    "term": "A05.8.01.048",
+    "systems": [
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "anterior lateral segment of liver (vi)"
+    ],
+    "term": "A05.8.01.050",
+    "systems": [
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "posterior lateral segment of liver (vii)"
+    ],
+    "term": "A05.8.01.051",
+    "systems": [
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym of the TA98 term."
+  },
+  {
+    "names": [
+      "atlas vertebra c1"
+    ],
+    "term": "A02.2.02.101",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "axis vertebra c2"
+    ],
+    "term": "A02.2.02.201",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "fused sacrum"
+    ],
+    "term": "A02.2.05.001",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "cervical vertebra c7",
+      "seventh cervical vertebra"
+    ],
+    "term": "A02.2.02.301",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "triquetral"
+    ],
+    "term": "A02.4.08.006",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "sphenoid sinus"
+    ],
+    "term": "A06.1.03.003",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "corniculate"
+    ],
+    "term": "A06.2.05.001",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "cricothyroid ligament"
+    ],
+    "term": "A06.2.03.009",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "bare area of liver"
+    ],
+    "term": "A05.8.01.008",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "round ligament of liver"
+    ],
+    "term": "A05.8.01.015",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "coronary ligament of liver"
+    ],
+    "term": "A10.1.02.302",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "acromioclavicular disc"
+    ],
+    "term": "A03.5.03.003",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "articular disc of steroclavicular joint"
+    ],
+    "term": "A03.5.04.002",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "common tendon sheath of fibularis muscles"
+    ],
+    "term": "A04.8.06.011",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "plantar tendon sheath of fibularis longus muscle"
+    ],
+    "term": "A04.8.06.012",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "cruciform part of fibrous sheath of digit of hand"
+    ],
+    "term": "A04.8.04.017",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "tendon sheath - abd. pollicis longus - ext. pollicis brevis"
+    ],
+    "term": "A04.8.04.009",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "tendon sheath of extensors carpi radialis"
+    ],
+    "term": "A04.8.04.010",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "tendon sheath of extensor digitorum and extensor indicis"
+    ],
+    "term": "A04.8.04.012",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "tendon sheath of tibialis anterior"
+    ],
+    "term": "A04.8.06.003",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "tendon sheath of tibialis posterior muscle"
+    ],
+    "term": "A04.8.06.008",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "tendon sheath of flexor hallucis longus"
+    ],
+    "term": "A04.8.06.009",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "tendon sheath of flexor digitorum longus"
+    ],
+    "term": "A04.8.06.007",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "tendon sheath of extensor digitorum longus"
+    ],
+    "term": "A04.8.06.005",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "gastrocnemius lateral",
+      "gastrocnemius lateral head"
+    ],
+    "term": "A04.7.02.045",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "gastrocnemius medial",
+      "gastrocnemius medial head"
+    ],
+    "term": "A04.7.02.046",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "biceps femoris long",
+      "biceps femoris long head"
+    ],
+    "term": "A04.7.02.033",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "biceps femoris short head"
+    ],
+    "term": "A04.7.02.034",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "abductor digiti minimi foot"
+    ],
+    "term": "A04.7.02.063",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "flexor digiti minimi brevis foot",
+      "flexor digiti minimi brevis leg"
+    ],
+    "term": "A04.7.02.066",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "suspensory ligament of left lens",
+      "suspensory ligament of right lens"
+    ],
+    "term": "A15.2.05.015",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "eye trabecular meshwork"
+    ],
+    "term": "A15.2.02.004",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "anterior chamber of left eyeball",
+      "anterior chamber of right eyeball"
+    ],
+    "term": "A15.2.06.003",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "aqueous humor of left eyeball",
+      "aqueous humor of right eyeball"
+    ],
+    "term": "A15.2.06.002",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "optic part of left retina",
+      "optic part of right retina"
+    ],
+    "term": "A15.2.04.007",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "tarsal plate of left lower eyelid",
+      "tarsal plate of right lower eyelid"
+    ],
+    "term": "A15.2.07.039",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "tarsal plate of left upper eyelid",
+      "tarsal plate of right upper eyelid"
+    ],
+    "term": "A15.2.07.038",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "choroid plexus of cerebral hemisphere"
+    ],
+    "term": "A14.1.09.279",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "left main bronchus",
+      "main bronchus of left lung"
+    ],
+    "term": "A06.4.01.004",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "right main bronchus",
+      "right main bronchus proper",
+      "main bronchus of right lung"
+    ],
+    "term": "A06.4.01.003",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "left lung"
+    ],
+    "term": "A06.5.01.003",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "right lung"
+    ],
+    "term": "A06.5.01.002",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "superior lingular segmental bronchus of left lung (biv)"
+    ],
+    "term": "A06.4.02.018",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "inferior lingular segmental bronchus of left lung (bv)"
+    ],
+    "term": "A06.4.02.019",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "middle lobe of right lung"
+    ],
+    "term": "A06.5.02.006",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "lobar bronchus of left lung lower lobe"
+    ],
+    "term": "A06.4.02.020",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "lobar bronchus of left lung upper lobe"
+    ],
+    "term": "A06.4.02.015",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "endocrine"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "buccal mucosa"
+    ],
+    "term": "A05.1.01.101",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "mucosa of soft palate"
+    ],
+    "term": "A05.1.01.104",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "soft palate"
+    ],
+    "term": "A05.1.01.104",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "parenchyma of pancreas"
+    ],
+    "term": "A05.9.01.001",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "pancreatic duct tree"
+    ],
+    "term": "A05.9.01.015",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "mouth floor"
+    ],
+    "term": "A05.1.00.001",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "bronchus"
+    ],
+    "term": "A06.4.01.001",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "palpebral conjunctiva of left lower eyelid",
+      "palpebral conjunctiva of left upper eyelid",
+      "palpebral conjunctiva of right lower eyelid",
+      "palpebral conjunctiva of right upper eyelid"
+    ],
+    "term": "A15.2.07.051",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "mesentery of small intestine"
+    ],
+    "term": "A10.1.02.007",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "trachea cartilage"
+    ],
+    "term": "A06.3.01.004",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "cartilage of lobar bronchus"
+    ],
+    "term": "A06.4.02.001",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "cartilage of segmental bronchus"
+    ],
+    "term": "A06.4.02.001",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "fungiform papilla"
+    ],
+    "term": "A05.1.04.015",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "vallate papilla"
+    ],
+    "term": "A05.1.04.016",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "gingiva of lower jaw",
+      "gingiva of upper jaw"
+    ],
+    "term": "A05.1.01.108",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "mammary lobe"
+    ],
+    "term": "A16.0.02.008",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "names": [
+      "gland lobules"
+    ],
+    "term": "A16.0.02.009",
+    "systems": [
+      "skeletal",
+      "connective",
+      "muscular",
+      "sensory",
+      "nervous",
+      "respiratory",
+      "digestive",
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Verified containing structure or collective; retain the source subdivision identity without assigning the parent TA98 code to the mesh."
+  },
+  {
+    "pattern": "cervical vertebra c[3-7]|(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth) cervical vertebra",
+    "term": "A02.2.02.001",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered regional vertebra under the TA98 vertebral collective. Explicit C7 mapping takes priority."
+  },
+  {
+    "pattern": "thoracic vertebra t(?:[1-9]|1[0-2])|(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth) thoracic vertebra",
+    "term": "A02.2.03.001",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered regional vertebra under the TA98 vertebral collective. Explicit C7 mapping takes priority."
+  },
+  {
+    "pattern": "lumbar vertebra l[1-6]|(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth) lumbar vertebra",
+    "term": "A02.2.04.001",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Numbered regional vertebra under the TA98 vertebral collective. Explicit C7 mapping takes priority."
+  },
+  {
+    "pattern": "(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) costal cartilage",
+    "term": "A02.3.01.005",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Individual rib cartilage under the generic TA98 costal cartilage."
+  },
+  {
+    "pattern": "intervertebral disk of (?:axis|(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|eleventh|twelfth) (?:cervical|thoracic|lumbar) vertebra)",
+    "term": "A03.2.02.003",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Level-specific disc belongs to the TA98 joints chapter, despite the source skeletal tag."
+  },
+  {
+    "pattern": "proximal phalanx of (?:left|right) (?:thumb|index finger|middle finger|ring finger|little finger)",
+    "term": "A02.4.10.002",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Digit-qualified phalanx; hand and foot remain distinct TA98 parents."
+  },
+  {
+    "pattern": "middle phalanx of (?:left|right) (?:thumb|index finger|middle finger|ring finger|little finger)",
+    "term": "A02.4.10.003",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Digit-qualified phalanx; hand and foot remain distinct TA98 parents."
+  },
+  {
+    "pattern": "distal phalanx of (?:left|right) (?:thumb|index finger|middle finger|ring finger|little finger)",
+    "term": "A02.4.10.004",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Digit-qualified phalanx; hand and foot remain distinct TA98 parents."
+  },
+  {
+    "pattern": "proximal phalanx of (?:left|right) (?:big toe|second toe|third toe|fourth toe|little toe)",
+    "term": "A02.5.18.002",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Digit-qualified phalanx; hand and foot remain distinct TA98 parents."
+  },
+  {
+    "pattern": "middle phalanx of (?:left|right) (?:big toe|second toe|third toe|fourth toe|little toe)",
+    "term": "A02.5.18.003",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Digit-qualified phalanx; hand and foot remain distinct TA98 parents."
+  },
+  {
+    "pattern": "distal phalanx of (?:left|right) (?:big toe|second toe|third toe|fourth toe|little toe)",
+    "term": "A02.5.18.004",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Digit-qualified phalanx; hand and foot remain distinct TA98 parents."
+  },
+  {
+    "names": [
+      "abductor digiti minimi of left hand"
+    ],
+    "term": "A04.6.02.062",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "abductor digiti minimi of left foot"
+    ],
+    "term": "A04.7.02.063",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "flexor digiti minimi brevis of left hand"
+    ],
+    "term": "A04.6.02.063",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "flexor digiti minimi brevis of left foot"
+    ],
+    "term": "A04.7.02.066",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "left anterior segmental bronchus"
+    ],
+    "term": "A06.4.02.017",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "left superior segmental bronchus"
+    ],
+    "term": "A06.4.02.021",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "left medial basal segmental bronchus"
+    ],
+    "term": "A06.4.02.022",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "left anterior basal segmental bronchus"
+    ],
+    "term": "A06.4.02.023",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "left lateral basal segmental bronchus"
+    ],
+    "term": "A06.4.02.024",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "left posterior basal segmental bronchus"
+    ],
+    "term": "A06.4.02.025",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "abductor digiti minimi of right hand"
+    ],
+    "term": "A04.6.02.062",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "abductor digiti minimi of right foot"
+    ],
+    "term": "A04.7.02.063",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "flexor digiti minimi brevis of right hand"
+    ],
+    "term": "A04.6.02.063",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "flexor digiti minimi brevis of right foot"
+    ],
+    "term": "A04.7.02.066",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "right anterior segmental bronchus"
+    ],
+    "term": "A06.4.02.005",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "right posterior segmental bronchus"
+    ],
+    "term": "A06.4.02.004",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "right apical segmental bronchus"
+    ],
+    "term": "A06.4.02.003",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "right superior segmental bronchus"
+    ],
+    "term": "A06.4.02.010",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "right medial basal segmental bronchus"
+    ],
+    "term": "A06.4.02.011",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "right anterior basal segmental bronchus"
+    ],
+    "term": "A06.4.02.012",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "right lateral basal segmental bronchus"
+    ],
+    "term": "A06.4.02.013",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "names": [
+      "right posterior basal segmental bronchus"
+    ],
+    "term": "A06.4.02.014",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Reviewed atlas synonym or qualified TA98 term."
+  },
+  {
+    "pattern": "first lumbrical of (?:left|right) foot",
+    "term": "A04.7.02.069",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered foot lumbrical within the TA98 collective."
+  },
+  {
+    "pattern": "second lumbrical of (?:left|right) foot",
+    "term": "A04.7.02.069",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered foot lumbrical within the TA98 collective."
+  },
+  {
+    "pattern": "third lumbrical of (?:left|right) foot",
+    "term": "A04.7.02.069",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered foot lumbrical within the TA98 collective."
+  },
+  {
+    "pattern": "fourth lumbrical of (?:left|right) foot",
+    "term": "A04.7.02.069",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered foot lumbrical within the TA98 collective."
+  },
+  {
+    "pattern": "first plantar interosseous of (?:left|right) foot",
+    "term": "A04.7.02.071",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered plantar interosseous muscle within the foot collective."
+  },
+  {
+    "pattern": "second plantar interosseous of (?:left|right) foot",
+    "term": "A04.7.02.071",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered plantar interosseous muscle within the foot collective."
+  },
+  {
+    "pattern": "third plantar interosseous of (?:left|right) foot",
+    "term": "A04.7.02.071",
+    "systems": [
+      "muscular"
+    ],
+    "kind": "parent",
+    "note": "Numbered plantar interosseous muscle within the foot collective."
+  },
+  {
+    "pattern": "ethmoid aircells[1-4]",
+    "term": "A06.1.03.005",
+    "systems": [
+      "respiratory",
+      "digestive"
+    ],
+    "kind": "parent",
+    "note": "Numbered ethmoidal air-cell mesh; the numbering does not identify an anterior/middle/posterior subgroup."
+  },
+  {
+    "pattern": "dorsal intercuneiform ligament [1-2]",
+    "term": "A03.6.10.508",
+    "systems": [
+      "connective"
+    ],
+    "kind": "parent",
+    "note": "Mesh subdivision of the TA98 dorsal intercuneiform ligament."
+  },
+  {
+    "pattern": "subcutaneous abdominal adipose tissue (?:luq|ruq|umbilicus) area",
+    "term": "A16.0.03.001",
+    "systems": [
+      "integumentary"
+    ],
+    "kind": "parent",
+    "note": "Model quadrant subdivision under the TA98 subcutaneous tissue; keep skin classification intact."
+  }
+]

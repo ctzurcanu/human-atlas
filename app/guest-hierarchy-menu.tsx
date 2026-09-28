@@ -11,9 +11,8 @@ export default function GuestHierarchyMenu({hierarchies,active,onSelect,onLoad}:
  const submit=async(event:React.FormEvent)=>{event.preventDefault();if(!url.trim())return;setLoading(true);setError('');try{await onLoad(url.trim());setUrl('');setOpen(false);}catch(cause){setError(cause instanceof Error?cause.message:'Could not load this hierarchy.');}finally{setLoading(false);}};
  const selected=hierarchies.find(item=>active===`guest:${item.id}`);
  return <div className="guest-menu-wrap" ref={host}>
-  <button type="button" className={selected?'active':''} aria-label="Guest hierarchies" title={selected?.name??'Guest hierarchies'} aria-haspopup="menu" aria-expanded={open} onClick={()=>setOpen(value=>!value)}>Guest <ChevronDown size={12}/></button>
-  {open&&<div className="guest-menu glass" role="menu" aria-label="Guest hierarchies">
-   <div className="guest-menu-title">Guest hierarchies</div>
+  <button type="button" className={selected?'active':''} aria-label="Additional hierarchies" title={selected?.name??'Additional hierarchies'} aria-haspopup="menu" aria-expanded={open} onClick={()=>setOpen(value=>!value)}><ChevronDown size={12}/></button>
+  {open&&<div className="guest-menu glass" role="menu" aria-label="Additional hierarchies">
    {hierarchies.map(item=><button type="button" role="menuitem" className="guest-menu-item" key={item.id} onClick={()=>{onSelect(item.id);setOpen(false);}}>{item.name}</button>)}
    {!hierarchies.length&&<span className="guest-menu-empty">Loading hierarchies…</span>}
    <form onSubmit={submit} className="guest-menu-form">

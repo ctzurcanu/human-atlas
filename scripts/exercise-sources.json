@@ -1,0 +1,71 @@
+{
+  "date": "2026-09-28",
+  "files": [
+    {
+      "key": "muscle",
+      "path": "work/exercise/muscle.json",
+      "url": "https://wger.de/api/v2/muscle/?limit=1000",
+      "sha256": "a149ee6ddbe8f34cfce6c6bfcfce521c51aa2e53cbfc38b4913121a1433dad67"
+    },
+    {
+      "key": "exercisecategory",
+      "path": "work/exercise/exercisecategory.json",
+      "url": "https://wger.de/api/v2/exercisecategory/?limit=1000",
+      "sha256": "5556e2df4396feb9e1abca0e69840baa1a396324d1422b881d75f857cf66c5f8"
+    },
+    {
+      "key": "equipment",
+      "path": "work/exercise/equipment.json",
+      "url": "https://wger.de/api/v2/equipment/?limit=1000",
+      "sha256": "a69983fb9d101c6a4edf49c52856a790fa28eec41a9ec7f930859c15c1c4932c"
+    },
+    {
+      "key": "license",
+      "path": "work/exercise/license.json",
+      "url": "https://wger.de/api/v2/license/?limit=1000",
+      "sha256": "301f19c087bfdc1d6e2dda12c732f6e0b208801f7599e563e551a8982370b502"
+    },
+    {
+      "key": "language",
+      "path": "work/exercise/language.json",
+      "url": "https://wger.de/api/v2/language/?limit=1000",
+      "sha256": "054b035cb93fac4f0c2057a79acc42ba7644fb420ff1fb527f7000994227fa79"
+    },
+    {
+      "key": "exerciseinfo",
+      "path": "work/exercise/exerciseinfo.json",
+      "url": "https://wger.de/api/v2/exerciseinfo/?limit=1000",
+      "sha256": "1dc167c7bdd146154665cce7ea97c81030046cbf4c0202547ae4b9ce2aef5745"
+    },
+    {
+      "key": "aaos-knee",
+      "path": "work/exercise/aaos-knee.html",
+      "url": "https://www.orthoinfo.org/recovery/knee-conditioning-program/",
+      "sha256": "98082bfaaedaab6c3090c171f524cb069597c4b33cb76805126620270757ca67"
+    },
+    {
+      "key": "aaos-hip",
+      "path": "work/exercise/aaos-hip.html",
+      "url": "https://www.orthoinfo.org/recovery/hip-conditioning-program/",
+      "sha256": "9aa1aa66854693db2c53ccd7c4eadded69688d69c63999b92923d6697562bcfa"
+    },
+    {
+      "key": "aaos-foot-and-ankle",
+      "path": "work/exercise/aaos-foot-and-ankle.html",
+      "url": "https://www.orthoinfo.org/recovery/foot-and-ankle-conditioning-program/",
+      "sha256": "612d74922733a702517572f2961c4ed858d6b96868d52b7cdb7a09b7bbca6fc9"
+    },
+    {
+      "key": "aaos-rotator-cuff-and-shoulder",
+      "path": "work/exercise/aaos-rotator-cuff-and-shoulder.html",
+      "url": "https://www.orthoinfo.org/recovery/rotator-cuff-and-shoulder-conditioning-program/",
+      "sha256": "626b9e1aa7b4ffd3557aefc05767b3af81821d6d01d607bdc4191f144842c9f1"
+    },
+    {
+      "key": "aaos-spine",
+      "path": "work/exercise/aaos-spine.html",
+      "url": "https://www.orthoinfo.org/recovery/spine-conditioning-program/",
+      "sha256": "e1375d223e318424da55befe12a8e26b7990a565a0ae0c5d1137f33e3f564c48"
+    }
+  ]
+}

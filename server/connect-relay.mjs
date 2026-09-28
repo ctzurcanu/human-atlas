@@ -18,9 +18,9 @@ export function attachConnectRelay(server,{path=CONNECT_PATH,graceMs=60_000}={})
  const sockets=new WebSocketServer({noServer:true,maxPayload:MAX_MESSAGE_BYTES,perMessageDeflate:false});
  const rooms=new Map(),identities=new Map();
  const send=(socket,message)=>{if(socket?.readyState===WebSocket.OPEN){if(socket.bufferedAmount>MAX_MESSAGE_BYTES*2){socket.close(1013,'Connection is too slow');return;}socket.send(JSON.stringify(message));}};
- const peer=(identity,online)=>({id:identity.id,ip:identity.ip,name:identity.name,online});
+ const peer=(identity,online,inSession=false)=>({id:identity.id,ip:identity.ip,name:identity.name,online,inSession});
  const roster=room=>{
-  const message={type:'roster',roomId:room.id,host:peer(room.host,!!room.host.socket),guests:[...room.guests.values()].map(identity=>peer(identity,!!identity.socket))};
+  const message={type:'roster',roomId:room.id,host:peer(room.host,!!room.host.socket),guests:[...room.guests.values()].map(identity=>peer(identity,!!identity.socket,room.participants.has(identity.token)))};
   send(room.host.socket,message);for(const guest of room.guests.values())send(guest.socket,message);
  };
  const endRoom=(room,reason)=>{
@@ -30,7 +30,7 @@ export function attachConnectRelay(server,{path=CONNECT_PATH,graceMs=60_000}={})
   room.guests.clear();room.snapshot=null;room.pose=null;
  };
  const stopPlay=room=>{
-  room.playing=false;room.snapshot=null;room.pose=null;room.participants.clear();
+  room.playing=false;room.snapshot=null;room.pose=null;room.participants.clear();room.excluded.clear();
   for(const guest of room.guests.values()){send(guest.socket,{type:'ended',reason:'The host stopped the session.'});guest.room=null;}
   room.guests.clear();send(room.host.socket,{type:'stopped'});roster(room);
  };
@@ -78,17 +78,18 @@ export function attachConnectRelay(server,{path=CONNECT_PATH,graceMs=60_000}={})
     if(message.role==='host'){
      room=rooms.get(message.roomId);
      if(room&&room.host.token!==identity.token){send(socket,{type:'error',message:'This session belongs to another host.'});identity.socket=null;identity=null;socket.close(1008);return;}
-     if(!room){room={id:code(),host:identity,guests:new Map(),participants:new Set(),playing:false,snapshot:null,pose:null,timer:null};rooms.set(room.id,room);}
+     if(!room){room={id:code(),host:identity,guests:new Map(),participants:new Set(),excluded:new Set(),playing:false,snapshot:null,pose:null,timer:null};rooms.set(room.id,room);}
      if(room.timer){clearTimeout(room.timer);room.timer=null;}
     }else{
      room=rooms.get(message.roomId);
      if(!room){send(socket,{type:'error',message:'The host is not running this session. Ask for their current invitation.'});identity.socket=null;identity=null;socket.close(4004,'Host unavailable');return;}
      if(room.host.token===identity.token){send(socket,{type:'error',message:'Use another browser or tab to join your own session.'});identity.socket=null;identity=null;socket.close(1008);return;}
+     if(room.excluded.has(identity.token)){send(socket,{type:'ended',reason:'You were removed from this session by the host.'});identity.socket=null;identity=null;socket.close(4003,'Removed by host');return;}
      room.guests.set(identity.token,identity);
     }
     identity.room=room;
     const playing=room.playing&&(message.role==='host'||room.participants.has(identity.token));
-    send(socket,{type:'joined',role:message.role,roomId:room.id,playing,self:peer(identity,true),host:peer(room.host,!!room.host.socket)});roster(room);
+    send(socket,{type:'joined',role:message.role,roomId:room.id,playing,self:peer(identity,true,message.role==='guest'&&playing),host:peer(room.host,!!room.host.socket)});roster(room);
     if(message.role==='guest'&&playing&&room.snapshot)send(socket,{type:'snapshot',snapshot:room.snapshot});
     if(message.role==='guest'&&playing&&room.pose)send(socket,{type:'pose',pose:room.pose});
     return;
@@ -100,8 +101,12 @@ export function attachConnectRelay(server,{path=CONNECT_PATH,graceMs=60_000}={})
     if(target){target.name=cleanName(message.name,target.ip);send(target.socket,{type:'self',self:peer(target,true)});roster(room);}return;
    }
    if(room.host!==identity)return; // Guests can never control the host or other guests.
+   if(message.type==='kick'){
+    const guest=[...room.guests.values()].find(guest=>guest.id===message.id);if(!guest)return;
+    room.excluded.add(guest.token);leave(guest);send(guest.socket,{type:'ended',reason:'You were removed from this session by the host.'});guest.socket?.close(4003,'Removed by host');return;
+   }
    if(message.type==='play'){
-    if(!room.playing){room.playing=true;room.participants=new Set([...room.guests.values()].filter(guest=>guest.socket).map(guest=>guest.token));send(socket,{type:'playing'});for(const guest of room.guests.values())if(room.participants.has(guest.token))send(guest.socket,{type:'playing'});}
+    if(!room.playing){room.playing=true;room.participants=new Set([...room.guests.values()].filter(guest=>guest.socket).map(guest=>guest.token));send(socket,{type:'playing'});for(const guest of room.guests.values())if(room.participants.has(guest.token))send(guest.socket,{type:'playing'});roster(room);}
     return;
    }
    if(!room.playing)return;

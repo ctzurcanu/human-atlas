@@ -7,6 +7,15 @@ const groups=metadata.byGroup as Record<string,Terminology>;
 const groupsLower=new Map(Object.entries(groups).map(([name,term])=>[name.toLowerCase(),term]));
 const paths=metadata.byConceptPath as Record<string,string[]>;
 const codes=metadata.byCode as Record<string,Terminology&{name:string}>;
+const matches=metadata.byConceptMatch as Record<string,{term:string;kind:'exact'|'parent';method:string}>;
+
+export function taChapterForConcept(id:string):string|undefined{
+ return taEntityForConcept(id)?.slice(0,3);
+}
+
+export function taEntityForConcept(id:string):string|undefined{
+ return matches[id]?.term;
+}
 
 export function terminologyForConcept(id:string):Terminology{
  return concepts[id]??(/^FMA:?\d+$/.test(id)?{...empty,fma:`FMA:${id.replace(/^FMA:?/,'')}`}:empty);

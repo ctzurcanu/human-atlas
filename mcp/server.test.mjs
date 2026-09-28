@@ -122,7 +122,7 @@ test('MCP views cover the shareable viewer settings and whole models', () => {
   assert.equal(url.searchParams.has('focus'),false);
   assert.equal(selected.selectedPieces.length,2);
   assert.equal(new URL(anatomyView({model:'embryo',hierarchy:'depth',depthHidden:['skin']}).url).searchParams.get('depth'),'skin');
-  assert.equal(new URL(anatomyView({hierarchy:'guest:chakras'}).url).searchParams.get('tree'),'guest:chakras');
+  for(const hierarchy of ['guest:genes','guest:cell-types','guest:physiology','guest:dermatomes-myotomes','guest:drugs','guest:physical-exercise','guest:chakras'])assert.equal(new URL(anatomyView({hierarchy}).url).searchParams.get('tree'),hierarchy);
   const guestView=new URL(anatomyView({hierarchy:'guest:custom',guestUrls:['https://example.com/custom.json']}).url);
   assert.equal(guestView.searchParams.get('tree'),'guest:custom');
   assert.deepEqual(guestView.searchParams.getAll('guest'),['https://example.com/custom.json']);

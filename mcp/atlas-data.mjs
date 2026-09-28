@@ -16,7 +16,7 @@ export const MODELS = {
   'local-female': 'female.json',
 };
 export const VIEWS = ['three-quarter', 'front', 'back', 'side', 'right', 'superior', 'inferior'];
-export const HIERARCHIES = ['systems', 'regions', 'depth', 'guest:chakras'];
+export const HIERARCHIES = ['systems', 'regions', 'depth', 'guest:genes','guest:cell-types','guest:physiology','guest:dermatomes-myotomes','guest:drugs','guest:physical-exercise','guest:chakras'];
 export const REGIONS = ['all', 'head-neck', 'torso', 'upper-right', 'upper-left', 'lower-right', 'lower-left'];
 export const DEPTH_LAYERS = ['skin', 'superficial-veins', 'investing-fascia', 'superficial-muscles', 'second-muscles', 'intermediate-muscles', 'deep-muscles', 'deepest-muscles', 'visceral-coverings', 'anterior-organs', 'deep-organs', 'deep-vessels', 'lymphatic', 'deep-nerves', 'ligaments', 'other', 'thoracic-bones', 'limb-bones', 'other-bones', 'spine', 'skull'];
 export const SECTION_AXES = ['axial', 'sagittal', 'coronal', 'oblique'];
@@ -108,7 +108,7 @@ export function anatomyView({structure, structures = [], model = 'male-detail', 
   if (skinOpacity !== undefined) fraction(skinOpacity, 'Skin opacity');
   if ((!HIERARCHIES.includes(hierarchy) && !/^guest:[a-z0-9][a-z0-9-]{0,63}$/.test(hierarchy)) || hierarchy === 'depth' && model === 'cell') throw new Error(`Unknown hierarchy for ${model}: ${hierarchy}`);
   if (!Array.isArray(guestUrls) || guestUrls.some(value => {try{return typeof value!=='string'||!['http:','https:'].includes(new URL(value).protocol);}catch{return true;}})) throw new Error('Guest hierarchies require HTTP or HTTPS JSON URLs.');
-  if (hierarchy.startsWith('guest:') && hierarchy !== 'guest:chakras' && !guestUrls.length) throw new Error('A custom guest hierarchy needs a guest URL.');
+  if (hierarchy.startsWith('guest:') && !HIERARCHIES.includes(hierarchy) && !guestUrls.length) throw new Error('A custom guest hierarchy needs a guest URL.');
   if (!REGIONS.includes(region) || region !== 'all' && model === 'cell') throw new Error(`Unknown region for ${model}: ${region}`);
   if (!Array.isArray(structures) || structures.some(item => typeof item !== 'string')) throw new Error('Structures must be a list of names or IDs.');
   if (!Array.isArray(hidden) || hidden.some(item => typeof item !== 'string')) throw new Error('Hidden pieces must be a list of names or IDs.');

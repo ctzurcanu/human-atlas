@@ -1,8 +1,8 @@
 import {SYSTEMS,structureName,type Atlas,type Part,type SystemId} from './anatomy';
-import {taHierarchyForConcept,terminologyForConcept,terminologyForGroup,type Terminology} from './anatomical-terminology';
+import {taChapterForConcept,taEntityForConcept,taHierarchyForConcept,terminologyForConcept,terminologyForGroup,type Terminology} from './anatomical-terminology';
 import {isSkinPart} from './depth-layers';
 
-export type AnatomyEntry={id:string;name:string;system:SystemId;region:string;location:string[];ancestry:string[];ancestryTerms?:Record<string,Terminology>;parts:Part[];terminology:Terminology};
+export type AnatomyEntry={id:string;name:string;system:SystemId;region:string;location:string[];ancestry:string[];ancestryTerms?:Record<string,Terminology>;taParentConcept?:string;parts:Part[];terminology:Terminology};
 export type AnatomyNode=
  | {kind:'group';id:string;name:string;nodes:AnatomyNode[];parts:Part[];terminology:Terminology}
  | {kind:'bilateral';id:string;name:string;entries:AnatomyEntry[];parts:Part[];terminology:Terminology}
@@ -38,7 +38,7 @@ export function majorSystemFor(entry:Pick<AnatomyEntry,'name'|'system'|'parts'>&
  if(entry.system==='cardiac'&&/^(?:third|fourth|lateral) ventricle|interventricular foramen/.test(name))return 'nervous';
  if(entry.system==='skeletal'&&/\b(?:teeth|tooth|gingiva)\b/.test(name))return 'digestive';
  if(entry.system==='digestive'&&/articular disc|articular disk|acromioclavicular|sternoclavicular/.test(name))return 'skeletal';
- const chapter=entry.terminology?.ta98?.slice(0,3);
+ const chapter=entry.terminology?.ta98?.slice(0,3)??taChapterForConcept(entry.parts[0]?.conceptId??'');
  const taSystem:Record<string,MajorSystemId>={A02:'skeletal',A03:'skeletal',A04:'muscular',A05:'digestive',A06:'respiratory',A08:'urinary',A09:'reproductive',A11:'endocrine',A12:'circulatory',A13:'lymphatic',A14:'nervous',A15:'nervous',A16:'integumentary'};
  if(chapter&&taSystem[chapter]&&entry.system!=='attachments')return taSystem[chapter];
  if(entry.system==='connective')return /eyeball|(?:lateral|medial) rectus|superior oblique|\blens\b/.test(name)?'nervous':/\bfascia\b/.test(name)?'muscular':'skeletal';
@@ -55,7 +55,12 @@ function systemBranchFor(entry:AnatomyEntry):string{
  if(system==='skeletal')return /cartilage|labrum|meniscus|\bdisc\b|\bdisk\b/.test(name)?'Cartilage':/\btendon\b/.test(name)?'Tendons':/ligament|capsule|joint|suture/.test(name)?'Joints and ligaments':'Bones';
  if(system==='muscular')return entry.system==='attachments'?'Muscle attachments':entry.system==='fascia'||/\bfascia\b/.test(name)?'Fascia':'Muscles';
  if(system==='circulatory')return entry.system==='arterial'||/\b(?:artery|aorta|celiac trunk)\b/.test(name)?'Arteries':entry.system==='venous'||/\b(?:vein|venous)\b/.test(name)?'Veins':'Heart';
- if(system==='nervous')return entry.system==='sensory'||entry.system==='connective'||/\b(?:eye|eyeball|retina|sclera|cornea|choroid|pupil|lens|ear|cochlea|macula lutea|conjunctiva|vitreous|lacrimal)\b/.test(name)?'Sensory organs':/^(?:allen )|\b(?:brain|cerebr|cerebell|spinal cord|spinocerebellar|vestibulospinal|tectospinal|rubrospinal|gracile fasciculus|white matter|ventricle|interventricular foramen|thalam|medulla|caudate|putamen|pallid|insula|cortex|accumbens)\b/.test(name)?'Central nervous system':'Peripheral nervous system';
+ if(system==='nervous'){
+  const taCode=entry.terminology.ta98??taEntityForConcept(entry.id);
+  if(taCode?.startsWith('A15.'))return 'Sensory organs';
+  if(taCode?.startsWith('A14.'))return taCode.startsWith('A14.1.')?'Central nervous system':'Peripheral nervous system';
+  return entry.system==='sensory'||entry.system==='connective'||/\b(?:eye|eyeball|retina|sclera|cornea|choroid|pupil|lens|ear|cochlea|macula lutea|conjunctiva|vitreous|lacrimal)\b/.test(name)?'Sensory organs':/^(?:allen )|\b(?:brain|cerebr|cerebell|spinal cord|spinocerebellar|vestibulospinal|tectospinal|rubrospinal|gracile fasciculus|white matter|ventricle|interventricular foramen|thalam|medulla|caudate|putamen|pallid|insula|cortex|accumbens)\b/.test(name)?'Central nervous system':'Peripheral nervous system';
+ }
  if(system==='exocrine')return /lacrimal/.test(name)?'Lacrimal glands':/mammary|lactiferous|breast/.test(name)?'Mammary gland':/sebaceous|sweat|ceruminous/.test(name)?'Skin glands':'Salivary glands';
  if(system==='digestive')return /liver|pancrea|gallbladder|biliar/.test(name)?'Accessory digestive organs':'Digestive tract';
  if(system==='respiratory')return /\blung|pulmonary|pleura/.test(name)?'Lungs':'Airways';
@@ -200,7 +205,7 @@ const GENERIC_TA_PARENTS=new Set(['human body','the integument','alimentary syst
 const GROUP_CHAPTERS:Record<MajorSystemId,string[]>={respiratory:['A06'],digestive:['A05'],circulatory:['A12'],urinary:['A08'],integumentary:['A01','A16'],skeletal:['A02','A03'],muscular:['A04'],endocrine:['A11'],exocrine:['A05','A15','A16'],lymphatic:['A13'],nervous:['A14','A15'],reproductive:['A09']};
 const normalizedGroup=(name:string)=>name.toLowerCase().replace(/\bmuscle\b/g,'').replace(/[^a-z0-9]+/g,' ').trim();
 function ancestryFor(entry:AnatomyEntry,groupCounts:Map<string,number>):string[]{
- const chapter=entry.terminology.ta98?.slice(0,3);
+ const chapter=entry.terminology.ta98?.slice(0,3)??taChapterForConcept(entry.id);
  const allowed=chapter?[chapter]:GROUP_CHAPTERS[majorSystemFor(entry)];
  const used=new Set([entry.name,...entry.location,entry.region,systemBranchFor(entry),systemName(entry.system),MAJOR_SYSTEMS.find(system=>system.id===majorSystemFor(entry))?.name??''].map(normalizedGroup));
  const usedCodes=new Set<string>();
@@ -214,6 +219,9 @@ function ancestryFor(entry:AnatomyEntry,groupCounts:Map<string,number>):string[]
   if(GENERIC_TA_PARENTS.has(name.toLowerCase())||!allowed.includes((terminology.ta98??'').slice(0,3)))continue;
   append(name,terminology.ta98);
  }
+ // A known TA98 lineage already determines anatomical containment. Source
+ // collection folders can describe a different grouping, not a deeper parent.
+ if(chapter)return result;
  const source=[...new Set(entry.parts.flatMap(part=>part.groups??[]))]
   .filter(name=>!/^\d+:\s/.test(name)&&!GENERIC_TA_PARENTS.has(name.toLowerCase())&&!/^(?:left|right) (?:upper|lower) limb$/i.test(name))
   .map(name=>({name,term:terminologyForGroup(name)}))
@@ -249,6 +257,7 @@ export function hierarchyEntries(atlas:Atlas):AnatomyEntry[]{
   if(!parent)continue;
   const parentName=parent.name.replace(/\s*\((?:left|right)\)\s*$/i,'').replace(/^\((.*)\)$/,'$1').trim();
   entry.region=parent.region;entry.location=[...parent.location];
+  entry.taParentConcept=parent.id;
   entry.ancestry=[...parent.ancestry,parentName];
   entry.ancestryTerms={[parentName]:parent.terminology};
  }

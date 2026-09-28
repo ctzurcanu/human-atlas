@@ -1,0 +1,3284 @@
+{
+  "version": "2026-09-28",
+  "sources": {
+    "breathing": {
+      "name": "The process of breathing",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/22-3-the-process-of-breathing"
+    },
+    "gas": {
+      "name": "Gas exchange",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/22-4-gas-exchange"
+    },
+    "airways": {
+      "name": "Organs and structures of the respiratory system",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/22-1-organs-and-structures-of-the-respiratory-system"
+    },
+    "pump": {
+      "name": "Cardiac cycle",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/19-3-cardiac-cycle"
+    },
+    "conduction": {
+      "name": "Cardiac muscle and electrical activity",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/19-2-cardiac-muscle-and-electrical-activity"
+    },
+    "flow": {
+      "name": "Blood flow blood pressure and resistance",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/20-2-blood-flow-blood-pressure-and-resistance"
+    },
+    "digestion": {
+      "name": "Digestive system processes and regulation",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/23-2-digestive-system-processes-and-regulation"
+    },
+    "oral": {
+      "name": "The mouth pharynx and esophagus",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/23-3-the-mouth-pharynx-and-esophagus"
+    },
+    "stomach": {
+      "name": "The stomach",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/23-4-the-stomach"
+    },
+    "intestines": {
+      "name": "The small and large intestines",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/23-5-the-small-and-large-intestines"
+    },
+    "accessory": {
+      "name": "Accessory organs in digestion the liver pancreas and gallbladder",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/23-6-accessory-organs-in-digestion-the-liver-pancreas-and-gallbladder"
+    },
+    "carbohydrate": {
+      "name": "Carbohydrate metabolism",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/24-2-carbohydrate-metabolism"
+    },
+    "lipid": {
+      "name": "Lipid metabolism",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/24-3-lipid-metabolism"
+    },
+    "protein": {
+      "name": "Protein metabolism",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/24-4-protein-metabolism"
+    },
+    "heat": {
+      "name": "Energy and heat balance",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/24-6-energy-and-heat-balance"
+    },
+    "kidney": {
+      "name": "Microscopic anatomy of the kidney",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/25-4-microscopic-anatomy-of-the-kidney"
+    },
+    "filtration": {
+      "name": "Physiology of urine formation",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/25-5-physiology-of-urine-formation"
+    },
+    "reabsorption": {
+      "name": "Tubular reabsorption",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/25-6-tubular-reabsorption"
+    },
+    "water": {
+      "name": "Water balance",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/26-2-water-balance"
+    },
+    "electrolytes": {
+      "name": "Electrolyte balance",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/26-3-electrolyte-balance"
+    },
+    "acidbase": {
+      "name": "Acid base balance",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/26-4-acid-base-balance"
+    },
+    "muscle": {
+      "name": "Muscle fiber contraction and relaxation",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/10-3-muscle-fiber-contraction-and-relaxation"
+    },
+    "movement": {
+      "name": "Interactions of skeletal muscles their fascicle arrangement and their lever systems",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/11-1-interactions-of-skeletal-muscles-their-fascicle-arrangement-and-their-lever-systems"
+    },
+    "sensory": {
+      "name": "Sensory perception",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/14-1-sensory-perception"
+    },
+    "central": {
+      "name": "Central processing",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/14-2-central-processing"
+    },
+    "motor": {
+      "name": "Motor responses",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/14-3-motor-responses"
+    },
+    "autonomic": {
+      "name": "Divisions of the autonomic nervous system",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/15-1-divisions-of-the-autonomic-nervous-system"
+    },
+    "pituitary": {
+      "name": "The pituitary gland and hypothalamus",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/17-3-the-pituitary-gland-and-hypothalamus"
+    },
+    "thyroid": {
+      "name": "The thyroid gland",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/17-4-the-thyroid-gland"
+    },
+    "parathyroid": {
+      "name": "The parathyroid glands",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/17-5-the-parathyroid-glands"
+    },
+    "adrenal": {
+      "name": "The adrenal glands",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/17-6-the-adrenal-glands"
+    },
+    "pancreatic": {
+      "name": "The endocrine pancreas",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/17-9-the-endocrine-pancreas"
+    },
+    "lymph": {
+      "name": "Anatomy of the lymphatic and immune systems",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/21-1-anatomy-of-the-lymphatic-and-immune-systems"
+    },
+    "innate": {
+      "name": "Barrier defenses and the innate immune response",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/21-2-barrier-defenses-and-the-innate-immune-response"
+    },
+    "tcell": {
+      "name": "The adaptive immune response t lymphocytes and their functional types",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/21-3-the-adaptive-immune-response-t-lymphocytes-and-their-functional-types"
+    },
+    "bcell": {
+      "name": "The adaptive immune response b lymphocytes and antibodies",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/21-4-the-adaptive-immune-response-b-lymphocytes-and-antibodies"
+    },
+    "hemostasis": {
+      "name": "Hemostasis",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/18-5-hemostasis"
+    },
+    "skin": {
+      "name": "Functions of the integumentary system",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/5-3-functions-of-the-integumentary-system"
+    },
+    "bone": {
+      "name": "Exercise nutrition hormones and bone tissue",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/6-6-exercise-nutrition-hormones-and-bone-tissue"
+    },
+    "male": {
+      "name": "Anatomy and physiology of the male reproductive system",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/27-1-anatomy-and-physiology-of-the-male-reproductive-system"
+    },
+    "female": {
+      "name": "Anatomy and physiology of the female reproductive system",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/27-2-anatomy-and-physiology-of-the-female-reproductive-system"
+    },
+    "birth": {
+      "name": "Maternal changes during pregnancy labor and birth",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/28-4-maternal-changes-during-pregnancy-labor-and-birth"
+    },
+    "lactation": {
+      "name": "Lactation",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/28-6-lactation"
+    },
+    "urine": {
+      "name": "Gross anatomy of urine transport",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/25-2-gross-anatomy-of-urine-transport"
+    },
+    "transport": {
+      "name": "Transport of gases",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/22-5-transport-of-gases"
+    },
+    "liver": {
+      "name": "Accessory organs in digestion the liver pancreas and gallbladder",
+      "url": "https://openstax.org/books/anatomy-and-physiology-2e/pages/23-6-accessory-organs-in-digestion-the-liver-pancreas-and-gallbladder"
+    }
+  },
+  "anatomy": {
+    "lungs": {
+      "name": "Lungs",
+      "systems": [
+        "respiratory"
+      ],
+      "pattern": "lung|alveol"
+    },
+    "diaphragm": {
+      "name": "Diaphragm",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "^diaphragm$"
+    },
+    "external-intercostals": {
+      "name": "External intercostals",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "external intercostal|outer intercostal"
+    },
+    "internal-intercostals": {
+      "name": "Internal intercostals",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "internal intercostal|\\binner intercostal"
+    },
+    "abdominals": {
+      "name": "Abdominal muscles",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "rectus abdominis|oblique.*abdom|transversus abdominis"
+    },
+    "scalenes": {
+      "name": "Scalene muscles",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "scalen"
+    },
+    "nose": {
+      "name": "Nasal passages",
+      "systems": [
+        "respiratory",
+        "digestive"
+      ],
+      "pattern": "nasal|nose|concha",
+      "exclude": "cartilage|bone"
+    },
+    "airways": {
+      "name": "Conducting airways",
+      "systems": [
+        "respiratory",
+        "digestive"
+      ],
+      "pattern": "trachea|bronch|laryn|nas|pharyn",
+      "exclude": "cartilage|bone|constrictor|pharyngeus"
+    },
+    "larynx": {
+      "name": "Larynx",
+      "systems": [
+        "respiratory",
+        "muscular"
+      ],
+      "pattern": "laryn|vocal|thyroarytenoid|cricoarytenoid|cricothyroid"
+    },
+    "brainstem": {
+      "name": "Medulla and pons",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "medulla oblongata|\\bpons\\b"
+    },
+    "phrenic": {
+      "name": "Phrenic nerves",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "phrenic"
+    },
+    "heart": {
+      "name": "Heart",
+      "systems": [
+        "cardiac"
+      ],
+      "pattern": ".*",
+      "exclude": "aorta|aortic arch|pulmonary trunk|vena cava"
+    },
+    "atria": {
+      "name": "Atria",
+      "systems": [
+        "cardiac"
+      ],
+      "pattern": "atrium|atrial|auricle"
+    },
+    "ventricles": {
+      "name": "Ventricles",
+      "systems": [
+        "cardiac"
+      ],
+      "pattern": "ventricle|ventricular"
+    },
+    "valves": {
+      "name": "Cardiac valves",
+      "systems": [
+        "cardiac"
+      ],
+      "pattern": "valve|cusp|chordae|papillary"
+    },
+    "conduction": {
+      "name": "Cardiac conduction structures",
+      "systems": [
+        "cardiac"
+      ],
+      "pattern": "sinoatrial|sinuatrial|atrioventricular.*(?:node|bundle)|purkinje|bundle of his"
+    },
+    "pulmonary-arteries": {
+      "name": "Pulmonary arteries",
+      "systems": [
+        "arterial",
+        "cardiac"
+      ],
+      "pattern": "pulmonary (?:arter|trunk)|(?:artery|arteries).*lung"
+    },
+    "pulmonary-veins": {
+      "name": "Pulmonary veins",
+      "systems": [
+        "venous"
+      ],
+      "pattern": "pulmonary vein|(?:vein|veins).*lung"
+    },
+    "systemic-arteries": {
+      "name": "Systemic arteries",
+      "systems": [
+        "arterial"
+      ],
+      "pattern": ".*",
+      "exclude": "pulmonary|\\blung\\b|umbilical|placent"
+    },
+    "systemic-veins": {
+      "name": "Systemic veins",
+      "systems": [
+        "venous"
+      ],
+      "pattern": ".*",
+      "exclude": "pulmonary|umbilical|placent"
+    },
+    "coronary": {
+      "name": "Coronary vessels",
+      "systems": [
+        "arterial",
+        "venous"
+      ],
+      "pattern": "coronary|cardiac vein|great vein of heart|middle vein of heart|small vein of heart"
+    },
+    "portal": {
+      "name": "Hepatic portal vessels",
+      "systems": [
+        "venous"
+      ],
+      "pattern": "portal|splenic vein|mesenteric vein"
+    },
+    "liver": {
+      "name": "Liver",
+      "systems": [
+        "digestive"
+      ],
+      "pattern": "\\bliver\\b|hepat",
+      "exclude": "duct"
+    },
+    "oral": {
+      "name": "Oral cavity and tongue",
+      "systems": [
+        "digestive"
+      ],
+      "pattern": "oral|mouth|tongue|palat|\\btooth\\b|teeth"
+    },
+    "teeth": {
+      "name": "Teeth",
+      "systems": [
+        "digestive",
+        "skeletal"
+      ],
+      "pattern": "\\btooth\\b|teeth|incisor|canine|molar"
+    },
+    "mastication": {
+      "name": "Muscles of mastication",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "masseter|temporalis|pterygoid"
+    },
+    "salivary": {
+      "name": "Salivary glands",
+      "systems": [
+        "digestive"
+      ],
+      "pattern": "parotid|submandibular|sublingual|salivar"
+    },
+    "pharynx": {
+      "name": "Pharynx",
+      "systems": [
+        "digestive",
+        "respiratory",
+        "muscular"
+      ],
+      "pattern": "pharyn|constrictor"
+    },
+    "esophagus": {
+      "name": "Esophagus",
+      "systems": [
+        "digestive"
+      ],
+      "pattern": "(?:o?esophag)"
+    },
+    "stomach": {
+      "name": "Stomach",
+      "systems": [
+        "digestive"
+      ],
+      "pattern": "stomach|gastric",
+      "exclude": "duct|gland"
+    },
+    "small-intestine": {
+      "name": "Small intestine",
+      "systems": [
+        "digestive",
+        "reproductive"
+      ],
+      "pattern": "small intestine|duoden|jejun|ileum|ileal|illium",
+      "exclude": "mesent|ligament"
+    },
+    "large-intestine": {
+      "name": "Large intestine",
+      "systems": [
+        "digestive",
+        "reproductive"
+      ],
+      "pattern": "large intestine|colon|caec|cecum|rectum|anal canal",
+      "exclude": "mesocolon|ligament"
+    },
+    "rectum": {
+      "name": "Rectum and anal canal",
+      "systems": [
+        "digestive",
+        "reproductive"
+      ],
+      "pattern": "rectum|rectal|anal canal"
+    },
+    "anal-sphincter": {
+      "name": "Anal sphincters",
+      "systems": [
+        "muscular",
+        "digestive"
+      ],
+      "pattern": "anal sphincter|sphincter.*ani|sphincter.*anus"
+    },
+    "pancreas": {
+      "name": "Pancreas",
+      "systems": [
+        "digestive",
+        "endocrine"
+      ],
+      "pattern": "pancrea"
+    },
+    "gallbladder": {
+      "name": "Gallbladder and bile ducts",
+      "systems": [
+        "digestive"
+      ],
+      "pattern": "gallbladder|gall bladder|bile duct|biliary|hepatic duct|cystic duct"
+    },
+    "kidneys": {
+      "name": "Kidneys",
+      "systems": [
+        "urinary"
+      ],
+      "pattern": "kidney|renal (?:cortex|medulla|pyramid)|nephron|glomerul",
+      "exclude": "pelvis|calyx|calices"
+    },
+    "ureters": {
+      "name": "Ureters",
+      "systems": [
+        "urinary"
+      ],
+      "pattern": "ureter"
+    },
+    "bladder": {
+      "name": "Urinary bladder",
+      "systems": [
+        "urinary"
+      ],
+      "pattern": "bladder|detrusor"
+    },
+    "urethra": {
+      "name": "Urethra",
+      "systems": [
+        "urinary"
+      ],
+      "pattern": "urethra"
+    },
+    "urethral-sphincter": {
+      "name": "Urethral sphincters",
+      "systems": [
+        "muscular",
+        "urinary"
+      ],
+      "pattern": "urethral sphincter|sphincter.*urethra"
+    },
+    "pelvic-floor": {
+      "name": "Pelvic floor muscles",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "levator ani|puborectal|pubococcyg|iliococcyg|ischiococcyg|^coccygeus"
+    },
+    "hypothalamus": {
+      "name": "Hypothalamus",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "hypothalam|supraoptic|paraventricular"
+    },
+    "pituitary": {
+      "name": "Pituitary gland",
+      "systems": [
+        "endocrine",
+        "nervous"
+      ],
+      "pattern": "pituitary|hypophys"
+    },
+    "thyroid": {
+      "name": "Thyroid gland",
+      "systems": [
+        "endocrine"
+      ],
+      "pattern": "thyroid",
+      "exclude": "parathyroid|cartilage|ligament"
+    },
+    "parathyroid": {
+      "name": "Parathyroid glands",
+      "systems": [
+        "endocrine",
+        "digestive"
+      ],
+      "pattern": "parathyroid"
+    },
+    "adrenal": {
+      "name": "Adrenal glands",
+      "systems": [
+        "endocrine"
+      ],
+      "pattern": "adrenal|suprarenal"
+    },
+    "skin": {
+      "name": "Skin",
+      "systems": [
+        "integumentary",
+        "connective"
+      ],
+      "pattern": "skin|dermis|epiderm|body surface"
+    },
+    "sweat": {
+      "name": "Sweat glands",
+      "systems": [
+        "integumentary"
+      ],
+      "pattern": "sweat|sudorifer"
+    },
+    "skin-vessels": {
+      "name": "Cutaneous vessels",
+      "systems": [
+        "arterial",
+        "venous"
+      ],
+      "pattern": "cutaneous|superficial epigastric|superficial circumflex iliac"
+    },
+    "muscles": {
+      "name": "Skeletal muscles",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": ".*",
+      "exclude": "\\btendon\\b|\\.[eo]\\d*[lr]$"
+    },
+    "bones": {
+      "name": "Bones",
+      "systems": [
+        "skeletal"
+      ],
+      "pattern": ".*",
+      "exclude": "\\bcartilage\\b|\\btooth\\b|teeth"
+    },
+    "joints": {
+      "name": "Joints and ligaments",
+      "systems": [
+        "connective"
+      ],
+      "pattern": "ligament|capsule|articular|joint|menisc|disc"
+    },
+    "tendons": {
+      "name": "Tendons",
+      "systems": [
+        "muscular",
+        "connective"
+      ],
+      "pattern": "tendon|aponeurosis"
+    },
+    "cerebrum": {
+      "name": "Cerebrum",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "cerebr|cortex|cortical|gyrus|gyri|sulcus|sulci"
+    },
+    "cerebellum": {
+      "name": "Cerebellum",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "cerebell|vermis"
+    },
+    "basal-ganglia": {
+      "name": "Basal ganglia",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "caudate|putamen|globus pallid|pallidum|substantia nigra|subthalamic"
+    },
+    "spinal-cord": {
+      "name": "Spinal cord",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "spinal cord|medulla spinalis"
+    },
+    "peripheral-nerves": {
+      "name": "Peripheral nerves",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "nerve|plexus|gangli",
+      "exclude": "optic nerve|olfactory nerve|brain|cerebr"
+    },
+    "sympathetic": {
+      "name": "Sympathetic nerves",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "sympathetic|splanchnic|celiac|coeliac|paravertebral"
+    },
+    "vagus": {
+      "name": "Vagus nerves",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "vagus|vagal"
+    },
+    "pelvic-autonomic": {
+      "name": "Pelvic autonomic nerves",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "pelvic splanchnic|hypogastric"
+    },
+    "retina": {
+      "name": "Retina",
+      "systems": [
+        "sensory",
+        "nervous"
+      ],
+      "pattern": "\\bretina\\b"
+    },
+    "eye-optics": {
+      "name": "Optical structures of the eye",
+      "systems": [
+        "sensory",
+        "nervous"
+      ],
+      "pattern": "cornea|\\blens\\b|iris|ciliary"
+    },
+    "optic": {
+      "name": "Optic pathways",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "optic nerve|optic chiasm|optic tract|optic radiation|lateral geniculate"
+    },
+    "eye-muscles": {
+      "name": "Eye muscles",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "superior rectus|inferior rectus|medial rectus|lateral rectus|superior oblique|inferior oblique",
+      "exclude": "trochlea"
+    },
+    "middle-ear": {
+      "name": "Middle ear",
+      "systems": [
+        "sensory",
+        "skeletal"
+      ],
+      "pattern": "tympanic|malleus|incus|stapes|auditory ossicle"
+    },
+    "cochlea": {
+      "name": "Cochlea",
+      "systems": [
+        "sensory"
+      ],
+      "pattern": "cochle|organ of corti|spiral organ"
+    },
+    "auditory": {
+      "name": "Auditory pathways",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "cochlear nerve|vestibulocochlear|medial geniculate"
+    },
+    "vestibular": {
+      "name": "Vestibular apparatus",
+      "systems": [
+        "sensory"
+      ],
+      "pattern": "vestibul|semicircular|utricle|saccule"
+    },
+    "olfactory": {
+      "name": "Olfactory structures",
+      "systems": [
+        "nervous",
+        "respiratory"
+      ],
+      "pattern": "olfact"
+    },
+    "taste": {
+      "name": "Tongue and taste pathways",
+      "systems": [
+        "digestive",
+        "nervous"
+      ],
+      "pattern": "tongue|gustatory|glossopharyngeal|chorda tympani"
+    },
+    "somatic": {
+      "name": "Somatic sensory nerves",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "nerve|gangli|spinal cord|thalamus",
+      "exclude": "optic|oculomotor|trochlear|abducens|olfactory|hypoglossal"
+    },
+    "thalamus": {
+      "name": "Thalamus",
+      "systems": [
+        "nervous"
+      ],
+      "pattern": "\\bthalamus\\b",
+      "exclude": "hypothalamus|subthalamus"
+    },
+    "lymph-vessels": {
+      "name": "Lymphatic vessels",
+      "systems": [
+        "lymphatic"
+      ],
+      "pattern": "lymph(?:atic)?.*(?:vessel|duct|trunk)|thoracic duct|cisterna chyli"
+    },
+    "nodes": {
+      "name": "Lymph nodes",
+      "systems": [
+        "lymphatic"
+      ],
+      "pattern": "\\bnodes?\\b|nodus lymph|lymphonod"
+    },
+    "spleen": {
+      "name": "Spleen",
+      "systems": [
+        "lymphatic"
+      ],
+      "pattern": "spleen|splenic"
+    },
+    "thymus": {
+      "name": "Thymus",
+      "systems": [
+        "lymphatic",
+        "endocrine"
+      ],
+      "pattern": "thym"
+    },
+    "marrow": {
+      "name": "Bone marrow",
+      "systems": [
+        "skeletal",
+        "lymphatic"
+      ],
+      "pattern": "marrow"
+    },
+    "tonsils": {
+      "name": "Tonsils and mucosal lymphoid tissues",
+      "systems": [
+        "lymphatic",
+        "digestive"
+      ],
+      "pattern": "tonsil|peyer|lymphoid|appendix"
+    },
+    "testes": {
+      "name": "Testes",
+      "systems": [
+        "reproductive"
+      ],
+      "pattern": "testis|testes|testicular",
+      "exclude": "duct"
+    },
+    "epididymis": {
+      "name": "Epididymis",
+      "systems": [
+        "reproductive"
+      ],
+      "pattern": "epididym"
+    },
+    "male-ducts": {
+      "name": "Sperm transport ducts",
+      "systems": [
+        "reproductive"
+      ],
+      "pattern": "ductus deferens|deferent duct|vas deferens|ejaculatory duct"
+    },
+    "male-glands": {
+      "name": "Male accessory glands",
+      "systems": [
+        "reproductive"
+      ],
+      "pattern": "prostate|seminal (?:vesicle|gland)|bulbourethral"
+    },
+    "penis": {
+      "name": "Penis",
+      "systems": [
+        "reproductive"
+      ],
+      "pattern": "penis|penile|corpus cavernosum|corpus spongiosum"
+    },
+    "ovaries": {
+      "name": "Ovaries",
+      "systems": [
+        "reproductive"
+      ],
+      "pattern": "ovary|ovaries|ovarian",
+      "exclude": "ligament|tube"
+    },
+    "uterine-tubes": {
+      "name": "Uterine tubes",
+      "systems": [
+        "reproductive"
+      ],
+      "pattern": "uterine tube|fallopian|oviduct"
+    },
+    "uterus": {
+      "name": "Uterus",
+      "systems": [
+        "reproductive"
+      ],
+      "pattern": "uterus|uterine|endometri|myometri|cervix",
+      "exclude": "tube|ligament"
+    },
+    "vagina": {
+      "name": "Vagina",
+      "systems": [
+        "reproductive"
+      ],
+      "pattern": "vagina"
+    },
+    "mammary": {
+      "name": "Mammary glands",
+      "systems": [
+        "integumentary",
+        "reproductive"
+      ],
+      "pattern": "mammary|breast"
+    },
+    "placenta": {
+      "name": "Placenta",
+      "systems": [
+        "pregnancy",
+        "reproductive"
+      ],
+      "pattern": "placent|chorionic|basal plate"
+    },
+    "umbilical": {
+      "name": "Umbilical vessels",
+      "systems": [
+        "pregnancy",
+        "arterial",
+        "venous"
+      ],
+      "pattern": "umbilical (?:arter|vein)|placental vessel"
+    }
+  },
+  "roots": [
+    "Respiration",
+    "Circulation",
+    "Digestion",
+    "Metabolism",
+    "Urinary function",
+    "Fluid and acid-base balance",
+    "Movement and support",
+    "Sensation and perception",
+    "Neural regulation",
+    "Endocrine regulation",
+    "Defense and repair",
+    "Temperature and skin functions",
+    "Reproduction"
+  ],
+  "functions": [
+    {
+      "id": "PHYS:quiet-inspiration",
+      "path": [
+        "Respiration",
+        "Pulmonary ventilation",
+        "Inspiration",
+        "Quiet inspiration"
+      ],
+      "anatomy": [
+        "diaphragm",
+        "external-intercostals",
+        "lungs"
+      ],
+      "sources": [
+        "breathing"
+      ],
+      "cells": [
+        "CL:0008002"
+      ]
+    },
+    {
+      "id": "PHYS:forced-inspiration",
+      "path": [
+        "Respiration",
+        "Pulmonary ventilation",
+        "Inspiration",
+        "Forced inspiration"
+      ],
+      "anatomy": [
+        "diaphragm",
+        "external-intercostals",
+        "scalenes",
+        "lungs"
+      ],
+      "sources": [
+        "breathing"
+      ]
+    },
+    {
+      "id": "PHYS:passive-expiration",
+      "path": [
+        "Respiration",
+        "Pulmonary ventilation",
+        "Expiration",
+        "Passive expiration"
+      ],
+      "anatomy": [
+        "lungs"
+      ],
+      "sources": [
+        "breathing"
+      ]
+    },
+    {
+      "id": "PHYS:forced-expiration",
+      "path": [
+        "Respiration",
+        "Pulmonary ventilation",
+        "Expiration",
+        "Forced expiration"
+      ],
+      "anatomy": [
+        "abdominals",
+        "internal-intercostals",
+        "lungs"
+      ],
+      "sources": [
+        "breathing"
+      ]
+    },
+    {
+      "id": "PHYS:respiratory-rhythm-and-control",
+      "path": [
+        "Respiration",
+        "Pulmonary ventilation",
+        "Respiratory rhythm and control"
+      ],
+      "anatomy": [
+        "brainstem",
+        "phrenic",
+        "diaphragm"
+      ],
+      "sources": [
+        "breathing"
+      ]
+    },
+    {
+      "id": "PHYS:filtering-inhaled-air",
+      "path": [
+        "Respiration",
+        "Air conditioning",
+        "Filtering inhaled air"
+      ],
+      "anatomy": [
+        "nose",
+        "airways"
+      ],
+      "sources": [
+        "airways"
+      ]
+    },
+    {
+      "id": "PHYS:warming-and-humidifying-air",
+      "path": [
+        "Respiration",
+        "Air conditioning",
+        "Warming and humidifying air"
+      ],
+      "anatomy": [
+        "nose",
+        "airways"
+      ],
+      "sources": [
+        "airways"
+      ]
+    },
+    {
+      "id": "PHYS:alveolar-oxygen-uptake",
+      "path": [
+        "Respiration",
+        "Gas exchange",
+        "Alveolar oxygen uptake"
+      ],
+      "anatomy": [
+        "lungs",
+        "pulmonary-arteries",
+        "pulmonary-veins"
+      ],
+      "sources": [
+        "gas"
+      ],
+      "cells": [
+        "CL:0002062"
+      ]
+    },
+    {
+      "id": "PHYS:carbon-dioxide-elimination",
+      "path": [
+        "Respiration",
+        "Gas exchange",
+        "Carbon dioxide elimination"
+      ],
+      "anatomy": [
+        "lungs",
+        "pulmonary-arteries",
+        "pulmonary-veins"
+      ],
+      "sources": [
+        "gas"
+      ]
+    },
+    {
+      "id": "PHYS:surfactant-secretion",
+      "path": [
+        "Respiration",
+        "Alveolar stability",
+        "Surfactant secretion"
+      ],
+      "anatomy": [
+        "lungs"
+      ],
+      "sources": [
+        "breathing"
+      ],
+      "cells": [
+        "CL:0002063"
+      ],
+      "genes": [
+        "SFTPB",
+        "SFTPC"
+      ]
+    },
+    {
+      "id": "PHYS:oxygen-transport-in-blood",
+      "path": [
+        "Respiration",
+        "Gas transport",
+        "Oxygen transport in blood"
+      ],
+      "anatomy": [
+        "systemic-arteries",
+        "systemic-veins"
+      ],
+      "sources": [
+        "transport"
+      ],
+      "cells": [
+        "CL:0000232"
+      ],
+      "genes": [
+        "HBA1",
+        "HBB"
+      ]
+    },
+    {
+      "id": "PHYS:carbon-dioxide-transport-in-blood",
+      "path": [
+        "Respiration",
+        "Gas transport",
+        "Carbon dioxide transport in blood"
+      ],
+      "anatomy": [
+        "systemic-arteries",
+        "systemic-veins"
+      ],
+      "sources": [
+        "transport"
+      ],
+      "cells": [
+        "CL:0000232"
+      ]
+    },
+    {
+      "id": "PHYS:phonation",
+      "path": [
+        "Respiration",
+        "Voice production",
+        "Phonation"
+      ],
+      "anatomy": [
+        "larynx"
+      ],
+      "sources": [
+        "airways"
+      ]
+    },
+    {
+      "id": "PHYS:atrial-contraction",
+      "path": [
+        "Circulation",
+        "Cardiac pumping",
+        "Atrial contraction"
+      ],
+      "anatomy": [
+        "atria"
+      ],
+      "sources": [
+        "pump"
+      ],
+      "cells": [
+        "CL:0000746"
+      ]
+    },
+    {
+      "id": "PHYS:ventricular-ejection",
+      "path": [
+        "Circulation",
+        "Cardiac pumping",
+        "Ventricular ejection"
+      ],
+      "anatomy": [
+        "ventricles"
+      ],
+      "sources": [
+        "pump"
+      ],
+      "cells": [
+        "CL:0000746"
+      ]
+    },
+    {
+      "id": "PHYS:diastolic-filling",
+      "path": [
+        "Circulation",
+        "Cardiac pumping",
+        "Diastolic filling"
+      ],
+      "anatomy": [
+        "atria",
+        "ventricles"
+      ],
+      "sources": [
+        "pump"
+      ]
+    },
+    {
+      "id": "PHYS:valve-control-of-forward-flow",
+      "path": [
+        "Circulation",
+        "Cardiac pumping",
+        "Valve control of forward flow"
+      ],
+      "anatomy": [
+        "valves"
+      ],
+      "sources": [
+        "pump"
+      ]
+    },
+    {
+      "id": "PHYS:pacemaker-and-impulse-conduction",
+      "path": [
+        "Circulation",
+        "Cardiac rhythm",
+        "Pacemaker and impulse conduction"
+      ],
+      "anatomy": [
+        "conduction",
+        "heart"
+      ],
+      "sources": [
+        "conduction"
+      ]
+    },
+    {
+      "id": "PHYS:pulmonary-circulation",
+      "path": [
+        "Circulation",
+        "Blood distribution",
+        "Pulmonary circulation"
+      ],
+      "anatomy": [
+        "heart",
+        "pulmonary-arteries",
+        "pulmonary-veins",
+        "lungs"
+      ],
+      "sources": [
+        "flow"
+      ]
+    },
+    {
+      "id": "PHYS:systemic-circulation",
+      "path": [
+        "Circulation",
+        "Blood distribution",
+        "Systemic circulation"
+      ],
+      "anatomy": [
+        "heart",
+        "systemic-arteries",
+        "systemic-veins"
+      ],
+      "sources": [
+        "flow"
+      ]
+    },
+    {
+      "id": "PHYS:coronary-circulation",
+      "path": [
+        "Circulation",
+        "Blood distribution",
+        "Coronary circulation"
+      ],
+      "anatomy": [
+        "heart",
+        "coronary"
+      ],
+      "sources": [
+        "flow"
+      ]
+    },
+    {
+      "id": "PHYS:hepatic-portal-circulation",
+      "path": [
+        "Circulation",
+        "Blood distribution",
+        "Hepatic portal circulation"
+      ],
+      "anatomy": [
+        "portal",
+        "liver"
+      ],
+      "sources": [
+        "accessory"
+      ]
+    },
+    {
+      "id": "PHYS:vascular-resistance",
+      "path": [
+        "Circulation",
+        "Hemodynamic control",
+        "Vascular resistance"
+      ],
+      "anatomy": [
+        "systemic-arteries"
+      ],
+      "sources": [
+        "flow"
+      ],
+      "cells": [
+        "CL:0000192"
+      ]
+    },
+    {
+      "id": "PHYS:venous-return",
+      "path": [
+        "Circulation",
+        "Hemodynamic control",
+        "Venous return"
+      ],
+      "anatomy": [
+        "systemic-veins",
+        "heart"
+      ],
+      "sources": [
+        "flow"
+      ]
+    },
+    {
+      "id": "PHYS:blood-pressure-regulation",
+      "path": [
+        "Circulation",
+        "Hemodynamic control",
+        "Blood pressure regulation"
+      ],
+      "anatomy": [
+        "heart",
+        "systemic-arteries",
+        "kidneys",
+        "brainstem"
+      ],
+      "sources": [
+        "flow"
+      ]
+    },
+    {
+      "id": "PHYS:mastication",
+      "path": [
+        "Digestion",
+        "Ingestion and propulsion",
+        "Mastication"
+      ],
+      "anatomy": [
+        "teeth",
+        "mastication",
+        "oral"
+      ],
+      "sources": [
+        "oral"
+      ]
+    },
+    {
+      "id": "PHYS:salivation",
+      "path": [
+        "Digestion",
+        "Ingestion and propulsion",
+        "Salivation"
+      ],
+      "anatomy": [
+        "salivary"
+      ],
+      "sources": [
+        "oral"
+      ]
+    },
+    {
+      "id": "PHYS:swallowing",
+      "path": [
+        "Digestion",
+        "Ingestion and propulsion",
+        "Swallowing"
+      ],
+      "anatomy": [
+        "oral",
+        "pharynx",
+        "esophagus"
+      ],
+      "sources": [
+        "oral"
+      ]
+    },
+    {
+      "id": "PHYS:esophageal-peristalsis",
+      "path": [
+        "Digestion",
+        "Ingestion and propulsion",
+        "Esophageal peristalsis"
+      ],
+      "anatomy": [
+        "esophagus"
+      ],
+      "sources": [
+        "oral"
+      ],
+      "cells": [
+        "CL:0000192"
+      ]
+    },
+    {
+      "id": "PHYS:gastric-mixing",
+      "path": [
+        "Digestion",
+        "Gastric processing",
+        "Gastric mixing"
+      ],
+      "anatomy": [
+        "stomach"
+      ],
+      "sources": [
+        "stomach"
+      ]
+    },
+    {
+      "id": "PHYS:gastric-acid-secretion",
+      "path": [
+        "Digestion",
+        "Gastric processing",
+        "Gastric acid secretion"
+      ],
+      "anatomy": [
+        "stomach"
+      ],
+      "sources": [
+        "stomach"
+      ],
+      "cells": [
+        "CL:0000162"
+      ],
+      "genes": [
+        "ATP4A",
+        "ATP4B"
+      ]
+    },
+    {
+      "id": "PHYS:intrinsic-factor-secretion",
+      "path": [
+        "Digestion",
+        "Gastric processing",
+        "Intrinsic factor secretion"
+      ],
+      "anatomy": [
+        "stomach"
+      ],
+      "sources": [
+        "stomach"
+      ],
+      "cells": [
+        "CL:0000162"
+      ],
+      "genes": [
+        "CBLIF"
+      ]
+    },
+    {
+      "id": "PHYS:gastric-protein-digestion",
+      "path": [
+        "Digestion",
+        "Gastric processing",
+        "Gastric protein digestion"
+      ],
+      "anatomy": [
+        "stomach"
+      ],
+      "sources": [
+        "stomach"
+      ]
+    },
+    {
+      "id": "PHYS:segmentation-and-peristalsis",
+      "path": [
+        "Digestion",
+        "Intestinal processing",
+        "Segmentation and peristalsis"
+      ],
+      "anatomy": [
+        "small-intestine"
+      ],
+      "sources": [
+        "intestines"
+      ],
+      "cells": [
+        "CL:0000192"
+      ]
+    },
+    {
+      "id": "PHYS:brush-border-digestion",
+      "path": [
+        "Digestion",
+        "Intestinal processing",
+        "Brush border digestion"
+      ],
+      "anatomy": [
+        "small-intestine"
+      ],
+      "sources": [
+        "intestines"
+      ],
+      "cells": [
+        "CL:0000584"
+      ]
+    },
+    {
+      "id": "PHYS:carbohydrate-absorption",
+      "path": [
+        "Digestion",
+        "Intestinal absorption",
+        "Carbohydrate absorption"
+      ],
+      "anatomy": [
+        "small-intestine"
+      ],
+      "sources": [
+        "intestines"
+      ],
+      "cells": [
+        "CL:0000584"
+      ]
+    },
+    {
+      "id": "PHYS:amino-acid-absorption",
+      "path": [
+        "Digestion",
+        "Intestinal absorption",
+        "Amino acid absorption"
+      ],
+      "anatomy": [
+        "small-intestine"
+      ],
+      "sources": [
+        "intestines"
+      ],
+      "cells": [
+        "CL:0000584"
+      ]
+    },
+    {
+      "id": "PHYS:lipid-absorption",
+      "path": [
+        "Digestion",
+        "Intestinal absorption",
+        "Lipid absorption"
+      ],
+      "anatomy": [
+        "small-intestine",
+        "lymph-vessels"
+      ],
+      "sources": [
+        "intestines"
+      ],
+      "cells": [
+        "CL:0000584"
+      ]
+    },
+    {
+      "id": "PHYS:water-and-electrolyte-absorption",
+      "path": [
+        "Digestion",
+        "Intestinal absorption",
+        "Water and electrolyte absorption"
+      ],
+      "anatomy": [
+        "small-intestine",
+        "large-intestine"
+      ],
+      "sources": [
+        "intestines"
+      ]
+    },
+    {
+      "id": "PHYS:bile-production",
+      "path": [
+        "Digestion",
+        "Accessory secretions",
+        "Bile production"
+      ],
+      "anatomy": [
+        "liver"
+      ],
+      "sources": [
+        "accessory"
+      ],
+      "cells": [
+        "CL:0000182"
+      ]
+    },
+    {
+      "id": "PHYS:bile-storage-and-release",
+      "path": [
+        "Digestion",
+        "Accessory secretions",
+        "Bile storage and release"
+      ],
+      "anatomy": [
+        "gallbladder"
+      ],
+      "sources": [
+        "accessory"
+      ]
+    },
+    {
+      "id": "PHYS:pancreatic-digestive-enzyme-secretion",
+      "path": [
+        "Digestion",
+        "Accessory secretions",
+        "Pancreatic digestive enzyme secretion"
+      ],
+      "anatomy": [
+        "pancreas"
+      ],
+      "sources": [
+        "accessory"
+      ],
+      "cells": [
+        "CL:0002064"
+      ]
+    },
+    {
+      "id": "PHYS:pancreatic-bicarbonate-secretion",
+      "path": [
+        "Digestion",
+        "Accessory secretions",
+        "Pancreatic bicarbonate secretion"
+      ],
+      "anatomy": [
+        "pancreas"
+      ],
+      "sources": [
+        "accessory"
+      ],
+      "cells": [
+        "CL:0002079"
+      ]
+    },
+    {
+      "id": "PHYS:fecal-storage",
+      "path": [
+        "Digestion",
+        "Elimination",
+        "Fecal storage"
+      ],
+      "anatomy": [
+        "rectum"
+      ],
+      "sources": [
+        "intestines"
+      ]
+    },
+    {
+      "id": "PHYS:defecation-and-fecal-continence",
+      "path": [
+        "Digestion",
+        "Elimination",
+        "Defecation and fecal continence"
+      ],
+      "anatomy": [
+        "rectum",
+        "anal-sphincter",
+        "pelvic-floor"
+      ],
+      "sources": [
+        "intestines"
+      ]
+    },
+    {
+      "id": "PHYS:glycogen-storage-and-mobilization",
+      "path": [
+        "Metabolism",
+        "Carbohydrate handling",
+        "Glycogen storage and mobilization"
+      ],
+      "anatomy": [
+        "liver",
+        "muscles"
+      ],
+      "sources": [
+        "carbohydrate"
+      ],
+      "cells": [
+        "CL:0000182"
+      ]
+    },
+    {
+      "id": "PHYS:hepatic-gluconeogenesis",
+      "path": [
+        "Metabolism",
+        "Carbohydrate handling",
+        "Hepatic gluconeogenesis"
+      ],
+      "anatomy": [
+        "liver"
+      ],
+      "sources": [
+        "carbohydrate"
+      ],
+      "cells": [
+        "CL:0000182"
+      ]
+    },
+    {
+      "id": "PHYS:hepatic-lipid-metabolism",
+      "path": [
+        "Metabolism",
+        "Lipid handling",
+        "Hepatic lipid metabolism"
+      ],
+      "anatomy": [
+        "liver"
+      ],
+      "sources": [
+        "lipid"
+      ],
+      "cells": [
+        "CL:0000182"
+      ]
+    },
+    {
+      "id": "PHYS:amino-acid-deamination-and-urea-production",
+      "path": [
+        "Metabolism",
+        "Nitrogen handling",
+        "Amino acid deamination and urea production"
+      ],
+      "anatomy": [
+        "liver"
+      ],
+      "sources": [
+        "protein"
+      ],
+      "cells": [
+        "CL:0000182"
+      ]
+    },
+    {
+      "id": "PHYS:muscular-heat-production",
+      "path": [
+        "Metabolism",
+        "Energy balance",
+        "Muscular heat production"
+      ],
+      "anatomy": [
+        "muscles"
+      ],
+      "sources": [
+        "heat"
+      ]
+    },
+    {
+      "id": "PHYS:thyroid-regulation-of-metabolic-rate",
+      "path": [
+        "Metabolism",
+        "Energy balance",
+        "Thyroid regulation of metabolic rate"
+      ],
+      "anatomy": [
+        "thyroid"
+      ],
+      "sources": [
+        "thyroid"
+      ],
+      "cells": [
+        "CL:0002258"
+      ]
+    },
+    {
+      "id": "PHYS:glomerular-filtration",
+      "path": [
+        "Urinary function",
+        "Urine formation",
+        "Glomerular filtration"
+      ],
+      "anatomy": [
+        "kidneys"
+      ],
+      "sources": [
+        "kidney",
+        "filtration"
+      ],
+      "cells": [
+        "CL:0000653",
+        "CL:0002188"
+      ]
+    },
+    {
+      "id": "PHYS:water-reabsorption",
+      "path": [
+        "Urinary function",
+        "Urine formation",
+        "Tubular reabsorption",
+        "Water reabsorption"
+      ],
+      "anatomy": [
+        "kidneys"
+      ],
+      "sources": [
+        "reabsorption",
+        "water"
+      ],
+      "genes": [
+        "AQP2",
+        "AVP"
+      ]
+    },
+    {
+      "id": "PHYS:glucose-reabsorption",
+      "path": [
+        "Urinary function",
+        "Urine formation",
+        "Tubular reabsorption",
+        "Glucose reabsorption"
+      ],
+      "anatomy": [
+        "kidneys"
+      ],
+      "sources": [
+        "reabsorption"
+      ],
+      "genes": [
+        "SLC5A2"
+      ]
+    },
+    {
+      "id": "PHYS:sodium-reabsorption",
+      "path": [
+        "Urinary function",
+        "Urine formation",
+        "Tubular reabsorption",
+        "Sodium reabsorption"
+      ],
+      "anatomy": [
+        "kidneys"
+      ],
+      "sources": [
+        "reabsorption",
+        "electrolytes"
+      ]
+    },
+    {
+      "id": "PHYS:tubular-secretion",
+      "path": [
+        "Urinary function",
+        "Urine formation",
+        "Tubular secretion"
+      ],
+      "anatomy": [
+        "kidneys"
+      ],
+      "sources": [
+        "filtration"
+      ]
+    },
+    {
+      "id": "PHYS:urine-concentration-and-dilution",
+      "path": [
+        "Urinary function",
+        "Urine formation",
+        "Urine concentration and dilution"
+      ],
+      "anatomy": [
+        "kidneys"
+      ],
+      "sources": [
+        "reabsorption",
+        "water"
+      ]
+    },
+    {
+      "id": "PHYS:ureteral-transport",
+      "path": [
+        "Urinary function",
+        "Urine transport",
+        "Ureteral transport"
+      ],
+      "anatomy": [
+        "ureters"
+      ],
+      "sources": [
+        "urine"
+      ]
+    },
+    {
+      "id": "PHYS:bladder-filling-and-storage",
+      "path": [
+        "Urinary function",
+        "Urine storage",
+        "Bladder filling and storage"
+      ],
+      "anatomy": [
+        "bladder",
+        "urethral-sphincter"
+      ],
+      "sources": [
+        "urine"
+      ]
+    },
+    {
+      "id": "PHYS:micturition",
+      "path": [
+        "Urinary function",
+        "Urine elimination",
+        "Micturition"
+      ],
+      "anatomy": [
+        "bladder",
+        "urethra",
+        "pelvic-autonomic"
+      ],
+      "sources": [
+        "urine"
+      ]
+    },
+    {
+      "id": "PHYS:osmoregulation-and-thirst",
+      "path": [
+        "Fluid and acid-base balance",
+        "Fluid homeostasis",
+        "Osmoregulation and thirst"
+      ],
+      "anatomy": [
+        "hypothalamus",
+        "kidneys"
+      ],
+      "sources": [
+        "water"
+      ]
+    },
+    {
+      "id": "PHYS:vasopressin-control-of-water-retention",
+      "path": [
+        "Fluid and acid-base balance",
+        "Fluid homeostasis",
+        "Vasopressin control of water retention"
+      ],
+      "anatomy": [
+        "hypothalamus",
+        "pituitary",
+        "kidneys"
+      ],
+      "sources": [
+        "water",
+        "pituitary"
+      ],
+      "genes": [
+        "AVP",
+        "AQP2"
+      ]
+    },
+    {
+      "id": "PHYS:sodium-and-potassium-balance",
+      "path": [
+        "Fluid and acid-base balance",
+        "Electrolyte homeostasis",
+        "Sodium and potassium balance"
+      ],
+      "anatomy": [
+        "kidneys",
+        "adrenal"
+      ],
+      "sources": [
+        "electrolytes",
+        "adrenal"
+      ]
+    },
+    {
+      "id": "PHYS:calcium-and-phosphate-balance",
+      "path": [
+        "Fluid and acid-base balance",
+        "Electrolyte homeostasis",
+        "Calcium and phosphate balance"
+      ],
+      "anatomy": [
+        "parathyroid",
+        "bones",
+        "kidneys",
+        "small-intestine"
+      ],
+      "sources": [
+        "electrolytes",
+        "parathyroid"
+      ],
+      "genes": [
+        "PTH"
+      ]
+    },
+    {
+      "id": "PHYS:respiratory-acid-base-regulation",
+      "path": [
+        "Fluid and acid-base balance",
+        "Acid-base homeostasis",
+        "Respiratory acid-base regulation"
+      ],
+      "anatomy": [
+        "lungs",
+        "brainstem"
+      ],
+      "sources": [
+        "acidbase"
+      ]
+    },
+    {
+      "id": "PHYS:renal-acid-base-regulation",
+      "path": [
+        "Fluid and acid-base balance",
+        "Acid-base homeostasis",
+        "Renal acid-base regulation"
+      ],
+      "anatomy": [
+        "kidneys"
+      ],
+      "sources": [
+        "acidbase"
+      ]
+    },
+    {
+      "id": "PHYS:skeletal-muscle-contraction",
+      "path": [
+        "Movement and support",
+        "Muscle mechanics",
+        "Skeletal muscle contraction"
+      ],
+      "anatomy": [
+        "muscles"
+      ],
+      "sources": [
+        "muscle"
+      ],
+      "cells": [
+        "CL:0008002"
+      ]
+    },
+    {
+      "id": "PHYS:skeletal-muscle-relaxation",
+      "path": [
+        "Movement and support",
+        "Muscle mechanics",
+        "Skeletal muscle relaxation"
+      ],
+      "anatomy": [
+        "muscles"
+      ],
+      "sources": [
+        "muscle"
+      ],
+      "cells": [
+        "CL:0008002"
+      ]
+    },
+    {
+      "id": "PHYS:tendon-transmission-of-force",
+      "path": [
+        "Movement and support",
+        "Muscle mechanics",
+        "Tendon transmission of force"
+      ],
+      "anatomy": [
+        "muscles",
+        "tendons",
+        "bones"
+      ],
+      "sources": [
+        "movement"
+      ]
+    },
+    {
+      "id": "PHYS:voluntary-movement",
+      "path": [
+        "Movement and support",
+        "Motor function",
+        "Voluntary movement"
+      ],
+      "anatomy": [
+        "cerebrum",
+        "spinal-cord",
+        "peripheral-nerves",
+        "muscles"
+      ],
+      "sources": [
+        "motor"
+      ]
+    },
+    {
+      "id": "PHYS:postural-control",
+      "path": [
+        "Movement and support",
+        "Motor function",
+        "Postural control"
+      ],
+      "anatomy": [
+        "cerebellum",
+        "vestibular",
+        "spinal-cord",
+        "muscles"
+      ],
+      "sources": [
+        "motor",
+        "sensory"
+      ]
+    },
+    {
+      "id": "PHYS:movement-coordination",
+      "path": [
+        "Movement and support",
+        "Motor function",
+        "Movement coordination"
+      ],
+      "anatomy": [
+        "cerebellum",
+        "basal-ganglia",
+        "muscles"
+      ],
+      "sources": [
+        "motor"
+      ]
+    },
+    {
+      "id": "PHYS:spinal-motor-reflexes",
+      "path": [
+        "Movement and support",
+        "Motor function",
+        "Spinal motor reflexes"
+      ],
+      "anatomy": [
+        "spinal-cord",
+        "peripheral-nerves",
+        "muscles"
+      ],
+      "sources": [
+        "motor"
+      ]
+    },
+    {
+      "id": "PHYS:skeletal-support-and-leverage",
+      "path": [
+        "Movement and support",
+        "Structural support",
+        "Skeletal support and leverage"
+      ],
+      "anatomy": [
+        "bones",
+        "joints",
+        "muscles"
+      ],
+      "sources": [
+        "movement"
+      ]
+    },
+    {
+      "id": "PHYS:pelvic-organ-support",
+      "path": [
+        "Movement and support",
+        "Structural support",
+        "Pelvic organ support"
+      ],
+      "anatomy": [
+        "pelvic-floor"
+      ],
+      "sources": [
+        "female",
+        "male"
+      ]
+    },
+    {
+      "id": "PHYS:bone-formation",
+      "path": [
+        "Movement and support",
+        "Bone maintenance",
+        "Bone formation"
+      ],
+      "anatomy": [
+        "bones"
+      ],
+      "sources": [
+        "bone"
+      ],
+      "cells": [
+        "CL:0000062"
+      ]
+    },
+    {
+      "id": "PHYS:bone-resorption",
+      "path": [
+        "Movement and support",
+        "Bone maintenance",
+        "Bone resorption"
+      ],
+      "anatomy": [
+        "bones"
+      ],
+      "sources": [
+        "bone"
+      ],
+      "cells": [
+        "CL:0000092"
+      ]
+    },
+    {
+      "id": "PHYS:optical-focusing",
+      "path": [
+        "Sensation and perception",
+        "Vision",
+        "Optical focusing"
+      ],
+      "anatomy": [
+        "eye-optics"
+      ],
+      "sources": [
+        "sensory"
+      ]
+    },
+    {
+      "id": "PHYS:phototransduction",
+      "path": [
+        "Sensation and perception",
+        "Vision",
+        "Phototransduction"
+      ],
+      "anatomy": [
+        "retina"
+      ],
+      "sources": [
+        "sensory"
+      ],
+      "cells": [
+        "CL:0000287"
+      ]
+    },
+    {
+      "id": "PHYS:visual-signal-transmission",
+      "path": [
+        "Sensation and perception",
+        "Vision",
+        "Visual signal transmission"
+      ],
+      "anatomy": [
+        "retina",
+        "optic",
+        "thalamus",
+        "cerebrum"
+      ],
+      "sources": [
+        "central",
+        "sensory"
+      ]
+    },
+    {
+      "id": "PHYS:eye-movement-control",
+      "path": [
+        "Sensation and perception",
+        "Vision",
+        "Eye movement control"
+      ],
+      "anatomy": [
+        "eye-muscles"
+      ],
+      "sources": [
+        "motor"
+      ]
+    },
+    {
+      "id": "PHYS:sound-conduction",
+      "path": [
+        "Sensation and perception",
+        "Hearing",
+        "Sound conduction"
+      ],
+      "anatomy": [
+        "middle-ear"
+      ],
+      "sources": [
+        "sensory"
+      ]
+    },
+    {
+      "id": "PHYS:auditory-transduction",
+      "path": [
+        "Sensation and perception",
+        "Hearing",
+        "Auditory transduction"
+      ],
+      "anatomy": [
+        "cochlea"
+      ],
+      "sources": [
+        "sensory"
+      ],
+      "cells": [
+        "CL:0000589",
+        "CL:0000601"
+      ]
+    },
+    {
+      "id": "PHYS:auditory-signal-transmission",
+      "path": [
+        "Sensation and perception",
+        "Hearing",
+        "Auditory signal transmission"
+      ],
+      "anatomy": [
+        "cochlea",
+        "auditory",
+        "cerebrum"
+      ],
+      "sources": [
+        "central",
+        "sensory"
+      ]
+    },
+    {
+      "id": "PHYS:angular-acceleration-sensing",
+      "path": [
+        "Sensation and perception",
+        "Equilibrium",
+        "Angular acceleration sensing"
+      ],
+      "anatomy": [
+        "vestibular"
+      ],
+      "sources": [
+        "sensory"
+      ],
+      "cells": [
+        "CL:0000609"
+      ]
+    },
+    {
+      "id": "PHYS:linear-acceleration-and-gravity-sensing",
+      "path": [
+        "Sensation and perception",
+        "Equilibrium",
+        "Linear acceleration and gravity sensing"
+      ],
+      "anatomy": [
+        "vestibular"
+      ],
+      "sources": [
+        "sensory"
+      ],
+      "cells": [
+        "CL:0000609"
+      ]
+    },
+    {
+      "id": "PHYS:olfaction",
+      "path": [
+        "Sensation and perception",
+        "Chemical senses",
+        "Olfaction"
+      ],
+      "anatomy": [
+        "olfactory",
+        "nose"
+      ],
+      "sources": [
+        "sensory"
+      ],
+      "cells": [
+        "CL:0000847"
+      ]
+    },
+    {
+      "id": "PHYS:gustation",
+      "path": [
+        "Sensation and perception",
+        "Chemical senses",
+        "Gustation"
+      ],
+      "anatomy": [
+        "taste"
+      ],
+      "sources": [
+        "sensory"
+      ]
+    },
+    {
+      "id": "PHYS:touch-and-pressure",
+      "path": [
+        "Sensation and perception",
+        "Somatic sensation",
+        "Touch and pressure"
+      ],
+      "anatomy": [
+        "skin",
+        "somatic"
+      ],
+      "sources": [
+        "sensory"
+      ]
+    },
+    {
+      "id": "PHYS:temperature-sensing",
+      "path": [
+        "Sensation and perception",
+        "Somatic sensation",
+        "Temperature sensing"
+      ],
+      "anatomy": [
+        "skin",
+        "somatic"
+      ],
+      "sources": [
+        "sensory"
+      ]
+    },
+    {
+      "id": "PHYS:nociception",
+      "path": [
+        "Sensation and perception",
+        "Somatic sensation",
+        "Nociception"
+      ],
+      "anatomy": [
+        "somatic"
+      ],
+      "sources": [
+        "sensory"
+      ]
+    },
+    {
+      "id": "PHYS:proprioception",
+      "path": [
+        "Sensation and perception",
+        "Somatic sensation",
+        "Proprioception"
+      ],
+      "anatomy": [
+        "muscles",
+        "joints",
+        "somatic"
+      ],
+      "sources": [
+        "sensory"
+      ]
+    },
+    {
+      "id": "PHYS:thalamic-sensory-relay",
+      "path": [
+        "Neural regulation",
+        "Sensory integration",
+        "Thalamic sensory relay"
+      ],
+      "anatomy": [
+        "thalamus"
+      ],
+      "sources": [
+        "central"
+      ]
+    },
+    {
+      "id": "PHYS:cortical-sensory-processing",
+      "path": [
+        "Neural regulation",
+        "Sensory integration",
+        "Cortical sensory processing"
+      ],
+      "anatomy": [
+        "cerebrum"
+      ],
+      "sources": [
+        "central"
+      ]
+    },
+    {
+      "id": "PHYS:sympathetic-control",
+      "path": [
+        "Neural regulation",
+        "Autonomic regulation",
+        "Sympathetic control"
+      ],
+      "anatomy": [
+        "sympathetic"
+      ],
+      "sources": [
+        "autonomic"
+      ]
+    },
+    {
+      "id": "PHYS:cranial-parasympathetic-control",
+      "path": [
+        "Neural regulation",
+        "Autonomic regulation",
+        "Cranial parasympathetic control"
+      ],
+      "anatomy": [
+        "vagus"
+      ],
+      "sources": [
+        "autonomic"
+      ]
+    },
+    {
+      "id": "PHYS:sacral-parasympathetic-control",
+      "path": [
+        "Neural regulation",
+        "Autonomic regulation",
+        "Sacral parasympathetic control"
+      ],
+      "anatomy": [
+        "pelvic-autonomic"
+      ],
+      "sources": [
+        "autonomic"
+      ]
+    },
+    {
+      "id": "PHYS:cardiorespiratory-control",
+      "path": [
+        "Neural regulation",
+        "Visceral coordination",
+        "Cardiorespiratory control"
+      ],
+      "anatomy": [
+        "brainstem",
+        "heart",
+        "lungs"
+      ],
+      "sources": [
+        "breathing",
+        "flow"
+      ]
+    },
+    {
+      "id": "PHYS:hypothalamic-homeostatic-control",
+      "path": [
+        "Neural regulation",
+        "Visceral coordination",
+        "Hypothalamic homeostatic control"
+      ],
+      "anatomy": [
+        "hypothalamus"
+      ],
+      "sources": [
+        "pituitary",
+        "heat",
+        "water"
+      ]
+    },
+    {
+      "id": "PHYS:thyroid-axis",
+      "path": [
+        "Endocrine regulation",
+        "Hypothalamic-pituitary axes",
+        "Thyroid axis"
+      ],
+      "anatomy": [
+        "hypothalamus",
+        "pituitary",
+        "thyroid"
+      ],
+      "sources": [
+        "pituitary",
+        "thyroid"
+      ],
+      "genes": [
+        "TSHB"
+      ]
+    },
+    {
+      "id": "PHYS:adrenal-axis",
+      "path": [
+        "Endocrine regulation",
+        "Hypothalamic-pituitary axes",
+        "Adrenal axis"
+      ],
+      "anatomy": [
+        "hypothalamus",
+        "pituitary",
+        "adrenal"
+      ],
+      "sources": [
+        "pituitary",
+        "adrenal"
+      ],
+      "genes": [
+        "POMC"
+      ]
+    },
+    {
+      "id": "PHYS:gonadal-axes",
+      "path": [
+        "Endocrine regulation",
+        "Hypothalamic-pituitary axes",
+        "Gonadal axes"
+      ],
+      "anatomy": [
+        "hypothalamus",
+        "pituitary",
+        "testes",
+        "ovaries"
+      ],
+      "sources": [
+        "pituitary",
+        "male",
+        "female"
+      ],
+      "genes": [
+        "FSHB",
+        "LHB"
+      ]
+    },
+    {
+      "id": "PHYS:growth-hormone-signaling",
+      "path": [
+        "Endocrine regulation",
+        "Hypothalamic-pituitary axes",
+        "Growth hormone signaling"
+      ],
+      "anatomy": [
+        "pituitary",
+        "liver",
+        "bones",
+        "muscles"
+      ],
+      "sources": [
+        "pituitary"
+      ],
+      "genes": [
+        "GH1",
+        "IGF1"
+      ]
+    },
+    {
+      "id": "PHYS:insulin-secretion",
+      "path": [
+        "Endocrine regulation",
+        "Glucose regulation",
+        "Insulin secretion"
+      ],
+      "anatomy": [
+        "pancreas"
+      ],
+      "sources": [
+        "pancreatic"
+      ],
+      "genes": [
+        "INS"
+      ],
+      "cells": [
+        "CL:0000169"
+      ]
+    },
+    {
+      "id": "PHYS:glucagon-secretion",
+      "path": [
+        "Endocrine regulation",
+        "Glucose regulation",
+        "Glucagon secretion"
+      ],
+      "anatomy": [
+        "pancreas"
+      ],
+      "sources": [
+        "pancreatic"
+      ],
+      "cells": [
+        "CL:0000171"
+      ],
+      "genes": [
+        "GCG"
+      ]
+    },
+    {
+      "id": "PHYS:somatostatin-secretion",
+      "path": [
+        "Endocrine regulation",
+        "Glucose regulation",
+        "Somatostatin secretion"
+      ],
+      "anatomy": [
+        "pancreas"
+      ],
+      "sources": [
+        "pancreatic"
+      ],
+      "cells": [
+        "CL:0000173"
+      ],
+      "genes": [
+        "SST"
+      ]
+    },
+    {
+      "id": "PHYS:cortisol-secretion",
+      "path": [
+        "Endocrine regulation",
+        "Adrenal functions",
+        "Cortisol secretion"
+      ],
+      "anatomy": [
+        "adrenal"
+      ],
+      "sources": [
+        "adrenal"
+      ]
+    },
+    {
+      "id": "PHYS:aldosterone-secretion",
+      "path": [
+        "Endocrine regulation",
+        "Adrenal functions",
+        "Aldosterone secretion"
+      ],
+      "anatomy": [
+        "adrenal"
+      ],
+      "sources": [
+        "adrenal"
+      ]
+    },
+    {
+      "id": "PHYS:catecholamine-secretion",
+      "path": [
+        "Endocrine regulation",
+        "Adrenal functions",
+        "Catecholamine secretion"
+      ],
+      "anatomy": [
+        "adrenal"
+      ],
+      "sources": [
+        "adrenal"
+      ]
+    },
+    {
+      "id": "PHYS:thyroid-hormone-production",
+      "path": [
+        "Endocrine regulation",
+        "Thyroid functions",
+        "Thyroid hormone production"
+      ],
+      "anatomy": [
+        "thyroid"
+      ],
+      "sources": [
+        "thyroid"
+      ],
+      "cells": [
+        "CL:0002258"
+      ],
+      "genes": [
+        "TG",
+        "TPO"
+      ]
+    },
+    {
+      "id": "PHYS:parathyroid-hormone-secretion",
+      "path": [
+        "Endocrine regulation",
+        "Calcium regulation",
+        "Parathyroid hormone secretion"
+      ],
+      "anatomy": [
+        "parathyroid"
+      ],
+      "sources": [
+        "parathyroid"
+      ],
+      "cells": [
+        "CL:0000446"
+      ],
+      "genes": [
+        "PTH"
+      ]
+    },
+    {
+      "id": "PHYS:cutaneous-barrier",
+      "path": [
+        "Defense and repair",
+        "Barrier defense",
+        "Cutaneous barrier"
+      ],
+      "anatomy": [
+        "skin"
+      ],
+      "sources": [
+        "skin",
+        "innate"
+      ],
+      "cells": [
+        "CL:0000312"
+      ]
+    },
+    {
+      "id": "PHYS:mucus-protection",
+      "path": [
+        "Defense and repair",
+        "Barrier defense",
+        "Mucus protection"
+      ],
+      "anatomy": [
+        "airways",
+        "small-intestine",
+        "large-intestine"
+      ],
+      "sources": [
+        "innate",
+        "airways",
+        "intestines"
+      ],
+      "cells": [
+        "CL:0000160"
+      ]
+    },
+    {
+      "id": "PHYS:interstitial-fluid-return",
+      "path": [
+        "Defense and repair",
+        "Lymphatic transport",
+        "Interstitial fluid return"
+      ],
+      "anatomy": [
+        "lymph-vessels"
+      ],
+      "sources": [
+        "lymph"
+      ],
+      "cells": [
+        "CL:0002138"
+      ]
+    },
+    {
+      "id": "PHYS:lymph-node-filtration",
+      "path": [
+        "Defense and repair",
+        "Immune surveillance",
+        "Lymph node filtration"
+      ],
+      "anatomy": [
+        "nodes"
+      ],
+      "sources": [
+        "lymph"
+      ]
+    },
+    {
+      "id": "PHYS:splenic-blood-filtration",
+      "path": [
+        "Defense and repair",
+        "Immune surveillance",
+        "Splenic blood filtration"
+      ],
+      "anatomy": [
+        "spleen"
+      ],
+      "sources": [
+        "lymph"
+      ],
+      "cells": [
+        "CL:0000235"
+      ]
+    },
+    {
+      "id": "PHYS:t-cell-maturation",
+      "path": [
+        "Defense and repair",
+        "Lymphocyte development",
+        "T cell maturation"
+      ],
+      "anatomy": [
+        "thymus"
+      ],
+      "sources": [
+        "lymph",
+        "tcell"
+      ],
+      "cells": [
+        "CL:0000084"
+      ]
+    },
+    {
+      "id": "PHYS:b-cell-maturation",
+      "path": [
+        "Defense and repair",
+        "Lymphocyte development",
+        "B cell maturation"
+      ],
+      "anatomy": [
+        "marrow"
+      ],
+      "sources": [
+        "lymph",
+        "bcell"
+      ],
+      "cells": [
+        "CL:0000236"
+      ]
+    },
+    {
+      "id": "PHYS:t-cell-responses",
+      "path": [
+        "Defense and repair",
+        "Adaptive defense",
+        "T cell responses"
+      ],
+      "anatomy": [
+        "nodes",
+        "spleen",
+        "tonsils"
+      ],
+      "sources": [
+        "tcell"
+      ],
+      "cells": [
+        "CL:0000084"
+      ]
+    },
+    {
+      "id": "PHYS:antibody-responses",
+      "path": [
+        "Defense and repair",
+        "Adaptive defense",
+        "Antibody responses"
+      ],
+      "anatomy": [
+        "nodes",
+        "spleen",
+        "tonsils"
+      ],
+      "sources": [
+        "bcell"
+      ],
+      "cells": [
+        "CL:0000236"
+      ]
+    },
+    {
+      "id": "PHYS:vascular-response-to-injury",
+      "path": [
+        "Defense and repair",
+        "Hemostasis",
+        "Vascular response to injury"
+      ],
+      "anatomy": [
+        "systemic-arteries",
+        "systemic-veins"
+      ],
+      "sources": [
+        "hemostasis"
+      ]
+    },
+    {
+      "id": "PHYS:platelet-plug-formation",
+      "path": [
+        "Defense and repair",
+        "Hemostasis",
+        "Platelet plug formation"
+      ],
+      "anatomy": [
+        "systemic-arteries",
+        "systemic-veins"
+      ],
+      "sources": [
+        "hemostasis"
+      ],
+      "cells": [
+        "CL:0000233"
+      ]
+    },
+    {
+      "id": "PHYS:coagulation-factor-production",
+      "path": [
+        "Defense and repair",
+        "Hemostasis",
+        "Coagulation factor production"
+      ],
+      "anatomy": [
+        "liver"
+      ],
+      "sources": [
+        "hemostasis"
+      ],
+      "cells": [
+        "CL:0000182"
+      ],
+      "genes": [
+        "F2",
+        "F7",
+        "F9",
+        "F10"
+      ]
+    },
+    {
+      "id": "PHYS:sweating",
+      "path": [
+        "Temperature and skin functions",
+        "Heat loss",
+        "Sweating"
+      ],
+      "anatomy": [
+        "skin",
+        "sweat"
+      ],
+      "sources": [
+        "skin",
+        "heat"
+      ]
+    },
+    {
+      "id": "PHYS:cutaneous-blood-flow",
+      "path": [
+        "Temperature and skin functions",
+        "Heat loss",
+        "Cutaneous blood flow"
+      ],
+      "anatomy": [
+        "skin",
+        "skin-vessels"
+      ],
+      "sources": [
+        "skin",
+        "heat"
+      ]
+    },
+    {
+      "id": "PHYS:shivering",
+      "path": [
+        "Temperature and skin functions",
+        "Heat production",
+        "Shivering"
+      ],
+      "anatomy": [
+        "muscles",
+        "hypothalamus"
+      ],
+      "sources": [
+        "heat"
+      ]
+    },
+    {
+      "id": "PHYS:melanin-production",
+      "path": [
+        "Temperature and skin functions",
+        "Skin functions",
+        "Melanin production"
+      ],
+      "anatomy": [
+        "skin"
+      ],
+      "sources": [
+        "skin"
+      ],
+      "cells": [
+        "CL:0000148"
+      ],
+      "genes": [
+        "TYR"
+      ]
+    },
+    {
+      "id": "PHYS:initial-vitamin-d-synthesis",
+      "path": [
+        "Temperature and skin functions",
+        "Skin functions",
+        "Initial vitamin D synthesis"
+      ],
+      "anatomy": [
+        "skin"
+      ],
+      "sources": [
+        "skin"
+      ]
+    },
+    {
+      "id": "PHYS:spermatogenesis",
+      "path": [
+        "Reproduction",
+        "Male reproductive function",
+        "Spermatogenesis"
+      ],
+      "anatomy": [
+        "testes"
+      ],
+      "sources": [
+        "male"
+      ],
+      "cells": [
+        "CL:0000019",
+        "CL:0000216"
+      ]
+    },
+    {
+      "id": "PHYS:testicular-androgen-production",
+      "path": [
+        "Reproduction",
+        "Male reproductive function",
+        "Testicular androgen production"
+      ],
+      "anatomy": [
+        "testes"
+      ],
+      "sources": [
+        "male"
+      ],
+      "cells": [
+        "CL:0000178"
+      ]
+    },
+    {
+      "id": "PHYS:sperm-maturation",
+      "path": [
+        "Reproduction",
+        "Male reproductive function",
+        "Sperm maturation"
+      ],
+      "anatomy": [
+        "epididymis"
+      ],
+      "sources": [
+        "male"
+      ]
+    },
+    {
+      "id": "PHYS:sperm-transport",
+      "path": [
+        "Reproduction",
+        "Male reproductive function",
+        "Sperm transport"
+      ],
+      "anatomy": [
+        "epididymis",
+        "male-ducts"
+      ],
+      "sources": [
+        "male"
+      ]
+    },
+    {
+      "id": "PHYS:seminal-fluid-secretion",
+      "path": [
+        "Reproduction",
+        "Male reproductive function",
+        "Seminal fluid secretion"
+      ],
+      "anatomy": [
+        "male-glands"
+      ],
+      "sources": [
+        "male"
+      ]
+    },
+    {
+      "id": "PHYS:erectile-function",
+      "path": [
+        "Reproduction",
+        "Male reproductive function",
+        "Erectile function"
+      ],
+      "anatomy": [
+        "penis",
+        "pelvic-autonomic"
+      ],
+      "sources": [
+        "male"
+      ]
+    },
+    {
+      "id": "PHYS:oocyte-development",
+      "path": [
+        "Reproduction",
+        "Female reproductive function",
+        "Oocyte development"
+      ],
+      "anatomy": [
+        "ovaries"
+      ],
+      "sources": [
+        "female"
+      ],
+      "cells": [
+        "CL:0000023"
+      ]
+    },
+    {
+      "id": "PHYS:ovulation",
+      "path": [
+        "Reproduction",
+        "Female reproductive function",
+        "Ovulation"
+      ],
+      "anatomy": [
+        "ovaries"
+      ],
+      "sources": [
+        "female"
+      ]
+    },
+    {
+      "id": "PHYS:ovarian-hormone-production",
+      "path": [
+        "Reproduction",
+        "Female reproductive function",
+        "Ovarian hormone production"
+      ],
+      "anatomy": [
+        "ovaries"
+      ],
+      "sources": [
+        "female"
+      ]
+    },
+    {
+      "id": "PHYS:oocyte-and-embryo-transport",
+      "path": [
+        "Reproduction",
+        "Female reproductive function",
+        "Oocyte and embryo transport"
+      ],
+      "anatomy": [
+        "uterine-tubes"
+      ],
+      "sources": [
+        "female"
+      ]
+    },
+    {
+      "id": "PHYS:endometrial-cycling",
+      "path": [
+        "Reproduction",
+        "Female reproductive function",
+        "Endometrial cycling"
+      ],
+      "anatomy": [
+        "uterus"
+      ],
+      "sources": [
+        "female"
+      ]
+    },
+    {
+      "id": "PHYS:placental-exchange",
+      "path": [
+        "Reproduction",
+        "Pregnancy and birth",
+        "Placental exchange"
+      ],
+      "anatomy": [
+        "placenta",
+        "umbilical"
+      ],
+      "sources": [
+        "birth"
+      ]
+    },
+    {
+      "id": "PHYS:uterine-labor-contractions",
+      "path": [
+        "Reproduction",
+        "Pregnancy and birth",
+        "Uterine labor contractions"
+      ],
+      "anatomy": [
+        "uterus",
+        "pituitary",
+        "hypothalamus"
+      ],
+      "sources": [
+        "birth",
+        "pituitary"
+      ],
+      "genes": [
+        "OXT"
+      ]
+    },
+    {
+      "id": "PHYS:milk-production",
+      "path": [
+        "Reproduction",
+        "Lactation",
+        "Milk production"
+      ],
+      "anatomy": [
+        "mammary",
+        "pituitary"
+      ],
+      "sources": [
+        "lactation",
+        "pituitary"
+      ],
+      "genes": [
+        "PRL"
+      ]
+    },
+    {
+      "id": "PHYS:milk-ejection",
+      "path": [
+        "Reproduction",
+        "Lactation",
+        "Milk ejection"
+      ],
+      "anatomy": [
+        "mammary",
+        "pituitary",
+        "hypothalamus"
+      ],
+      "sources": [
+        "lactation",
+        "pituitary"
+      ],
+      "genes": [
+        "OXT"
+      ]
+    }
+  ]
+}

@@ -38,11 +38,12 @@ export default function AdvancedTools({close,currentViewUrl,captureScene,openVie
  const [editingView,setEditingView]=useState<{id:string;name:string}|null>(null);
  const [slideIndex,setSlideIndex]=useState<number|null>(null);
  const slidePlaying=slideIndex!==null&&!!document.views[slideIndex];
- const presenting=slidePlaying||document.type==='connect'&&connection.active;
+ const presenting=slidePlaying||document.type==='connect'&&connection.active&&(connection.role==='guest'||!connection.controlsOpen);
  const presentationCallback=useRef(onPresentationChange);presentationCallback.current=onPresentationChange;
  useEffect(()=>presentationCallback.current({document,slideIndex}),[document,slideIndex]);
+ useEffect(()=>{if(connection.role==='host'&&connection.controlsOpen){setDocument(current=>({...current,type:'connect'}));setSlideIndex(null);}},[connection.controlsOpen,connection.role]);
  useEffect(()=>{
-  if(!remotePresentation||remotePresentation.document.type==='connect')return;
+  if(!remotePresentation)return;
   setDocument({...remotePresentation.document,views:remotePresentation.document.views.map(view=>{const url=new URL(view.url);return {...view,url:new URL(url.pathname+url.search,location.origin).href};})});
   setSlideIndex(remotePresentation.slideIndex);
  },[remotePresentation]);
@@ -138,10 +139,10 @@ export default function AdvancedTools({close,currentViewUrl,captureScene,openVie
   }
   dragRef.current=null;setDraggingId(null);setDropIndex(null);
  };
- const typePicker=<select id="advanced-type" aria-label="Advanced tool type" value={document.type} onChange={event=>update({...document,type:event.target.value as ToolType})}><option value="slides">Slides</option><option value="quiz">Quiz</option><option value="layers">Layers</option><option value="connect">Connect</option></select>;
+ const typePicker=<select id="advanced-type" aria-label="Advanced tool type" value={document.type} onChange={event=>{const type=event.target.value as ToolType;if(type==='connect'&&connection.active&&connection.role==='host')connection.openControls();else connection.closeControls();setSlideIndex(null);update({...document,type});}}><option value="slides">Slides</option><option value="quiz">Quiz</option><option value="layers">Layers</option><option value="connect">Connect</option></select>;
  return <>
   <section className={`advanced-panel ${presenting?'is-presenting':'glass'}`} aria-label="Advanced tools">
-   {document.type==='connect'?<div className="advanced-connect">{!connection.active&&<div className="connect-tool-type">{typePicker}</div>}<ConnectTools connection={connection}/></div>:slidePlaying&&slideIndex!==null?<div className="advanced-playback" role="toolbar" aria-label="Slide playback">
+   {document.type==='connect'?<div className="advanced-connect">{(!connection.active||connection.role==='host'&&connection.controlsOpen)&&<div className="connect-tool-type">{typePicker}</div>}<ConnectTools connection={connection}/></div>:slidePlaying&&slideIndex!==null?<div className="advanced-playback" role="toolbar" aria-label="Slide playback">
     <Button variant="ghost" onClick={()=>showSlide(0)} disabled={slideIndex===0} aria-label="First slide" title="First slide"><SkipBack size={18}/></Button>
     <Button variant="ghost" onClick={()=>showSlide(slideIndex-1)} aria-label="Previous slide" title="Previous slide (←)"><StepBack size={19}/></Button>
     <div className="advanced-slide-caption" aria-live="polite"><span className="advanced-slide-count">{slideIndex+1}/{document.views.length}</span><span className="advanced-slide-name" title={document.views[slideIndex].name}>{document.views[slideIndex].name}</span></div>
@@ -166,7 +167,7 @@ export default function AdvancedTools({close,currentViewUrl,captureScene,openVie
      <Button type="button" variant="ghost" className="advanced-view-delete" onClick={()=>removeView(view.id)} aria-label={`Delete slide ${view.name}`} title={`Remove ${view.name} from set`}><Trash2 size={15}/></Button>
     </li>)}</ol></div>
    </div>}
-   {!presenting&&<Button variant="ghost" className="advanced-close" onClick={close} aria-label="Close advanced tools" title="Close advanced tools"><X size={17}/></Button>}
+   {!presenting&&<Button variant="ghost" className="advanced-close" onClick={()=>{connection.closeControls();close();}} aria-label="Close advanced tools" title="Close advanced tools"><X size={17}/></Button>}
   </section>
   <Dialog open={editorOpen} onOpenChange={setEditorOpen}><DialogContent className="advanced-json-dialog" showCloseButton={false}><DialogHeader><DialogTitle>Advanced tools JSON</DialogTitle><DialogDescription>Edit the current type and saved views.</DialogDescription></DialogHeader><textarea aria-label="Advanced tools JSON" spellCheck={false} value={editorText} onChange={event=>{setEditorText(event.target.value);setEditorError('');}}/>{editorError&&<p className="advanced-json-error" role="alert">{editorError}</p>}<DialogFooter><Button variant="outline" onClick={()=>setEditorOpen(false)}>Cancel</Button><Button onClick={applyEditor}>Apply JSON</Button></DialogFooter></DialogContent></Dialog>
  </>;

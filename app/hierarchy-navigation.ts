@@ -3,6 +3,7 @@ import {MAJOR_SYSTEMS,REGION_ORDER,buildAnatomyNodes,depthPathFor,hierarchyEntri
 import {terminologyForConcept,terminologyForGroup} from './anatomical-terminology';
 import {DEPTH_LAYERS,depthLayerFor} from './depth-layers';
 import {createDepthOrder} from './depth-sort';
+import {guestNodeChoice} from './guest-choice';
 import {resolveGuestHierarchy,type GuestHierarchy,type ResolvedGuestNode} from './guest-hierarchy';
 import {anatomyNodeChoice,hierarchyChoice,type HierarchyChoice} from './hierarchy-choice';
 
@@ -12,16 +13,8 @@ export type NavigationMode='systems'|'regions'|'depth'|`guest:${string}`;
 export function hierarchyNavigation(atlas:Atlas,mode:NavigationMode,guest?:GuestHierarchy):HierarchyChoice{
  const available=atlas.parts.filter(part=>!part.suppressed);
  if(mode.startsWith('guest:')&&guest){
-  const guestChoice=(node:ResolvedGuestNode):HierarchyChoice=>{
-   const children=node.children.map(guestChoice);
-   const inherited=new Set(node.children.flatMap(child=>child.parts.map(part=>part.id)));
-   const direct=new Map<string,Part[]>();
-   for(const part of node.directParts)if(!inherited.has(part.id)){const list=direct.get(part.conceptId)??[];list.push(part);direct.set(part.conceptId,list);}
-   const leaves=[...direct].map(([id,parts])=>({id,name:structureName(parts[0].name),elements:parts.map(part=>part.id),terminology:terminologyForConcept(id)}));
-   return hierarchyChoice(`guest:${guest.id}:${node.id}`,node.name,node.parts,[...children,...leaves],terminologyForGroup(node.name));
-  };
   const nodes=resolveGuestHierarchy(atlas,guest);
-  return hierarchyChoice(`guest:${guest.id}:all`,'All',available,nodes.map(guestChoice),terminologyForGroup('All'));
+  return hierarchyChoice(`guest:${guest.id}:all`,'All',[...new Map(nodes.flatMap(node=>node.parts).map(part=>[part.id,part])).values()],nodes.filter(node=>node.parts.length).map(node=>guestNodeChoice(guest.id,node)),terminologyForGroup('All'));
  }
  const entries=hierarchyEntries(atlas);
  if(mode==='depth'){
@@ -53,12 +46,15 @@ export function hierarchyAncestors(root:HierarchyChoice,choice:HierarchyChoice):
  const selected=new Set(choice.elements);
  const exact=(node:HierarchyChoice)=>node.id===choice.id&&(!!node.children?node.elements.length===choice.elements.length&&node.elements.every(id=>selected.has(id)):node.elements.some(id=>selected.has(id)));
  const equivalent=(node:HierarchyChoice)=>!!choice.children&&!!node.children&&node.name===choice.name&&node.elements.length===choice.elements.length&&node.elements.every(id=>selected.has(id));
- const visit=(node:HierarchyChoice,path:HierarchyChoice[]):HierarchyChoice[]|null=>{
-  if(exact(node)||equivalent(node))return path;
+ const visited=new Set<HierarchyChoice>();
+ const visit=(node:HierarchyChoice,path:HierarchyChoice[],match:(node:HierarchyChoice)=>boolean):HierarchyChoice[]|null=>{
+  if(visited.has(node))return null;visited.add(node);
+  if(match(node))return path;
   if(!node.children)return null;
   if(selected.size&&!choice.children&&!node.elements.some(id=>selected.has(id)))return null;
-  for(const child of node.children){const result=visit(child,[...path,node]);if(result)return result;}
+  for(const child of node.children){const result=visit(child,[...path,node],match);if(result)return result;}
   return null;
  };
- return visit(root,[])??[];
+ const exactPath=visit(root,[],exact);if(exactPath)return exactPath;
+ visited.clear();return visit(root,[],equivalent)??[];
 }

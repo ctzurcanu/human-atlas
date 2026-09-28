@@ -47,7 +47,7 @@ export function createServer() {
       view: z.enum(VIEWS).default('three-quarter').describe('Camera direction. Defaults to three-quarter.'),
       context: z.number().min(0).max(1).default(0.18).describe('Opacity of surrounding anatomy, 0 to 1.'),
       hierarchy: z.string().default('systems').describe('Active hierarchy: systems, regions, depth, guest:chakras, or guest:<id> for a supplied guest URL. Depth is unavailable for the cell model.'),
-      guestUrls: z.array(z.string().url()).optional().describe('Public JSON hierarchy URLs to add to the final Guest menu. Custom guest:<id> needs its JSON URL here.'),
+      guestUrls: z.array(z.string().url()).optional().describe('Public JSON hierarchy URLs to add to the Additional hierarchies menu. Custom guest:<id> needs its JSON URL here.'),
       systems: z.array(z.string()).optional().describe('Visible system IDs. Omit for the model defaults; [] hides unselected anatomy.'),
       depthHidden: z.array(z.enum(DEPTH_LAYERS)).optional().describe('Depth layer IDs to hide.'),
       hidden: z.array(z.string()).optional().describe('Exact names, concept IDs, or piece IDs to hide.'),

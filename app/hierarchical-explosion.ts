@@ -29,8 +29,9 @@ function hierarchyTree(atlas:Atlas,entries:AnatomyEntry[],visibleIds:Set<string>
  const visibleEntries=entries.flatMap(entry=>{const parts=entry.parts.filter(part=>visibleIds.has(part.id));return parts.length?[{...entry,parts}]:[]});
  if(!visibleEntries.length)return null;
  if(mode==='guest'&&guestNodes){
-  const remaining=new Set(visibleIds);
+  const remaining=new Set(visibleIds),visited=new Set<ResolvedGuestNode>();
   const convert=(item:ResolvedGuestNode):Node|null=>{
+   if(visited.has(item)||!item.parts.some(part=>remaining.has(part.id)))return null;visited.add(item);
    const children=item.children.map(convert).filter((child):child is Node=>!!child);
    const own=item.directParts.filter(part=>remaining.delete(part.id));
    if(own.length)children.push(...own.map(part=>node([part])));

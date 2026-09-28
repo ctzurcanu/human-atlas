@@ -1,0 +1,1446 @@
+{
+  "version": "2026-09-28",
+  "sources": {
+    "wger": {
+      "name": "wger public exercise catalogue",
+      "url": "https://wger.de/api/v2/exerciseinfo/?limit=1000",
+      "license": "Per-record CC BY-SA 3.0, CC BY-SA 4.0 or CC0"
+    },
+    "compendium": {
+      "name": "2024 Adult Compendium of Physical Activities",
+      "url": "https://pacompendium.com/adult-compendium/",
+      "use": "Activity classification reference; no MET values or source tables imported"
+    },
+    "ace": {
+      "name": "American Council on Exercise, Exercise Library",
+      "url": "https://www.acefitness.org/resources/everyone/exercise-library/",
+      "use": "Body-area and equipment classification reference; no instructions or media imported"
+    },
+    "knee": {
+      "name": "AAOS Knee Conditioning Program",
+      "url": "https://www.orthoinfo.org/recovery/knee-conditioning-program/"
+    },
+    "hip": {
+      "name": "AAOS Hip Conditioning Program",
+      "url": "https://www.orthoinfo.org/recovery/hip-conditioning-program/"
+    },
+    "ankle": {
+      "name": "AAOS Foot and Ankle Conditioning Program",
+      "url": "https://www.orthoinfo.org/recovery/foot-and-ankle-conditioning-program/"
+    },
+    "shoulder": {
+      "name": "AAOS Rotator Cuff and Shoulder Conditioning Program",
+      "url": "https://www.orthoinfo.org/recovery/rotator-cuff-and-shoulder-conditioning-program/"
+    },
+    "spine": {
+      "name": "AAOS Spine Conditioning Program",
+      "url": "https://www.orthoinfo.org/recovery/spine-conditioning-program/"
+    },
+    "aerobic": {
+      "name": "NHLBI Physical Activity and Your Heart: Types",
+      "url": "https://www.nhlbi.nih.gov/health/heart/physical-activity/types"
+    },
+    "balance": {
+      "name": "NIDCD Balance",
+      "url": "https://www.nidcd.nih.gov/glossary/balance"
+    },
+    "breathing": {
+      "name": "Cleveland Clinic Diaphragmatic Breathing",
+      "url": "https://my.clevelandclinic.org/health/articles/9445-diaphragmatic-breathing"
+    },
+    "pelvic": {
+      "name": "NIDDK Kegel Exercises",
+      "url": "https://www.niddk.nih.gov/health-information/urologic-diseases/kegel-exercises"
+    },
+    "pelvic-anatomy": {
+      "name": "NCBI Bookshelf Levator Ani Muscle",
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK556078/"
+    },
+    "phrenic": {
+      "name": "NCBI Bookshelf Anatomy, Thorax, Phrenic Nerves",
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK513325/"
+    },
+    "shoulder-study": {
+      "name": "Sweeney, Porcari, Camic, Kovacs and Foster; ACE-sponsored shoulder EMG study (2014)",
+      "url": "https://www.acefitness.org/certifiednews/images/article/pdfs/ACEShoulderStudy.pdf"
+    },
+    "trapezius": {
+      "name": "NCBI Bookshelf Anatomy, Back, Trapezius",
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK518994/"
+    },
+    "deadlift": {
+      "name": "NASM Barbell Deadlift",
+      "url": "https://www.nasm.org/resource-center/exercise-library/barbell-deadlift"
+    },
+    "goblet-squat": {
+      "name": "Heather Cherry, NASM Goblet Squat coaching guide",
+      "url": "https://www.nasm.org/resource-center/blog/training/how-to-perform-goblet-squats"
+    },
+    "squat-biomechanics": {
+      "name": "Brian Sutton, NASM Biomechanics of the Squat",
+      "url": "https://www.nasm.org/resource-center/blog/training/biomechanics-of-the-squat"
+    },
+    "rdl": {
+      "name": "NASM Romanian Deadlift Barbell",
+      "url": "https://www.nasm.org/resource-center/exercise-library/romanian-deadlift-barbell"
+    }
+  },
+  "anatomy": {
+    "biceps": {
+      "name": "Biceps brachii",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "biceps brachii|^biceps (?:long|short) head$",
+      "sources": [
+        "ace"
+      ]
+    },
+    "deltoid-anterior": {
+      "name": "Anterior deltoid",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "clavicular.*deltoid|deltoid.*(?:anterior|front)",
+      "sources": [
+        "ace"
+      ],
+      "fallback": "^deltoid(?: muscle)?$"
+    },
+    "deltoid-middle": {
+      "name": "Middle deltoid",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "acromial.*deltoid|deltoid.*(?:lateral|middle)",
+      "sources": [
+        "ace"
+      ],
+      "fallback": "^deltoid(?: muscle)?$"
+    },
+    "deltoid-posterior": {
+      "name": "Posterior deltoid",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "(?:scapular )?spinal.*deltoid|deltoid.*(?:posterior|rear)",
+      "sources": [
+        "ace"
+      ],
+      "fallback": "^deltoid(?: muscle)?$"
+    },
+    "deltoid": {
+      "name": "Deltoid",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "deltoid",
+      "sources": [
+        "ace"
+      ]
+    },
+    "biceps-femoris": {
+      "name": "Biceps femoris",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "biceps femoris",
+      "sources": [
+        "ace"
+      ]
+    },
+    "brachialis": {
+      "name": "Brachialis",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "\\bbrachialis\\b",
+      "sources": [
+        "ace"
+      ]
+    },
+    "gastrocnemius": {
+      "name": "Gastrocnemius",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "gastrocnemius",
+      "sources": [
+        "ace"
+      ]
+    },
+    "glute-max": {
+      "name": "Gluteus maximus",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "gluteus maximus",
+      "sources": [
+        "ace"
+      ]
+    },
+    "glute-med": {
+      "name": "Gluteus medius",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "gluteus medius",
+      "sources": [
+        "ace"
+      ]
+    },
+    "glute-min": {
+      "name": "Gluteus minimus",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "gluteus minimus",
+      "sources": [
+        "ace"
+      ]
+    },
+    "lats": {
+      "name": "Latissimus dorsi",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "latissimus dorsi",
+      "sources": [
+        "ace"
+      ]
+    },
+    "oblique-external": {
+      "name": "External abdominal oblique",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "external (?:abdominal )?oblique|obliquus externus abdominis|abdominal external oblique",
+      "sources": [
+        "ace"
+      ]
+    },
+    "oblique-internal": {
+      "name": "Internal abdominal oblique",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "internal (?:abdominal )?oblique|obliquus internus abdominis|abdominal internal oblique",
+      "sources": [
+        "ace"
+      ]
+    },
+    "pectoralis": {
+      "name": "Pectoralis major",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "pectoralis major",
+      "sources": [
+        "ace"
+      ]
+    },
+    "quads": {
+      "name": "Quadriceps femoris",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "vastus (?:medialis|lateralis|intermedius)|rectus femoris|^quadriceps(?: femoris)?(?: muscle)?$",
+      "sources": [
+        "ace"
+      ]
+    },
+    "hamstrings": {
+      "name": "Hamstrings",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "biceps femoris|semimembranosus|semitendinosus|semitendonosus",
+      "sources": [
+        "ace"
+      ]
+    },
+    "rectus-abdominis": {
+      "name": "Rectus abdominis",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "rectus abdominis|rectus abdominus",
+      "sources": [
+        "ace"
+      ]
+    },
+    "serratus": {
+      "name": "Serratus anterior",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "serratus anterior",
+      "sources": [
+        "ace"
+      ]
+    },
+    "soleus": {
+      "name": "Soleus",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "soleus",
+      "sources": [
+        "ace"
+      ]
+    },
+    "trapezius": {
+      "name": "Trapezius",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "trapezius",
+      "sources": [
+        "ace"
+      ]
+    },
+    "triceps": {
+      "name": "Triceps brachii",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "triceps brachii|triceps (?:long|lateral|medial) head",
+      "sources": [
+        "ace"
+      ]
+    },
+    "adductors": {
+      "name": "Hip adductors",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "adductor (?:longus|brevis|magnus)|gracilis|pectineus",
+      "sources": [
+        "ace"
+      ]
+    },
+    "tfl": {
+      "name": "Tensor fasciae latae",
+      "systems": [
+        "muscular",
+        "fascia"
+      ],
+      "pattern": "tensor fascia(?:e)? lata(?:e)?",
+      "sources": [
+        "ace"
+      ]
+    },
+    "piriformis": {
+      "name": "Piriformis",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "piriformis",
+      "sources": [
+        "ace"
+      ]
+    },
+    "supraspinatus": {
+      "name": "Supraspinatus",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "supraspinatus",
+      "sources": [
+        "ace"
+      ]
+    },
+    "infraspinatus": {
+      "name": "Infraspinatus",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "infraspinatus",
+      "sources": [
+        "ace"
+      ]
+    },
+    "subscapularis": {
+      "name": "Subscapularis",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "subscapularis",
+      "sources": [
+        "ace"
+      ]
+    },
+    "teres-minor": {
+      "name": "Teres minor",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "teres minor",
+      "sources": [
+        "ace"
+      ]
+    },
+    "teres-major": {
+      "name": "Teres major",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "teres major",
+      "sources": [
+        "ace"
+      ]
+    },
+    "tibialis-anterior": {
+      "name": "Tibialis anterior",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "tibialis anterior|anterior tibialis",
+      "sources": [
+        "ace"
+      ]
+    },
+    "quadratus-lumborum": {
+      "name": "Quadratus lumborum",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "quadratus lumborum",
+      "sources": [
+        "ace"
+      ]
+    },
+    "erectors": {
+      "name": "Erector spinae",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "erector spinae|iliocostalis|longissimus (?:thoracis|cervicis)|spinalis (?:thoracis|cervicis)",
+      "sources": [
+        "ace"
+      ]
+    },
+    "abdominals": {
+      "name": "Abdominal muscles",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "rectus abdominis|transversus abdominis|(?:external|internal) (?:abdominal )?oblique|obliquus (?:externus|internus) abdominis",
+      "sources": [
+        "ace"
+      ]
+    },
+    "diaphragm": {
+      "name": "Diaphragm",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "^diaphragm$",
+      "sources": [
+        "ace"
+      ]
+    },
+    "pelvic-floor": {
+      "name": "Pelvic floor muscles",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "pubococcygeus|iliococcygeus|puborectalis|^levator ani(?: muscle)?$|^coccygeus(?: muscle)?$",
+      "sources": [
+        "ace"
+      ]
+    },
+    "plantar-fascia": {
+      "name": "Plantar fascia",
+      "pattern": "plantar (?:fascia|aponeurosis)",
+      "systems": [
+        "muscular",
+        "connective",
+        "fascia"
+      ],
+      "sources": [
+        "ankle"
+      ]
+    },
+    "achilles": {
+      "name": "Calcaneal tendon",
+      "pattern": "calcaneal tendon|achilles",
+      "systems": [
+        "muscular",
+        "connective"
+      ],
+      "sources": [
+        "ankle"
+      ]
+    },
+    "hip-joint": {
+      "name": "Hip joint",
+      "pattern": "articular (?:capsule|cartilage).*hip joint|hip joint capsule",
+      "systems": [
+        "connective"
+      ],
+      "sources": [
+        "hip"
+      ]
+    },
+    "knee-joint": {
+      "name": "Knee joint",
+      "pattern": "articular (?:capsule|cartilage).*knee joint|knee joint capsule|(?:medial|lateral) meniscus",
+      "systems": [
+        "connective"
+      ],
+      "sources": [
+        "knee"
+      ]
+    },
+    "shoulder-joint": {
+      "name": "Glenohumeral joint",
+      "pattern": "articular (?:capsule|cartilage).*glenohumeral|glenohumeral joint capsule",
+      "systems": [
+        "connective"
+      ],
+      "sources": [
+        "shoulder"
+      ]
+    },
+    "elbow-joint": {
+      "name": "Elbow joint",
+      "pattern": "articular capsule.*elbow joint|elbow joint capsule",
+      "systems": [
+        "connective"
+      ],
+      "sources": [
+        "shoulder"
+      ]
+    },
+    "heart": {
+      "name": "Heart",
+      "pattern": ".",
+      "systems": [
+        "cardiac"
+      ],
+      "sources": [
+        "aerobic"
+      ]
+    },
+    "lungs": {
+      "name": "Lungs",
+      "pattern": "lung|pulmonary alveol|alveol",
+      "systems": [
+        "respiratory"
+      ],
+      "sources": [
+        "aerobic"
+      ]
+    },
+    "bladder": {
+      "name": "Urinary bladder",
+      "pattern": "^(?:urinary )?bladder$",
+      "systems": [
+        "urinary"
+      ],
+      "sources": [
+        "pelvic"
+      ]
+    },
+    "rectum": {
+      "name": "Rectum",
+      "pattern": "^rectum$",
+      "systems": [
+        "digestive"
+      ],
+      "sources": [
+        "pelvic"
+      ]
+    },
+    "uterus": {
+      "name": "Uterus",
+      "pattern": "^uterus$",
+      "systems": [
+        "reproductive"
+      ],
+      "sources": [
+        "pelvic"
+      ]
+    },
+    "vestibular": {
+      "name": "Vestibular organs",
+      "pattern": "^(?:bony |membranous )?labyrinth|semicircular|^utricle$|^saccule$|^utriculus$|^sacculus$|^vestibule$",
+      "systems": [
+        "sensory"
+      ],
+      "sources": [
+        "balance"
+      ]
+    },
+    "phrenic": {
+      "name": "Phrenic nerves",
+      "pattern": "^phrenic nerve(?: \\(.*\\))?$",
+      "systems": [
+        "nervous"
+      ],
+      "sources": [
+        "phrenic"
+      ]
+    },
+    "core-stabilizers": {
+      "name": "Trunk stabilizers",
+      "systems": [
+        "muscular"
+      ],
+      "pattern": "transversus abdominis|(?:external|internal) (?:abdominal )?oblique|obliquus (?:externus|internus) abdominis|erector spinae|iliocostalis|longissimus (?:thoracis|cervicis)|spinalis (?:thoracis|cervicis)|multifidus",
+      "sources": [
+        "squat-biomechanics"
+      ]
+    }
+  },
+  "wgerMuscles": {
+    "1": "biceps",
+    "2": "deltoid-anterior",
+    "3": "serratus",
+    "4": "pectoralis",
+    "5": "triceps",
+    "6": "rectus-abdominis",
+    "7": "gastrocnemius",
+    "8": "glute-max",
+    "9": "trapezius",
+    "10": "quads",
+    "11": "biceps-femoris",
+    "12": "lats",
+    "13": "brachialis",
+    "14": "oblique-external",
+    "15": "soleus"
+  },
+  "reviews": [
+    {
+      "id": "hip-adduction",
+      "pattern": "(?:hip|standing|seated|machine).*adduction|adductor.*(?:machine|rock back)",
+      "primary": [
+        "adductors"
+      ],
+      "secondary": [],
+      "source": "hip"
+    },
+    {
+      "id": "hip-abduction",
+      "pattern": "hip abduction|hip-out|monster walk",
+      "primary": [
+        "glute-med",
+        "glute-min",
+        "tfl"
+      ],
+      "secondary": [],
+      "source": "hip"
+    },
+    {
+      "id": "reverse-clamshell",
+      "pattern": "reverse clamshell",
+      "primary": [
+        "glute-med",
+        "tfl",
+        "adductors"
+      ],
+      "secondary": [],
+      "source": "hip"
+    },
+    {
+      "id": "clamshell",
+      "pattern": "clamshell",
+      "primary": [
+        "glute-med",
+        "glute-max",
+        "glute-min",
+        "tfl"
+      ],
+      "secondary": [],
+      "source": "hip"
+    },
+    {
+      "id": "shoulder-external-rotation",
+      "pattern": "(?:shoulder|cable|lying|side.lying|rotator cuff).*external rotation|external rotation.*(?:shoulder|cable|dumbbell)",
+      "primary": [
+        "infraspinatus",
+        "teres-minor",
+        "deltoid-posterior"
+      ],
+      "secondary": [],
+      "source": "shoulder"
+    },
+    {
+      "id": "shoulder-internal-rotation",
+      "pattern": "shoulder.*internal rotation",
+      "primary": [
+        "subscapularis",
+        "pectoralis"
+      ],
+      "secondary": [],
+      "source": "shoulder"
+    },
+    {
+      "id": "rear-delt",
+      "pattern": "rear.?delt|reverse fly|reverse butterfly|butterfly reverse|bent.over lateral raise",
+      "primary": [
+        "deltoid-posterior",
+        "infraspinatus",
+        "teres-minor",
+        "trapezius"
+      ],
+      "secondary": [],
+      "source": "shoulder"
+    },
+    {
+      "id": "calf-seated",
+      "pattern": "(?:seated|sitting).*calf raise|calf raise.*(?:seated|sitting)",
+      "primary": [
+        "soleus"
+      ],
+      "secondary": [
+        "gastrocnemius"
+      ],
+      "source": "ankle"
+    },
+    {
+      "id": "hamstring-curl",
+      "pattern": "hamstring curl|leg curl|curl.*hamstring",
+      "primary": [
+        "hamstrings"
+      ],
+      "secondary": [],
+      "source": "knee"
+    },
+    {
+      "id": "quad-extension",
+      "pattern": "(?:leg|knee) extension|quad sets",
+      "primary": [
+        "quads"
+      ],
+      "secondary": [],
+      "source": "knee"
+    },
+    {
+      "id": "sleeper-stretch",
+      "pattern": "sleeper stretch",
+      "primary": [
+        "infraspinatus",
+        "teres-minor"
+      ],
+      "secondary": [],
+      "source": "shoulder"
+    },
+    {
+      "id": "quad-stretch",
+      "pattern": "quad(?:riceps)? stretch|couch stretch",
+      "primary": [
+        "quads"
+      ],
+      "secondary": [],
+      "source": "knee"
+    },
+    {
+      "id": "hamstring-stretch",
+      "pattern": "hamstring stretch",
+      "primary": [
+        "hamstrings"
+      ],
+      "secondary": [],
+      "source": "knee"
+    },
+    {
+      "id": "calf-stretch",
+      "pattern": "calf stretch|heel cord stretch",
+      "primary": [
+        "gastrocnemius",
+        "soleus"
+      ],
+      "secondary": [],
+      "source": "ankle"
+    },
+    {
+      "id": "soleus-stretch",
+      "pattern": "soleus.*stretch",
+      "primary": [
+        "soleus"
+      ],
+      "secondary": [],
+      "source": "ankle"
+    },
+    {
+      "id": "pelvic-floor",
+      "pattern": "kegel|pelvic (?:endurance|wave)",
+      "primary": [
+        "pelvic-floor"
+      ],
+      "secondary": [],
+      "organs": [
+        "bladder",
+        "rectum",
+        "uterus"
+      ],
+      "source": "pelvic"
+    },
+    {
+      "id": "diaphragmatic-breathing",
+      "pattern": "diaphragmatic breathing|belly breathing|90/90 breathing|wall baby breathing",
+      "primary": [
+        "diaphragm"
+      ],
+      "secondary": [],
+      "organs": [
+        "lungs"
+      ],
+      "source": "breathing"
+    },
+    {
+      "id": "lateral-raise",
+      "pattern": "(?<!rear )(?<!rear-)lateral raise|side lateral raise",
+      "primary": [
+        "deltoid-middle"
+      ],
+      "secondary": [
+        "deltoid-anterior",
+        "trapezius"
+      ],
+      "source": "shoulder-study"
+    },
+    {
+      "id": "shrug",
+      "pattern": "shrug",
+      "primary": [
+        "trapezius"
+      ],
+      "secondary": [],
+      "source": "trapezius"
+    },
+    {
+      "id": "conventional-deadlift",
+      "pattern": "^(?:barbell |kettlebell |sumo |deficit |speed |trap bar |dumbbell sumo )?deadlifts?$",
+      "primary": [
+        "glute-max",
+        "quads",
+        "hamstrings"
+      ],
+      "secondary": [
+        "erectors",
+        "trapezius",
+        "lats"
+      ],
+      "source": "deadlift"
+    },
+    {
+      "id": "goblet-squat",
+      "pattern": "goblet squat",
+      "primary": [
+        "quads",
+        "glute-max"
+      ],
+      "secondary": [
+        "lats",
+        "trapezius"
+      ],
+      "stabilizers": [
+        "core-stabilizers"
+      ],
+      "joints": [
+        "hip-joint",
+        "knee-joint"
+      ],
+      "source": "goblet-squat",
+      "additionalSources": [
+        "squat-biomechanics"
+      ]
+    },
+    {
+      "id": "romanian-deadlift",
+      "pattern": "romanian deadlift|\\brdl\\b|rdls",
+      "primary": [
+        "hamstrings",
+        "glute-max"
+      ],
+      "secondary": [
+        "erectors",
+        "adductors",
+        "trapezius"
+      ],
+      "source": "rdl"
+    }
+  ],
+  "curated": [
+    {
+      "id": "EX:half-squat",
+      "name": "Half squat",
+      "root": "strength",
+      "family": "Squat",
+      "primary": [
+        "quads",
+        "glute-max",
+        "hamstrings"
+      ],
+      "source": "knee",
+      "joints": [
+        "hip-joint",
+        "knee-joint"
+      ]
+    },
+    {
+      "id": "EX:hip-adduction-side",
+      "name": "Side-lying hip adduction",
+      "root": "strength",
+      "family": "Hip adduction",
+      "primary": [
+        "adductors"
+      ],
+      "source": "hip",
+      "joints": [
+        "hip-joint"
+      ]
+    },
+    {
+      "id": "EX:hip-abduction-side",
+      "name": "Side-lying hip abduction",
+      "root": "strength",
+      "family": "Hip abduction",
+      "primary": [
+        "glute-med"
+      ],
+      "source": "hip",
+      "joints": [
+        "hip-joint"
+      ]
+    },
+    {
+      "id": "EX:prone-hip-extension",
+      "name": "Prone hip extension",
+      "root": "strength",
+      "family": "Hip extension",
+      "primary": [
+        "glute-max"
+      ],
+      "source": "hip",
+      "joints": [
+        "hip-joint"
+      ]
+    },
+    {
+      "id": "EX:shoulder-external",
+      "name": "Standing shoulder external rotation",
+      "root": "strength",
+      "family": "Shoulder external rotation",
+      "primary": [
+        "infraspinatus",
+        "teres-minor"
+      ],
+      "source": "shoulder",
+      "joints": [
+        "shoulder-joint"
+      ]
+    },
+    {
+      "id": "EX:shoulder-internal",
+      "name": "Standing shoulder internal rotation",
+      "root": "strength",
+      "family": "Shoulder internal rotation",
+      "primary": [
+        "subscapularis",
+        "pectoralis"
+      ],
+      "source": "shoulder",
+      "joints": [
+        "shoulder-joint"
+      ]
+    },
+    {
+      "id": "EX:elbow-flexion",
+      "name": "Elbow flexion",
+      "root": "strength",
+      "family": "Elbow flexion",
+      "primary": [
+        "biceps",
+        "brachialis"
+      ],
+      "source": "shoulder",
+      "joints": [
+        "elbow-joint"
+      ]
+    },
+    {
+      "id": "EX:elbow-extension",
+      "name": "Elbow extension",
+      "root": "strength",
+      "family": "Elbow extension",
+      "primary": [
+        "triceps"
+      ],
+      "source": "shoulder",
+      "joints": [
+        "elbow-joint"
+      ]
+    },
+    {
+      "id": "EX:scapula-setting",
+      "name": "Scapula setting",
+      "root": "strength",
+      "family": "Scapular control",
+      "primary": [
+        "trapezius",
+        "serratus"
+      ],
+      "source": "shoulder"
+    },
+    {
+      "id": "EX:bird-dog",
+      "name": "Bird dog",
+      "root": "strength",
+      "family": "Trunk stabilization",
+      "primary": [
+        "erectors",
+        "glute-max"
+      ],
+      "source": "spine"
+    },
+    {
+      "id": "EX:abdominal-bracing",
+      "name": "Abdominal bracing",
+      "root": "strength",
+      "family": "Trunk stabilization",
+      "primary": [
+        "abdominals"
+      ],
+      "source": "spine"
+    },
+    {
+      "id": "EX:heel-cord-stretch",
+      "name": "Heel cord stretch",
+      "root": "mobility",
+      "family": "Ankle and foot",
+      "primary": [
+        "gastrocnemius",
+        "soleus"
+      ],
+      "source": "ankle",
+      "tendons": [
+        "achilles"
+      ]
+    },
+    {
+      "id": "EX:heel-cord-bent",
+      "name": "Heel cord stretch with bent knee",
+      "root": "mobility",
+      "family": "Ankle and foot",
+      "primary": [
+        "soleus"
+      ],
+      "source": "ankle",
+      "tendons": [
+        "achilles"
+      ]
+    },
+    {
+      "id": "EX:quad-stretch",
+      "name": "Standing quadriceps stretch",
+      "root": "mobility",
+      "family": "Hip and knee",
+      "primary": [
+        "quads"
+      ],
+      "source": "knee",
+      "joints": [
+        "knee-joint"
+      ]
+    },
+    {
+      "id": "EX:hamstring-stretch",
+      "name": "Supine hamstring stretch",
+      "root": "mobility",
+      "family": "Hip and knee",
+      "primary": [
+        "hamstrings"
+      ],
+      "source": "knee"
+    },
+    {
+      "id": "EX:piriformis-stretch",
+      "name": "Seated hip rotation stretch",
+      "root": "mobility",
+      "family": "Hip and knee",
+      "primary": [
+        "piriformis"
+      ],
+      "source": "hip",
+      "joints": [
+        "hip-joint"
+      ]
+    },
+    {
+      "id": "EX:itb-stretch",
+      "name": "Standing iliotibial band stretch",
+      "root": "mobility",
+      "family": "Hip and knee",
+      "primary": [
+        "tfl"
+      ],
+      "source": "hip"
+    },
+    {
+      "id": "EX:crossover-stretch",
+      "name": "Crossover arm stretch",
+      "root": "mobility",
+      "family": "Shoulder",
+      "primary": [
+        "deltoid-posterior"
+      ],
+      "source": "shoulder",
+      "joints": [
+        "shoulder-joint"
+      ]
+    },
+    {
+      "id": "EX:sleeper-stretch",
+      "name": "Sleeper stretch",
+      "root": "mobility",
+      "family": "Shoulder",
+      "primary": [
+        "infraspinatus",
+        "teres-minor"
+      ],
+      "source": "shoulder",
+      "joints": [
+        "shoulder-joint"
+      ]
+    },
+    {
+      "id": "EX:plantar-roll",
+      "name": "Plantar fascia ball roll",
+      "root": "mobility",
+      "family": "Ankle and foot",
+      "primary": [],
+      "source": "ankle",
+      "tendons": [
+        "plantar-fascia"
+      ]
+    },
+    {
+      "id": "EX:knee-to-chest",
+      "name": "Knee-to-chest stretch",
+      "root": "mobility",
+      "family": "Spine and trunk",
+      "primary": [
+        "glute-max",
+        "glute-med"
+      ],
+      "source": "hip"
+    },
+    {
+      "id": "EX:kneeling-back-extension",
+      "name": "Kneeling back extension",
+      "root": "mobility",
+      "family": "Spine and trunk",
+      "primary": [
+        "quadratus-lumborum",
+        "erectors"
+      ],
+      "source": "spine"
+    },
+    {
+      "id": "EX:single-leg-balance",
+      "name": "Single-leg balance",
+      "root": "balance",
+      "family": "Static balance",
+      "primary": [
+        "tibialis-anterior",
+        "gastrocnemius",
+        "soleus"
+      ],
+      "source": "ankle",
+      "balance": true
+    },
+    {
+      "id": "EX:heel-to-toe",
+      "name": "Heel-to-toe walking",
+      "root": "balance",
+      "family": "Dynamic balance",
+      "primary": [],
+      "source": "aerobic",
+      "balance": true
+    },
+    {
+      "id": "EX:backward-walking",
+      "name": "Backward walking",
+      "root": "balance",
+      "family": "Dynamic balance",
+      "primary": [],
+      "source": "aerobic",
+      "balance": true
+    },
+    {
+      "id": "EX:wobble-board",
+      "name": "Wobble board balance",
+      "root": "balance",
+      "family": "Unstable surface balance",
+      "primary": [],
+      "source": "aerobic",
+      "balance": true
+    },
+    {
+      "id": "EX:diaphragmatic-supine",
+      "name": "Supine diaphragmatic breathing",
+      "root": "breathing",
+      "family": "Diaphragmatic breathing",
+      "primary": [
+        "diaphragm"
+      ],
+      "source": "breathing",
+      "organs": [
+        "lungs"
+      ]
+    },
+    {
+      "id": "EX:diaphragmatic-seated",
+      "name": "Seated diaphragmatic breathing",
+      "root": "breathing",
+      "family": "Diaphragmatic breathing",
+      "primary": [
+        "diaphragm"
+      ],
+      "source": "breathing",
+      "organs": [
+        "lungs"
+      ]
+    },
+    {
+      "id": "EX:diaphragmatic-standing",
+      "name": "Standing diaphragmatic breathing",
+      "root": "breathing",
+      "family": "Diaphragmatic breathing",
+      "primary": [
+        "diaphragm"
+      ],
+      "source": "breathing",
+      "organs": [
+        "lungs"
+      ]
+    },
+    {
+      "id": "EX:pelvic-supine",
+      "name": "Supine pelvic floor contraction",
+      "root": "pelvic-floor",
+      "family": "Contraction and relaxation",
+      "primary": [
+        "pelvic-floor"
+      ],
+      "source": "pelvic",
+      "organs": [
+        "bladder",
+        "rectum",
+        "uterus"
+      ]
+    },
+    {
+      "id": "EX:pelvic-seated",
+      "name": "Seated pelvic floor contraction",
+      "root": "pelvic-floor",
+      "family": "Contraction and relaxation",
+      "primary": [
+        "pelvic-floor"
+      ],
+      "source": "pelvic",
+      "organs": [
+        "bladder",
+        "rectum",
+        "uterus"
+      ]
+    },
+    {
+      "id": "EX:pelvic-standing",
+      "name": "Standing pelvic floor contraction",
+      "root": "pelvic-floor",
+      "family": "Contraction and relaxation",
+      "primary": [
+        "pelvic-floor"
+      ],
+      "source": "pelvic",
+      "organs": [
+        "bladder",
+        "rectum",
+        "uterus"
+      ]
+    },
+    {
+      "id": "EX:walking",
+      "name": "Walking",
+      "root": "endurance",
+      "family": "Walking",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:brisk-walking",
+      "name": "Brisk walking",
+      "root": "endurance",
+      "family": "Walking",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:hiking",
+      "name": "Hiking",
+      "root": "endurance",
+      "family": "Walking",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:jogging",
+      "name": "Jogging",
+      "root": "endurance",
+      "family": "Running",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:running",
+      "name": "Running",
+      "root": "endurance",
+      "family": "Running",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:cycle",
+      "name": "Cycling",
+      "root": "endurance",
+      "family": "Cycling",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:stationary-cycle",
+      "name": "Stationary cycling",
+      "root": "endurance",
+      "family": "Cycling",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:swim",
+      "name": "Lap swimming",
+      "root": "endurance",
+      "family": "Swimming",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:water-aerobics",
+      "name": "Water aerobics",
+      "root": "endurance",
+      "family": "Aquatic exercise",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:jump-rope",
+      "name": "Jumping rope",
+      "root": "endurance",
+      "family": "Jumping",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:aerobic-dance",
+      "name": "Aerobic dancing",
+      "root": "endurance",
+      "family": "Dance",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:ballroom-dance",
+      "name": "Ballroom dancing",
+      "root": "endurance",
+      "family": "Dance",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:tennis",
+      "name": "Tennis",
+      "root": "endurance",
+      "family": "Racquet sports",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:soccer",
+      "name": "Soccer",
+      "root": "endurance",
+      "family": "Team sports",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:hockey",
+      "name": "Hockey",
+      "root": "endurance",
+      "family": "Team sports",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    },
+    {
+      "id": "EX:basketball",
+      "name": "Basketball",
+      "root": "endurance",
+      "family": "Team sports",
+      "primary": [],
+      "source": "aerobic",
+      "aerobic": true
+    }
+  ],
+  "combined": [
+    {
+      "id": "yoga",
+      "name": "Yoga",
+      "patterns": [
+        "child.?s pose|upward.facing dog|cobra|happy baby|cat.cow|pigeon|sphinx"
+      ],
+      "source": "compendium"
+    },
+    {
+      "id": "pilates",
+      "name": "Pilates",
+      "patterns": [
+        "pilates"
+      ],
+      "source": "compendium"
+    },
+    {
+      "id": "tai-chi",
+      "name": "Tai chi",
+      "patterns": [
+        "tai.?chi"
+      ],
+      "source": "compendium"
+    },
+    {
+      "id": "circuit",
+      "name": "Circuit training",
+      "patterns": [
+        "burpee|thruster|clean and press|squat.*press|bear crawl|mountain climber"
+      ],
+      "source": "compendium"
+    }
+  ]
+}

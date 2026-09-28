@@ -66,6 +66,25 @@ test('Host Stop ends every guest session and returns the host to an empty lobby'
  const {client,relay}=await fixture(t),host=await client(),a=await client({role:'guest',roomId:host.joined.roomId}),b=await client({role:'guest',roomId:host.joined.roomId});
  await play(host,a,b);host.send({type:'stop'});assert.match((await a.next('ended')).reason,/host stopped/);await b.next('ended');await host.next('stopped');const room=relay.rooms.get(host.joined.roomId);assert.equal(room.playing,false);assert.equal(room.guests.size,0);assert.equal(room.participants.size,0);assert.equal(room.snapshot,null);assert.equal(room.pose,null);
 });
+test('only the host can remove a guest; other guests keep receiving slides and poses',async t=>{
+ const {client,relay,url,origin,clients}=await fixture(t),host=await client(),a=await client({role:'guest',roomId:host.joined.roomId}),b=await client({role:'guest',roomId:host.joined.roomId});
+ await play(host,a,b);
+ const room=relay.rooms.get(host.joined.roomId);
+ const roster=await host.next('roster',message=>message.guests.length===2&&message.guests.every(guest=>guest.inSession));assert.equal(roster.guests.length,2);
+ a.send({type:'kick',id:b.joined.self.id});a.send({type:'rename',id:a.joined.self.id,name:'Still here'});await a.next('self');assert.equal(room.guests.size,2);
+ host.send({type:'kick',id:a.joined.self.id});assert.match((await a.next('ended')).reason,/removed/);
+ const remaining=await host.next('roster',message=>message.guests.length===1&&message.guests[0].id===b.joined.self.id);assert.equal(remaining.guests[0].inSession,true);
+ assert.equal(room.playing,true);assert.equal(room.participants.has(a.clientToken),false);assert.equal(room.participants.has(b.clientToken),true);
+ const state=snapshot();state.advanced={document:{schemaVersion:1,type:'slides',views:[{id:'slide',name:'Slide',url:'https://example.test/?model=male-detail',model:'male-detail',addedAt:'2026-09-28'}]},slideIndex:0};
+ host.send({type:'snapshot',snapshot:state});assert.deepEqual((await b.next('snapshot')).snapshot,state);
+ host.send({type:'pose',pose});assert.deepEqual((await b.next('pose')).pose,pose);
+ const rejected=new WebSocket(url,{origin,rejectUnauthorized:false}),messages=[];clients.push(rejected);rejected.on('error',()=>{});
+ rejected.on('message',raw=>messages.push(JSON.parse(raw.toString())));await once(rejected,'open');
+ const closed=once(rejected,'close');rejected.send(JSON.stringify({type:'join',role:'guest',roomId:room.id,clientToken:a.clientToken}));
+ assert.equal((await closed)[0],4003);assert.ok(messages.some(message=>message.type==='ended'&&/removed/.test(message.reason)));
+ host.send({type:'stop'});await host.next('stopped');assert.equal(room.excluded.size,0);
+ const next=await client({role:'guest',roomId:room.id,clientToken:a.clientToken});assert.equal(next.joined.playing,false);
+});
 test('a brief host transport interruption resumes the same room and preserves guest names',async t=>{
  const {client}=await fixture(t),host=await client(),guest=await client({role:'guest',roomId:host.joined.roomId,name:'Student'});
  await play(host,guest);
@@ -108,4 +127,11 @@ test('normalized frames survive WSS snapshot, pose, and guest reconnection witho
  const moved={...framed,camera:[...framed.camera.slice(0,8),.35,...framed.camera.slice(9)]};host.send({type:'pose',pose:moved});assert.deepEqual((await guest.next('pose')).pose,moved);
  guest.socket.close();await host.next('roster',message=>message.guests.some(peer=>!peer.online));const resumed=await client({role:'guest',roomId:host.joined.roomId,clientToken:guest.clientToken});assert.deepEqual((await resumed.next('pose')).pose,moved);
  assert.equal(validPose({...framed,camera:[...framed.camera.slice(0,8),1,...framed.camera.slice(9)]}),false);
+});
+
+test('biological views, search and transcript branches are shared with session guests',async t=>{
+ const {client}=await fixture(t),host=await client(),guest=await client({role:'guest',roomId:host.joined.roomId});await play(host,guest);
+ const value=snapshot();value.hierarchy='guest:genes';Object.assign(value.state,{guestQuery:'HGNC:399',guestView:'types',guestExtensions:['HGNC:399']});assert.ok(validSnapshot(value));
+ host.send({type:'snapshot',snapshot:value});assert.deepEqual((await guest.next('snapshot')).snapshot.state,value.state);
+ assert.equal(validSnapshot({...value,state:{...value.state,guestQuery:123}}),false);
 });

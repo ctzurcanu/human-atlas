@@ -30,6 +30,22 @@ assert.equal(ta98.byConcept['HRA:VH_F_amnion'].ontology,'UBERON:0000305');
 assert.equal(ta98.byConcept['ZA:Abducens nerve (VI).l'].ta98,'A14.2.01.098');
 assert.equal(ta98.byConcept['ZA:External abdominal oblique muscle.l'].ta98,'A04.5.01.008');
 assert.equal(ta98.byConcept['ZA:External abdominal oblique muscle.ol'],undefined,'Attachment annotations must not inherit the muscle TA98 ID');
+assert.equal(ta98.byConcept['ZA:Vestibulocochlear nerve (VIII).l'].ta98,'A14.2.01.121','Cranial nerve enumeration must survive bracket variants');
+assert.equal(ta98.byConcept['ZA:Bucinator.l'].ta98,'A04.1.03.036','Reviewed source typo must resolve to buccinator');
+assert.equal(ta98.byConcept['ZA:Sternocostal head of pectoralis major muscle.l'].ta98,'A04.4.01.004','Qualified head must use its own TA98 term');
+assert.equal(ta98.byConcept['ZA:Abductor digiti minimi of hand.l'].ta98,'A04.6.02.062');
+assert.equal(ta98.byConcept['ZA:Abductor digiti minimi of foot.l'].ta98,'A04.7.02.063','Homonymous hand and foot muscles must stay distinct');
+assert.equal(ta98.byConceptMatch['ZA:Proximal phalanx of first finger of hand.l'].term,'A02.4.10.002');
+assert.equal(ta98.byConceptMatch['ZA:Proximal phalanx of first finger of foot.l'].term,'A02.5.18.002');
+assert(ta98.byConceptPath['ZA:Proximal phalanx of first finger of hand.l'].includes('A02.4.07.001'),'Hand phalanx must have the repaired hand-bone ancestry');
+assert(!ta98.byConcept['ZA:Proximal phalanx of first finger of hand.l']?.ta98,'A numbered subdivision must not inherit the generic TA98 leaf ID');
+assert(!ta98.byConcept['ZA:Proximal phalanx of first finger of hand.l']?.fma,'A numbered subdivision must not inherit its parent FMA ID');
+assert.equal(ta98.byConceptMatch['O3M:1st lumbrical of hand.l'].kind,'parent');
+assert.equal(ta98.byConcept['ZA:Left posterior lateral segment of liver (II)'].ta98,'A05.8.01.039');
+assert.equal(ta98.byConcept['ZA:Posterior lateral segment of liver (VII)'].ta98,'A05.8.01.051','Left/right liver segment qualifiers must be preserved');
+assert.equal(ta98.byConceptMatch['HRA:VH_F_suspensory_ligament_of_ovary_L'].term,'A09.1.01.018F');
+assert(ta98.byConceptPath['HRA:VH_F_suspensory_ligament_of_ovary_L'].includes('A09.1.01.001'),'Gender-suffixed entities must retain their ovarian ancestry');
+assert.equal(ta98.byConceptMatch['LOCAL:male:l_lumbrical1'],undefined,'Unqualified numbered lumbrical does not establish hand versus foot');
 for(const term of Object.values(ta98.byConcept))if(term.ta98){
  assert.match(term.ta98,/^A\d{2}\.\d\.\d{2}\.\d{3}$/);
  assert.match(term.tha,/^THA:\d+$/);
@@ -122,6 +138,7 @@ const catalogues=[
  ['female','public/models/atlas-hra-female.json'],['embryo','public/models/atlas-embryo.json'],
  ['cell','public/models/atlas-cell.json'],['local-male','.local-models/male.json'],
  ['local-female','.local-models/female.json'],['local-reference','.local-models/reference.json'],
+ ['legacy-z-anatomy','public/models/atlas-z-anatomy.json'],
 ];
 const loaded=new Map();
 for(const [name,file] of catalogues)if(existsSync(file)){
@@ -139,6 +156,15 @@ assert.equal(systemOf('female','Parotid gland (left)'),'exocrine');
 assert.equal(systemOf('female','Mammary lobe'),'exocrine');
 assert.equal(systemOf('female','Nipple (left)'),'integumentary');
 assert.equal(systemOf('male-detail','Stomach'),'digestive');
+const detailedEntries=hierarchyEntries(loaded.get('male-detail'));
+const marker=detailedEntries.find(entry=>entry.id==='ZA:Bucinator.ol');
+assert.equal(marker.taParentConcept,'ZA:Bucinator.l');
+assert(marker.ancestry.includes('Facial muscles'),'Origin marker must follow the repaired parent muscle ancestry');
+assert.equal(marker.terminology.ta98,null);
+const phalanx=detailedEntries.find(entry=>entry.id==='ZA:Proximal phalanx of first finger of hand.l');
+assert(systemPathFor(phalanx).includes('Bones of hand'));
+assert(systemPathFor(phalanx).includes('Proximal phalanx'),'Parent-only placements must actually appear in Systems');
+assert.equal(systemPathFor(detailedEntries.find(entry=>entry.id==='ZA:Vestibulocochlear nerve (VIII).l'))[0],'Peripheral nervous system','TA98 cranial nerves must override source sensory tags');
 assert.equal(systemOf('male-detail','Left coronary artery'),'circulatory');
 assert.equal(systemPathFor(hierarchyEntries(loaded.get('female')).find(entry=>entry.name==='Celiac trunk'))[0],'Arteries');
 assert.equal(systemOf('local-reference','Body surface (derived)'),'integumentary');
