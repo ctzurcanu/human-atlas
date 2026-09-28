@@ -135,10 +135,34 @@ test('normalized frames survive WSS snapshot, pose, and guest reconnection witho
  guest.socket.close();await host.next('roster',message=>message.guests.some(peer=>!peer.online));const resumed=await client({role:'guest',roomId:host.joined.roomId,clientToken:guest.clientToken});assert.deepEqual((await resumed.next('pose')).pose,moved);
  assert.equal(validPose({...framed,camera:[...framed.camera.slice(0,8),1,...framed.camera.slice(9)]}),false);
 });
+test('only the host can admit waiting guests; admission catches up and streams subsequent motion',async t=>{
+ const {client,relay}=await fixture(t),host=await client(),guest=await client({role:'guest',roomId:host.joined.roomId});await play(host,guest);
+ const state=snapshot();host.send({type:'snapshot',snapshot:state});await guest.next('snapshot');
+ const moved={...pose,camera:[4,1,3,0,.8,0,0,0]};host.send({type:'pose',pose:moved});await guest.next('pose');
+ const late=await client({role:'guest',roomId:host.joined.roomId});assert.equal(late.joined.playing,false);
+ guest.send({type:'admit',id:late.joined.self.id});guest.send({type:'rename',id:guest.joined.self.id,name:'Original guest'});await guest.next('self');
+ assert.equal(relay.rooms.get(host.joined.roomId).participants.has(late.clientToken),false);
+ host.send({type:'admit',id:late.joined.self.id});await late.next('playing');assert.deepEqual((await late.next('snapshot')).snapshot,state);assert.deepEqual((await late.next('pose')).pose,moved);
+ await host.next('snapshot-request');await host.next('roster',message=>message.guests.length===2&&message.guests.every(peer=>peer.inSession));
+ const next={...moved,camera:[5,1,3,0,.8,0,0,0]};host.send({type:'pose',pose:next});assert.deepEqual((await late.next('pose')).pose,next);assert.deepEqual((await guest.next('pose')).pose,next);
+ host.send({type:'stop'});await host.next('stopped');await guest.next('ended');await late.next('ended');
+});
 
 test('biological views, search and transcript branches are shared with session guests',async t=>{
  const {client}=await fixture(t),host=await client(),guest=await client({role:'guest',roomId:host.joined.roomId});await play(host,guest);
  const value=snapshot();value.hierarchy='guest:genes';Object.assign(value.state,{guestQuery:'HGNC:399',guestView:'types',guestExtensions:['HGNC:399']});assert.ok(validSnapshot(value));
  host.send({type:'snapshot',snapshot:value});assert.deepEqual((await guest.next('snapshot')).snapshot.state,value.state);
  assert.equal(validSnapshot({...value,state:{...value.state,guestQuery:123}}),false);
+});
+test('one host command includes 100 waiting guests with a large view and synchronized camera',async t=>{
+ const {client,relay}=await fixture(t),host=await client();await play(host);
+ const large=snapshot();large.state.hidden=Array.from({length:3756},(_,i)=>`ZA:Hidden anatomical structure ${i}`);
+ host.send({type:'snapshot',snapshot:large});host.send({type:'rename',id:host.joined.self.id,name:'Bulk host'});await host.next('self');
+ const guests=await Promise.all(Array.from({length:100},()=>client({role:'guest',roomId:host.joined.roomId})));assert.ok(guests.every(guest=>!guest.joined.playing));
+ guests[0].send({type:'admit-all'});guests[0].send({type:'rename',id:guests[0].joined.self.id,name:'Waiting guest'});await guests[0].next('self');assert.equal(relay.rooms.get(host.joined.roomId).participants.size,0);
+ host.send({type:'admit-all'});
+ await Promise.all(guests.map(async guest=>{await guest.next('playing');assert.deepEqual((await guest.next('snapshot')).snapshot,large);assert.deepEqual((await guest.next('pose')).pose,pose);}));
+ await host.next('snapshot-request');assert.equal(relay.rooms.get(host.joined.roomId).participants.size,100);
+ const moved={...pose,camera:[5,1,3,0,.8,0,0,0]};host.send({type:'pose',pose:moved});await Promise.all(guests.map(async guest=>assert.deepEqual((await guest.next('pose')).pose,moved)));
+ host.send({type:'stop'});await host.next('stopped');await Promise.all(guests.map(guest=>guest.next('ended')));
 });

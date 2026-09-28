@@ -59,7 +59,7 @@ Invitations retain the GitHub Pages viewer URL and carry both the random room co
 - **Not authenticated:** complete `npx wrangler login` and check `npx wrangler whoami` in the same project directory.
 - **Cannot reach the live relay:** check `/health`, the HTTPS address, and that the deployed viewer contains these Connect changes.
 - **403 during a WebSocket connection:** check that the viewer origin is included in `ALLOWED_VIEWER_ORIGINS`.
-- **Guest waiting during an active presentation:** Play captures guests online at that moment. Later arrivals wait until the next session.
+- **Guest waiting during an active presentation:** Play captures guests online at that moment. Open **H → Connect** and press the single Play icon beside the guest list to include all waiting guests in the current broadcast. Its number shows how many guests will be included. They immediately receive the current anatomy, slides and camera, then follow subsequent changes.
 - **Free quota exceeded:** review Workers and Durable Objects usage in Cloudflare; operations resume after quota reset. Hibernation saves idle compute, but active sessions still consume resources.
 
 Official documentation links are in `ATTRIBUTION.md`.

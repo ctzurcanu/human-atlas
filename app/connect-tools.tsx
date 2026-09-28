@@ -4,8 +4,8 @@ import {Button} from '@/components/ui/button';
 import type {AtlasConnection} from './use-atlas-connection';
 import type {ConnectRole} from './connect-state';
 
-export function ConnectSessionButton({role,onOpen,onStop}:{role:ConnectRole;onOpen:()=>void;onStop:()=>void}){
- return <Button variant="ghost" className="connect-play-stop" aria-label={role==='host'?'Open live session tools':'Stop Connect session'} title={role==='host'?'Open Advanced tools; keep hosting':'Leave Guest session'} onClick={role==='host'?onOpen:onStop}><span className="connect-stop-symbol" aria-hidden="true">{role==='host'?'H':'G'}</span></Button>;
+export function ConnectSessionButton({role,waiting=false,onOpen,onStop}:{role:ConnectRole;waiting?:boolean;onOpen:()=>void;onStop:()=>void}){
+ return <Button variant="ghost" className="connect-play-stop" aria-label={role==='host'?'Open live session tools':'Stop Connect session'} title={role==='host'?'Open Advanced tools; keep hosting':waiting?'Waiting for the host to include you; leave session':'Leave Guest session'} onClick={role==='host'?onOpen:onStop}><span className="connect-stop-symbol" aria-hidden="true">{role==='host'?'H':'G'}</span></Button>;
 }
 
 function NameField({value,label,onSave}:{value:string;label:string;onSave:(value:string)=>void}){
@@ -16,8 +16,9 @@ export default function ConnectTools({connection:c}:{connection:AtlasConnection}
  const [copied,setCopied]=useState(false);
  useEffect(()=>{void c.prepare();},[c.prepare]);
  useEffect(()=>{if(!copied)return;const timer=setTimeout(()=>setCopied(false),2000);return()=>clearTimeout(timer);},[copied]);
- if(c.active&&(c.role==='guest'||!c.controlsOpen))return <div className="connect-tools is-running"><ConnectSessionButton role={c.role} onOpen={c.openControls} onStop={c.stop}/></div>;
+ if(c.active&&(c.role==='guest'||!c.controlsOpen))return <div className="connect-tools is-running"><ConnectSessionButton role={c.role} waiting={c.role==='guest'&&!c.following} onOpen={c.openControls} onStop={c.stop}/></div>;
  const previous=[...c.hosts].sort((a,b)=>Number(b.id===c.host?.id)-Number(a.id===c.host?.id));
+ const waiting=c.guests.filter(guest=>guest.online&&!guest.inSession).length;
  return <div className="connect-tools">
   <div className="connect-identity">
    <div className="connect-role-row">
@@ -32,7 +33,10 @@ export default function ConnectTools({connection:c}:{connection:AtlasConnection}
   </div>
   <div className="connect-session-content">
    {c.role==='host'?<>
-    <div className="connect-peer-list" aria-label={c.active?'Session guests':'Connected guests'}>{[...c.guests].sort((a,b)=>Number(!!b.inSession)-Number(!!a.inSession)).map(guest=><div className="connect-peer" key={guest.id} data-active={guest.online}><span className="connect-presence" aria-label={guest.online?'Connected':'Disconnected'}/><NameField value={guest.name} label={`Guest name ${guest.ip} (${guest.id})`} onSave={value=>c.renameGuest(guest.id,value)}/>{c.active&&!guest.inSession&&<span className="connect-ip">Waiting</span>}<span className="connect-ip">{guest.ip}</span><Button variant="ghost" className="connect-kick" aria-label={`Remove guest ${guest.name} (${guest.id})`} title={`Remove ${guest.name} from the session`} onClick={()=>c.kickGuest(guest.id)}><UserMinus size={16}/></Button></div>)}</div>
+    <div className="connect-guest-group">
+     {c.active&&waiting>0&&<Button variant="ghost" className="connect-admit-all" aria-label={`Include all ${waiting} waiting guests in live session`} title="Include all waiting guests" onClick={c.admitAllGuests}><Play size={16}/><span>{waiting}</span></Button>}
+     <div className="connect-peer-list" aria-label={c.active?'Session guests':'Connected guests'}>{[...c.guests].sort((a,b)=>Number(!!b.inSession)-Number(!!a.inSession)).map(guest=><div className="connect-peer" key={guest.id} data-active={guest.online} data-waiting={c.active&&guest.online&&!guest.inSession}><span className="connect-presence" aria-label={guest.online?c.active&&!guest.inSession?'Waiting':'Connected':'Disconnected'}/><NameField value={guest.name} label={`Guest name ${guest.ip} (${guest.id})`} onSave={value=>c.renameGuest(guest.id,value)}/><span className="connect-ip">{guest.ip}</span><Button variant="ghost" className="connect-kick" aria-label={`Remove guest ${guest.name} (${guest.id})`} title={`Remove ${guest.name} from the session`} onClick={()=>c.kickGuest(guest.id)}><UserMinus size={16}/></Button></div>)}</div>
+    </div>
    </>:<>
     <div className="connect-peer-list" aria-label="Previous hosts">{previous.map(host=><div className="connect-peer" key={host.id}><span className="connect-presence" aria-label="Previous host"/><NameField value={host.alias||host.name} label={`Host name ${host.ip} (${host.id})`} onSave={value=>c.renameHost(host.id,value)}/><span className="connect-ip">{host.ip}</span><Button variant="ghost" className="connect-rejoin" aria-label={`Choose host ${host.alias||host.name}`} title="Choose this host" onClick={()=>c.setHostInput(host.url??new URL(`?connect=${host.roomId}`,location.href).href)}><Play size={14}/></Button></div>)}{!previous.length&&<span className="connect-empty">Previous hosts will appear here.</span>}</div>
    </>}

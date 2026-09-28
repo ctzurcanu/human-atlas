@@ -409,11 +409,15 @@ body:has(.studio[data-front-panel=details]) .detail-sheet{z-index:70!important}
 .connect-ip{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .connect-session-content{display:flex;flex-direction:column;gap:3px;min-width:0;min-height:0;height:100%;justify-content:center}
 .connect-peer-list{display:flex;flex-direction:column;gap:2px;overflow:auto;min-height:0;scrollbar-width:thin}
+.connect-guest-group{display:flex;align-items:center;gap:6px;min-width:0;min-height:0;height:100%}
+.connect-guest-group .connect-peer-list{flex:1;max-height:100%}
+.connect-admit-all{display:flex;align-items:center;gap:4px;flex:none;height:28px;min-width:0;padding:0 4px;background:transparent;font-size:12px;font-variant-numeric:tabular-nums}
 .connect-peer{display:flex;align-items:center;gap:5px;min-width:0;min-height:24px}
 .connect-peer input{flex:1;width:0}
 .connect-peer .connect-ip{max-width:110px}
 .connect-presence{flex:none;width:6px;height:6px;border-radius:50%;background:var(--muted-foreground)}
 .connect-peer[data-active=true] .connect-presence{background:#65c7b0}
+.connect-peer[data-waiting=true] .connect-presence{background:#d7ae6d}
 .connect-peer[data-active=true]{color:var(--foreground)}
 .connect-active-label{flex:none;color:#65c7b0}
 .connect-play-stop,.connect-rejoin,.connect-copy{display:flex;align-items:center;justify-content:center;flex:none;width:32px;height:32px;min-width:0;min-height:0;padding:0;background:transparent}

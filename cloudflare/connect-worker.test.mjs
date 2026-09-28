@@ -72,6 +72,24 @@ test('guest controls cannot broadcast or kick; host rename and kick persist acro
  const intruder=await client({roomId:host.roomId});assert.match((await intruder.next('error')).message,/another host/);
  const missing=await client({role:'guest'});assert.match((await missing.next('error')).message,/not running/);
 });
+test('the host admits a waiting guest with current state and camera, preserving live guests and hibernation',async t=>{
+ const {client}=await fixture(t),host=await client();await host.next('joined');
+ const guest=await client({role:'guest',roomId:host.roomId});await guest.next('joined');
+ host.send({type:'play'});await host.next('playing');await guest.next('playing');
+ host.send({type:'snapshot',snapshot});await guest.next('snapshot');
+ const moved={...pose,camera:[4,1,3,0,.8,0,0,0]};host.send({type:'pose',pose:moved});await guest.next('pose');
+ const late=await client({role:'guest',roomId:host.roomId}),joined=await late.next('joined');assert.equal(joined.playing,false);
+ guest.send({type:'admit',id:joined.self.id});guest.send({type:'rename',id:(await guest.next('roster',message=>message.guests.length===2)).guests.find(peer=>peer.inSession).id,name:'Original guest'});await guest.next('self');
+ assert.equal(late.queue.some(message=>message.type==='playing'),false);
+ host.send({type:'admit',id:joined.self.id});await late.next('playing');
+ assert.deepEqual((await late.next('snapshot')).snapshot,snapshot);assert.deepEqual((await late.next('pose')).pose,moved);
+ await host.next('snapshot-request');await host.next('roster',message=>message.guests.length===2&&message.guests.every(peer=>peer.inSession));
+ const next={...moved,camera:[5,1,3,0,.8,0,0,0]};host.send({type:'pose',pose:next});assert.deepEqual((await late.next('pose')).pose,next);assert.deepEqual((await guest.next('pose')).pose,next);
+ const rooms=await mf.getDurableObjectNamespace('ROOMS');await rooms.getByName(host.roomId).reconstructForTest();
+ late.socket.close(1000,'Reconnect admitted guest');await host.next('roster',message=>message.guests.some(peer=>peer.id===joined.self.id&&!peer.online));
+ const resumed=await client({role:'guest',roomId:host.roomId,clientToken:late.clientToken});assert.equal((await resumed.next('joined')).playing,true);assert.deepEqual((await resumed.next('pose')).pose,next);
+ host.send({type:'stop'});await host.next('stopped');await guest.next('ended');await resumed.next('ended');
+});
 test('host and captured guests resume the same room with the latest camera',async t=>{
  const {client}=await fixture(t),host=await client();await host.next('joined');const guest=await client({role:'guest',roomId:host.roomId});await guest.next('joined');
  host.send({type:'play'});await host.next('playing');await guest.next('playing');host.send({type:'snapshot',snapshot});await guest.next('snapshot');
@@ -82,6 +100,21 @@ test('host and captured guests resume the same room with the latest camera',asyn
  const rejoined=await client({role:'guest',roomId:host.roomId,clientToken:guest.clientToken});assert.equal((await rejoined.next('joined')).playing,true);assert.deepEqual((await rejoined.next('snapshot')).snapshot,snapshot);assert.deepEqual((await rejoined.next('pose')).pose,moved);
  rejoined.send({type:'stop'});await rejoined.next('ended');await resumed.next('roster',message=>message.guests.length===0);
  resumed.send({type:'stop'});await resumed.next('stopped');
+});
+test('one host command includes 100 waiting guests with a large view and streams motion to every guest',async t=>{
+ const {client}=await fixture(t),host=await client();const hostJoined=await host.next('joined');
+ host.send({type:'play'});await host.next('playing');
+ const large={...snapshot,state:{...snapshot.state,hidden:Array.from({length:3756},(_,i)=>`ZA:Hidden anatomical structure ${i}`)}};
+ host.send({type:'snapshot',snapshot:large});host.send({type:'rename',id:hostJoined.self.id,name:'Bulk host'});await host.next('self');
+ const guests=await Promise.all(Array.from({length:100},()=>client({role:'guest',roomId:host.roomId})));
+ const joined=await Promise.all(guests.map(guest=>guest.next('joined')));assert.ok(joined.every(message=>!message.playing));
+ guests[0].send({type:'admit-all'});guests[0].send({type:'rename',id:joined[0].self.id,name:'Waiting guest'});await guests[0].next('self');assert.ok(guests.every(guest=>!guest.queue.some(message=>message.type==='playing')));
+ host.send({type:'admit-all'});
+ await Promise.all(guests.map(async guest=>{await guest.next('playing');assert.deepEqual((await guest.next('snapshot')).snapshot,large);assert.deepEqual((await guest.next('pose')).pose,pose);}));
+ await host.next('snapshot-request');await host.next('roster',message=>message.guests.length===100&&message.guests.every(peer=>peer.inSession));
+ const moved={...pose,camera:[5,1,3,0,.8,0,0,0]};host.send({type:'pose',pose:moved});await Promise.all(guests.map(async guest=>assert.deepEqual((await guest.next('pose')).pose,moved)));
+ host.send({type:'admit-all'});host.send({type:'rename',id:hostJoined.self.id,name:'Still bulk host'});await host.next('self');assert.equal(host.queue.some(message=>message.type==='snapshot-request'),false);
+ host.send({type:'stop'});await host.next('stopped');await Promise.all(guests.map(guest=>guest.next('ended')));
 });
 test('hibernation reconstruction preserves the cohort, names, state, camera and host-only control',async t=>{
  const {client}=await fixture(t),host=await client();await host.next('joined');const guest=await client({role:'guest',roomId:host.roomId});const joined=await guest.next('joined');

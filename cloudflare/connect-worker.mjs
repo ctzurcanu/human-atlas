@@ -57,14 +57,14 @@ export class AtlasRoom extends DurableObject {
  }
  put(key,value){this.sql.exec('INSERT INTO atlas_state (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',key,JSON.stringify(value));}
  save(){this.put('room',this.meta);}
- send(socket,message){if(socket?.readyState===WebSocket.OPEN)try{socket.send(JSON.stringify(message));}catch{socket.close(1013,'Connection is too slow');}}
+ send(socket,message){if(socket?.readyState===WebSocket.OPEN)try{socket.send(typeof message==='string'?message:JSON.stringify(message));}catch{socket.close(1013,'Connection is too slow');}}
  peer(identity){return {id:identity.id,ip:identity.ip,name:identity.name,online:this.sockets.has(identity.token),inSession:identity.token!==this.meta.host.token&&this.meta.participants.includes(identity.token)};}
  roster(){
   if(!this.meta)return;
-  const message={type:'roster',roomId:this.meta.id,host:this.peer(this.meta.host),guests:this.meta.guests.map(guest=>this.peer(guest))};
+  const message=JSON.stringify({type:'roster',roomId:this.meta.id,host:this.peer(this.meta.host),guests:this.meta.guests.map(guest=>this.peer(guest))});
   for(const socket of this.sockets.values())this.send(socket,message);
  }
- broadcast(message){for(const token of this.meta.participants)this.send(this.sockets.get(token),message);}
+ broadcast(message){const encoded=JSON.stringify(message);for(const token of this.meta.participants)this.send(this.sockets.get(token),encoded);}
  clearView(){
   this.snapshot=this.pose=null;this.sql.exec("DELETE FROM atlas_state WHERE key IN ('snapshot','pose')");
   const host=this.sockets.get(this.meta.host.token);
@@ -144,6 +144,15 @@ export class AtlasRoom extends DurableObject {
    if(identity&&(identity.token===token||hosting&&identity!==this.meta.host)){identity.name=cleanName(message.name,identity.ip);this.save();this.send(this.sockets.get(identity.token),{type:'self',self:this.peer(identity)});this.roster();}return;
   }
   if(!hosting)return;
+  if(message.type==='admit'||message.type==='admit-all'){
+   if(!this.meta.playing)return;
+   const guests=this.meta.guests.filter(guest=>(message.type==='admit-all'||guest.id===message.id)&&this.sockets.has(guest.token)&&!this.meta.participants.includes(guest.token));
+   if(!guests.length)return;
+   this.meta.participants.push(...guests.map(guest=>guest.token));this.save();
+   const playing=JSON.stringify({type:'playing'}),snapshot=this.snapshot&&JSON.stringify({type:'snapshot',snapshot:this.snapshot}),pose=this.pose&&JSON.stringify({type:'pose',pose:this.pose});
+   for(const guest of guests){const target=this.sockets.get(guest.token);this.send(target,playing);if(snapshot)this.send(target,snapshot);if(pose)this.send(target,pose);}
+   this.send(socket,{type:'snapshot-request'});this.roster();return;
+  }
   if(message.type==='kick'){
    const guest=this.meta.guests.find(guest=>guest.id===message.id);if(!guest)return;
    this.meta.excluded.push(guest.token);remove(guest.token);this.detach(guest.token,'You were removed from this session by the host.',4003);this.save();this.roster();return;

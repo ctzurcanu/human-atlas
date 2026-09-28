@@ -112,6 +112,7 @@ export function useAtlasConnection(snapshot:()=>ConnectSnapshot){
      }else{session.playing=!!message.playing;setPlaying(session.playing);rememberHost(message.host,message.roomId);}
      break;
     case 'playing':session.playing=true;setPlaying(true);setStatus('running');if(session.role==='host')publishSnapshot(true);break;
+    case 'snapshot-request':if(session.role==='host')publishSnapshot(true);break;
     case 'stopped':session.playing=false;setPlaying(false);setStatus('ready');setGuests([]);lastSnapshot.current='';break;
     case 'roster':setHost(message.host);setGuests(message.guests);if(session.role==='guest')rememberHost(message.host,message.roomId);break;
     case 'self':setSelf(message.self);selfRef.current=message.self;setName(message.self.name);customNameRef.current=message.self.name===message.self.ip?'':message.self.name;write(NAME_KEY,customNameRef.current);break;
@@ -169,6 +170,8 @@ export function useAtlasConnection(snapshot:()=>ConnectSnapshot){
  },[ip,send]);
  const renameGuest=useCallback((id:string,value:string)=>send({type:'rename',id,name:value}),[send]);
  const kickGuest=useCallback((id:string)=>send({type:'kick',id}),[send]);
+ const admitGuest=useCallback((id:string)=>send({type:'admit',id}),[send]);
+ const admitAllGuests=useCallback(()=>send({type:'admit-all'}),[send]);
  const renameHost=useCallback((id:string,alias:string)=>setHosts(current=>{const next=current.map(item=>item.id===id?{...item,alias:alias.trim().slice(0,80)}:item);write(HISTORY_KEY,JSON.stringify(next));return next;}),[]);
  useEffect(()=>{
   disposedRef.current=false;
@@ -178,6 +181,6 @@ export function useAtlasConnection(snapshot:()=>ConnectSnapshot){
  const active=connected&&(role==='guest'||playing),following=role==='guest'&&playing&&active;
  let invitation='';try{if(roomId&&desired.current?.relayOrigin===connectionOrigin(hostAddress,location.href))invitation=invitationUrl(hostAddress,location.href,roomId,desired.current.relayOrigin);}catch{/* Validate the address on Copy or Play. */}
  const copyInvitation=async()=>{try{if(!invitation)throw new Error('The host invitation is still being prepared.');await navigator.clipboard.writeText(invitation);setError('');return true;}catch(cause){setError(cause instanceof Error?cause.message:'Could not copy the invitation.');return false;}};
- return {role,setRole,name,ip,renameSelf,hostAddress,setHostAddress,hostInput,setHostInput,status,error,notice,roomId,self,host,guests,hosts,renameGuest,renameHost,kickGuest,start,stop,prepare,active,following,controlsOpen,openControls,closeControls,invitation,copyInvitation,publishSnapshot,publishPose,remoteSnapshot,poseRef};
+ return {role,setRole,name,ip,renameSelf,hostAddress,setHostAddress,hostInput,setHostInput,status,error,notice,roomId,self,host,guests,hosts,renameGuest,renameHost,kickGuest,admitGuest,admitAllGuests,start,stop,prepare,active,following,controlsOpen,openControls,closeControls,invitation,copyInvitation,publishSnapshot,publishPose,remoteSnapshot,poseRef};
 }
 export type AtlasConnection=ReturnType<typeof useAtlasConnection>;
