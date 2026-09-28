@@ -41,7 +41,7 @@ export function viewParameters(input:string){
 export function compactViewUrl(input:string){
  const url=new URL(input),params=viewParameters(input);
  url.search=params.toString();url.hash='';
- if(url.href.length<=REQUEST_LIMIT)return url.href;
+ if(url.href.length<=512)return url.href;
  const data=strToU8(params.toString());
  if(data.length>STATE_LIMIT)throw new Error('This view is too large to save as a link.');
  const compressed=gzipSync(data,{level:6,mtime:0});
@@ -53,5 +53,7 @@ export function compactViewUrl(input:string){
  for(const key of ['model','tree','embed','ui','connect','connectJoin','relay']){
   const value=params.get(key);if(value!==null&&value.length<=512)url.searchParams.set(key,value);
  }
- return url.href;
+ const compact=url.href;
+ if(compact.length>=input.length&&input.length<=REQUEST_LIMIT)return input;
+ return compact;
 }

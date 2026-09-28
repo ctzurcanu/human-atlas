@@ -1,4 +1,5 @@
 import {assetUrl} from './asset-url';
+import {fetchAsset} from './asset-cache';
 import {inRegion,partVisible,sectionPartVisible} from './viewer-state';
 import {useEffect,useMemo,useRef} from 'react';
 import * as T from 'three';
@@ -8,7 +9,7 @@ import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {createHierarchicalExplosionLayout,type ExplodeHierarchy,type HierarchicalExplosionLayout} from './hierarchical-explosion';
 import {hierarchyEntries} from './anatomy-hierarchy';
 import {resolveGuestHierarchy,type GuestHierarchy} from './guest-hierarchy';
-import {decodeModelResponse} from './model-download';
+import {loadModelBuffer} from './model-download';
 import {selectionCenter} from './camera-pivot';
 import {orbitAroundPointer} from './pointer-orbit';
 import {layoutAnatomyLabels,type LabelAnchor} from './label-layout';
@@ -142,12 +143,19 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    return new T.Box3(new T.Vector3().fromArray(sectionBounds.min),new T.Vector3().fromArray(sectionBounds.max));
   };
   const contextUniform={value:1},skinUniform={value:.1},sectionActiveUniform={value:0};
-  const textures=new Map<string,T.Texture>(),textureLoader=new T.TextureLoader();
+  const textures=new Map<string,T.Texture>(),textureLoader=new T.ImageLoader(),textureUrls=new Set<string>();
   const textureFor=(url:string,normal=false)=>{
    const key=`${normal?'normal':'color'}:${url}`;
    let texture=textures.get(key);
    if(!texture){
-    texture=textureLoader.load(assetUrl(url),()=>{if(!disposed)dirty=true;},undefined,()=>{if(!disposed)onError(`Could not load local anatomy texture: ${url}`);});
+    const pendingTexture=new T.Texture();texture=pendingTexture;
+    void (async()=>{
+     const response=await fetchAsset(assetUrl(url),{signal:abort.signal});if(!response.ok)throw new Error('Texture unavailable.');
+     const blob=await response.blob();if(disposed)return;
+     const objectUrl=URL.createObjectURL(blob);textureUrls.add(objectUrl);
+     try{const image=await textureLoader.loadAsync(objectUrl);if(!disposed){pendingTexture.image=image;pendingTexture.needsUpdate=true;dirty=true;}}
+     finally{URL.revokeObjectURL(objectUrl);textureUrls.delete(objectUrl);}
+    })().catch(()=>{if(!disposed)onError(`Could not load local anatomy texture: ${url}`);});
     texture.colorSpace=normal?T.NoColorSpace:T.SRGBColorSpace;texture.wrapS=T.RepeatWrapping;texture.wrapT=T.RepeatWrapping;
     if(url.startsWith('/local-models/reference/'))texture.flipY=false;
     texture.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
@@ -373,7 +381,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    return Number(selected(b))-Number(selected(a))||surface(b)-surface(a)||cutCounts[b]-cutCounts[a]||distal(b)-distal(a)||a-b;
   });
   const loadChunk=async(ci:number)=>{
-   const chunk=atlas.chunks[ci],compressed=!!chunk.gzip&&typeof DecompressionStream!=='undefined';const response=await fetch(assetUrl(compressed?chunk.gzip!:chunk.url),{signal:abort.signal});const buffer=await decodeModelResponse(response,chunk.bytes,compressed);if(disposed)return;
+   const chunk=atlas.chunks[ci],compressed=!!chunk.gzip&&typeof DecompressionStream!=='undefined';const buffer=await loadModelBuffer(assetUrl(compressed?chunk.gzip!:chunk.url),chunk.bytes,compressed,abort.signal);if(disposed)return;
    const groups=new Map<string,T.BufferGeometry[]>();
    chunkParts[ci].forEach(i=>{const p=atlas.parts[i];
     const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(new Float32Array(buffer,p.positions,p.vertexCount*3),3));
@@ -832,7 +840,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    return (await fetch(png)).blob();
   });
   const contextLost=(e:Event)=>{e.preventDefault();onError('The 3D session was paused by your device. Reload to continue.');};renderer.domElement.addEventListener('webglcontextlost',contextLost);
-  return()=>{onCapture?.(null);disposed=true;abort.abort();vrAnatomy?.mesh.removeFromParent();vrAnatomy?.dispose();cancelAnimationFrame(frame);renderer.setAnimationLoop(null);renderer.xr.removeEventListener('sessionend',xrEnded);if(xrSession){xrSession.removeEventListener('select',xrSelect);void xrSession.end();}xrButton.remove();xrArButton.remove();delete (studio as HTMLElement).dataset.xrMode;xrRays.forEach(ray=>{ray.geometry.dispose();(ray.material as T.Material).dispose();});xrInfoTexture.dispose();(xrInfo.material as T.Material).dispose();clearTimeout(capTimer);clearCaps();stencilCaps.dispose();observer.disconnect();layoutObserver.disconnect();studio.removeEventListener('beforexrselect',overlaySelect);theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',cancelCameraTween);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());guideGeometry.dispose();guideBorder.geometry.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
+  return()=>{onCapture?.(null);disposed=true;abort.abort();vrAnatomy?.mesh.removeFromParent();vrAnatomy?.dispose();cancelAnimationFrame(frame);renderer.setAnimationLoop(null);renderer.xr.removeEventListener('sessionend',xrEnded);if(xrSession){xrSession.removeEventListener('select',xrSelect);void xrSession.end();}xrButton.remove();xrArButton.remove();delete (studio as HTMLElement).dataset.xrMode;xrRays.forEach(ray=>{ray.geometry.dispose();(ray.material as T.Material).dispose();});xrInfoTexture.dispose();(xrInfo.material as T.Material).dispose();clearTimeout(capTimer);clearCaps();stencilCaps.dispose();observer.disconnect();layoutObserver.disconnect();studio.removeEventListener('beforexrselect',overlaySelect);theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',cancelCameraTween);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());textureUrls.forEach(url=>URL.revokeObjectURL(url));guideGeometry.dispose();guideBorder.geometry.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
  },[atlas]);
  return <div className="scene" ref={host}/>;
 }

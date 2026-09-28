@@ -1173,6 +1173,12 @@ The Systems browser follows the major organ systems in [Wikipedia's List of syst
 - [Roboto Condensed](https://github.com/googlefonts/roboto-classic): SIL Open Font License 1.1, Copyright 2011 The Roboto Project Authors.
 - [IBM Plex](https://github.com/IBM/plex): SIL Open Font License 1.1, IBM Corp.
 
+## Browser caching references
+
+- [MDN Storage quotas and eviction criteria](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria): localStorage limits, browser-managed IndexedDB quotas and eviction.
+- [MDN IndexedDB API](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API): asynchronous storage of large files and cache metadata.
+- [fake-indexeddb](https://github.com/dumbmatter/fakeIndexedDB): Apache-2.0, David R. Miller and contributors. Used only in cache tests; no runtime dependency.
+
 ## Connect hosting references
 
 - [GitHub Pages documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages): static hosting capabilities and the need for a separate live relay.

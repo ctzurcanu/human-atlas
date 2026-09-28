@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {assetUrl} from './asset-url';
+import {fetchAsset} from './asset-cache';
 import {viewParameters} from './view-url';
 import {parseGuestHierarchy,type GuestHierarchy} from './guest-hierarchy';
 export const BUILT_IN_GUESTS=['genes','cell-types','physiology','dermatomes-myotomes','drugs','physical-exercise','chakras'] as const;
@@ -16,7 +17,7 @@ export function useGuestHierarchies(){
   const inFlight=pending.current.get(url);if(inFlight)return inFlight;
   const builtIn=builtIns.some(input=>canonical(input)===url),limit=builtIn?20_000_000:500_000;
   const promise=(async()=>{
-   const response=await fetch(url);if(!response.ok)throw new Error(`Hierarchy URL returned ${response.status}.`);
+   const response=await fetchAsset(url);if(!response.ok)throw new Error(`Hierarchy URL returned ${response.status}.`);
    const length=Number(response.headers.get('content-length')??0);if(length>limit)throw new Error('Hierarchy file is too large.');
    const content=await response.text();if(content.length>limit)throw new Error('Hierarchy file is too large.');
    let raw:unknown;try{raw=JSON.parse(content);}catch{throw new Error('Hierarchy URL must provide JSON.');}
@@ -33,7 +34,7 @@ export function useGuestHierarchies(){
   if(!node?.extension)return;
   const url=assetUrl(node.extension);const key=canonical(url);const active=pending.current.get(key);if(active){await active;return;}
   const promise=(async()=>{
-   const response=await fetch(url);if(!response.ok)throw new Error('Could not load transcript branches.');
+   const response=await fetchAsset(url);if(!response.ok)throw new Error('Could not load transcript branches.');
    const text=await response.text();if(text.length>5_000_000)throw new Error('Transcript file is too large.');
    const extension=parseGuestHierarchy(JSON.parse(text));if(extension.schema!=='human-atlas-hierarchy/v2'||extension.roots?.length!==1||extension.roots[0]!==nodeId)throw new Error('Invalid transcript extension.');
    // Add a chunk to the latest graph, preserving other concurrently opened genes.

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {build} from 'esbuild';
 import {gzipSync,strToU8} from 'fflate';
+import {readFileSync} from 'node:fs';
 
 const bundle=await build({entryPoints:['app/view-url.ts','app/viewer-state.ts','app/embed.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/view-url-validation'});
 const load=async file=>import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles.find(output=>output.path.endsWith(file)).text).toString('base64')}`);
@@ -44,4 +45,29 @@ assert.equal(viewParameters(base+'?model=male#atlas-view=1.invalid').get('model'
 assert.equal(viewParameters(base+'#unrelated-anchor').size,0);
 const oversize=gzipSync(strToU8('x'.repeat(2_000_001)));
 assert.equal(viewParameters(base+'#atlas-view=1.'+Buffer.from(oversize).toString('base64url')).size,0);
-console.log('Large views, legacy bookmarks, camera, hierarchy, iframe overrides and malformed fragments verified.');
+
+// Real anatomical IDs are long. Numeric mesh codes cut an otherwise 26 KB link to a few hundred bytes.
+const anatomy=JSON.parse(readFileSync(new URL('../public/models/atlas-male-complete.json',import.meta.url)));
+const detailed={...state,selected:anatomy.parts.slice(0,3).map(part=>part.id),hidden:anatomy.parts.slice(0,3756).map(part=>part.id),visible:['cardiac','sensory','skeletal','muscular','arterial','venous','nervous','respiratory','digestive','urinary','lymphatic','endocrine','reproductive','connective'],view:'three-quarter',section:undefined,guestQuery:undefined};
+const oldUrl=viewUrl(base,'male-detail',detailed,camera);
+const compact=viewUrl(base,'male-detail',detailed,camera,anatomy),compactParams=viewParameters(compact);
+assert.ok(oldUrl.length>25_000);assert.ok(compact.length<500);assert.ok(oldUrl.length/compact.length>100);
+assert.equal(compactParams.has('hide'),false);assert.equal(compactParams.has('select'),false);
+assert.equal(compactParams.has('view'),false);assert.equal(compactParams.has('region'),false);
+const decoded=readViewUrl(compact,anatomy,{visible:[],view:'three-quarter',skinOpacity:.1});
+assert.deepEqual(decoded.selected,detailed.selected);assert.deepEqual(decoded.hidden,detailed.hidden);
+assert.deepEqual([...decoded.visible].sort(),[...detailed.visible].sort());assert.deepEqual(decoded.camera,camera);
+
+// A scattered hidden set uses a bounded bitset instead of thousands of indices.
+const scattered={...detailed,hidden:anatomy.parts.filter((_,index)=>index%2===0).map(part=>part.id)};
+const scatteredUrl=viewUrl(base,'male-detail',scattered,camera,anatomy);
+assert.ok(scatteredUrl.length<2000);assert.deepEqual(readViewUrl(scatteredUrl,anatomy,{}).hidden,scattered.hidden);
+
+// Query overrides, embeds and old links still resolve; stale catalogues cannot select wrong parts.
+const override=new URL(compact);override.searchParams.set('select',anatomy.parts[150].id);override.searchParams.set('layers','skeletal');
+const overridden=readViewUrl(override.href,anatomy,{});assert.deepEqual(overridden.selected,[anatomy.parts[150].id]);assert.deepEqual(overridden.visible,['skeletal']);
+assert.deepEqual(readViewUrl(embedUrl(compact,['study','systems']),anatomy,{}).hidden,detailed.hidden);
+const changed={...anatomy,parts:[anatomy.parts[1],anatomy.parts[0],...anatomy.parts.slice(2)]};
+assert.deepEqual(readViewUrl(compact,changed,{}).hidden,[]);assert.deepEqual(readViewUrl(compact,changed,{}).selected,[]);
+const malformed=new URL(compact);malformed.searchParams.set('h','0-zzzz');assert.deepEqual(readViewUrl(malformed.href,anatomy,{}).hidden,[]);
+console.log(`Large views, legacy links, overrides and packed anatomical IDs verified (${oldUrl.length} to ${compact.length} characters).`);

@@ -1,7 +1,8 @@
 import * as T from 'three';
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {assetUrl} from './asset-url';
-import {decodeModelResponse} from './model-download';
+import {loadModelBuffer} from './model-download';
+import {fetchAssetJson} from './asset-cache';
 import {isSkinPart} from './depth-layers';
 import {SYSTEMS,type Atlas,type SceneState} from './anatomy';
 
@@ -11,11 +12,9 @@ interface Uniforms {rotationState:T.DataTexture;rotation:{value:T.Vector4};pivot
 
 /** A single lightweight draw per eye; hidden parts never reach the GPU. */
 export async function loadVrAnatomy(atlas:Atlas,url:string,uniforms:Uniforms,signal:AbortSignal){
- const response=await fetch(assetUrl(url),{signal});
- if(!response.ok)throw new Error('The lightweight VR model is unavailable. Reload the viewer or choose another model.');
- const model:VrModel=await response.json();
+ const model=await fetchAssetJson<VrModel>(assetUrl(url),{signal},'The lightweight VR model is unavailable. Reload the viewer or choose another model.');
  if(model.version!==1||model.parts.length!==atlas.parts.length||model.parts.some((part,i)=>part.id!==atlas.parts[i].id||part.sourceVertexCount!==atlas.parts[i].vertexCount||part.sourceIndexCount!==atlas.parts[i].indexCount))throw new Error('The lightweight VR model does not match this anatomy. Reload the viewer or choose another model.');
- const buffer=await decodeModelResponse(await fetch(assetUrl(model.chunk.url),{signal}),model.chunk.bytes,model.chunk.gzip);
+ const buffer=await loadModelBuffer(assetUrl(model.chunk.url),model.chunk.bytes,model.chunk.gzip,signal);
  if(signal.aborted)throw new DOMException('Aborted','AbortError');
  const width=T.MathUtils.ceilPowerOfTwo(atlas.parts.length),states=new Float32Array(width*4),texture=new T.DataTexture(states,width,1,T.RGBAFormat,T.FloatType);
  const pickMaterial=new T.MeshBasicMaterial({side:T.DoubleSide});

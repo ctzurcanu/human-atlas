@@ -55,7 +55,8 @@
     "build:spinal-roots": "node scripts/build-spinal-root-hierarchy.mjs",
     "test:spinal-roots": "node scripts/validate-spinal-root-hierarchy.mjs",
     "build:physiology": "node scripts/build-physiology-hierarchy.mjs",
-    "test:physiology": "node scripts/validate-physiology-hierarchy.mjs"
+    "test:physiology": "node scripts/validate-physiology-hierarchy.mjs",
+    "test:cache": "node --test scripts/validate-asset-cache.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
@@ -95,6 +96,7 @@
     "@vitejs/plugin-react": "6.0.2",
     "@vitejs/plugin-rsc": "0.5.26",
     "esbuild": "0.27.3",
+    "fake-indexeddb": "^6.2.5",
     "json5": "2.2.3",
     "meshoptimizer": "^1.2.0",
     "miniflare": "4.20260515.0",
