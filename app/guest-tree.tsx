@@ -45,7 +45,7 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose}:Prop
   const chooseDirect=(toggle=false)=>onChoose(guestChoice(node),toggle);
   return <div key={node.id}>
    <div className={`tree-row ${hasChildren?'tree-region':'tree-leaf'} ${node.parts.length?'':'guest-unmodeled'}`} style={style(depth)}>
-    {hasChildren&&<button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${node.name}`} aria-expanded={open} onClick={()=>toggleOpen(node.id)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>}
+    {hasChildren&&<button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${node.name}`} data-connect-key={node.id} aria-expanded={open} onClick={()=>toggleOpen(node.id)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>}
     <button type="button" className="tree-label" title={node.parts.length?terminologyTitle(node.name,terminologyForGroup(node.name),`hierarchy:guest:${hierarchy.id}:${node.id}`):`${node.name} · no matching structure in this model`} aria-label={node.name} onClick={event=>node.parts.length?chooseDirect(event.ctrlKey||event.metaKey):undefined} onContextMenu={event=>{if(event.ctrlKey&&node.parts.length){event.preventDefault();chooseDirect(true);}}}>
      <span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span>{node.parts.length>0&&<span className="tree-count">{node.parts.length.toLocaleString()}</span>}
     </button>
@@ -56,7 +56,7 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose}:Prop
  };
  return <nav className="system-tree guest-tree" aria-label={`${hierarchy.name} hierarchy`}>
   <div className="tree-row tree-root" style={style(0)}>
-   <button type="button" className="tree-expander" aria-label={`${expanded.has('all')?'Collapse':'Expand'} All`} aria-expanded={expanded.has('all')} onClick={()=>toggleOpen('all')}>{expanded.has('all')?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
+   <button type="button" className="tree-expander" aria-label={`${expanded.has('all')?'Collapse':'Expand'} All`} data-connect-key="all" aria-expanded={expanded.has('all')} onClick={()=>toggleOpen('all')}>{expanded.has('all')?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
    <button type="button" className="tree-label" onClick={()=>onChoose(hierarchyChoice(`guest:${hierarchy.id}:all`,'All',all,nodes.map(guestChoice),terminologyForGroup('All')))} title={terminologyTitle('All',terminologyForGroup('All'),`hierarchy:guest:${hierarchy.id}:all`)}><span className="tree-name">All</span><span className="tree-count">{all.length.toLocaleString()}</span></button>
    {check('all anatomy',all)}
   </div>

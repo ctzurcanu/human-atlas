@@ -65,7 +65,7 @@ export default function SystemTree({atlas,mode,state,setState,onChoose}: {atlas:
   const open=expanded.has(key),display=displayLaterality(node.name);
   return <div key={key}>
    <div className={`tree-row ${node.kind==='bilateral'?'tree-bilateral':'tree-region'}`} style={rowStyle(depth)}>
-    <button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${node.name}`} aria-expanded={open} onClick={()=>toggleOpen(key)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
+    <button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${node.name}`} data-connect-key={key} aria-expanded={open} onClick={()=>toggleOpen(key)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
     <button type="button" className="tree-label" aria-label={node.name} onClick={event=>onChoose(anatomyNodeChoice(node,`${mode}:${key}`),event.ctrlKey||event.metaKey)} title={terminologyTitle(node.name,node.terminology,`hierarchy:${mode}:${key}`)}><span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span><span className="tree-count">{node.parts.length.toLocaleString()}</span></button>
     <TreeCheck name={node.name} enabled={countOn(node.parts)} total={node.parts.length} onClick={()=>toggleParts(node.parts)}/>
    </div>
@@ -74,7 +74,7 @@ export default function SystemTree({atlas,mode,state,setState,onChoose}: {atlas:
  };
  return <nav className="system-tree" aria-label={atlas.scope==='cell'?(mode==='systems'?'Cell functions and components':'Cell compartments and components'):mode==='systems'?'Anatomical systems and structures':'Anatomical regions and structures'}>
   <div className="tree-row tree-root" style={rowStyle(0)}>
-   <button type="button" className="tree-expander" aria-label={`${expanded.has('all')?'Collapse':'Expand'} All`} aria-expanded={expanded.has('all')} onClick={()=>toggleOpen('all')}>{expanded.has('all')?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
+   <button type="button" className="tree-expander" aria-label={`${expanded.has('all')?'Collapse':'Expand'} All`} data-connect-key="all" aria-expanded={expanded.has('all')} onClick={()=>toggleOpen('all')}>{expanded.has('all')?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
    <button type="button" className="tree-label" onClick={()=>onChoose(hierarchyChoice(`${mode}:all`,'All',availableParts,tree.map(branch=>hierarchyChoice(`${mode}:${branch.id}`,branch.name,branch.parts,branch.nodes.map((node,index)=>anatomyNodeChoice(node,`${mode}:${branch.id}:${index}`)),branch.terminology)),terminologyForGroup('All')))} title={terminologyTitle(atlas.scope==='cell'?'All cell components':'All · human body',terminologyForGroup('All'),`hierarchy:${mode}:all`)}><span className="tree-name">All</span><span className="tree-count">{availableParts.length.toLocaleString()}</span></button>
    <TreeCheck name={atlas.scope==='cell'?'all cell components':'all anatomy'} enabled={countOn(availableParts)} total={availableParts.length} onClick={toggleAll}/>
   </div>
@@ -82,7 +82,7 @@ export default function SystemTree({atlas,mode,state,setState,onChoose}: {atlas:
    const branchKey=`${mode}:${branch.id}`,open=expanded.has(branchKey);
    return <div key={branchKey}>
     <div className="tree-row tree-system" style={rowStyle(1)}>
-     <button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${branch.name}`} aria-expanded={open} onClick={()=>toggleOpen(branchKey)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
+     <button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${branch.name}`} data-connect-key={branchKey} aria-expanded={open} onClick={()=>toggleOpen(branchKey)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
      <button type="button" className="tree-label" onClick={event=>onChoose(hierarchyChoice(`${mode}:${branchKey}`,branch.name,branch.parts,branch.nodes.map((node,index)=>anatomyNodeChoice(node,`${branchKey}:${index}`)),branch.terminology),event.ctrlKey||event.metaKey)} title={terminologyTitle(branch.name,branch.terminology,`hierarchy:${mode}:${branchKey}`)}>{branch.color&&<span className="tree-dot" style={{background:branch.color}}/>}<span className="tree-name">{branch.name}</span><span className="tree-count">{branch.parts.length}</span></button>
      <TreeCheck name={branch.name} enabled={countOn(branch.parts)} total={branch.parts.length} onClick={()=>toggleParts(branch.parts)}/>
     </div>

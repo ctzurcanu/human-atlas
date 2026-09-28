@@ -31,7 +31,7 @@ const styles:Partial<Record<SectionTissue,Style>>={
 const roleOrder:SectionTissue[]=['integumentary','fascia','serosa','adipose','tendon','muscular','cardiac','skeletal','cartilage','lung','liver','organ','spleen','lymphatic','cns','nervous','arterial','venous','connective','attachments'];
 
 /** GPU cut faces: repaired source shells count stencil coverage at the live plane. */
-export function createStencilCaps(scene:T.Scene,planes:[T.Plane,T.Plane],textureFor:(url:string)=>T.Texture){
+export function createStencilCaps(scene:T.Scene|T.Group,planes:[T.Plane,T.Plane],textureFor:(url:string)=>T.Texture){
  const counters=new Map<number,Counter>(),countMaterials:T.MeshBasicMaterial[]=[],quadMaterials:T.MeshBasicMaterial[]=[],quads:T.Mesh[]=[];
  const planeGeometry=new T.PlaneGeometry(1,1),active=new Set<string>();
  let visibleCandidates:StencilCapCandidate[]=[];

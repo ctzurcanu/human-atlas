@@ -77,7 +77,7 @@ export default function DepthTree({atlas,state,setState,onChoose}:Props){
   const open=expanded.has(key),display=displayLaterality(node.name);
   return <div key={key}>
    <div className={`tree-row ${node.kind==='bilateral'?'tree-bilateral':'tree-region'}`} style={rowStyle(depth)}>
-    <button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${node.name}`} aria-expanded={open} onClick={()=>toggleOpen(key)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
+    <button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${node.name}`} data-connect-key={key} aria-expanded={open} onClick={()=>toggleOpen(key)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
     <button type="button" className="tree-label" aria-label={node.name} onClick={event=>onChoose(anatomyNodeChoice(node,`depth:${key}`),event.ctrlKey||event.metaKey)} title={terminologyTitle(node.name,node.terminology,`hierarchy:depth:${key}`)}><span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span><span className="tree-count">{node.parts.length.toLocaleString()}</span></button>
     {check(node.name,node.parts,()=>toggleParts(node.parts))}
    </div>
@@ -86,7 +86,7 @@ export default function DepthTree({atlas,state,setState,onChoose}:Props){
  };
  return <nav className="system-tree depth-tree" aria-label="Anatomical depth layers and structures">
   <div className="tree-row tree-root" style={{'--tree-depth':0} as CSSProperties}>
-   <button type="button" className="tree-expander" aria-label={`${expanded.has('all')?'Collapse':'Expand'} All`} aria-expanded={expanded.has('all')} onClick={()=>toggleOpen('all')}>{expanded.has('all')?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
+   <button type="button" className="tree-expander" aria-label={`${expanded.has('all')?'Collapse':'Expand'} All`} data-connect-key="all" aria-expanded={expanded.has('all')} onClick={()=>toggleOpen('all')}>{expanded.has('all')?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
    <button type="button" className="tree-label" onClick={()=>onChoose(hierarchyChoice('depth:all','All',availableParts,groups.map(({layer,parts,nodes})=>hierarchyChoice(`depth:${layer.id}`,layer.name,parts,nodes.map((node,index)=>anatomyNodeChoice(node,`depth:${layer.id}:${index}`)),terminologyForGroup(layer.name))),terminologyForGroup('All')))} title={terminologyTitle('All · human body',terminologyForGroup('All'),'hierarchy:depth:all')}><span className="tree-name">All</span><span className="tree-count">{availableParts.length.toLocaleString()}</span></button>
    {check('all anatomy',availableParts,toggleAll)}
   </div>
@@ -94,7 +94,7 @@ export default function DepthTree({atlas,state,setState,onChoose}:Props){
    const open=expanded.has(layer.id);
    return <div key={layer.id}>
     <div className="tree-row tree-system depth-row" style={{'--tree-depth':0} as CSSProperties}>
-     <button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${layer.name}`} aria-expanded={open} onClick={()=>toggleOpen(layer.id)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
+     <button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${layer.name}`} data-connect-key={layer.id} aria-expanded={open} onClick={()=>toggleOpen(layer.id)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
      <button type="button" className="tree-label" onClick={event=>onChoose(hierarchyChoice(`depth:${layer.id}`,layer.name,parts,nodes.map((node,nodeIndex)=>anatomyNodeChoice(node,`depth:${layer.id}:${nodeIndex}`)),terminologyForGroup(layer.name)),event.ctrlKey||event.metaKey)} title={terminologyTitle(layer.name,terminologyForGroup(layer.name),`hierarchy:depth:${layer.id}`)}><span className="depth-index">{String(index+1).padStart(2,'0')}</span><span className="tree-name">{layer.name}</span><span className="tree-count">{parts.length.toLocaleString()}</span></button>
      {check(layer.name,parts,()=>toggleLayer(layer.id,parts))}
     </div>

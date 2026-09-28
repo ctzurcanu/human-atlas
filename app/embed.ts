@@ -1,7 +1,7 @@
 export const EMBED_UI=[
  {id:'model',label:'Model picker'},
  {id:'search',label:'Search'},
- {id:'study',label:'Study tools'},
+ {id:'study',label:'Advanced tools'},
  {id:'sections',label:'Sections'},
  {id:'systems',label:'Layers'},
  {id:'camera',label:'Camera controls'},
@@ -30,5 +30,5 @@ export function embedUrl(viewUrl:string,ui?:readonly EmbedUi[]){
 export function iframeCode(viewUrl:string,ui?:readonly EmbedUi[],height=600){
  const src=embedUrl(viewUrl,ui).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
  const safeHeight=Number.isFinite(height)?Math.max(340,Math.min(1200,Math.round(height))):600;
- return `<iframe src="${src}" title="Human Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:${safeHeight}px;border:0" allowfullscreen></iframe>`;
+ return `<iframe src="${src}" title="Human Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:${safeHeight}px;border:0" allow="clipboard-write; xr-spatial-tracking" allowfullscreen></iframe>`;
 }

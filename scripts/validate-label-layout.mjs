@@ -17,4 +17,14 @@ for(let a=0;a<placed.length;a++)for(let b=a+1;b<placed.length;b++){
  assert.ok(first.right<=second.left||second.right<=first.left||first.bottom<=second.top||second.bottom<=first.top,`Labels ${a} and ${b} overlap`);
 }
 assert.deepEqual(layoutAnatomyLabels([],area,()=>0),[]);
+// Hip bone + its first relationship step: 50 pieces, 44 distinct names.
+const hipAnchors=Array.from({length:44},(_,index)=>({id:`hip-${index}`,x:300,y:240,text:`Related hip structure ${index}`}));
+const hipArea={left:280,right:930,top:82,bottom:606};
+const hipLabels=layoutAnatomyLabels(hipAnchors,hipArea,text=>text.length*6);
+assert.equal(hipLabels.length,44,'Every hip relationship label must fit, even when most anchors prefer one side.');
+for(const label of hipLabels)assert.ok(label.top>=hipArea.top&&label.bottom<=hipArea.bottom);
+for(let a=0;a<hipLabels.length;a++)for(let b=a+1;b<hipLabels.length;b++){
+ const first=hipLabels[a],second=hipLabels[b];
+ assert.ok(first.right<=second.left||second.right<=first.left||first.bottom<=second.top||second.bottom<=first.top,`Hip labels ${a} and ${b} overlap`);
+}
 console.log('Selected anatomy labels use both sides and remain inside nonoverlapping slots.');

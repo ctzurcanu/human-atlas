@@ -13,7 +13,11 @@ export function layoutAnatomyLabels(anchors:LabelAnchor[],area:LabelArea,measure
  const available=Math.max(0,area.right-area.left),height=Math.max(0,area.bottom-area.top);
  if(!anchors.length||available<130||height<28)return [];
  const compact=available<520;
- const gap=compact?25:30,rowHeight=compact?21:24;
+ const rows=Math.ceil(anchors.length/2),defaultRowHeight=compact?21:24;
+ // Dense relationship sets (such as a hip bone) need tighter rows rather than
+ // disappearing at a fixed selection count. Keep a readable minimum spacing.
+ const gap=Math.min(compact?25:30,Math.max(18,(height-defaultRowHeight)/Math.max(1,rows-1)));
+ const rowHeight=Math.min(defaultRowHeight,gap-3);
  const maxPerSide=Math.max(1,Math.floor((height-rowHeight)/gap)+1);
  const maxWidth=Math.max(70,Math.min(compact?135:230,(available-50)/2));
  const midpoint=(area.left+area.right)/2;

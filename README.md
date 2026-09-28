@@ -27,6 +27,28 @@ npm run dev
 
 Open http://localhost:3016. To build the static site, run `npm run build`; the output is in `dist/`.
 
+### Connect: host a live view
+
+In **Advanced tools → Connect**, choose **Host** to prepare a waiting lobby. The Copy icon beside Host copies the invitation URL. The next 150px row contains the host address, Play, and connected guest count. Localhost and loopback addresses cannot be shared: the viewer discovers a non-loopback LAN IP or the local ngrok HTTPS tunnel when available, and you can enter another IP or HTTPS address. Use the HTTPS/ngrok address when guests need secure WebSockets. In Guest mode, the next row contains the invitation URL input and Play. Pasting an invitation for another viewer opens that viewer and joins in one Play click. Guests connect and wait; pressing Host **Play** includes exactly the guests online at that moment, and guests arriving later wait for the next session. Names default to the IP seen by the server, with local connections using a non-loopback IP. You can edit waiting guest names before Play, and guests can keep their own labels for previous hosts.
+
+During a session, the host's model, selections, layers, sections, hierarchy, camera movement, exploded-piece rotation, and visible viewer panels are shared. Guests follow the host without changing the host's view. Active Connect shows only a hollow Stop button containing **H** or **G**. A guest's **Stop** leaves the connection; the host's **Stop** ends it for every guest and returns the host to the setup panel. The host invitation remains available for the next lobby. Closing a tools panel keeps the connection running. Brief connection interruptions retry automatically; a host missing for 60 seconds ends the session.
+
+Connect's relay runs on the same server as the viewer, at `/atlas-connect`. HTTPS viewers automatically use **secure WebSockets (`wss://`)**, including through the existing ngrok HTTPS tunnel. Plain `ws://` is allowed only on localhost for development. For a built viewer with the relay, run `npm run build` followed by `npm start`. A static-only host such as GitHub Pages cannot run the relay; use the HTTPS/ngrok viewer for Connect. Session invitations are private, random codes, and only their host can broadcast state. Run `npm run test:connect` to exercise WSS sessions, roles, joining, reconnection, names, and Stop behavior.
+
+### Portable view framing
+
+New saved links and slides use `frame=` with dimensionless coordinates: direction, a target relative to the displayed anatomy bounds, an anchor within the usable viewing area, relative distance, and up direction. Live Connect snapshots and camera messages use the same frame. Screen anchors and direction components are 0–1 fractions; target fractions can extend beyond that range when panning outside the anatomy. The local viewport, visible panels, advanced tools, and aspect ratio determine the actual projection on each device. The visual center is kept above half the viewport height, with advanced tools reserved below it. Resize and panel changes preserve the current normalized framing. Legacy `camera=` links remain readable and adapt using a canonical 16:9 source projection because their original screen dimensions were never saved.
+
+Supported HTTPS WebXR browsers expose VR and AR entry buttons. AR uses passthrough and optional DOM overlay controls. XR presentation placement uses the device's projection while the headset or phone continues to control tracked movement. New iframe snippets include `xr-spatial-tracking`. Physical device validation is still required for headset and AR browser behavior. `npm run test:framing` checks framing across aspect ratios, anatomy scales, panel reservations, axial orientation, and XR transform behavior.
+
+### Quest VR
+
+Open the viewer over HTTPS in Meta Quest Browser, wait for **Preparing VR…** to become **Enter VR**, then enter the headset view. Triggers select structures and the left stick moves closer or farther.
+
+Quest uses separate simplified geometry, one anatomy draw per eye, Lambert lighting, and hashed opacity. Hidden and fully transparent parts are excluded from the draw. Source textures and detailed filled section caps are omitted in this mode; section clipping remains available. The detailed male VR model has 387,438 triangles and retains all 5,208 part IDs. Desktop, mobile, and other browsers keep the original model and materials, and leaving VR restores the original view.
+
+After changing a public anatomy model, regenerate its VR assets with `npm run build:vr` and check them with `npm run test:vr`. The generated `.vr.json` and `.vr.bin.gz` assets are published alongside the source models. For local development, `?vr-preview=1` renders the Quest profile without a headset; this preview flag is disabled in production. Browser preview and geometry tests do not measure physical headset frame rates.
+
 ### Local Anatomy Atlas GLB model
 
 
