@@ -7,6 +7,7 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/postcss';
 import {attachConnectRelay,requestIp} from './server/connect-relay.mjs';
 import {connectionIdentity} from './server/connect-address.mjs';
+import {connectIdentityCors} from './server/connect-origin.mjs';
 const path=(relative:string)=>fileURLToPath(new URL(relative,import.meta.url));
 function localModels():Plugin{
  const directory=path('./.local-models');
@@ -26,7 +27,7 @@ function localModels():Plugin{
  }};
 }
 function connectRelay():Plugin{
- const identity=async(req:import('node:http').IncomingMessage,res:import('node:http').ServerResponse)=>{res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');res.end(JSON.stringify({ip:requestIp(req),...await connectionIdentity(req)}));};
+ const identity=async(req:import('node:http').IncomingMessage,res:import('node:http').ServerResponse)=>{if(!connectIdentityCors(req,res)){res.statusCode=403;res.end();return;}res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');res.end(JSON.stringify({ip:requestIp(req),...await connectionIdentity(req)}));};
  return {name:'atlas-connect-relay',configureServer(server){server.middlewares.use('/atlas-connect/identity',identity);if(server.httpServer)attachConnectRelay(server.httpServer);},configurePreviewServer(server){server.middlewares.use('/atlas-connect/identity',identity);attachConnectRelay(server.httpServer);}};
 }
 export default defineConfig({base:process.env.VITE_BASE_PATH||'/',root:path('./web'),publicDir:path('./public'),plugins:[react(),localModels(),connectRelay()],resolve:{alias:{'@':path('./')}},css:{postcss:{plugins:[tailwindcss()]}},server:{allowedHosts:true,watch:{usePolling:true}},build:{outDir:path('./dist'),emptyOutDir:true}});

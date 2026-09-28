@@ -28,8 +28,8 @@ async function fixture(t,graceMs=500){
  server.listen(0,'127.0.0.1');await once(server,'listening');
  const origin=`https://127.0.0.1:${server.address().port}`,url=origin.replace('https:','wss:')+'/atlas-connect';
  t.after(async()=>{for(const socket of clients)socket.terminate();relay.dispose();await new Promise(resolve=>server.close(resolve));});
- async function client({role='host',roomId='',clientToken=token(),ip='203.0.113.7',name=''}={}){
-  const socket=new WebSocket(url,{origin,rejectUnauthorized:false,headers:{'x-forwarded-for':ip}}),queue=[],waiters=[];clients.push(socket);
+ async function client({role='host',roomId='',clientToken=token(),ip='203.0.113.7',name='',viewerOrigin=origin}={}){
+  const socket=new WebSocket(url,{origin:viewerOrigin,rejectUnauthorized:false,headers:{'x-forwarded-for':ip}}),queue=[],waiters=[];clients.push(socket);
   socket.on('error',()=>{});
   socket.on('message',data=>{const message=JSON.parse(data.toString()),index=waiters.findIndex(waiter=>waiter.type===message.type&&waiter.predicate(message));if(index>=0){const waiter=waiters.splice(index,1)[0];clearTimeout(waiter.timer);waiter.resolve(message);}else queue.push(message);});
   const next=(type,predicate=()=>true)=>{
@@ -43,6 +43,13 @@ async function fixture(t,graceMs=500){
  return {client,relay,url,origin,clients};
 }
 async function play(host,...guests){host.send({type:'play'});await host.next('playing');await Promise.all(guests.map(guest=>guest.next('playing')));}
+test('GitHub Pages hosts and guests exchange live state through a separate WSS relay',async t=>{
+ const {client}=await fixture(t),viewerOrigin='https://ctzurcanu.github.io';
+ const host=await client({viewerOrigin}),guest=await client({viewerOrigin,role:'guest',roomId:host.joined.roomId});
+ await play(host,guest);const state=snapshot();host.send({type:'snapshot',snapshot:state});assert.deepEqual((await guest.next('snapshot')).snapshot,state);
+ host.send({type:'pose',pose});assert.deepEqual((await guest.next('pose')).pose,pose);
+ host.send({type:'stop'});await guest.next('ended');await host.next('stopped');
+});
 test('WSS defaults to IP names and only the host broadcasts complete viewer state and poses',async t=>{
  const {client,relay}=await fixture(t),host=await client(),guest=await client({role:'guest',roomId:host.joined.roomId,ip:'198.51.100.4'});
  assert.equal(host.joined.self.name,'203.0.113.7');assert.equal(guest.joined.self.name,'198.51.100.4');

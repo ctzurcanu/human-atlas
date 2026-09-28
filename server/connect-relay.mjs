@@ -4,6 +4,7 @@ import {WebSocketServer,WebSocket} from 'ws';
 import {CONNECT_PATH,MAX_MESSAGE_BYTES,validSnapshot,validPose} from '../shared/connect-protocol.mjs';
 import {hostAddresses} from './connect-address.mjs';
 import {localOnlyHost} from '../shared/connect-address.mjs';
+import {allowedConnectOrigin} from './connect-origin.mjs';
 
 const code=()=>randomBytes(24).toString('base64url');
 const validToken=value=>typeof value==='string'&&/^[\w-]{32}$/.test(value);
@@ -41,18 +42,7 @@ export function attachConnectRelay(server,{path=CONNECT_PATH,graceMs=60_000}={})
  };
  const upgrade=(request,socket,head)=>{
   if((request.url??'').split('?')[0]!==path)return;
-  // A room invitation is the access credential. Only the viewer's own origin
-  // may use this relay; unrelated websites cannot open a room in a browser.
-  let allowed=false;
-  try{
-   const origin=new URL(String(request.headers.origin));
-   const host=String(request.headers['x-forwarded-host']??request.headers.host??'').split(',')[0].trim();
-   const forwardedProtocol=String(request.headers['x-forwarded-proto']??'').split(',')[0].trim();
-   const secure=request.socket.encrypted||forwardedProtocol==='https';
-   const loopback=['localhost','127.0.0.1','[::1]'].includes(origin.hostname);
-   allowed=origin.host===host&&(secure?origin.protocol==='https:':loopback&&origin.protocol==='http:');
-  }catch{/* Reject missing or malformed Origin. */}
-  if(!allowed){socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');socket.destroy();return;}
+  if(!allowedConnectOrigin(request)){socket.write('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');socket.destroy();return;}
   sockets.handleUpgrade(request,socket,head,ws=>sockets.emit('connection',ws,request));
  };
  server.on('upgrade',upgrade);

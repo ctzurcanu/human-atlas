@@ -16,16 +16,36 @@ export function invitationBase(input,currentOrigin){
  if(!explicit&&!url.port&&(/^[\d.]+$/.test(url.hostname)||url.hostname.startsWith('[')))url.port=current.port;
  return url;
 }
-export function invitationUrl(input,currentUrl,roomId){
+export function staticConnectHost(hostname){return hostname.toLowerCase().endsWith('.github.io');}
+export function connectionOrigin(input,currentUrl){
+ const current=new URL(currentUrl);
+ const url=input.trim()?invitationBase(input,current.origin):current;
+ if(staticConnectHost(url.hostname))throw new Error('GitHub Pages needs a live relay. Enter its HTTPS address in the Host field.');
+ // Local development serves its own relay; the address is its public invitation.
+ if(localOnlyHost(current.hostname))return current.origin;
+ if(url.protocol!=='https:'){
+  throw new Error('Use an HTTPS address for the live relay.');
+ }
+ return url.origin;
+}
+export function connectionSocketUrl(origin,roomId=''){
+ const url=new URL('/atlas-connect',origin);url.protocol=url.protocol==='https:'?'wss:':'ws:';if(roomId)url.searchParams.set('room',roomId);return url.href;
+}
+export function invitationUrl(input,currentUrl,roomId,relayOrigin=''){
  const current=new URL(currentUrl),url=invitationBase(input,current.origin);
- url.pathname=current.pathname;url.search='';url.hash='';url.searchParams.set('connect',roomId);
- if(current.searchParams.get('embed')==='1'){url.searchParams.set('embed','1');url.searchParams.set('ui','study,systems,details,model,open');}
- return url.href;
+ // A static viewer stays on its own origin; its invitation carries the relay.
+ const separate=relayOrigin&&relayOrigin!==current.origin&&!localOnlyHost(current.hostname);
+ const viewer=separate?new URL(current):url;
+ viewer.pathname=current.pathname;viewer.search='';viewer.hash='';viewer.searchParams.set('connect',roomId);
+ if(separate)viewer.searchParams.set('relay',connectionOrigin(relayOrigin,currentUrl));
+ if(current.searchParams.get('embed')==='1'){viewer.searchParams.set('embed','1');viewer.searchParams.set('ui','study,systems,details,model,open');}
+ return viewer.href;
 }
 export function guestInvitation(input,currentUrl){
  const value=input.trim();if(!value)throw new Error('Paste the host’s invitation URL.');
  const url=new URL(value,currentUrl),code=url.searchParams.get('connect');
  if(!['http:','https:'].includes(url.protocol)||url.username||url.password||!code||!/^[\w-]{32}$/.test(code))throw new Error('Paste the host’s invitation URL.');
  if(localOnlyHost(url.hostname))throw new Error('Ask the host for an invitation using their IP or HTTPS address, not localhost.');
+ if(url.searchParams.has('relay'))connectionOrigin(url.searchParams.get('relay')??'',url.href);
  return {url:url.href,code};
 }

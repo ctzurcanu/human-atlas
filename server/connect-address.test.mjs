@@ -1,8 +1,9 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {guestInvitation,invitationBase,invitationUrl} from '../shared/connect-address.mjs';
+import {connectionOrigin,connectionSocketUrl,guestInvitation,invitationBase,invitationUrl} from '../shared/connect-address.mjs';
 import {connectionIdentity,hostAddresses} from './connect-address.mjs';
 import {requestIp} from './connect-relay.mjs';
+import {allowedConnectOrigin,connectIdentityCors} from './connect-origin.mjs';
 
 const room='abcdefghijklmnopqrstuvwxyz123456';
 test('invitations reject loopback aliases and unspecified addresses',()=>{
@@ -27,4 +28,39 @@ test('host discovery excludes loopback interfaces and honors the HTTPS proxy add
  const identity=await connectionIdentity({headers:{host:'localhost:3016','x-forwarded-host':'atlas.ngrok-free.app','x-forwarded-proto':'https'},socket:{}});
  assert.equal(identity.origin,'https://atlas.ngrok-free.app');
  assert.notEqual(requestIp({headers:{},socket:{remoteAddress:'::ffff:127.0.0.1'}}),'127.0.0.1');
+});
+test('GitHub Pages uses an HTTPS relay and keeps invitations on the static viewer',()=>{
+ const viewer='https://ctzurcanu.github.io/human-atlas/?model=male-detail&hide=long-state',relay='https://atlas.example';
+ assert.throws(()=>connectionOrigin('',viewer),/GitHub Pages needs a live relay/);
+ assert.throws(()=>connectionOrigin('ctzurcanu.github.io',viewer),/GitHub Pages needs a live relay/);
+ assert.throws(()=>connectionOrigin('http://atlas.example',viewer),/HTTPS address/);
+ assert.throws(()=>connectionOrigin('https://127.0.0.1',viewer),/loopback/);
+ assert.equal(connectionOrigin(relay+'/ignored-path',viewer),relay);
+ assert.equal(connectionSocketUrl(connectionOrigin(relay,viewer)),'wss://atlas.example/atlas-connect');
+ assert.equal(connectionSocketUrl(relay,room),`wss://atlas.example/atlas-connect?room=${room}`);
+ const invitation=invitationUrl(relay,viewer,room,relay),url=new URL(invitation);
+ assert.equal(url.origin,'https://ctzurcanu.github.io');assert.equal(url.pathname,'/human-atlas/');
+ assert.equal(url.searchParams.get('connect'),room);assert.equal(url.searchParams.get('relay'),relay);
+ assert.equal(url.searchParams.has('hide'),false);
+ assert.deepEqual(guestInvitation(invitation,viewer),{url:invitation,code:room});
+ assert.throws(()=>guestInvitation(invitation.replace(encodeURIComponent(relay),encodeURIComponent('http://atlas.example')),viewer),/HTTPS/);
+ const embed=new URL(invitationUrl(relay,viewer+'&embed=1',room,relay));assert.equal(embed.searchParams.get('embed'),'1');assert.ok(embed.searchParams.has('ui'));
+});
+test('local development and same-origin HTTPS retain their existing relay and invitations',()=>{
+ assert.equal(connectionOrigin('https://atlas.ngrok-free.app','http://localhost:3016'),'http://localhost:3016');
+ assert.equal(connectionOrigin('192.168.1.25','http://localhost:3016'),'http://localhost:3016');
+ assert.equal(connectionSocketUrl('http://localhost:3016'),'ws://localhost:3016/atlas-connect');
+ assert.equal(connectionOrigin('atlas.ngrok-free.app','https://atlas.ngrok-free.app'),'https://atlas.ngrok-free.app');
+ assert.equal(invitationUrl('https://atlas.ngrok-free.app','http://localhost:3016/',room,'http://localhost:3016'),`https://atlas.ngrok-free.app/?connect=${room}`);
+});
+test('identity CORS and WebSockets allow our GitHub viewer only over a secure relay',()=>{
+ const request={headers:{origin:'https://ctzurcanu.github.io',host:'relay.example','x-forwarded-proto':'https'},socket:{}};
+ const headers=new Map(),response={setHeader:(key,value)=>headers.set(key,value)};
+ assert.equal(allowedConnectOrigin(request),true);assert.equal(connectIdentityCors(request,response),true);
+ assert.equal(headers.get('Access-Control-Allow-Origin'),'https://ctzurcanu.github.io');assert.equal(headers.get('Vary'),'Origin');
+ for(const origin of ['https://unrelated.example','https://ctzurcanu.github.io.attacker.example','http://ctzurcanu.github.io','https://ctzurcanu.github.io/path','null']){
+  const rejected={...request,headers:{...request.headers,origin}};
+  assert.equal(allowedConnectOrigin(rejected),false,origin);assert.equal(connectIdentityCors(rejected,response),false,origin);
+ }
+ assert.equal(allowedConnectOrigin({...request,headers:{origin:request.headers.origin,host:'relay.example'}}),false);
 });

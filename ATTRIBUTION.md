@@ -1172,4 +1172,13 @@ The Systems browser follows the major organ systems in [Wikipedia's List of syst
 - [Roboto Condensed](https://github.com/googlefonts/roboto-classic): SIL Open Font License 1.1, Copyright 2011 The Roboto Project Authors.
 - [IBM Plex](https://github.com/IBM/plex): SIL Open Font License 1.1, IBM Corp.
 
+## Connect hosting references
+
+- [GitHub Pages documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages): static hosting capabilities and the need for a separate live relay.
+- [Cloudflare Durable Objects WebSockets documentation](https://developers.cloudflare.com/durable-objects/best-practices/websockets/): hibernating WebSocket lifecycle and socket attachment persistence used by the hosted relay.
+- [Cloudflare SQLite-backed Durable Objects](https://developers.cloudflare.com/durable-objects/best-practices/access-durable-objects-storage/): Free-plan-compatible namespace configuration and SQLite storage APIs.
+- [Cloudflare Durable Object State](https://developers.cloudflare.com/durable-objects/api/state/) and [Alarms](https://developers.cloudflare.com/durable-objects/api/alarms/): transport reconstruction and host-disconnection cleanup.
+- [Cloudflare Wrangler commands](https://developers.cloudflare.com/workers/wrangler/commands/) and [workers.dev routing](https://developers.cloudflare.com/workers/configuration/routing/workers-dev/): account authorization, deployment and hosted HTTPS addresses.
+- [Cloudflare Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/): Free-plan limits and WebSocket message billing.
+
 The viewer is for education and reference. It is not intended for clinical decisions. Preserve the applicable source credits, component licenses, and modification notices when sharing anatomy or derived images.

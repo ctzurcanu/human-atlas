@@ -1,0 +1,13 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "human-atlas-connect",
+  "main": "connect-worker.mjs",
+  "compatibility_date": "2026-04-07",
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {"ALLOWED_VIEWER_ORIGINS": "https://ctzurcanu.github.io"},
+  "durable_objects": {
+    "bindings": [{"name": "ROOMS", "class_name": "AtlasRoom"}]
+  },
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["AtlasRoom"]}]
+}
