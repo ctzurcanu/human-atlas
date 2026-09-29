@@ -11,6 +11,21 @@ export type ExplosionGroup={id:string;name:string;depth:number;x:number;y:number
 export type ExplosionStage={positions:Float32Array;width:number;height:number;groups:ExplosionGroup[];clusterIds:Int32Array;clusters:number[][]};
 export type HierarchicalExplosionLayout={stages:ExplosionStage[];steps:number};
 
+/** Include the next tick and every intervening stage, so transitions fit too. */
+export function nextExplosionBounds(layout:HierarchicalExplosionLayout,parts:Part[],visibleIds:Set<string>,amount:number,requested:number){
+ const first=Math.max(0,Math.floor(Math.min(amount,requested)*layout.steps));
+ const last=Math.min(layout.steps,Math.floor(Math.max(amount,requested)*layout.steps+1e-6)+1);
+ const min:[number,number,number]=[Infinity,Infinity,Infinity],max:[number,number,number]=[-Infinity,-Infinity,-Infinity];
+ parts.forEach((part,i)=>{
+  if(!visibleIds.has(part.id))return;
+  for(let stage=first;stage<=last;stage++)for(let axis=0;axis<3;axis++){
+   const center=layout.stages[stage].positions[i*3+axis],half=(part.bounds[1][axis]-part.bounds[0][axis])/2;
+   min[axis]=Math.min(min[axis],center-half);max[axis]=Math.max(max[axis],center+half);
+  }
+ });
+ return {min,max};
+}
+
 const partCenter=(part:Part,axis:number)=>(part.bounds[0][axis]+part.bounds[1][axis])/2;
 function nodeBounds(parts:Part[]):Bounds{
  const low=[Infinity,Infinity,Infinity],high=[-Infinity,-Infinity,-Infinity];

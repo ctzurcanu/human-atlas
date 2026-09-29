@@ -43,6 +43,60 @@ export function frameDistance(bounds:Box3,direction:Vector3,up:Vector3,aspect:nu
  const [x,y]=screenAnchor(area,preferredAnchor(area)),availableHeight=Math.max(.02,2*Math.min(y-area.top,area.bottom-y)),availableWidth=Math.max(.02,2*Math.min(x-area.left,area.right-x));
  return Math.max(extent(vertical)/(2*tan*availableHeight),extent(right)/(2*tan*Math.max(.001,aspect)*availableWidth))+extent(direction)/2;
 }
+/** Pull back only as far as needed; retain the current orientation and pan. */
+export function zoomOutToFit(camera:PerspectiveCamera,bounds:Box3,area:ViewArea){
+ if(bounds.isEmpty())return false;
+ const paddingX=(area.right-area.left)*.02,paddingY=(area.bottom-area.top)*.02;
+ const left=area.left+paddingX,right=area.right-paddingX,top=area.top+paddingY,bottom=area.bottom-paddingY;
+ camera.updateMatrixWorld(true);
+ const points=Array.from({length:8},(_,corner)=>new Vector3(bounds[(corner&1)?'max':'min'].x,bounds[(corner&2)?'max':'min'].y,bounds[(corner&4)?'max':'min'].z).applyMatrix4(camera.matrixWorldInverse));
+ const fits=()=>points.every(point=>{const projected=point.clone().applyMatrix4(camera.projectionMatrix),x=(projected.x+1)/2,y=(1-projected.y)/2;return -point.z>=camera.near&&-point.z<=camera.far&&x>=left-1e-10&&x<=right+1e-10&&y>=top-1e-10&&y<=bottom+1e-10;});
+ if(fits())return false;
+ let projection=camera.projectionMatrix.elements,anchorX=(1-projection[8])/2,anchorY=(1+projection[9])/2;
+ // A panel opened since the last fit can cover the projection center. Re-anchor
+ // only during this explicit fit, otherwise pulling back cannot uncover it.
+ if(anchorX<=left||anchorX>=right||anchorY<=top||anchorY>=bottom){setFrameOffset(camera,area);projection=camera.projectionMatrix.elements;anchorX=(1-projection[8])/2;anchorY=(1+projection[9])/2;}
+ let pullback=0,maxDepth=0;
+ for(const point of points){
+  const horizontal=point.x*projection[0]/2,vertical=-point.y*projection[5]/2,depth=-point.z;
+  const needed=Math.max(camera.near*1.01,Math.abs(horizontal)/(horizontal<0?anchorX-left:right-anchorX),Math.abs(vertical)/(vertical<0?anchorY-top:bottom-anchorY));
+  pullback=Math.max(pullback,needed-depth);maxDepth=Math.max(maxDepth,depth);
+ }
+ if(pullback>0)camera.position.addScaledVector(new Vector3(0,0,1).applyQuaternion(camera.quaternion),pullback);
+ camera.far=Math.max(camera.far,(maxDepth+pullback)*1.05);camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
+ return true;
+}
+/** Enlarge shrinking content to more than half of each usable dimension, up to its fit limit. */
+export function zoomInToFill(camera:PerspectiveCamera,bounds:Box3,area:ViewArea,maxAdvance=Infinity){
+ if(bounds.isEmpty()||maxAdvance<=0)return false;
+ camera.updateMatrixWorld(true);
+ const projection=camera.projectionMatrix.elements,anchorX=(1-projection[8])/2,anchorY=(1+projection[9])/2;
+ const width=area.right-area.left,height=area.bottom-area.top,left=area.left+width*.02,right=area.right-width*.02,top=area.top+height*.02,bottom=area.bottom-height*.02;
+ if(anchorX<=left||anchorX>=right||anchorY<=top||anchorY>=bottom)return false;
+ const points=Array.from({length:8},(_,corner)=>{
+  const point=new Vector3(bounds[(corner&1)?'max':'min'].x,bounds[(corner&2)?'max':'min'].y,bounds[(corner&4)?'max':'min'].z).applyMatrix4(camera.matrixWorldInverse);
+  return {x:point.x*projection[0]/2,y:-point.y*projection[5]/2,depth:-point.z};
+ });
+ const fills=(advance:number)=>{
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  for(const point of points){const depth=point.depth-advance,x=point.x/depth,y=point.y/depth;minX=Math.min(minX,x);maxX=Math.max(maxX,x);minY=Math.min(minY,y);maxY=Math.max(maxY,y);}
+  return maxX-minX>=width*.52-1e-10&&maxY-minY>=height*.52-1e-10;
+ };
+ if(fills(0))return false;
+ let advance=maxAdvance;
+ for(const point of points){
+  const needed=Math.max(camera.near*1.01,Math.abs(point.x)/(point.x<0?anchorX-left:right-anchorX),Math.abs(point.y)/(point.y<0?anchorY-top:bottom-anchorY));
+  advance=Math.min(advance,point.depth-needed);
+ }
+ if(advance<=1e-10)return false;
+ if(fills(advance)){
+  let low=0,high=advance;
+  for(let iteration=0;iteration<40;iteration++){const middle=(low+high)/2;if(fills(middle))high=middle;else low=middle;}
+  advance=high;
+ }
+ camera.position.addScaledVector(new Vector3(0,0,1).applyQuaternion(camera.quaternion),-advance);camera.updateMatrixWorld(true);
+ return true;
+}
 // Frame v1: unit direction [0..1]×3, model-relative target×3, usable-area
 // anchor [0..1]×2, distance fraction [0..1], unit up [0..1]×3.
 // Targets can leave [0..1] when the user pans beyond the model's bounds.

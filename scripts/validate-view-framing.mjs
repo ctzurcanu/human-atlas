@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {Box3,MathUtils,Matrix4,PerspectiveCamera,Quaternion,Vector3} from 'three';
-import {applyFrame,captureFrame,frameDistance,immersiveArea,interpolateFrame,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea} from '../app/view-framing.ts';
+import {applyFrame,captureFrame,frameDistance,immersiveArea,interpolateFrame,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea,zoomInToFill,zoomOutToFit} from '../app/view-framing.ts';
 import {validCamera} from '../shared/camera-frame.mjs';
 
 const bounds=new Box3(new Vector3(-.35,0,-.2),new Vector3(.35,1.8,.2)),target=bounds.getCenter(new Vector3());
@@ -30,4 +30,63 @@ const initialHead=new Matrix4().compose(new Vector3(.1,1.6,.2),new Quaternion().
 const presentation=new Matrix4().compose(new Vector3(0,.9,2),new Quaternion().setFromAxisAngle(new Vector3(0,1,0),-.2),new Vector3(1,1,1)),rig=presentation.clone().multiply(initialHead.clone().invert());
 same(rig.clone().multiply(initialHead).elements,presentation.elements);
 const movement=new Matrix4().makeTranslation(.1,0,0);same(rig.clone().multiply(initialHead.clone().multiply(movement)).elements,presentation.clone().multiply(movement).elements);
-console.log('Normalized framing round-trips across portrait, landscape, XR and model scale; tools move the center upward; axial views and tracked head movement are preserved.');
+
+// The next exploded mark must fit even with a panned target, depth, a tilted
+// view, camera zoom, and narrow space between panels. Never zoom back in.
+const exploded=new Box3(new Vector3(-2,-1,-.7),new Vector3(3,3,.9));
+for(const [aspect,area] of [[16/9,desktop],[9/19.5,moreTools],[1,immersiveArea]]){
+ const local=new PerspectiveCamera(34,aspect,.01,100),pivot=new Vector3(.6,.8,.1),back=new Vector3(.35,.12,1).normalize();
+ local.zoom=1.3;local.position.copy(pivot).addScaledVector(back,.5);local.lookAt(pivot);setFrameOffset(local,area);local.updateMatrixWorld(true);
+ const orientation=local.quaternion.toArray(),offset={...local.view},start=local.position.clone(),distance=local.position.distanceTo(pivot);
+ assert.equal(zoomOutToFit(local,exploded,area),true);
+ assert.ok(local.position.distanceTo(pivot)>distance);
+ same(local.quaternion.toArray(),orientation);assert.deepEqual(local.view,offset);
+ const delta=local.position.clone().sub(start).normalize();same(delta.toArray(),back.toArray());
+ for(let corner=0;corner<8;corner++){
+  const point=new Vector3(exploded[(corner&1)?'max':'min'].x,exploded[(corner&2)?'max':'min'].y,exploded[(corner&4)?'max':'min'].z).project(local),x=(point.x+1)/2,y=(1-point.y)/2;
+  assert.ok(x>=area.left&&x<=area.right&&y>=area.top&&y<=area.bottom&&point.z>=-1&&point.z<=1,'Every corner of the upcoming explosion fits.');
+ }
+ const fitted=local.position.toArray();
+ assert.equal(zoomOutToFit(local,exploded,area),false);same(local.position.toArray(),fitted);
+ assert.equal(zoomOutToFit(local,bounds,area),false);same(local.position.toArray(),fitted);
+}
+const coveredCenter=new PerspectiveCamera(34,16/9,.01,100);coveredCenter.position.set(0,.9,1);coveredCenter.lookAt(target);
+assert.equal(zoomOutToFit(coveredCenter,exploded,{left:.65,right:.98,top:.1,bottom:.8}),true);
+const uncovered=target.clone().project(coveredCenter);assert.ok((uncovered.x+1)/2>.65,'An explicit fit can uncover a projection center hidden by a newly opened panel.');
+
+const projectedArea=(camera,box)=>{
+ let left=Infinity,right=-Infinity,top=Infinity,bottom=-Infinity;
+ for(let corner=0;corner<8;corner++){
+  const point=new Vector3(box[(corner&1)?'max':'min'].x,box[(corner&2)?'max':'min'].y,box[(corner&4)?'max':'min'].z).project(camera),x=(point.x+1)/2,y=(1-point.y)/2;
+  left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);
+ }
+ return {left,right,top,bottom};
+};
+// During implosion the content grows on screen as its world bounds shrink.
+// Matching the content to each viewport also covers portrait and XR ratios.
+for(const [aspect,area] of [[16/9,desktop],[9/19.5,moreTools],[1,immersiveArea]]){
+ const local=new PerspectiveCamera(34,aspect,.01,100),pivot=new Vector3(.1,.9,0),halfWidth=aspect*(area.right-area.left)/(area.bottom-area.top);
+ const box=new Box3(pivot.clone().sub(new Vector3(halfWidth,1,.08)),pivot.clone().add(new Vector3(halfWidth,1,.08)));
+ local.position.copy(pivot).add(new Vector3(0,0,25));local.lookAt(pivot);setFrameOffset(local,area);local.updateMatrixWorld(true);
+ const orientation=local.quaternion.toArray(),offset={...local.view};let previousDistance=local.position.distanceTo(pivot);
+ for(const scale of [1,.65,.3]){
+  const shrunk=new Box3(box.min.clone().sub(pivot).multiplyScalar(scale).add(pivot),box.max.clone().sub(pivot).multiplyScalar(scale).add(pivot));
+  assert.equal(zoomInToFill(local,shrunk,area),true);
+  const visible=projectedArea(local,shrunk);
+  assert.ok((visible.right-visible.left)/(area.right-area.left)>.5&&(visible.bottom-visible.top)/(area.bottom-area.top)>.5,'Imploding content fills more than half of both usable dimensions');
+  assert.ok(visible.left>=area.left&&visible.right<=area.right&&visible.top>=area.top&&visible.bottom<=area.bottom,'Zoom-in retains the entire shrinking view');
+  const distance=local.position.distanceTo(pivot);assert.ok(distance<previousDistance);previousDistance=distance;
+  same(local.quaternion.toArray(),orientation);assert.deepEqual(local.view,offset);
+  assert.equal(zoomInToFill(local,shrunk,area),false,'Stop zooming when the minimum size is reached');
+ }
+}
+const slender=new Box3(new Vector3(-.15,-1,-.1),new Vector3(.15,1,.1)),slenderCamera=new PerspectiveCamera(34,16/9,.01,100),slenderArea=usableViewArea([]);
+slenderCamera.position.set(0,0,25);slenderCamera.lookAt(new Vector3());setFrameOffset(slenderCamera,slenderArea);slenderCamera.updateMatrixWorld(true);
+assert.equal(zoomInToFill(slenderCamera,slender,slenderArea),true);
+const slenderScreen=projectedArea(slenderCamera,slender);
+assert.ok(slenderScreen.top>=slenderArea.top&&slenderScreen.bottom<=slenderArea.bottom,'A tall body stays fully visible even when both half-size goals cannot coexist');
+near(slenderScreen.top,slenderArea.top+(slenderArea.bottom-slenderArea.top)*.02);
+assert.equal(zoomInToFill(slenderCamera,slender,slenderArea),false,'Do not push a constrained dimension beyond the viewport');
+const limited=new PerspectiveCamera(34,1,.01,100);limited.position.set(0,0,20);limited.lookAt(new Vector3());limited.updateMatrixWorld(true);
+zoomInToFill(limited,slender,slenderArea,2);near(limited.position.z,18);
+console.log('Normalized framing preserves pan and orientation; explosion fits ahead, and implosion fills half of both dimensions or the largest fully visible size.');

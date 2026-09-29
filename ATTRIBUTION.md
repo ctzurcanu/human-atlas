@@ -1184,6 +1184,7 @@ The Systems browser follows the major organ systems in [Wikipedia's List of syst
 
 - [W3C MediaStream Recording specification](https://www.w3.org/TR/mediastream-recording/): browser recording options and the target encoding bitrate.
 - [MDN MediaRecorder constructor](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/MediaRecorder): codec selection and `videoBitsPerSecond` configuration.
+- [MDN canvas captureStream](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/captureStream) and [requestFrame](https://developer.mozilla.org/en-US/docs/Web/API/CanvasCaptureMediaStreamTrack/requestFrame): recording cadence and explicit capture after composing a frame, with automatic capture as a compatibility fallback.
 
 ## Connect hosting references
 

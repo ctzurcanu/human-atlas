@@ -12,7 +12,7 @@ An interactive 3D anatomy explorer built with React, Three.js, and targeted publ
 - Move from assembled anatomy to a spaced inventory of every visible piece.
 - Search anatomical names and source identifiers.
 - Isolate a selected structure and read its details.
-- Download a PNG of the anatomy or the visible page, and record video with labels and controls.
+- Download a PNG of the anatomy or the visible page, and record video with labels and controls at a target of 60 fps.
 - After positioning the model, select the bookmark icon at the top right, name the view, and select **Save view** in the panel. Reopen saved views from that same panel. They are stored in this browser's localStorage.
 - Use compact controls and detail panels on mobile.
 

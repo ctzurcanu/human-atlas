@@ -7,7 +7,7 @@ async function load(entryPoint){
  return import(`data:text/javascript;base64,${Buffer.from(result.outputFiles[0].contents).toString('base64')}`);
 }
 const {hierarchyEntries}=await load('app/anatomy-hierarchy.ts');
-const {createHierarchicalExplosionLayout}=await load('app/hierarchical-explosion.ts');
+const {createHierarchicalExplosionLayout,nextExplosionBounds}=await load('app/hierarchical-explosion.ts');
 
 function verifyPacking(atlas,stage){
  const rectangles=atlas.parts.map((part,i)=>{
@@ -38,6 +38,20 @@ for(const name of ['atlas-male-complete','atlas-hra-female','atlas-embryo','atla
   }
   assert(layout.stages.at(-1).clusters.every(members=>members.length===1),'The final explosion must rotate atomic pieces independently');
   verifyPacking(atlas,layout.stages.at(-1));
+  // Fit ahead of the slider: include the next full mark and all positions along
+  // a multi-mark transition, using every visible part even with a selection.
+  for(const [amount,requested] of [[0,1/layout.steps],[.31,.81],[.8,.2],[1,1]]){
+   const box=nextExplosionBounds(layout,atlas.parts,visible,amount,requested);
+   const first=Math.floor(Math.min(amount,requested)*layout.steps),last=Math.min(layout.steps,Math.floor(Math.max(amount,requested)*layout.steps+1e-6)+1);
+   for(let stage=first;stage<=last;stage++)atlas.parts.forEach((part,i)=>{
+    for(let axis=0;axis<3;axis++){
+     const center=layout.stages[stage].positions[i*3+axis],half=(part.bounds[1][axis]-part.bounds[0][axis])/2;
+     assert.ok(center-half>=box.min[axis]&&center+half<=box.max[axis],'Upcoming stages and their transitions must stay within the fit bounds');
+    }
+   });
+  }
+  const only=new Set([atlas.parts[0].id]),single=nextExplosionBounds(layout,atlas.parts,only,.25,.5),all=nextExplosionBounds(layout,atlas.parts,visible,.25,.5);
+  assert.ok(single.min.every((value,axis)=>value>=all.min[axis])&&single.max.every((value,axis)=>value<=all.max[axis]),'Hidden parts do not enlarge the fit bounds');
   console.log(`${name} ${mode}: ${layout.steps} hierarchy levels; all ${atlas.parts.length} final pieces packed without overlap`);
  }
  if(name==='atlas-male-complete'){

@@ -6,7 +6,7 @@ import * as T from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.js';
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import {createHierarchicalExplosionLayout,type ExplodeHierarchy,type HierarchicalExplosionLayout} from './hierarchical-explosion';
+import {createHierarchicalExplosionLayout,nextExplosionBounds,type ExplodeHierarchy,type HierarchicalExplosionLayout} from './hierarchical-explosion';
 import {hierarchyEntries} from './anatomy-hierarchy';
 import {resolveGuestHierarchy,type GuestHierarchy} from './guest-hierarchy';
 import {loadModelBuffer} from './model-download';
@@ -27,10 +27,10 @@ import {enabledSections} from './section-stack';
 import {SYSTEMS,structureName,type Atlas,type SceneState,type SystemId} from './anatomy';
 import {isSkinPart} from './depth-layers';
 import type {SceneCapture} from './export-tools';
-import {captureScale,type CaptureSize,type SceneFrameCapture} from './page-capture';
+import type {CaptureSize,SceneFrameCapture} from './page-capture';
 import type {VrAnatomy} from './vr-anatomy';
 import type {ScenePose} from './connect-state';
-import {applyFrame,captureFrame,decodeFrame,frameDistance,immersiveArea,interpolateFrame,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea,type ViewArea,type ViewRect} from './view-framing';
+import {applyFrame,captureFrame,decodeFrame,frameDistance,immersiveArea,interpolateFrame,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea,zoomInToFill,zoomOutToFit,type ViewArea,type ViewRect} from './view-framing';
 import {validCamera} from '../shared/camera-frame.mjs';
 interface Props {atlas:Atlas;vrModelUrl:string;state:SceneState;hierarchy:ExplodeHierarchy;guestHierarchy?:GuestHierarchy;remotePoseRef?:{current:ScenePose|null};remoteModel?:string;onPose?:(pose:Omit<ScenePose,'model'>)=>void;cameraTransition?:{id:number;from:number[]};sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onSelect:(id:string,toggle?:boolean)=>void;onHidePart:(id:string)=>void;onCamera?:(camera:number[])=>void;onCovering?:(ids:string[])=>void;onExplosionSteps?:(steps:number)=>void;onCapture?:(capture:SceneCapture|null)=>void;onFrameCapture?:(capture:SceneFrameCapture|null)=>void;onProgress:(n:number)=>void;onError:(s:string)=>void}
 type SceneMaterial={color:number[];map?:string;normalMap?:string;normalScale?:number;roughness?:number;metalness?:number;opacity?:number;vertexColors?:boolean};
@@ -54,7 +54,8 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   renderer.domElement.setAttribute('aria-label',atlas.scope==='cell'?'Interactive human cell. Drag to orbit, pinch or scroll to zoom, tap a component to inspect it, Control-click to add or remove it, or Shift-click to hide it.':'Interactive human anatomy. Drag to orbit, pinch or scroll to zoom, tap a structure to inspect it, Control-click to add or remove it, or Shift-click to hide it.');
   renderer.domElement.setAttribute('data-scene-canvas','');
   let pageCaptureCanvas:HTMLCanvasElement|null=null,captureSize:CaptureSize|undefined;
-  const syncCaptureResolution=()=>{const normal=Math.min(devicePixelRatio,el.clientWidth<768||el.clientHeight<600?1.5:2),ratio=captureSize?Math.max(normal,captureScale(captureSize,el.clientWidth,el.clientHeight)):normal;if(renderer.getPixelRatio()!==ratio){renderer.setPixelRatio(ratio);dirty=true;return true;}return false;};
+  const pageFrameListeners=new Set<Parameters<SceneFrameCapture['subscribe']>[0]>();
+  const syncCaptureResolution=()=>{const normal=Math.min(devicePixelRatio,el.clientWidth<768||el.clientHeight<600?1.5:2),ratio=captureSize?Math.min(captureSize.width/Math.max(1,el.clientWidth),captureSize.height/Math.max(1,el.clientHeight)):normal;if(renderer.getPixelRatio()!==ratio){renderer.setPixelRatio(ratio);dirty=true;return true;}return false;};
   const rememberPageFrame=()=>{if(!pageCaptureCanvas)return;const source=renderer.domElement;if(pageCaptureCanvas.width!==source.width||pageCaptureCanvas.height!==source.height){pageCaptureCanvas.width=source.width;pageCaptureCanvas.height=source.height;}pageCaptureCanvas.getContext('2d')?.drawImage(source,0,0);};
   const scene=new T.Scene(),camera=new T.PerspectiveCamera(34,1,.01,100),controls=new OrbitControls(camera,renderer.domElement);
   const desktopAnatomy=new T.Group();scene.add(desktopAnatomy);
@@ -89,7 +90,8 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   let currentArea:ViewArea=usableViewArea([]),currentLabelArea:LabelArea=labelAreaForPanels(0,0,[]),layoutDirty=true,areaInitialized=false;
   const viewBounds=modelBounds.clone(),framingPoint=new T.Vector3();
   const anatomyEntries=hierarchyEntries(atlas);let explosionLayout:HierarchicalExplosionLayout|null=null;
-  let packingWidth=1,packingHeight=1,explosionAspect=0;
+  let packingWidth=1,packingHeight=1,explosionAspect=0,lastExplode=0;
+  const explosionFitBounds=new T.Box3(),explosionVisibleBounds=new T.Box3();let explosionFitPending=false,implosionFillActive=false;
   const hover=document.createElement('div');hover.className='part-hover';hover.setAttribute('role','tooltip');hover.hidden=true;
   const hoverLabel=document.createElement('span');hover.appendChild(hoverLabel);el.appendChild(hover);
   type Target={index:number;x:number;y:number;left:number;right:number;top:number;bottom:number};let targets:Target[]=[];
@@ -705,7 +707,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    }
   };
   const clock=new T.Clock();let lastExtent=-1,lastCamera:number[]|undefined,lastFocus=0,lastRotationKey='',lastSectionOrientation='',lastSectionPoint:T.Vector3|undefined,selectionStencil=false,lastRemotePose:ScenePose|null=null,panelsAnimating=false;
-  const animate=()=>{
+  const animate=(now=performance.now())=>{
    if(disposed)return;const presenting=renderer.xr.isPresenting;if(!presenting)frame=requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05),s=latest.current;if(!presenting)attachPreview();
    const following=!!remoteRef.current;controls.enabled=!following&&!presenting;controls.enableDamping=!following&&!presenting&&!cameraTween;
    if(!presenting){const animating=studio.ownerDocument.getAnimations().some(animation=>{const target=(animation.effect as KeyframeEffect|null)?.target;return target instanceof Element&&(target.closest(panelSelectors)||target.querySelector(panelSelectors));});if(animating||panelsAnimating)layoutDirty=true;panelsAnimating=animating;}
@@ -743,8 +745,12 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     const span=Math.max(section.axis==='axial'?size.x:size.y,section.axis==='sagittal'?size.z:size.x,size.z,.2)*1.12;
     guideFill.visible=!lightweightActive&&sectionToolRef.current&&!enabledSections(s).length;guideBorder.visible=guideFill.visible;guideFill.position.fromArray(point);guideBorder.position.fromArray(point);guideFill.quaternion.copy(quaternion);guideBorder.quaternion.copy(quaternion);guideFill.scale.set(span,span,1);guideBorder.scale.set(span,span,1);
     dirty=true;}
+   const explosionRequested=s.explode!==lastExplode;
+   if(explosionRequested)implosionFillActive=s.explode<lastExplode&&!s.isolate;
+   lastExplode=s.explode;
    const moving=Math.abs(amount-s.explode)>.0001;
    if(moving){amount=T.MathUtils.damp(amount,s.explode,8,dt);dirty=true;}
+   else if(amount!==s.explode){amount=s.explode;lastExtent=-1;dirty=true;}
    if(changed||moving||lastExtent<0){
     const selection=new Set(s.selected),activeCut=enabledSections(s).length>0;
     const visibleParts=atlas.parts.filter(p=>activeCut?sectionPartVisible(p,s):partVisible(p,s));
@@ -753,7 +759,10 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     if(layoutChanged){explosionLayout=createHierarchicalExplosionLayout(atlas,anatomyEntries,new Set(visibleParts.map(part=>part.id)),hierarchyRef.current,camera.aspect,guestNodesRef.current);layoutKey=nextLayoutKey;explosionAspect=camera.aspect;stepsCallback.current?.(explosionLayout.steps);}
     const stages=explosionLayout!.stages,progress=amount*explosionLayout!.steps,from=Math.min(stages.length-1,Math.floor(progress)),to=Math.min(stages.length-1,from+1),blend=progress-from;
     packingWidth=T.MathUtils.lerp(stages[from].width,stages[to].width,blend);packingHeight=T.MathUtils.lerp(stages[from].height,stages[to].height,blend);
-    if(layoutChanged&&amount>.001&&!s.isolate&&!selectionCleared)fit('front',Math.min(1,amount*6));
+    if(explosionRequested||layoutChanged&&amount>.001&&!selectionCleared){
+     explosionFitPending=s.explode>0&&!s.isolate&&!implosionFillActive;
+     if(explosionFitPending){const box=nextExplosionBounds(explosionLayout!,atlas.parts,new Set(visibleParts.map(part=>part.id)),amount,s.explode);explosionFitBounds.min.fromArray(box.min);explosionFitBounds.max.fromArray(box.max);}
+    }
     const clusterStageIndex=Math.min(stages.length-1,Math.floor(progress+.05)),clusterStage=stages[clusterStageIndex],selectedClusters=new Set<number>();
     if(clusterStageIndex>0)for(const id of s.selected){const i=partIndices.get(id),cluster=i===undefined?-1:clusterStage.clusterIds[i];if(cluster>=0)selectedClusters.add(cluster);}
     const rotationKey=s.selected.join(',')+':'+s.reset+':'+clusterStageIndex+':'+[...selectedClusters].join(',');
@@ -761,17 +770,17 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     rotationPartIndices.clear();rotationData.fill(0);
     for(const cluster of selectedClusters)for(const i of clusterStage.clusters[cluster]){rotationPartIndices.add(i);rotationData[i*4]=255;}
 
-    viewBounds.makeEmpty();
+    viewBounds.makeEmpty();explosionVisibleBounds.makeEmpty();
     atlas.parts.forEach((p,i)=>{
      const c=centers[i],j=i*3,dx=T.MathUtils.lerp(stages[from].positions[j],stages[to].positions[j],blend)-c.x,dy=T.MathUtils.lerp(stages[from].positions[j+1],stages[to].positions[j+1],blend)-c.y,dz=T.MathUtils.lerp(stages[from].positions[j+2],stages[to].positions[j+2],blend)-c.z;
      const selected=selection.has(p.id),checked=sectionPartVisible(p,s);
      data.set([dx,dy,dz,(activeCut?checked:partVisible(p,s))&&(!isSkinPart(p)||surfaceReady||selected||activeCut)?1:0],i*4);selectedData[i*4]=selected?255:0;previewData[i*4]=(hasSurfacePreview?isSkinPart(p):checked)?255:0;
+     if(activeCut?checked:partVisible(p,s)){explosionVisibleBounds.expandByPoint(framingPoint.set(bounds[i].min.x+dx,bounds[i].min.y+dy,bounds[i].min.z+dz));explosionVisibleBounds.expandByPoint(framingPoint.set(bounds[i].max.x+dx,bounds[i].max.y+dy,bounds[i].max.z+dz));}
      if(selection.size?selected:activeCut?checked:partVisible(p,s)){viewBounds.expandByPoint(framingPoint.set(bounds[i].min.x+dx,bounds[i].min.y+dy,bounds[i].min.z+dz));viewBounds.expandByPoint(framingPoint.set(bounds[i].max.x+dx,bounds[i].max.y+dy,bounds[i].max.z+dz));}
      const mesh=pickers[i];if(mesh){mesh.quaternion.identity();mesh.position.set(dx,dy,dz);mesh.updateMatrix();mesh.updateMatrixWorld(true);}
     });if(viewBounds.isEmpty())viewBounds.copy(modelBounds);syncSelectedRotation();partTexture.needsUpdate=true;selectionTexture.needsUpdate=true;previewTexture.needsUpdate=true;rotationTexture.needsUpdate=true;lastState=s;lastExtent=amount;dirty=true;if(changed)queueCaps(s);
    }
    if(s.view!==lastView||s.reset!==lastReset||s.region!==lastRegion){if(s.focus)lastFocus=-1;fit(amount>.04?'front':s.view,Math.min(1,amount*6));lastView=s.view;lastReset=s.reset;lastRegion=s.region??'all';}
-   if(moving&&!s.isolate)fit(amount>.04?'front':s.view,Math.min(1,amount*6));
    const isolateKey=s.isolate?s.selected.join(',')+':'+s.reset:'';
    const focusChanged=(s.focus??0)!==lastFocus;lastFocus=s.focus??0;
    if(isolateKey!==lastIsolate||(s.isolate&&moving)||focusChanged&&!!s.focus){
@@ -818,6 +827,19 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     applyFrame(camera,controls.target,remote.camera,viewBounds,viewArea());if(remote.camera.length!==12)camera.up.fromArray(remote.up);controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.05);controls.update();
     selectedRotation.fromArray(remote.rotation).normalize();syncSelectedRotation();lastRemotePose=remote;dirty=true;
    }
+   if(explosionFitPending){
+    for(const i of rotationPartIndices){const mesh=pickers[i];if(mesh&&data[i*4+3]>.5)explosionFitBounds.union(worldBox.copy(bounds[i]).applyMatrix4(mesh.matrixWorld));}
+    if(zoomOutToFit(camera,explosionFitBounds,viewArea())){controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.25);controls.update();dirty=true;}
+    if(!moving&&!cameraTween)explosionFitPending=false;
+   }
+   if(implosionFillActive){
+    const box=explosionVisibleBounds.clone();
+    for(const i of rotationPartIndices){const mesh=pickers[i];if(mesh&&data[i*4+3]>.5)box.union(worldBox.copy(bounds[i]).applyMatrix4(mesh.matrixWorld));}
+    let fitted=zoomOutToFit(camera,box,viewArea());
+    fitted=zoomInToFill(camera,box,viewArea(),Math.max(0,camera.position.distanceTo(controls.target)-controls.minDistance))||fitted;
+    if(fitted){controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.25);controls.update();dirty=true;}
+    if(!moving&&!cameraTween)implosionFillActive=false;
+   }
    // Keep depth precision near the anatomy as the camera moves. A fixed tiny near
    // plane causes close skin and muscle surfaces to fight at whole-body distances.
    const near=Math.max(.00001,Math.min(.05,camera.position.distanceTo(controls.target)/500));
@@ -843,13 +865,13 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
       targets.push({index:i,x:(projected.x+1)*el.clientWidth/2,y:(1-projected.y)*el.clientHeight/2,left,right,top,bottom});
      });
     }
-    rememberPageFrame();dirty=false;
+    if(!pageFrameListeners.size)rememberPageFrame();for(const listener of pageFrameListeners)listener({canvas:renderer.domElement,labels:labelLayer,transitioning:!!cameraTween},now);dirty=false;
    }
    if(!presenting&&previewCanvas&&(previewDirty||changed))drawPreview(s);
    if(!presenting&&ready){const key=[s.selected.join(','),s.visible.join(','),s.region,s.skinOpacity,s.explode,...selectedRotation.toArray().map(v=>v.toFixed(2)),...camera.position.toArray().map(v=>v.toFixed(2)),...controls.target.toArray().map(v=>v.toFixed(2))].join(':');if((key!==lastCoveringKey||s.hidden!==lastCoveringHidden||s.depthHidden!==lastCoveringDepth)&&performance.now()-lastCoveringScan>250){scanCovering(s);lastCoveringKey=key;lastCoveringHidden=s.hidden;lastCoveringDepth=s.depthHidden;lastCoveringScan=performance.now();}}
 
   };animate();
-  const capturePageFrame:SceneFrameCapture=Object.assign((size?:CaptureSize)=>{captureSize=size;const resolutionChanged=syncCaptureResolution();if(!pageCaptureCanvas||resolutionChanged){pageCaptureCanvas??=document.createElement('canvas');renderer.render(scene,renderer.xr.isPresenting?xrRenderCamera:camera);rememberPageFrame();}return {canvas:pageCaptureCanvas,labels:labelLayer};},{release:()=>{pageCaptureCanvas=null;captureSize=undefined;syncCaptureResolution();}});
+  const capturePageFrame:SceneFrameCapture=Object.assign((size?:CaptureSize)=>{captureSize=size;const resolutionChanged=syncCaptureResolution();if(!pageCaptureCanvas||resolutionChanged){pageCaptureCanvas??=document.createElement('canvas');renderer.render(scene,renderer.xr.isPresenting?xrRenderCamera:camera);rememberPageFrame();}return {canvas:pageCaptureCanvas,labels:labelLayer,transitioning:!!cameraTween};},{release:()=>{pageFrameListeners.clear();pageCaptureCanvas=null;captureSize=undefined;syncCaptureResolution();},invalidate:()=>{dirty=true;},subscribe:(listener:Parameters<SceneFrameCapture['subscribe']>[0],size:CaptureSize)=>{captureSize=size;syncCaptureResolution();pageCaptureCanvas=null;pageFrameListeners.add(listener);dirty=true;return()=>{pageFrameListeners.delete(listener);};}});
   onFrameCapture?.(capturePageFrame);
   onCapture?.(async(options={labels:false,background:true})=>{
    if(!ready||disposed)throw new Error('The 3D view is still loading.');

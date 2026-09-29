@@ -2,7 +2,7 @@ import {createPortal} from 'react-dom';
 import {useEffect,useRef,useState,type RefObject} from 'react';
 import {Download,ExternalLink,Square,Video,X} from 'lucide-react';
 import {Button} from '@/components/ui/button';
-import {captureScale,drawPageFrame,renderPageOverlay,renderSceneLabels,videoBitrate,type SceneFrameCapture} from './page-capture';
+import {VIDEO_FPS,captureScale,drawPageFrame,renderAdvancedOverlay,renderPageOverlay,renderSceneLabels,videoBitrate,type SceneFrame,type SceneFrameCapture} from './page-capture';
 
 export interface SceneCaptureOptions {labels:boolean;background:boolean}
 export type SceneCapture=(options?:SceneCaptureOptions)=>Promise<Blob>;
@@ -107,28 +107,43 @@ export default function ExportTools({studioRef,captureRef,frameCaptureRef,curren
    const mime=recordingMime(),canvas=document.createElement('canvas');canvas.width=size.width;canvas.height=size.height;
    await waitFrame();
    const sourceWidth=studio.clientWidth,sourceHeight=studio.clientHeight,scale=captureScale(size,sourceWidth,sourceHeight),initial=frameCapture(size);
-   let overlay=await renderPageOverlay(studio,scale),pageLabels=await renderSceneLabels(initial.labels,sourceWidth,sourceHeight,scale);
-   drawPageFrame(canvas,frameCapture(size).canvas,pageLabels,overlay,sourceWidth,sourceHeight);
-   output=canvas.captureStream(30);
+   let [overlay,advancedOverlay]=await Promise.all([renderPageOverlay(studio,scale,true),renderAdvancedOverlay(studio,scale)]);
+   drawPageFrame(canvas,frameCapture(size).canvas,initial.labels,overlay,sourceWidth,sourceHeight,advancedOverlay);
+   const manualFrames=typeof CanvasCaptureMediaStreamTrack!=='undefined'&&typeof CanvasCaptureMediaStreamTrack.prototype.requestFrame==='function';
+   output=canvas.captureStream(manualFrames?0:VIDEO_FPS);
+   const videoTrack=output.getVideoTracks()[0] as CanvasCaptureMediaStreamTrack;
    const recorder=new MediaRecorder(output,{...(mime?{mimeType:mime}:{}),videoBitsPerSecond:videoBitrate(size)}),pieces:Blob[]=[];
    recorder.ondataavailable=event=>{if(event.data.size)pieces.push(event.data);};
    recorder.onerror=()=>{stopRecording();notice('The video encoder stopped recording.');};
    recorder.onstop=()=>{if(pieces.length){const type=recorder.mimeType||mime,extension=type.includes('mp4')?'mp4':'webm';downloadBlob(new Blob(pieces,{type}),fileName(model,extension));notice('Video downloaded.');}else notice('No video frames were recorded.');};
-   let overlayDirty=false,overlayPending=false,labelPending=false,lastLabel=0,lastDraw=0,lastOverlay=0;
-   const markOverlay=()=>{overlayDirty=true;};
-   const observer=new MutationObserver(mutations=>{if(mutations.some(mutation=>{const element=mutation.target instanceof Element?mutation.target:mutation.target.parentElement;return !element?.closest('.anatomy-labels,[data-scene-canvas],.recording-outline');}))markOverlay();});
+   let overlayDirty=false,overlayPending=false,advancedDirty=false,advancedPending=false,nextFrame=0,lastOverlay=0,currentFrame=initial,boundCapture:SceneFrameCapture|null=null,unsubscribe=()=>{};
+   const present=(now:number,refresh=false)=>{
+    const active=recorderRef.current;if(!active||active.recorder!==recorder||now+.5<nextFrame)return;
+    nextFrame=Math.max(nextFrame+1000/VIDEO_FPS,now+500/VIDEO_FPS);
+    // Re-submit a still frame without reading the WebGL buffer or redrawing
+    // the anatomy. The buffer is valid only immediately after scene rendering.
+    try{if(refresh)canvas.getContext('2d')?.drawImage(canvas,0,0,1,1,0,0,1,1);if(manualFrames)videoTrack.requestFrame();}
+    catch(error){stopRecording();notice(error instanceof Error?error.message:'The page could not be recorded.');}
+   };
+   const paint=(current:SceneFrame,now:number)=>{try{drawPageFrame(canvas,current.canvas,current.labels,overlay,studio.clientWidth,studio.clientHeight,advancedOverlay);present(now);}catch(error){stopRecording();notice(error instanceof Error?error.message:'The page could not be recorded.');}};
+   const bindCapture=(capture:SceneFrameCapture)=>{unsubscribe();boundCapture?.release();boundCapture=capture;currentFrame=capture(size);paint(currentFrame,performance.now());unsubscribe=capture.subscribe((current,now)=>{currentFrame=current;paint(current,now);},size);};
+   const markOverlay=()=>{overlayDirty=true;advancedDirty=true;};
+   const observer=new MutationObserver(mutations=>{for(const mutation of mutations){const element=mutation.target instanceof Element?mutation.target:mutation.target.parentElement;if(element?.closest('.anatomy-labels,[data-scene-canvas],.recording-outline'))continue;if(element?.closest('.advanced-panel'))advancedDirty=true;else markOverlay();}});
    observer.observe(studio.ownerDocument.body,{subtree:true,childList:true,characterData:true,attributes:true});
    document.addEventListener('scroll',markOverlay,true);document.addEventListener('input',markOverlay,true);document.addEventListener('change',markOverlay,true);
    window.addEventListener('resize',markOverlay);
-   cleanup=()=>{observer.disconnect();document.removeEventListener('scroll',markOverlay,true);document.removeEventListener('input',markOverlay,true);document.removeEventListener('change',markOverlay,true);window.removeEventListener('resize',markOverlay);frameCapture.release();frameCaptureRef.current?.release();};
+   cleanup=()=>{unsubscribe();observer.disconnect();document.removeEventListener('scroll',markOverlay,true);document.removeEventListener('input',markOverlay,true);document.removeEventListener('change',markOverlay,true);window.removeEventListener('resize',markOverlay);boundCapture?.release();if(boundCapture!==frameCapture)frameCapture.release();};
    recorderRef.current={recorder,output,frame:0,cleanup};
    recorder.start(1000);setRecording(true);notice('');
+   bindCapture(frameCapture);
    const draw=(now:number)=>{
     const active=recorderRef.current;if(!active||active.recorder!==recorder)return;
-    try{if(now-lastDraw>=33&&frameCaptureRef.current){
-     const current=frameCaptureRef.current(size),scale=captureScale(size,studio.clientWidth,studio.clientHeight);drawPageFrame(canvas,current.canvas,pageLabels,overlay,studio.clientWidth,studio.clientHeight);lastDraw=now;
-     if(now-lastLabel>=33&&!labelPending){labelPending=true;lastLabel=now;void renderSceneLabels(current.labels,studio.clientWidth,studio.clientHeight,scale).then(image=>{pageLabels=image;}).catch(()=>{}).finally(()=>{labelPending=false;});}
-     if(overlayDirty&&!overlayPending&&now-lastOverlay>=100){overlayDirty=false;overlayPending=true;lastOverlay=now;void renderPageOverlay(studio,scale).then(image=>{overlay=image;}).catch(error=>{stopRecording();notice(error instanceof Error?error.message:'The page controls could not be rendered.');}).finally(()=>{overlayPending=false;});}
+    try{if(frameCaptureRef.current){
+     if(frameCaptureRef.current!==boundCapture)bindCapture(frameCaptureRef.current);
+     present(now,true);
+     const scale=captureScale(size,studio.clientWidth,studio.clientHeight);
+     if(advancedDirty&&!advancedPending){advancedDirty=false;advancedPending=true;void renderAdvancedOverlay(studio,scale).then(image=>{advancedOverlay=image;boundCapture?.invalidate();}).catch(error=>{stopRecording();notice(error instanceof Error?error.message:'The presentation controls could not be rendered.');}).finally(()=>{advancedPending=false;});}
+     if(overlayDirty&&!overlayPending&&!currentFrame.transitioning&&now-lastOverlay>=100){overlayDirty=false;overlayPending=true;lastOverlay=now;void renderPageOverlay(studio,scale,true).then(image=>{overlay=image;boundCapture?.invalidate();}).catch(error=>{stopRecording();notice(error instanceof Error?error.message:'The page controls could not be rendered.');}).finally(()=>{overlayPending=false;});}
     }}catch(error){stopRecording();notice(error instanceof Error?error.message:'The page could not be recorded.');return;}
     active.frame=requestAnimationFrame(draw);
    };
