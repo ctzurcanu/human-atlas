@@ -206,8 +206,10 @@ h1 .edition{font-family:inherit;font-weight:500;font-size:10px;letter-spacing:.0
 
 .bottom-dock .dock-layers,.bottom-dock .dock-reset{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-width:48px;min-height:48px;padding:8px;border:1px solid var(--border);border-radius:10px;text-align:center}
 .bottom-dock .dock-layers,.bottom-dock .dock-reset{font-family:inherit;font-size:11px;font-weight:400;line-height:1.2}
-.explode-control .explode-label{justify-content:space-between;gap:2px;margin-bottom:6px;line-height:1.2;text-align:left;white-space:nowrap}
-.explode-control .explode-label output{min-width:0;padding:0;border:0;background:none;text-align:right;font-size:11px;line-height:1.2;font-variant-numeric:tabular-nums}
+.explode-control .explode-label{justify-content:space-between;gap:2px;margin-bottom:6px;font-size:12px;font-weight:500;line-height:1.2;text-align:left;white-space:nowrap}
+.explode-control .explode-label label{display:block;margin:0;font:inherit;color:inherit}
+.explode-control .explode-label output{min-width:0;padding:0;border:0;background:none;color:var(--foreground);text-align:right;font-size:11px;line-height:1.2;font-variant-numeric:tabular-nums}
+.skin-control.depth-control{flex:none}
 .explode-slider-row{display:flex;align-items:center;gap:12px;min-width:0}
 .explode-slider-row [data-slot=slider]{flex:1;min-width:0}
 .top-actions button[aria-label="Open system layers"],.view-controls button[aria-label="Reset view and layers"]{display:flex;align-items:center;justify-content:center;padding:0;border-radius:10px}
@@ -221,7 +223,9 @@ button,input,select,textarea{font-family:inherit}
 .structure-tag .system-dot{display:inline-block;width:6px;height:6px;border-radius:50%;flex:none}
 .structure-tag:hover,.structure-breadcrumbs button:hover{background:var(--accent)}
 .structure-terminology{display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px;margin-top:14px;padding:13px 0 4px;border-top:1px solid var(--border);color:var(--foreground);font-size:11px;line-height:1.25}
-.identifier-pill{--identifier-tint:#8294a9;display:inline-flex;align-items:stretch;gap:0;max-width:100%;overflow:hidden;border:1px solid color-mix(in srgb,var(--border) 62%,var(--identifier-tint));border-radius:999px;color:var(--foreground)}
+.identifier-item{min-width:0;max-width:100%}
+.identifier-pill{--identifier-tint:#8294a9;display:inline-flex;align-items:stretch;gap:0;max-width:100%;overflow:hidden;border:1px solid color-mix(in srgb,var(--border) 62%,var(--identifier-tint));border-radius:999px;color:var(--foreground);text-decoration:none}
+.identifier-pill:hover{border-color:var(--identifier-tint)}
 .identifier-pill strong{display:flex;align-items:center;flex:none;padding:5px 8px;background:color-mix(in srgb,var(--card) 52%,var(--identifier-tint));color:var(--foreground);font-size:10px;font-weight:700;letter-spacing:.035em}
 .identifier-pill>span{min-width:0;padding:5px 9px;background:color-mix(in srgb,var(--card) 88%,var(--identifier-tint));overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .identifier-ta98{--identifier-tint:#4aa991}.identifier-tha{--identifier-tint:#69a2d8}.identifier-fma{--identifier-tint:#d1a15e}.identifier-uberon{--identifier-tint:#b881c5}.identifier-la{--identifier-tint:#948ac8}.identifier-atlas{--identifier-tint:#8b9bad}.identifier-ha-g{--identifier-tint:#a4a4a4}
@@ -238,7 +242,7 @@ button,input,select,textarea{font-family:inherit}
 .inspection-subheading{font-size:12px;color:var(--muted-foreground)}
 .inspection-range{font-size:10px;color:var(--muted-foreground)}
 .inspection-section [data-slot=slider]{margin-block:3px}
-.peel-buttons{display:grid;gap:6px}.peel-buttons button{width:100%;min-height:34px;justify-content:flex-start;white-space:normal;text-align:left;font-size:11px;line-height:1.3}
+.peel-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.peel-buttons button{width:100%;min-width:0;height:auto;min-height:34px;justify-content:flex-start;white-space:normal;text-align:left;font-size:11px;line-height:1.3}
 .detail-actions button{display:flex;align-items:center;justify-content:flex-start;gap:8px;text-align:left}
 
 .hierarchy-header{display:flex;align-items:center;gap:4px;flex:none}

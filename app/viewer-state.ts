@@ -1,6 +1,7 @@
 import {isSurfaceSystem,type Atlas,type Part,type SceneState,type SystemId,type View} from './anatomy';
 import {packPartIds,partFingerprint,unpackPartIds} from './view-part-codes';
 import {DEPTH_LAYERS,depthLayerFor,isSkinPart} from './depth-layers';
+import {completedDepthLayers,depthLayerOpacity,partLayerOpacity} from './depth-control';
 import type {SectionState} from './section-plane';
 import {validCamera} from '../shared/camera-frame.mjs';
 import {compactViewUrl,viewParameters} from './view-url';
@@ -39,24 +40,25 @@ function inSectionRegion(p:Part,region='all'){
 export function partVisible(p:Part,s:SceneState){
  if(p.suppressed)return false;
  const sets=visibilitySets(s);
+ if(s.depth!==undefined&&sets.depthHidden.has(depthLayerFor(p)))return false;
  if(sets.selected.has(p.id))return true;
  if(s.isolate||sets.hidden.has(p.id)||sets.depthHidden.has(depthLayerFor(p))||!sets.visible.has(p.system)||!inRegion(p,s.region))return false;
- if(isSkinPart(p)&&(s.skinOpacity??.1)<=0)return false;
+ if(partLayerOpacity(p,s)<=0)return false;
  // Some primary-source internal meshes protrude beyond the outer reference.
  // An intact, fully opaque surface should conceal unselected internal context.
- if(!isSkinPart(p)&&sets.surface&&!sets.depthHidden.has('skin')&&(s.skinOpacity??0)>=.999&&(s.explode??0)<.001&&!s.sections?.some(section=>section.enabled)&&!s.section?.enabled)return false;
+ if(!isSkinPart(p)&&sets.surface&&!sets.depthHidden.has('skin')&&depthLayerOpacity('skin',s)>=.999&&(s.explode??0)<.001&&!s.sections?.some(section=>section.enabled)&&!s.section?.enabled)return false;
  return true;
 }
 // Sections use the layer checkboxes as their source set, including pieces that
 // lie entirely on either side of a cut. Selection alone must not add a piece.
 export function sectionPartVisible(p:Part,s:SceneState){
  const sets=visibilitySets(s);
- if(p.suppressed)return false;
+ if(p.suppressed||s.depth!==undefined&&sets.depthHidden.has(depthLayerFor(p)))return false;
  if(s.isolate)return sets.selected.has(p.id);
  // A single whole-body skin mesh is still one checked item in a section.
  // Excluding it by region made 100% skin appear absent in every regional cut.
  const wholeSkin=isSkinPart(p)&&/^(skin(?: of body)?|body surface)$/i.test(p.name)&&!p.regions?.length;
- return sets.visible.has(p.system)&&!sets.hidden.has(p.id)&&!sets.depthHidden.has(depthLayerFor(p))&&(inSectionRegion(p,s.region)||wholeSkin)&&(!isSkinPart(p)||(s.skinOpacity??.1)>0);
+ return sets.visible.has(p.system)&&!sets.hidden.has(p.id)&&!sets.depthHidden.has(depthLayerFor(p))&&(inSectionRegion(p,s.region)||wholeSkin)&&partLayerOpacity(p,s)>0;
 }
 export function resolveSelection(atlas:Atlas,terms:string[]){
  return [...new Set(terms.flatMap(term=>{
@@ -77,8 +79,9 @@ export function readViewUrl(search:string,atlas:Atlas,base:SceneState):SceneStat
  const sections=[readSection('')];if(q.get('sections')==='2'||q.has('cut2'))sections.push(readSection('2'));
  const activeSection=sections.length===2&&q.get('sectionTab')==='2'?1:0;
  const legacyDepth=LEGACY_PEEL_LAYERS.slice(0,Math.round(number(q.get('peel'),0,7,0))).flat();
- const depthHidden=atlas.scope==='cell'?[]:(q.has('depth')?q.get('depth')!.split(','):legacyDepth).filter(id=>DEPTH_LAYERS.some(layer=>layer.id===id));
- return {...base,guestExtensions:q.get('bioExpand')?.split(',').filter(id=>/^HGNC:\d+$/.test(id)),guestView:q.get('bioView')?.slice(0,80)??undefined,guestQuery:q.get('bio')?.slice(0,200)??undefined,focus:number(q.get('focus'),0,1,0),selected,view:VIEWS.includes(view)?view:base.view,region:atlas.scope==='cell'?'all':REGIONS.includes(region as never)?region:'all',contextOpacity:number(q.get('context'),0,1,1),skinOpacity:number(q.get('skin'),0,1,base.skinOpacity??.1),peel:0,depthHidden,hidden,isolate:q.get('isolate')==='1',explode:number(q.get('explode'),0,1,0),rotate:q.get('rotate')==='1',labels:q.get('labels')!=='0',visible,sections,activeSection,section:sections[activeSection],camera:cam&&validCamera(cam)?cam:undefined};
+ const depth=atlas.scope!=='cell'&&q.has('dp')?number(q.get('dp'),0,1,0):undefined;
+ const depthHidden=atlas.scope==='cell'?[]:(q.has('depth')?q.get('depth')!.split(','):depth!==undefined?completedDepthLayers(depth):legacyDepth).filter(id=>DEPTH_LAYERS.some(layer=>layer.id===id));
+ return {...base,guestExtensions:q.get('bioExpand')?.split(',').filter(id=>/^HGNC:\d+$/.test(id)),guestView:q.get('bioView')?.slice(0,80)??undefined,guestQuery:q.get('bio')?.slice(0,200)??undefined,focus:number(q.get('focus'),0,1,0),selected,view:VIEWS.includes(view)?view:base.view,region:atlas.scope==='cell'?'all':REGIONS.includes(region as never)?region:'all',contextOpacity:number(q.get('context'),0,1,1),skinOpacity:number(q.get('skin'),0,1,base.skinOpacity??.1),peel:0,depth,depthHidden,hidden,isolate:q.get('isolate')==='1',explode:number(q.get('explode'),0,1,0),rotate:q.get('rotate')==='1',labels:q.get('labels')!=='0',visible,sections,activeSection,section:sections[activeSection],camera:cam&&validCamera(cam)?cam:undefined};
 }
 export function viewUrl(base:string,model:string,s:SceneState,camera?:number[],atlas?:Atlas){
  const url=new URL(base);url.search='';url.hash='';const q=url.searchParams;q.set('model',model);if(s.view!=='three-quarter')q.set('view',s.view);if(s.guestView)q.set('bioView',s.guestView);if(s.guestExtensions?.length)q.set('bioExpand',s.guestExtensions.join(','));if(s.guestQuery)q.set('bio',s.guestQuery);
@@ -88,7 +91,7 @@ export function viewUrl(base:string,model:string,s:SceneState,camera?:number[],a
  if(packedSelection)q.set('s',packedSelection);else s.selected.forEach(id=>q.append('select',id));
  if(packedHidden)q.set('h',packedHidden);else (s.hidden??[]).forEach(id=>q.append('hide',id));
  if(atlas&&s.visible.every(id=>URL_SYSTEMS.includes(id))){const mask=URL_SYSTEMS.reduce((value,id,index)=>s.visible.includes(id)?value+2**index:value,0);q.set('l',mask.toString(36));}else q.set('layers',s.visible.join(','));
- if((s.contextOpacity??1)!==1)q.set('context',String(s.contextOpacity));if((s.skinOpacity??.1)!==.1)q.set('skin',String(s.skinOpacity));if(s.region&&s.region!=='all')q.set('region',s.region);if(s.depthHidden?.length)q.set('depth',s.depthHidden.join(','));if(s.isolate)q.set('isolate','1');if(s.explode)q.set('explode',String(s.explode));if(s.rotate)q.set('rotate','1');if(s.labels===false)q.set('labels','0');
+ if((s.contextOpacity??1)!==1)q.set('context',String(s.contextOpacity));if((s.skinOpacity??.1)!==.1)q.set('skin',String(s.skinOpacity));if(s.region&&s.region!=='all')q.set('region',s.region);if(s.depth!==undefined){q.set('dp',String(Number(s.depth.toFixed(6))));const expected=new Set<string>(completedDepthLayers(s.depth)),hidden=new Set(s.depthHidden??[]);if(expected.size!==hidden.size||[...expected].some(id=>!hidden.has(id)))q.set('depth',[...hidden].join(','));}else if(s.depthHidden?.length)q.set('depth',s.depthHidden.join(','));if(s.isolate)q.set('isolate','1');if(s.explode)q.set('explode',String(s.explode));if(s.rotate)q.set('rotate','1');if(s.labels===false)q.set('labels','0');
  const sections=s.sections?.length?s.sections.slice(0,2):[s.section].filter((section):section is NonNullable<typeof section>=>!!section);
  const writeSection=(section:SectionState|undefined,suffix:string)=>{if(!section?.enabled)return;q.set('cut'+suffix,section.axis);q.set('slice'+suffix,String(section.position));if(section.flip)q.set('flip'+suffix,'1');if(section.axis==='oblique'){q.set('azimuth'+suffix,String(section.azimuth??35));q.set('elevation'+suffix,String(section.elevation??30));}};
  writeSection(sections[0],'');if(sections.length===2){q.set('sections','2');writeSection(sections[1],'2');if(s.activeSection===1)q.set('sectionTab','2');}

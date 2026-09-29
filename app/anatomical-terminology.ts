@@ -1,6 +1,7 @@
 import metadata from './data/ta98-metadata.json';
 
 export type Terminology={ta98:string|null;tha:string|null;fma:string|null;latin:string|null;ontology?:string|null};
+export type IdentifierKind='La'|'TA98'|'THA'|'FMA'|'UBERON'|'Atlas'|'HA-G';
 const empty:Terminology={ta98:null,tha:null,fma:null,latin:null};
 const concepts=metadata.byConcept as Record<string,Terminology>;
 const groups=metadata.byGroup as Record<string,Terminology>;
@@ -40,6 +41,17 @@ export function terminologyTitle(name:string,term:Terminology,id?:string):string
  if(term.ontology)lines.push(term.ontology);
  if(id){const local=atlasIdentifier(id);if(local)lines.push(local);}
  return lines.join('\n');
+}
+
+/** Registry records for published identifiers; atlas permalinks for local IDs. */
+export function identifierReference(kind:IdentifierKind,term:Terminology,viewUrl:string):string{
+ if(kind==='FMA'&&term.fma)return `https://bioportal.bioontology.org/ontologies/FMA?p=classes&conceptid=${encodeURIComponent(`http://purl.org/sig/ont/fma/fma${term.fma.replace(/^FMA:/,'')}`)}`;
+ if(kind==='UBERON'&&term.ontology)return `https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=${encodeURIComponent(term.ontology)}`;
+ if((kind==='TA98'||kind==='THA'||kind==='La')&&term.ta98){
+  const code=term.ta98.replace(/^A/,'');
+  return kind==='La'?`https://ifaa.unifr.ch/Public/EntryPage/TA98%20Tree/Latin%20TA98/${code}%20Latin%20TA98.htm`:`https://ifaa.unifr.ch/Public/EntryPage/TA98%20Tree/Entity%20TA98%20EN/${code}%20Entity%20TA98%20EN.htm`;
+ }
+ return viewUrl;
 }
 
 /** Stable local ID for a modeled leaf or a browser grouping without a TA98 code. */

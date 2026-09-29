@@ -20,7 +20,7 @@ export function validSnapshot(value){
  if(!object(state)||!strings(state.selected)||!strings(state.visible,64)||!number(state.explode,0,1)||typeof state.isolate!=='boolean'||!['three-quarter','front','back','side','right','superior','inferior'].includes(state.view)||typeof state.rotate!=='boolean'||!number(state.reset,0,Number.MAX_SAFE_INTEGER))return false;
  if(['labels','selectionGroup','inspectorOpen'].some(key=>state[key]!==undefined&&typeof state[key]!=='boolean'))return false;
  if(['focus','peel'].some(key=>state[key]!==undefined&&!number(state[key],0,10000)))return false;
- if(['contextOpacity','skinOpacity'].some(key=>state[key]!==undefined&&!number(state[key],0,1)))return false;
+ if(['contextOpacity','skinOpacity','depth'].some(key=>state[key]!==undefined&&!number(state[key],0,1)))return false;
  if(state.guestView!==undefined&&!text(state.guestView,80)||state.guestQuery!==undefined&&!text(state.guestQuery,200))return false;
  if(state.guestExtensions!==undefined&&!strings(state.guestExtensions,2000))return false;
  if(state.region!==undefined&&!['all','head-neck','torso','upper-right','upper-left','lower-right','lower-left'].includes(state.region))return false;

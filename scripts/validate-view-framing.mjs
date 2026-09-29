@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {Box3,MathUtils,Matrix4,PerspectiveCamera,Quaternion,Vector3} from 'three';
-import {applyFrame,captureFrame,frameDistance,immersiveArea,interpolateFrame,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea,zoomInToFill,zoomOutToFit} from '../app/view-framing.ts';
+import {applyFrame,captureCameraPose,cameraPoseForFrame,captureFrame,frameDistance,immersiveArea,interpolateCameraPose,interpolateFrame,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea,zoomInToFill,zoomOutToFit} from '../app/view-framing.ts';
 import {validCamera} from '../shared/camera-frame.mjs';
 
 const bounds=new Box3(new Vector3(-.35,0,-.2),new Vector3(.35,1.8,.2)),target=bounds.getCenter(new Vector3());
@@ -89,4 +89,15 @@ near(slenderScreen.top,slenderArea.top+(slenderArea.bottom-slenderArea.top)*.02)
 assert.equal(zoomInToFill(slenderCamera,slender,slenderArea),false,'Do not push a constrained dimension beyond the viewport');
 const limited=new PerspectiveCamera(34,1,.01,100);limited.position.set(0,0,20);limited.lookAt(new Vector3());limited.updateMatrixWorld(true);
 zoomInToFill(limited,slender,slenderArea,2);near(limited.position.z,18);
+// A slide can change from the whole body to a distant, small selected organ.
+// Keep the actual source camera and decode the destination only once.
+const sourcePose=captureCameraPose(camera,target),organ=new Box3(new Vector3(2,4,1),new Vector3(2.1,4.2,1.1));
+const destination=cameraPoseForFrame(saved,organ,camera,desktop),animated=new PerspectiveCamera(34,16/9,.0001,100),animatedTarget=new Vector3();
+interpolateCameraPose(animated,animatedTarget,sourcePose,destination,0);
+same(animated.position.toArray(),sourcePose.position.toArray());same(animatedTarget.toArray(),sourcePose.target.toArray());
+interpolateCameraPose(animated,animatedTarget,sourcePose,destination,.5);const midpoint=animated.position.toArray();
+organ.translate(new Vector3(100,100,100));interpolateCameraPose(animated,animatedTarget,sourcePose,destination,.5);same(animated.position.toArray(),midpoint);
+interpolateCameraPose(animated,animatedTarget,sourcePose,destination,1);same(animated.position.toArray(),destination.position.toArray());same(animatedTarget.toArray(),destination.target.toArray());
+const inverted={...destination,up:destination.up.clone().negate()};
+for(let i=0;i<=100;i++){interpolateCameraPose(animated,animatedTarget,destination,inverted,i/100);assert.ok(animated.position.toArray().every(Number.isFinite));assert.ok(animated.up.length()>.99,'Opposing camera up vectors never collapse during a transition');}
 console.log('Normalized framing preserves pan and orientation; explosion fits ahead, and implosion fills half of both dimensions or the largest fully visible size.');

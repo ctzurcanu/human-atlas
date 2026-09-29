@@ -2,6 +2,7 @@ import {useEffect,useMemo,useState,type CSSProperties} from 'react';
 import {Check,ChevronDown,ChevronRight,Minus} from 'lucide-react';
 import {structureName,type Atlas,type Part,type SceneState} from './anatomy';
 import {depthLayerFor} from './depth-layers';
+import {partLayerOpacity} from './depth-control';
 import {resolveGuestHierarchy,type GuestHierarchy,type GuestLink,type ResolvedGuestNode} from './guest-hierarchy';
 import {displayLaterality,lateralityClass} from './laterality';
 import {guestNodeChoice,guestVisibleChildren} from './guest-choice';
@@ -22,11 +23,11 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNav
  const [expanded,setExpanded]=useState<Set<string>>(()=>new Set(['all'])),[searchClosed,setSearchClosed]=useState<Set<string>>(()=>new Set());
  useEffect(()=>setSearchClosed(new Set()),[state.guestQuery,hierarchy.roots]);
  const hidden=new Set(state.hidden??[]),depthHidden=new Set(state.depthHidden??[]),visible=new Set(state.visible);
- const isOn=(part:Part)=>!part.suppressed&&visible.has(part.system)&&!hidden.has(part.id)&&!depthHidden.has(depthLayerFor(part))&&(depthLayerFor(part)!=='skin'||(state.skinOpacity??1)>0);
+ const isOn=(part:Part)=>!part.suppressed&&visible.has(part.system)&&!hidden.has(part.id)&&!depthHidden.has(depthLayerFor(part))&&partLayerOpacity(part,state)>0;
  const toggleOpen=(id:string)=>{if(state.guestQuery&&id!=='all'&&search?.included.has(id)){setSearchClosed(current=>{const next=new Set(current);if(next.has(id))next.delete(id);else next.add(id);return next;});return;}setExpanded(current=>{const next=new Set(current);if(next.has(id))next.delete(id);else next.add(id);return next;});};
  const toggleParts=(parts:Part[])=>setState(current=>{
   const ids=new Set(parts.map(part=>part.id)),hiddenNow=new Set(current.hidden??[]);
-  const allOn=parts.every(part=>!part.suppressed&&current.visible.includes(part.system)&&!hiddenNow.has(part.id)&&!current.depthHidden?.includes(depthLayerFor(part))&&(depthLayerFor(part)!=='skin'||(current.skinOpacity??1)>0));
+  const allOn=parts.every(part=>!part.suppressed&&current.visible.includes(part.system)&&!hiddenNow.has(part.id)&&!current.depthHidden?.includes(depthLayerFor(part))&&partLayerOpacity(part,current)>0);
   if(allOn){for(const id of ids)hiddenNow.add(id);return {...current,hidden:[...hiddenNow],selected:current.selected.filter(id=>!ids.has(id)),isolate:false};}
   const newlyEnabled=new Set(parts.filter(part=>!current.visible.includes(part.system)).map(part=>part.system));
   const restoredDepth=new Set<string>(parts.map(depthLayerFor).filter(id=>current.depthHidden?.includes(id)));

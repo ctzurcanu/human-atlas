@@ -70,7 +70,7 @@ export default function AdvancedTools({close,currentViewUrl,captureScene,openVie
    update({...parsed,views:parsed.views.map(view=>({...view,url:compactViewUrl(view.url)}))});setEditorOpen(false);
   }catch(error){setEditorError(error instanceof Error?error.message:'Invalid JSON.');}
  };
- const openView=(view:SavedView,animate=false)=>openSavedView(compactViewUrl(view.url),animate);
+ const openView=(view:SavedView,animate=true)=>openSavedView(compactViewUrl(view.url),animate);
  const clickView=(view:SavedView)=>{
   cancelViewClick();
   viewClickRef.current=setTimeout(()=>{viewClickRef.current=null;openView(view);},300);

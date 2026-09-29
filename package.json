@@ -37,6 +37,8 @@
     "test:relationship-selection": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/validate-relationship-selection.mjs",
     "test:label-layout": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/validate-label-layout.mjs",
     "test:framing": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/validate-view-framing.mjs",
+    "test:depth": "node scripts/validate-depth.mjs",
+    "test:motion": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/validate-transition-motion.mjs",
     "build:anatomical-attachments": "node scripts/build-anatomical-attachments.mjs",
     "import:cell": "node scripts/import-cell.mjs && node scripts/audit-meshes.mjs cell",
     "import:primary-male": "node scripts/import-primary-male.mjs && node scripts/audit-meshes.mjs male-detail",

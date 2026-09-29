@@ -3,7 +3,7 @@ import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import {assetUrl} from './asset-url';
 import {loadModelBuffer} from './model-download';
 import {fetchAssetJson} from './asset-cache';
-import {isSkinPart} from './depth-layers';
+import {partLayerOpacity} from './depth-control';
 import {SYSTEMS,type Atlas,type SceneState} from './anatomy';
 
 interface VrPart {id:string;sourceVertexCount:number;sourceIndexCount:number;positions:number;normals:number;indices:number;vertexCount:number;indexCount:number}
@@ -47,10 +47,10 @@ export async function loadVrAnatomy(atlas:Atlas,url:string,uniforms:Uniforms,sig
  };
  material.customProgramCacheKey=()=> 'quest-anatomy-v1';
  const mesh=new T.Mesh(geometry,material);mesh.frustumCulled=false;mesh.visible=false;mesh.matrixAutoUpdate=false;
- const sync=(state:SceneState,offsets:Float32Array,sourcePickers:(T.Mesh|undefined)[],context:number,skin:number)=>{
+ const sync=(state:SceneState,offsets:Float32Array,sourcePickers:(T.Mesh|undefined)[],context:number)=>{
   const selected=new Set(state.selected);let changed=false;
   for(let i=0;i<model.parts.length;i++){
-   const part=atlas.parts[i],alpha=(selected.has(part.id)?1:context)*(isSkinPart(part)?skin:1)*(atlas.materials?.[part.material??'']?.opacity??1),visible=offsets[i*4+3]>.5&&alpha>=.001;
+   const part=atlas.parts[i],alpha=(selected.has(part.id)?1:context)*partLayerOpacity(part,state)*(atlas.materials?.[part.material??'']?.opacity??1),visible=offsets[i*4+3]>.5&&alpha>=.001;
    if(shown[i]!==Number(visible)){shown[i]=Number(visible);changed=true;}
    states.set([offsets[i*4],offsets[i*4+1],offsets[i*4+2],visible?alpha:0],i*4);
    const source=sourcePickers[i];if(source){pickers[i].matrix.copy(source.matrixWorld);pickers[i].matrixWorld.copy(source.matrixWorld);}

@@ -4,11 +4,10 @@ import {Button} from '@/components/ui/button';
 import {Accordion,AccordionContent,AccordionItem,AccordionTrigger} from '@/components/ui/accordion';
 import {Slider} from '@/components/ui/slider';
 import {Tooltip,TooltipContent,TooltipProvider,TooltipTrigger} from '@/components/ui/tooltip';
-import {enabledSections} from './section-stack';
 import {SheetDescription,SheetTitle} from '@/components/ui/sheet';
 import {SYSTEMS,structureName,surfaceRole,type Part,type SceneState} from './anatomy';
 import {anatomicalRelations,type RelationKind,type ResolvedRelation} from './anatomical-relations';
-import {atlasIdentifier,terminologyForConcept} from './anatomical-terminology';
+import {atlasIdentifier,identifierReference,terminologyForConcept,type IdentifierKind} from './anatomical-terminology';
 import type {HierarchyChoice} from './hierarchy-choice';
 import {displayLaterality,lateralityClass} from './laterality';
 import {localDescription,wikipediaDescription,type StructureDescription} from './structure-description';
@@ -24,9 +23,9 @@ interface Props {
  partById:Map<string,Part>;
  scope?:string;
  state:SceneState;
+ viewUrl:string;
  covering:string[];
  depth:number;
- onOpacity:(value:number)=>void;
  onDepth:(value:number)=>void;
  onCenter:()=>void;
  onIsolate:()=>void;
@@ -48,11 +47,11 @@ const sliderValue=(value:number|readonly number[])=>typeof value==='number'?valu
 const relationLabels:Record<RelationKind,string>={before:'Before',after:'After',innervation:'Innervated by',arterial:'Arterial supply',venous:'Venous drainage',innervates:'Innervates',supplies:'Supplies',drains:'Drains',articulates:'Articulates with',connects:'Connects',connectedBy:'Ligaments / tendons',joint:'At this joint',continuous:'Continuous with',covers:'Covers',coveredBy:'Covered by',cartilages:'Cartilages',bones:'Bones',tendons:'Tendons',fascia:'Fascia',muscles:'Muscles',origin:'Origin on',insertion:'Inserts on',partOf:'Part of',contains:'Contains',originFor:'Origin marker for',insertionFor:'Insertion marker for',originSites:'Origin markers',insertionSites:'Insertion markers',counterpart:'Opposite side'};
 const relationName=(part:Part)=>`${structureName(part.name)}${surfaceRole(part.name)?` · ${surfaceRole(part.name)}`:''}`;
 const relationCache=new WeakMap<Map<string,Part>,Map<string,ResolvedRelation[]>>();
-function IdentifierPill({kind,value,language,title}:{kind:'La'|'TA98'|'THA'|'FMA'|'UBERON'|'Atlas'|'HA-G';value:string;language?:string;title?:string}){
- return <span role="listitem" className={`identifier-pill identifier-${kind.toLowerCase()}`} title={title??`${kind} ${value}`}><strong>{kind}</strong><span lang={language}>{value}</span></span>;
+function IdentifierPill({kind,value,href,language}:{kind:IdentifierKind;value:string;href:string;language?:string}){
+ return <span role="listitem" className="identifier-item"><a className={`identifier-pill identifier-${kind.toLowerCase()}`} href={href} target="_blank" rel="noopener noreferrer" title={`Open ${kind} ${value}`}><strong>{kind}</strong><span lang={language}>{value}</span></a></span>;
 }
 
-export default function SelectionInspector({titleRef,choice,ancestors,selectedParts,anchorParts,relationshipDepth,relationshipExhausted,partById,scope,state,covering,depth,onOpacity,onDepth,onCenter,onIsolate,onExpandRelationships,onHide,onHidePart,onChoosePart,onChooseChild}:Props){
+export default function SelectionInspector({titleRef,choice,ancestors,selectedParts,anchorParts,relationshipDepth,relationshipExhausted,partById,scope,state,viewUrl,covering,depth,onDepth,onCenter,onIsolate,onExpandRelationships,onHide,onHidePart,onChoosePart,onChooseChild}:Props){
  const title=structureName(choice.name);
  const group=!!choice.children;
  const titleSide=displayLaterality(title).side;
@@ -67,7 +66,7 @@ export default function SelectionInspector({titleRef,choice,ancestors,selectedPa
  const tags=group?[]:[...new Set(inspectedParts.flatMap(part=>[part.tissue,surfaceRole(part.name),...(part.regions??[])]).filter((tag):tag is string=>!!tag))];
  const path=ancestors.map(parent=>({label:parent.name,search:parent.name}));
  const next=partById.get(covering[depth]),previous=partById.get(covering[depth-1]);
- const context=Math.round((state.contextOpacity??1)*100);
+ const reference=(kind:IdentifierKind)=>identifierReference(kind,terminology,viewUrl);
  const [remote,setRemote]=useState<{title:string;value:StructureDescription}|null>(null);
  const lastControlToggle=useRef<{id:string;at:number}|null>(null);
  const controlChoose=(id:string)=>{const now=performance.now(),last=lastControlToggle.current;if(last?.id===id&&now-last.at<150)return;lastControlToggle.current={id,at:now};onChoosePart(id,true);};
@@ -135,22 +134,15 @@ export default function SelectionInspector({titleRef,choice,ancestors,selectedPa
    </section>}
    {anchorParts?.length&&relationshipDepth>0&&<p className="relationship-selection-status">Related structures added · {relationshipDepth} {relationshipDepth===1?'step':'steps'}</p>}
    {!group&&!anchorParts?.length&&new Set(selectedParts.map(part=>part.conceptId)).size>1&&<div className="member-list"><h3>Included structures</h3>{selectedParts.map(part=>{const fullName=structureName(part.name),display=displayLaterality(fullName);return <Button variant="ghost" key={part.id} aria-label={fullName} title={fullName} onContextMenu={event=>{if(event.ctrlKey){event.preventDefault();event.shiftKey?onHidePart(part.id):controlChoose(part.id);}}} onClick={event=>event.shiftKey?onHidePart(part.id):event.ctrlKey?controlChoose(part.id):onChoosePart(part.id,event.metaKey)}><span className={lateralityClass(display.side)}>{display.label}</span></Button>;})}</div>}
-   {(terminology.latin||terminology.ta98||terminology.tha||terminology.fma||terminology.ontology||localIdentifier)&&<section className="identifiers-section" aria-label="Identificators"><h3 className="identifiers-heading"><span>Identificators</span></h3><div className="structure-terminology" role="list" aria-label="Anatomical identifiers">{terminology.ta98&&<IdentifierPill kind="TA98" value={terminology.ta98}/>}{terminology.tha&&<IdentifierPill kind="THA" value={terminology.tha.replace(/^THA:/,'')}/>}{terminology.fma&&<IdentifierPill kind="FMA" value={terminology.fma.replace(/^FMA:/,'')}/>}{terminology.ontology&&<IdentifierPill kind="UBERON" value={terminology.ontology.replace(/^UBERON:/,'')}/>}{localIdentifier&&<IdentifierPill kind={localIdentifier.kind} value={localIdentifier.value} title={`${localIdentifier.kind} ${localIdentifier.value}`}/>}{terminology.latin&&<IdentifierPill kind="La" value={terminology.latin} language="la"/>}</div></section>}
-   {!enabledSections(state).length&&<section className="inspection-section" aria-label={cell?'Surrounding components':'Surrounding anatomy'}>
-    <div className="inspection-heading"><strong>{cell?'Surrounding components':'Surrounding anatomy'}</strong><output>{context}%</output></div>
-    <Slider aria-label={cell?'Surrounding components opacity':'Surrounding anatomy opacity'} min={0} max={100} step={1} value={[context]} onValueChange={value=>onOpacity(sliderValue(value))}/>
-    <div className="inspection-range"><span>Selection only</span><span>{cell?'Full cell':'Full anatomy'}</span></div>
-   </section>}
-   {!group&&<section className="inspection-section" aria-label={cell?'Covering components':'Covering tissue'}>
-    <div className="inspection-heading"><strong>{cell?'Covering components':'Covering tissue'}</strong></div>
+   {!group&&<section className="inspection-section" aria-label="Peel depth">
     <div className="inspection-subheading"><span>Peel depth</span><output>{depth} / {covering.length}</output></div>
-    <Slider aria-label="Covering tissue peel depth" min={0} max={covering.length} step={1} value={[depth]} disabled={!covering.length} onValueChange={value=>onDepth(sliderValue(value))}/>
-    <div className="inspection-range"><span>Restore</span><span>Remove</span></div>
+    <Slider aria-label="Peel depth" min={0} max={Math.max(1,covering.length)} step={1} value={[depth]} disabled={!covering.length} onValueChange={value=>onDepth(sliderValue(value))}/>
     <div className="peel-buttons">
      <Button variant="outline" disabled={depth===0} onClick={()=>onDepth(depth-1)}>{previous?`Restore ${structureName(previous.name)}`:'Nothing to restore'}</Button>
      <Button variant="outline" disabled={depth>=covering.length} onClick={()=>onDepth(depth+1)}>{next?`Remove ${structureName(next.name)}`:'Nothing to remove'}</Button>
     </div>
    </section>}
+   {(terminology.latin||terminology.ta98||terminology.tha||terminology.fma||terminology.ontology||localIdentifier)&&<section className="identifiers-section" aria-label="Identificators"><h3 className="identifiers-heading"><span>Identificators</span></h3><div className="structure-terminology" role="list" aria-label="Anatomical identifiers">{terminology.ta98&&<IdentifierPill kind="TA98" value={terminology.ta98} href={reference('TA98')}/>}{terminology.tha&&<IdentifierPill kind="THA" value={terminology.tha.replace(/^THA:/,'')} href={reference('THA')}/>}{terminology.fma&&<IdentifierPill kind="FMA" value={terminology.fma.replace(/^FMA:/,'')} href={reference('FMA')}/>}{terminology.ontology&&<IdentifierPill kind="UBERON" value={terminology.ontology.replace(/^UBERON:/,'')} href={reference('UBERON')}/>}{localIdentifier&&<IdentifierPill kind={localIdentifier.kind} value={localIdentifier.value} href={reference(localIdentifier.kind)}/>}{terminology.latin&&<IdentifierPill kind="La" value={terminology.latin} language="la" href={reference('La')}/>}</div></section>}
   </div>
   <div className="detail-actions">
    <TooltipProvider delay={150}><div className="detail-action-pill" role="toolbar" aria-label="Selected structure tools">

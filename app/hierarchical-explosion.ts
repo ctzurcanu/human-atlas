@@ -2,6 +2,7 @@ import {SYSTEMS,type Atlas,type Part} from './anatomy';
 import {MAJOR_SYSTEMS,REGION_ORDER,buildAnatomyNodes,depthPathFor,majorSystemFor,regionPathFor,systemPathFor,type AnatomyEntry,type AnatomyNode} from './anatomy-hierarchy';
 import {DEPTH_LAYERS,depthLayerFor} from './depth-layers';
 import type {ResolvedGuestNode} from './guest-hierarchy';
+import {smoothStep} from './transition-motion';
 
 export type ExplodeHierarchy='systems'|'regions'|'depth'|'guest';
 type Bounds={cx:number;cy:number;cz:number;width:number;height:number};
@@ -10,6 +11,15 @@ type Measured={node:Node;width:number;height:number;children:{measured:Measured;
 export type ExplosionGroup={id:string;name:string;depth:number;x:number;y:number;z:number;height:number;count:number};
 export type ExplosionStage={positions:Float32Array;width:number;height:number;groups:ExplosionGroup[];clusterIds:Int32Array;clusters:number[][]};
 export type HierarchicalExplosionLayout={stages:ExplosionStage[];steps:number};
+
+export function explosionBoundsAt(layout:HierarchicalExplosionLayout,parts:Part[],visibleIds:Set<string>,amount:number){
+ const progress=Math.max(0,Math.min(1,amount))*layout.steps,from=Math.min(layout.steps,Math.floor(progress)),to=Math.min(layout.steps,from+1),mix=smoothStep(progress-from);
+ const min:[number,number,number]=[Infinity,Infinity,Infinity],max:[number,number,number]=[-Infinity,-Infinity,-Infinity];
+ parts.forEach((part,i)=>{if(!visibleIds.has(part.id))return;for(let axis=0;axis<3;axis++){
+  const a=layout.stages[from].positions[i*3+axis],center=a+(layout.stages[to].positions[i*3+axis]-a)*mix,half=(part.bounds[1][axis]-part.bounds[0][axis])/2;
+  min[axis]=Math.min(min[axis],center-half);max[axis]=Math.max(max[axis],center+half);
+ }});return {min,max};
+}
 
 /** Include the next tick and every intervening stage, so transitions fit too. */
 export function nextExplosionBounds(layout:HierarchicalExplosionLayout,parts:Part[],visibleIds:Set<string>,amount:number,requested:number){

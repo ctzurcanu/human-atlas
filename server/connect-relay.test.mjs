@@ -166,3 +166,11 @@ test('one host command includes 100 waiting guests with a large view and synchro
  const moved={...pose,camera:[5,1,3,0,.8,0,0,0]};host.send({type:'pose',pose:moved});await Promise.all(guests.map(async guest=>assert.deepEqual((await guest.next('pose')).pose,moved)));
  host.send({type:'stop'});await host.next('stopped');await Promise.all(guests.map(guest=>guest.next('ended')));
 });
+
+test('continuous Depth settings are accepted and bounded in shared snapshots',()=>{
+ const state=snapshot();state.state.depth=.071429;state.state.depthHidden=['skin'];
+ assert.equal(validSnapshot(state),true);
+ for(const depth of [-.001,1.001,NaN,'0.5']){
+  state.state.depth=depth;assert.equal(validSnapshot(state),false);
+ }
+});

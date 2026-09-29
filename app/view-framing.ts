@@ -1,4 +1,4 @@
-import {Box3,MathUtils,PerspectiveCamera,Quaternion,Vector3} from 'three';
+import {Box3,MathUtils,Matrix4,PerspectiveCamera,Quaternion,Vector3} from 'three';
 
 export type ViewArea={left:number;right:number;top:number;bottom:number};
 export type ViewRect=ViewArea&{kind:'top'|'bottom'|'panel'};
@@ -124,11 +124,24 @@ export function applyFrame(camera:PerspectiveCamera,target:Vector3,values:number
  const frame=decodeFrame(values,bounds,camera.aspect,area,camera.fov);
  camera.position.copy(frame.position);target.copy(frame.target);camera.up.copy(frame.up);camera.lookAt(target);setFrameOffset(camera,area,frame.anchor);camera.updateMatrixWorld(true);
 }
+export type CameraPose={position:Vector3;target:Vector3;up:Vector3;anchor:number[]};
+export function captureCameraPose(camera:PerspectiveCamera,target:Vector3):CameraPose{
+ return {position:camera.position.clone(),target:target.clone(),up:camera.up.clone(),anchor:[.5-(camera.view?.enabled?camera.view.offsetX/camera.view.fullWidth:0),.5-(camera.view?.enabled?camera.view.offsetY/camera.view.fullHeight:0)]};
+}
+export function cameraPoseForFrame(values:number[],bounds:Box3,camera:PerspectiveCamera,area:ViewArea):CameraPose{
+ const pose=decodeFrame(values,bounds,camera.aspect,area,camera.fov);return {...pose,anchor:screenAnchor(area,pose.anchor)};
+}
+/** Stable world endpoints: changing selections or explosion bounds cannot move the path. */
+export function interpolateCameraPose(camera:PerspectiveCamera,target:Vector3,from:CameraPose,to:CameraPose,mix:number){
+ const rotation=(pose:CameraPose)=>new Quaternion().setFromRotationMatrix(new Matrix4().lookAt(pose.position,pose.target,pose.up));
+ const orientation=rotation(from).slerp(rotation(to),mix),direction=new Vector3(0,0,1).applyQuaternion(orientation);
+ const startDistance=Math.max(.000001,from.position.distanceTo(from.target)),endDistance=Math.max(.000001,to.position.distanceTo(to.target));
+ const distance=Math.exp(MathUtils.lerp(Math.log(startDistance),Math.log(endDistance),mix));
+ target.copy(from.target).lerp(to.target,mix);camera.position.copy(target).addScaledVector(direction,distance);
+ camera.up.copy(mix===0?from.up:mix===1?to.up:new Vector3(0,1,0).applyQuaternion(orientation));camera.lookAt(target);
+ const x=MathUtils.lerp(from.anchor[0],to.anchor[0],mix),y=Math.min(.46,MathUtils.lerp(from.anchor[1],to.anchor[1],mix));
+ camera.setViewOffset(camera.aspect,1,(.5-x)*camera.aspect,.5-y,camera.aspect,1);camera.updateMatrixWorld(true);
+}
 export function interpolateFrame(camera:PerspectiveCamera,target:Vector3,from:number[],to:number[],bounds:Box3,area:ViewArea,mix:number){
- const a=decodeFrame(from,bounds,camera.aspect,area,camera.fov),b=decodeFrame(to,bounds,camera.aspect,area,camera.fov);
- const start=a.position.sub(a.target),end=b.position.sub(b.target),startDistance=Math.max(.000001,start.length()),endDistance=Math.max(.000001,end.length());
- const rotation=new Quaternion().setFromUnitVectors(start.normalize(),end.normalize());
- const direction=start.applyQuaternion(new Quaternion().slerp(rotation,mix)),distance=Math.exp(MathUtils.lerp(Math.log(startDistance),Math.log(endDistance),mix));
- target.copy(a.target.lerp(b.target,mix));camera.position.copy(target).addScaledVector(direction,distance);camera.up.copy(a.up.lerp(b.up,mix).normalize());camera.lookAt(target);
- setFrameOffset(camera,area,a.anchor.map((value,i)=>MathUtils.lerp(value,b.anchor[i],mix)));camera.updateMatrixWorld(true);
+ interpolateCameraPose(camera,target,cameraPoseForFrame(from,bounds,camera,area),cameraPoseForFrame(to,bounds,camera,area),mix);
 }

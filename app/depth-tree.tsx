@@ -2,6 +2,7 @@ import {useMemo,useState,type CSSProperties,type ReactNode} from 'react';
 import {Check,ChevronDown,ChevronRight,Minus} from 'lucide-react';
 import {type Atlas,type Concept,type Part,type SceneState} from './anatomy';
 import {DEPTH_LAYERS,depthLayerFor} from './depth-layers';
+import {partLayerOpacity} from './depth-control';
 import {createDepthOrder} from './depth-sort';
 import {buildAnatomyNodes,depthPathFor,entryLabel,hierarchyEntries,type AnatomyEntry,type AnatomyNode} from './anatomy-hierarchy';
 import {displayLaterality,lateralityClass} from './laterality';
@@ -29,16 +30,16 @@ export default function DepthTree({atlas,state,setState,onChoose}:Props){
  },[hierarchy,compareEntries]);
  const [expanded,setExpanded]=useState<Set<string>>(()=>new Set(['all']));
  const hidden=new Set(state.hidden??[]),depthHidden=new Set(state.depthHidden??[]),visible=new Set(state.visible);
- const isOn=(part:Part)=>!part.suppressed&&!depthHidden.has(depthLayerFor(part))&&visible.has(part.system)&&!hidden.has(part.id)&&(depthLayerFor(part)!=='skin'||(state.skinOpacity??1)>0);
+ const isOn=(part:Part)=>!part.suppressed&&!depthHidden.has(depthLayerFor(part))&&visible.has(part.system)&&!hidden.has(part.id)&&partLayerOpacity(part,state)>0;
  const toggleOpen=(id:string)=>setExpanded(current=>{const next=new Set(current);if(next.has(id))next.delete(id);else next.add(id);return next;});
  const toggleAll=()=>setState(current=>{
   const hiddenNow=new Set(current.hidden??[]),depthNow=new Set(current.depthHidden??[]),visibleNow=new Set(current.visible);
-  const anyOn=availableParts.some(part=>!hiddenNow.has(part.id)&&!depthNow.has(depthLayerFor(part))&&visibleNow.has(part.system)&&(depthLayerFor(part)!=='skin'||(current.skinOpacity??1)>0));
-  return {...current,visible:anyOn?current.visible:[...new Set(availableParts.map(part=>part.system))],hidden:anyOn?current.hidden:[],depthHidden:anyOn?DEPTH_LAYERS.map(layer=>layer.id):[],skinOpacity:anyOn?current.skinOpacity:(current.skinOpacity??0)>0?current.skinOpacity:.1,selected:[],isolate:false};
+  const anyOn=availableParts.some(part=>!hiddenNow.has(part.id)&&!depthNow.has(depthLayerFor(part))&&visibleNow.has(part.system)&&partLayerOpacity(part,current)>0);
+  return {...current,visible:anyOn?current.visible:[...new Set(availableParts.map(part=>part.system))],hidden:anyOn?current.hidden:[],depth:anyOn?current.depth:undefined,depthHidden:anyOn?DEPTH_LAYERS.map(layer=>layer.id):[],skinOpacity:anyOn?current.skinOpacity:(current.skinOpacity??0)>0?current.skinOpacity:.1,selected:[],isolate:false};
  });
  const toggleParts=(parts:Part[])=>setState(current=>{
   const ids=new Set(parts.map(part=>part.id)),hiddenNow=new Set(current.hidden??[]),depthNow=new Set(current.depthHidden??[]);
-  const anyOn=parts.some(part=>current.visible.includes(part.system)&&!hiddenNow.has(part.id)&&!depthNow.has(depthLayerFor(part))&&(depthLayerFor(part)!=='skin'||(current.skinOpacity??1)>0));
+  const anyOn=parts.some(part=>current.visible.includes(part.system)&&!hiddenNow.has(part.id)&&!depthNow.has(depthLayerFor(part))&&partLayerOpacity(part,current)>0);
   if(anyOn){for(const id of ids)hiddenNow.add(id);return {...current,hidden:[...hiddenNow],selected:current.selected.filter(id=>!ids.has(id)),isolate:false};}
   const newlyEnabled=new Set(parts.filter(part=>!current.visible.includes(part.system)).map(part=>part.system));
   const restoredDepth=new Set(parts.map(depthLayerFor).filter(id=>depthNow.has(id)));
@@ -48,7 +49,7 @@ export default function DepthTree({atlas,state,setState,onChoose}:Props){
  });
  const toggleLayer=(id:string,parts:Part[])=>setState(current=>{
   const depthNow=new Set(current.depthHidden??[]);
-  const anyOn=parts.some(part=>current.visible.includes(part.system)&&!(current.hidden??[]).includes(part.id)&&!depthNow.has(id)&&(id!=='skin'||(current.skinOpacity??1)>0));
+  const anyOn=parts.some(part=>current.visible.includes(part.system)&&!(current.hidden??[]).includes(part.id)&&!depthNow.has(id)&&partLayerOpacity(part,current)>0);
   if(anyOn){depthNow.add(id);return {...current,depthHidden:[...depthNow],selected:current.selected.filter(selected=>!parts.some(part=>part.id===selected)),isolate:false};}
   depthNow.delete(id);
   const ids=new Set(parts.map(part=>part.id)),hiddenNow=new Set(current.hidden??[]);
