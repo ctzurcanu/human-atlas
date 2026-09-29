@@ -13,6 +13,7 @@ import {resolveGuestHierarchy,type GuestHierarchy} from './guest-hierarchy';
 import {loadModelBuffer} from './model-download';
 import {selectionCenter} from './camera-pivot';
 import {orbitAroundPointer} from './pointer-orbit';
+import {advanceControllerOrbit} from './xr-orbit';
 import {labelAreaForPanels,layoutAnatomyLabels,type LabelAnchor,type LabelArea,type LabelPanel} from './label-layout';
 import {displayLaterality,lateralityClass} from './laterality';
 import {PointerTap} from './pointer-tap';
@@ -34,7 +35,7 @@ import type {VrAnatomy} from './vr-anatomy';
 import type {ScenePose} from './connect-state';
 import {applyFrame,captureCameraPose,captureFrame,cameraPoseForFrame,decodeFrame,frameDistance,immersiveArea,interpolateCameraPose,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea,zoomInToFill,zoomOutToFit,type CameraPose,type ViewArea,type ViewRect} from './view-framing';
 import {validCamera} from '../shared/camera-frame.mjs';
-interface Props {atlas:Atlas;vrModelUrl:string;state:SceneState;hierarchy:ExplodeHierarchy;guestHierarchy?:GuestHierarchy;remotePoseRef?:{current:ScenePose|null};remoteModel?:string;onPose?:(pose:Omit<ScenePose,'model'>)=>void;cameraTransition?:{id:number;from:number[]};sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onSelect:(id:string,toggle?:boolean)=>void;onHidePart:(id:string)=>void;onCamera?:(camera:number[])=>void;onCovering?:(ids:string[])=>void;onExplosionSteps?:(steps:number)=>void;onCapture?:(capture:SceneCapture|null)=>void;onFrameCapture?:(capture:SceneFrameCapture|null)=>void;onProgress:(n:number)=>void;onError:(s:string)=>void}
+interface Props {atlas:Atlas;vrModelUrl:string;state:SceneState;hierarchy:ExplodeHierarchy;guestHierarchy?:GuestHierarchy;remotePoseRef?:{current:ScenePose|null};remoteModel?:string;onPose?:(pose:Omit<ScenePose,'model'>)=>void;cameraTransition?:{id:number;from:number[]};sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onSelect:(id:string,toggle?:boolean)=>void;onHidePart:(id:string,peel?:boolean)=>void;onCamera?:(camera:number[])=>void;onCovering?:(ids:string[])=>void;onExplosionSteps?:(steps:number)=>void;onCapture?:(capture:SceneCapture|null)=>void;onFrameCapture?:(capture:SceneFrameCapture|null)=>void;onProgress:(n:number)=>void;onError:(s:string)=>void}
 type SceneMaterial={color:number[];map?:string;normalMap?:string;normalScale?:number;roughness?:number;metalness?:number;opacity?:number;vertexColors?:boolean};
 export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHierarchy,remotePoseRef,remoteModel,onPose,cameraTransition,sectionTool=false,onSectionPosition,onSelect,onHidePart,onCamera,onCovering,onExplosionSteps,onCapture,onFrameCapture,onProgress,onError}:Props){
  const guestNodes=useMemo(()=>guestHierarchy?resolveGuestHierarchy(atlas,guestHierarchy):undefined,[atlas,guestHierarchy]);
@@ -64,14 +65,15 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   const questVr=/OculusBrowser|Quest 2/i.test(navigator.userAgent),vrPreview=import.meta.env.DEV&&new URLSearchParams(location.search).has('vr-preview');
   let vrAnatomy:VrAnatomy|null=null,vrPreparation:Promise<void>|null=null,xrSupported=false,xrArSupported=false,lightweightActive=false;
   const xrButton=document.createElement('button');xrButton.type='button';xrButton.className='enter-vr glass';xrButton.textContent='Enter VR';xrButton.setAttribute('aria-label','Enter immersive VR');
-  let xrSession:XRSession|null=null,xrBaseSpace:XRReferenceSpace|null=null,xrLoopActive=false,xrZoom=1,xrAnchorMatrix:T.Matrix4|null=null;
+  let xrSession:XRSession|null=null,xrActiveMode:'immersive-vr'|'immersive-ar'|null=null,xrBaseSpace:XRReferenceSpace|null=null,xrLoopActive=false,xrZoom=1,xrAnchorMatrix:T.Matrix4|null=null;
+  let xrOrbitHeld=false,xrLastLeftAim:{yaw:number;pitch:number}|null=null,xrOrbit={yaw:0,pitch:0};
   const xrRig=new T.Group(),xrRenderCamera=new T.PerspectiveCamera(),xrPresentationCamera=new T.PerspectiveCamera(),xrHeadCamera=new T.PerspectiveCamera();xrRig.add(xrRenderCamera);scene.add(xrRig);
   const xrArButton=document.createElement('button');xrArButton.type='button';xrArButton.className='enter-ar glass';xrArButton.textContent='Enter AR';xrArButton.setAttribute('aria-label','Enter immersive AR');
   const xrRays=[0,1].map(()=>{const ray=new T.Line(new T.BufferGeometry().setFromPoints([new T.Vector3(),new T.Vector3(0,0,-3)]),new T.LineBasicMaterial({color:0x52d5ca,transparent:true,opacity:.85,depthTest:false}));ray.visible=false;scene.add(ray);return ray;});
   const xrInfoCanvas=document.createElement('canvas');xrInfoCanvas.width=1024;xrInfoCanvas.height=256;
   const xrInfoTexture=new T.CanvasTexture(xrInfoCanvas),xrInfo=new T.Sprite(new T.SpriteMaterial({map:xrInfoTexture,transparent:true,depthTest:false}));xrInfo.scale.set(.8,.2,1);xrInfo.position.set(0,1.95,.08);xrInfo.visible=false;scene.add(xrInfo);
   let xrInfoText='';
-  const updateXrInfo=(message:string)=>{if(message===xrInfoText)return;xrInfoText=message;const ctx=xrInfoCanvas.getContext('2d');if(!ctx)return;ctx.clearRect(0,0,1024,256);ctx.fillStyle='rgba(24,39,51,.9)';ctx.beginPath();ctx.roundRect(0,0,1024,256,28);ctx.fill();ctx.textAlign='center';ctx.fillStyle='#d9f5f1';ctx.font='bold 46px Arial';ctx.fillText(message.length>38?`${message.slice(0,35)}…`:message,512,116);ctx.fillStyle='#a8bbc0';ctx.font='28px Arial';ctx.fillText('Trigger: select     Left stick: move closer or farther',512,186);xrInfoTexture.needsUpdate=true;};
+  const updateXrInfo=(message:string)=>{if(message===xrInfoText)return;xrInfoText=message;const ctx=xrInfoCanvas.getContext('2d');if(!ctx)return;ctx.clearRect(0,0,1024,256);ctx.fillStyle='rgba(24,39,51,.9)';ctx.beginPath();ctx.roundRect(0,0,1024,256,28);ctx.fill();ctx.textAlign='center';ctx.fillStyle='#d9f5f1';ctx.font='bold 46px Arial';ctx.fillText(message.length>38?`${message.slice(0,35)}…`:message,512,116);ctx.fillStyle='#a8bbc0';ctx.font='28px Arial';ctx.fillText(questVr&&xrActiveMode==='immersive-vr'?'L trigger: peel   R trigger + left turn: orbit   L stick: zoom':'Trigger: select     Left stick: move closer or farther',512,186);xrInfoTexture.needsUpdate=true;};
   updateXrInfo('Human Atlas');
   camera.position.set(1.4,1.05,3.6);controls.target.set(0,.85,0);controls.zoomToCursor=true;controls.enableDamping=true;controls.dampingFactor=.085;controls.minDistance=.003;controls.maxDistance=6;controls.zoomSpeed=1.25;controls.maxPolarAngle=Math.PI-.001;controls.addEventListener('change',()=>{dirty=true;});
   const pmrem=new T.PMREMGenerator(renderer),room=new RoomEnvironment(),env=pmrem.fromScene(room,.04);scene.environment=env.texture;scene.environmentIntensity=referenceModel ? .7 : 1;room.dispose();pmrem.dispose();
@@ -506,9 +508,10 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   const solidContext=()=> ((lastState??latest.current).depthHidden?.includes('skin')||depthLayerOpacity('skin',lastState??latest.current)<.95)&&atlas.parts.some((p,i)=>!isSkinPart(p)&&data[i*4+3]>.5);
   const canPick=(i:number,hasSolid:boolean)=>{
    const part=atlas.parts[i],selected=latest.current.selected.includes(part.id);
-   if(data[i*4+3]<.5||hasSolid&&isSkinPart(part)&&!selected)return false;
-   const alpha=(selected?1:contextUniform.value)*partLayerOpacity(part,lastState??latest.current)*(atlas.materials?.[part.material??'']?.opacity??1);
-   return alpha>.001;
+   const solidQuest=questVr&&xrActiveMode==='immersive-vr';
+   if(data[i*4+3]<.5||!solidQuest&&hasSolid&&isSkinPart(part)&&!selected)return false;
+   const alpha=(selected||solidQuest?1:contextUniform.value)*partLayerOpacity(part,lastState??latest.current)*(atlas.materials?.[part.material??'']?.opacity??1);
+   return alpha>=(solidQuest?.5:.001);
   };
   const pickAt=(clientX:number,clientY:number,radius=16,pivotOut?:T.Vector3)=>{
    const rect=renderer.domElement.getBoundingClientRect(),hasSolid=solidContext();
@@ -593,7 +596,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   renderer.domElement.addEventListener('contextmenu',preventContextMenu);
   renderer.domElement.addEventListener('pointerdown',down,true);renderer.domElement.addEventListener('pointermove',move);renderer.domElement.addEventListener('pointerup',up);renderer.domElement.addEventListener('pointercancel',cancel);renderer.domElement.addEventListener('pointerleave',leave);
   renderer.domElement.addEventListener('wheel',cancelCameraTween);
-  const xrDirection=new T.Vector3(0,0,-1),xrOrigin=new T.Vector3(),xrQuaternion=new T.Quaternion();
+  const xrDirection=new T.Vector3(0,0,-1),xrOrigin=new T.Vector3(),xrQuaternion=new T.Quaternion(),xrAim=new T.Vector3(),xrControllerQuaternion=new T.Quaternion(),xrOrbitQuaternion=new T.Quaternion(),xrOrbitEuler=new T.Euler(0,0,0,'YXZ');
   const setLightweight=(enabled:boolean)=>{lightweightActive=enabled;desktopAnatomy.visible=!enabled;rim.visible=!enabled;if(vrAnatomy)vrAnatomy.mesh.visible=enabled;
    if(enabled){clearTimeout(capTimer);capTimer=0;capGeneration++;capQueue.length=0;pendingCapSignatures.clear();capKey='vr';guideFill.visible=false;guideBorder.visible=false;}
    lastState=null;dirty=true;
@@ -619,27 +622,36 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    return vrPreparation;
   };
   const xrPose=(frame:XRFrame,source:XRInputSource)=>{const space=renderer.xr.getReferenceSpace(),pose=space&&frame.getPose(source.targetRaySpace,space);if(!pose)return false;const p=pose.transform.position,q=pose.transform.orientation;xrOrigin.set(p.x,p.y,p.z).applyMatrix4(xrRig.matrixWorld);xrQuaternion.set(q.x,q.y,q.z,q.w).premultiply(xrRig.quaternion);xrDirection.set(0,0,-1).applyQuaternion(xrQuaternion);return true;};
-  const xrSelect=(event:XRInputSourceEvent)=>{if(remoteRef.current||!ready||!xrPose(event.frame,event.inputSource))return;raycaster.set(xrOrigin,xrDirection);raycaster.near=0;raycaster.far=xrPresentationCamera.position.distanceTo(controls.target)*2+modelBounds.getSize(new T.Vector3()).length();
+  const xrPick=(frame:XRFrame,source:XRInputSource)=>{if(!ready||questVr&&xrActiveMode==='immersive-vr'&&!xrAnchorMatrix||!xrPose(frame,source))return -1;raycaster.set(xrOrigin,xrDirection);raycaster.near=0;raycaster.far=xrPresentationCamera.position.distanceTo(controls.target)*2+modelBounds.getSize(new T.Vector3()).length();
    const hasSolid=solidContext();let closest=Infinity,found=-1;
    (lightweightActive&&vrAnatomy?vrAnatomy.pickers:pickers).forEach((mesh,i)=>{if(!mesh||!canPick(i,hasSolid)||enabledSections(latest.current).length&&pairedSkinPart(atlas.parts[i]))return;
     worldBox.copy(mesh.geometry.boundingBox!).applyMatrix4(mesh.matrixWorld);if(!raycaster.ray.intersectsBox(worldBox))return;
     const hit=raycaster.intersectObject(mesh,false).find(candidate=>keptBySections(candidate.point));if(hit&&hit.distance<closest){closest=hit.distance;found=i;}
    });
-   if(found>=0){select.current(atlas.parts[found].id);updateXrInfo(structureName(atlas.parts[found].name));}
+   return found;
   };
-  const xrEnded=()=>{xrSession?.removeEventListener('select',xrSelect);xrSession=null;xrBaseSpace=null;xrAnchorMatrix=null;xrRays.forEach(ray=>ray.visible=false);xrInfo.visible=false;labelLayer.style.display='';setLightweight(vrPreview);xrButton.textContent='Enter VR';xrButton.hidden=false;xrArButton.hidden=false;delete (studio as HTMLElement).dataset.xrMode;renderer.setAnimationLoop(null);renderer.xr.enabled=false;controls.enabled=true;applyTheme();markLayoutDirty();dirty=true;if(xrLoopActive){xrLoopActive=false;if(!disposed)frame=requestAnimationFrame(animate);}};
+  const xrSelect=(event:XRInputSourceEvent)=>{if(remoteRef.current||questVr&&xrActiveMode==='immersive-vr')return;const found=xrPick(event.frame,event.inputSource);if(found>=0){select.current(atlas.parts[found].id);updateXrInfo(structureName(atlas.parts[found].name));}};
+  const xrSelectStart=(event:XRInputSourceEvent)=>{if(remoteRef.current||!questVr||xrActiveMode!=='immersive-vr')return;
+   if(event.inputSource.handedness==='right'){xrOrbitHeld=true;xrLastLeftAim=null;return;}
+   if(event.inputSource.handedness!=='left'||xrOrbitHeld)return;
+   const found=xrPick(event.frame,event.inputSource);if(found<0)return;
+   const part=atlas.parts[found];hidePart.current(part.id,true);updateXrInfo(`Peeled ${structureName(part.name)}`);
+  };
+  const xrSelectEnd=(event:XRInputSourceEvent)=>{if(event.inputSource.handedness==='right'){xrOrbitHeld=false;xrLastLeftAim=null;}};
+  const xrEnded=()=>{xrSession?.removeEventListener('select',xrSelect);xrSession?.removeEventListener('selectstart',xrSelectStart);xrSession?.removeEventListener('selectend',xrSelectEnd);xrSession=null;xrActiveMode=null;xrBaseSpace=null;xrAnchorMatrix=null;xrOrbitHeld=false;xrLastLeftAim=null;xrOrbit={yaw:0,pitch:0};xrRays.forEach(ray=>ray.visible=false);xrInfo.visible=false;labelLayer.style.display='';setLightweight(vrPreview);xrButton.textContent='Enter VR';xrButton.hidden=false;xrArButton.hidden=false;delete (studio as HTMLElement).dataset.xrMode;renderer.setAnimationLoop(null);renderer.xr.enabled=false;controls.enabled=true;applyTheme();markLayoutDirty();dirty=true;if(xrLoopActive){xrLoopActive=false;if(!disposed)frame=requestAnimationFrame(animate);}};
   renderer.xr.addEventListener('sessionend',xrEnded);
   const enterXr=async(mode:'immersive-vr'|'immersive-ar')=>{if(!navigator.xr||xrSession||!ready)return;if((questVr||mode==='immersive-ar')&&!vrAnatomy){await prepareVr();return;}xrButton.disabled=xrArButton.disabled=true;try{
-   renderer.xr.enabled=true;renderer.xr.setReferenceSpaceType(mode==='immersive-ar'?'local':'local-floor');renderer.xr.setFramebufferScaleFactor(questVr ? .65 : .8);
-   const session=await navigator.xr.requestSession(mode,mode==='immersive-ar'?{requiredFeatures:['local'],optionalFeatures:['dom-overlay'],domOverlay:{root:studio}}:{requiredFeatures:['local-floor']});xrSession=session;
+   renderer.xr.enabled=true;renderer.xr.setReferenceSpaceType(mode==='immersive-ar'?'local':'local-floor');renderer.xr.setFramebufferScaleFactor(.8);
+   const session=await navigator.xr.requestSession(mode,mode==='immersive-ar'?{requiredFeatures:['local'],optionalFeatures:['dom-overlay'],domOverlay:{root:studio}}:{requiredFeatures:['local-floor']});xrSession=session;xrActiveMode=mode;
    session.addEventListener('select',xrSelect);
+   session.addEventListener('selectstart',xrSelectStart);session.addEventListener('selectend',xrSelectEnd);
    if(questVr||mode==='immersive-ar')setLightweight(true);
    await renderer.xr.setSession(session);
-   renderer.xr.setFoveation(1);
-   xrBaseSpace=renderer.xr.getReferenceSpace();xrZoom=1;xrAnchorMatrix=null;(studio as HTMLElement).dataset.xrMode=mode==='immersive-ar'?'ar':'vr';applyTheme();
-   controls.enabled=false;labelLayer.style.display='none';hover.hidden=true;xrInfo.visible=true;updateXrInfo(latest.current.selected.length?structureName(atlas.parts[partIndices.get(latest.current.selected[0])??0].name):'Human Atlas');
+   renderer.xr.setFoveation(questVr?.5:1);
+   xrBaseSpace=renderer.xr.getReferenceSpace();xrZoom=1;xrAnchorMatrix=null;xrOrbitHeld=false;xrLastLeftAim=null;xrOrbit={yaw:0,pitch:0};(studio as HTMLElement).dataset.xrMode=mode==='immersive-ar'?'ar':'vr';applyTheme();
+   controls.enabled=false;labelLayer.style.display='none';hover.hidden=true;xrInfo.visible=true;xrInfoText='';updateXrInfo(latest.current.selected.length?structureName(atlas.parts[partIndices.get(latest.current.selected[0])??0].name):'Human Atlas');
    xrButton.hidden=xrArButton.hidden=true;cancelAnimationFrame(frame);xrLoopActive=true;renderer.setAnimationLoop(animate);
-  }catch(error){renderer.xr.enabled=false;setLightweight(vrPreview);xrButton.hidden=xrArButton.hidden=false;delete (studio as HTMLElement).dataset.xrMode;applyTheme();onError(error instanceof Error?`Could not enter XR: ${error.message}`:'Could not enter XR.');if(xrSession)await xrSession.end().catch(()=>{});}finally{xrButton.disabled=xrArButton.disabled=false;}};
+  }catch(error){renderer.xr.enabled=false;setLightweight(vrPreview);xrButton.hidden=xrArButton.hidden=false;delete (studio as HTMLElement).dataset.xrMode;applyTheme();onError(error instanceof Error?`Could not enter XR: ${error.message}`:'Could not enter XR.');if(xrSession)await xrSession.end().catch(()=>{});xrActiveMode=null;}finally{xrButton.disabled=xrArButton.disabled=false;}};
   xrButton.onclick=()=>{void enterXr('immersive-vr');};xrArButton.onclick=()=>{void enterXr('immersive-ar');};
   const overlaySelect=(event:Event)=>{if(event.target instanceof Element&&event.target.closest('button,input,select,.advanced-panel,.detail-sheet,.download-panel,.layers-panel,.section-panel'))event.preventDefault();};studio.addEventListener('beforexrselect',overlaySelect);
   if(navigator.xr){navigator.xr.isSessionSupported('immersive-vr').then(supported=>{if(supported&&!disposed){xrSupported=true;el.appendChild(xrButton);if(questVr){xrButton.disabled=true;xrButton.textContent='Preparing VR…';if(ready)void prepareVr();}}}).catch(()=>{});navigator.xr.isSessionSupported('immersive-ar').then(supported=>{if(supported&&!disposed){xrArSupported=true;el.appendChild(xrArButton);xrArButton.disabled=true;xrArButton.textContent='Preparing AR…';if(ready)void prepareVr();}}).catch(()=>{});}
@@ -652,6 +664,10 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    const values=cameraValues();applyFrame(xrPresentationCamera,new T.Vector3(),values,viewBounds,xrArea);
    const framed=decodeFrame(values,viewBounds,xrPresentationCamera.aspect,xrArea,xrPresentationCamera.fov),distance=framed.position.distanceTo(framed.target)*xrZoom;
    const direction=framed.position.sub(framed.target).normalize();xrPresentationCamera.position.copy(framed.target).addScaledVector(direction,distance);
+   if(questVr&&xrActiveMode==='immersive-vr'&&(xrOrbit.yaw||xrOrbit.pitch)){
+    xrOrbitQuaternion.setFromEuler(xrOrbitEuler.set(xrOrbit.pitch,xrOrbit.yaw,0,'YXZ'));
+    xrPresentationCamera.position.sub(framed.target).applyQuaternion(xrOrbitQuaternion).add(framed.target);xrPresentationCamera.quaternion.premultiply(xrOrbitQuaternion);direction.applyQuaternion(xrOrbitQuaternion);
+   }
    const right=new T.Vector3(1,0,0).applyQuaternion(xrPresentationCamera.quaternion),up=new T.Vector3(0,1,0).applyQuaternion(xrPresentationCamera.quaternion),tan=Math.tan(T.MathUtils.degToRad(xrPresentationCamera.fov/2)),[x,y]=screenAnchor(xrArea,values.slice(6,8));
    // Translate the presentation rig instead of changing the headset projection.
    xrPresentationCamera.position.addScaledVector(right,(.5-x)*2*distance*tan*xrPresentationCamera.aspect).addScaledVector(up,(y-.5)*2*distance*tan);
@@ -739,8 +755,10 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     areaInitialized=true;dirty=true;
     renderer.domElement.dataset.viewArea=JSON.stringify(currentArea);renderer.domElement.dataset.viewAnchor=JSON.stringify(screenAnchor(currentArea,preferredAnchor(currentArea)));
    }
-   if(presenting){const xrFrame=renderer.xr.getFrame(),sources=xrSession?.inputSources;const stick=[...(sources??[])].find(source=>source.handedness==='left')?.gamepad?.axes[3]??0;
+   if(presenting){const xrFrame=renderer.xr.getFrame(),sources=xrSession?.inputSources;const left=[...(sources??[])].find(source=>source.handedness==='left');const stick=left?.gamepad?.axes[3]??0;
     if(!following&&Math.abs(stick)>.15)xrZoom=T.MathUtils.clamp(xrZoom*Math.exp(stick*dt*1.25),.25,4);
+    if(questVr&&xrActiveMode==='immersive-vr'&&xrOrbitHeld&&!following&&left&&xrFrame){const space=renderer.xr.getReferenceSpace(),pose=space&&xrFrame.getPose(left.targetRaySpace,space);if(pose){const {x,y,z,w}=pose.transform.orientation,aim=xrAim.set(0,0,-1).applyQuaternion(xrControllerQuaternion.set(x,y,z,w));const current={yaw:Math.atan2(aim.x,-aim.z),pitch:Math.asin(T.MathUtils.clamp(aim.y,-1,1))};xrOrbit=advanceControllerOrbit(xrLastLeftAim,current,xrOrbit);xrLastLeftAim=current;}}
+    else xrLastLeftAim=null;
     const selected=s.selected[0],index=selected===undefined?undefined:partIndices.get(selected);if(index!==undefined)updateXrInfo(structureName(atlas.parts[index].name));}
    const nextSectionActive=enabledSections(s).length?1:0;if(sectionActiveUniform.value!==nextSectionActive){sectionActiveUniform.value=nextSectionActive;dirty=true;}
    const nextContext=nextSectionActive?1:s.selected.length?(s.contextOpacity??1):1;
@@ -881,7 +899,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    // plane causes close skin and muscle surfaces to fight at whole-body distances.
    const near=Math.max(.00001,Math.min(.05,camera.position.distanceTo(controls.target)/500));
    if(!presenting&&Math.abs(camera.near-near)>near*.01){camera.near=near;camera.updateProjectionMatrix();dirty=true;}
-   if(lightweightActive&&vrAnatomy&&dirty){vrAnatomy.sync(s,data,pickers,contextUniform.value);renderer.domElement.dataset.xrVisibleTriangles=String(vrAnatomy.mesh.geometry.drawRange.count/3);}
+   if(lightweightActive&&vrAnatomy&&dirty){const solidQuest=questVr&&xrActiveMode==='immersive-vr';vrAnatomy.sync(s,data,pickers,solidQuest?1:contextUniform.value,solidQuest);renderer.domElement.dataset.xrVisibleTriangles=String(vrAnatomy.mesh.geometry.drawRange.count/3);}
    if(presenting){const xrFrame=renderer.xr.getFrame();updateXrPlacement(xrFrame);xrRays.forEach((ray,i)=>{const source=xrSession?.inputSources[i];ray.visible=!!source&&xrPose(xrFrame,source);if(ray.visible){ray.position.copy(xrOrigin);ray.quaternion.copy(xrQuaternion);}});}
    if(dirty||presenting){
     renderer.render(scene,presenting?xrRenderCamera:camera);if(lightweightActive&&dirty){renderer.domElement.dataset.xrRenderCalls=String(renderer.info.render.calls);renderer.domElement.dataset.xrRenderedTriangles=String(renderer.info.render.triangles);}
@@ -927,7 +945,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    return new Promise<Blob>((resolve,reject)=>output.toBlob(blob=>blob?resolve(blob):reject(new Error('The PNG could not be created.')),'image/png'));
   });
   const contextLost=(e:Event)=>{e.preventDefault();onError('The 3D session was paused by your device. Reload to continue.');};renderer.domElement.addEventListener('webglcontextlost',contextLost);
-  return()=>{onCapture?.(null);onFrameCapture?.(null);disposed=true;abort.abort();vrAnatomy?.mesh.removeFromParent();vrAnatomy?.dispose();cancelAnimationFrame(frame);renderer.setAnimationLoop(null);renderer.xr.removeEventListener('sessionend',xrEnded);if(xrSession){xrSession.removeEventListener('select',xrSelect);void xrSession.end();}xrButton.remove();xrArButton.remove();delete (studio as HTMLElement).dataset.xrMode;xrRays.forEach(ray=>{ray.geometry.dispose();(ray.material as T.Material).dispose();});xrInfoTexture.dispose();(xrInfo.material as T.Material).dispose();clearTimeout(capTimer);clearCaps();stencilCaps.dispose();observer.disconnect();layoutObserver.disconnect();studio.removeEventListener('beforexrselect',overlaySelect);theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',cancelCameraTween);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());textureUrls.forEach(url=>URL.revokeObjectURL(url));guideGeometry.dispose();guideBorder.geometry.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
+  return()=>{onCapture?.(null);onFrameCapture?.(null);disposed=true;abort.abort();vrAnatomy?.mesh.removeFromParent();vrAnatomy?.dispose();cancelAnimationFrame(frame);renderer.setAnimationLoop(null);renderer.xr.removeEventListener('sessionend',xrEnded);if(xrSession){xrSession.removeEventListener('select',xrSelect);xrSession.removeEventListener('selectstart',xrSelectStart);xrSession.removeEventListener('selectend',xrSelectEnd);void xrSession.end();}xrButton.remove();xrArButton.remove();delete (studio as HTMLElement).dataset.xrMode;xrRays.forEach(ray=>{ray.geometry.dispose();(ray.material as T.Material).dispose();});xrInfoTexture.dispose();(xrInfo.material as T.Material).dispose();clearTimeout(capTimer);clearCaps();stencilCaps.dispose();observer.disconnect();layoutObserver.disconnect();studio.removeEventListener('beforexrselect',overlaySelect);theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',cancelCameraTween);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());textureUrls.forEach(url=>URL.revokeObjectURL(url));guideGeometry.dispose();guideBorder.geometry.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
  },[atlas]);
  return <div className="scene" ref={host}/>;
 }

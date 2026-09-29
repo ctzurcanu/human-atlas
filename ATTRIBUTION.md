@@ -1176,6 +1176,7 @@ Identifier links use the following reference pages:
 - **Atlas and HA-G:** a permalink to the selected Human Atlas item or grouping. Curated Latin labels without an external terminology correspondence also link to this local record.
 
 - [three.js](https://github.com/mrdoob/three.js): MIT, Three.js Authors.
+- **Quest VR controls and rendering:** [WebXR input events and target rays](https://immersive-web.github.io/webxr/input-explainer.html); [three.js WebXR framebuffer and foveation controls](https://threejs.org/docs/pages/WebXRManager.html); [three.js alpha hash material behavior](https://threejs.org/docs/pages/Material.html).
 - [meshoptimizer](https://github.com/zeux/meshoptimizer): MIT, Arseny Kapoulkine.
 - [html-to-image](https://github.com/bubkoo/html-to-image): MIT, W.Y. and contributors. Renders the atlas interface into a local canvas for PNG and video exports, including embedded fonts.
 - [fflate](https://github.com/101arrowz/fflate): MIT, Arjun Barrett. Compresses large saved views into browser-only URL fragments; [URI fragment documentation](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment) describes why fragments are not sent in HTTP requests.

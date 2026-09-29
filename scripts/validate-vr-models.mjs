@@ -32,6 +32,10 @@ try{
   const sourceMesh=new T.Mesh();sourceMesh.matrixWorld.makeTranslation(1,2,3);const sourcePickers=[];sourcePickers[selected]=sourceMesh;
   vr.sync(state,offsets,sourcePickers,0,1);
   assert.equal(vr.mesh.geometry.drawRange.count,model.parts[selected].indexCount,'zero-opacity context must be excluded from rendering');
+  vr.sync(state,offsets,sourcePickers,.18,true);
+  assert.equal(vr.mesh.geometry.drawRange.count,model.parts[selected].indexCount,'Quest solid mode must exclude grainy low-opacity context');
+  vr.sync(state,offsets,sourcePickers,1,true);
+  assert.ok(vr.mesh.geometry.drawRange.count>model.parts[selected].indexCount,'Quest solid mode retains the visible anatomy to peel');
   assert.deepEqual(vr.pickers[selected].matrixWorld.elements,sourceMesh.matrixWorld.elements,'controller picking must use the visible part transform');
   offsets[selected*4+3]=0;vr.sync(state,offsets,sourcePickers,0,1);assert.equal(vr.mesh.geometry.drawRange.count,0,'hidden geometry must not be submitted');
   offsets[selected*4+3]=1;vr.sync(state,offsets,sourcePickers,0,1);

@@ -19,7 +19,7 @@
     "build:tissue-textures": "node scripts/generate-tissue-textures.mjs",
     "build:vercel": "vite build",
     "check": "tsc --noEmit",
-    "test:vr": "node scripts/validate-vr-models.mjs",
+    "test:vr": "node scripts/validate-vr-models.mjs && node scripts/validate-xr-orbit.mjs",
     "audit:meshes": "node scripts/audit-meshes.mjs",
     "test:sections": "node scripts/validate-section.mjs",
     "test:section-visuals": "node scripts/compare-section-screenshots.mjs",

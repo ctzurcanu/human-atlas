@@ -47,10 +47,13 @@ export async function loadVrAnatomy(atlas:Atlas,url:string,uniforms:Uniforms,sig
  };
  material.customProgramCacheKey=()=> 'quest-anatomy-v1';
  const mesh=new T.Mesh(geometry,material);mesh.frustumCulled=false;mesh.visible=false;mesh.matrixAutoUpdate=false;
- const sync=(state:SceneState,offsets:Float32Array,sourcePickers:(T.Mesh|undefined)[],context:number)=>{
+ const sync=(state:SceneState,offsets:Float32Array,sourcePickers:(T.Mesh|undefined)[],context:number,solid=false)=>{
   const selected=new Set(state.selected);let changed=false;
   for(let i=0;i<model.parts.length;i++){
-   const part=atlas.parts[i],alpha=(selected.has(part.id)?1:context)*partLayerOpacity(part,state)*(atlas.materials?.[part.material??'']?.opacity??1),visible=offsets[i*4+3]>.5&&alpha>=.001;
+   const part=atlas.parts[i],sourceAlpha=(selected.has(part.id)?1:context)*partLayerOpacity(part,state)*(atlas.materials?.[part.material??'']?.opacity??1);
+   // Quest's single-pass alpha hash looks like pixel noise in a headset.
+   // Keep its visible parts solid; the ray peel then exposes the next layer.
+   const alpha=solid?(sourceAlpha>=.5?1:0):sourceAlpha,visible=offsets[i*4+3]>.5&&alpha>=.001;
    if(shown[i]!==Number(visible)){shown[i]=Number(visible);changed=true;}
    states.set([offsets[i*4],offsets[i*4+1],offsets[i*4+2],visible?alpha:0],i*4);
    const source=sourcePickers[i];if(source){pickers[i].matrix.copy(source.matrixWorld);pickers[i].matrixWorld.copy(source.matrixWorld);}
