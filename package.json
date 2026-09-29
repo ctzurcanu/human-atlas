@@ -59,7 +59,9 @@
     "test:spinal-roots": "node scripts/validate-spinal-root-hierarchy.mjs",
     "build:physiology": "node scripts/build-physiology-hierarchy.mjs",
     "test:physiology": "node scripts/validate-physiology-hierarchy.mjs",
-    "test:cache": "node --test scripts/validate-asset-cache.mjs"
+    "test:cache": "node --test scripts/validate-asset-cache.mjs",
+    "plugin:package": "node scripts/package-plugin.mjs",
+    "test:plugin-review": "node scripts/validate-plugin-review.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

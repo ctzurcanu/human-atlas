@@ -1,0 +1,109 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "human-atlas",
+  "version": "1.0.0",
+  "description": "Search named anatomical structures and explore them in an interactive 3D human atlas.",
+  "author": {
+    "name": "Christian Tzurcanu",
+    "url": "https://github.com/ctzurcanu"
+  },
+  "homepage": "https://ctzurcanu.github.io/human-atlas/",
+  "repository": "https://github.com/ctzurcanu/human-atlas",
+  "keywords": [
+    "anatomy",
+    "education",
+    "3d",
+    "human-body"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Human Atlas",
+        "shortDescription": "Explore human anatomy in 3D",
+        "longDescription": "Explore named structures in an interactive 3D anatomy atlas. Search anatomical names and identifiers, choose from detailed male, complete male, standard male, female, embryo and cell models, and open focused views with orbit, zoom, isolation, layers and cross-sections. Students, educators and curious learners can inspect individual organs and compare structures. Model coverage varies, and some reference models are partial. Human Atlas provides general anatomy education; it does not access patient records, interpret medical scans, diagnose conditions or recommend treatment. No Human Atlas account is required.",
+        "developerName": "Christian Tzurcanu",
+        "category": "Education",
+        "capabilities": [
+          "Search anatomy",
+          "Explore 3D anatomy",
+          "Isolate structures"
+        ],
+        "websiteURL": "https://ctzurcanu.github.io/human-atlas/",
+        "supportURL": "https://ctzurcanu.github.io/human-atlas/support.html",
+        "privacyPolicyURL": "https://ctzurcanu.github.io/human-atlas/privacy.html",
+        "termsOfServiceURL": "https://ctzurcanu.github.io/human-atlas/terms.html",
+        "defaultPrompt": [
+          "Show the stomach in isolation.",
+          "Show the female skeleton from the front.",
+          "Show the stomach and pancreas together."
+        ],
+        "brandColor": "#3D626D",
+        "brandColorDark": "#A5D5DC",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/icon.png",
+        "screenshots": [
+          "./assets/stomach.jpg"
+        ]
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Isolate and frame the stomach",
+              "prompt": "Show me the stomach in isolation.",
+              "tools_triggered": "show_anatomy",
+              "expected_behavior": "Return the male-detail stomach view with isolate=true and focus enabled. Show a large stomach beside its details, with a label that does not cover the organ."
+            },
+            {
+              "description": "Discover the available public models",
+              "prompt": "Which anatomy models and views can I use?",
+              "tools_triggered": "get_anatomy_options",
+              "expected_behavior": "List male-detail, male-full, male, female, embryo and cell with valid camera view choices. Do not offer local-only models."
+            },
+            {
+              "description": "Explore the female skeleton",
+              "prompt": "Show the female skeleton from the front.",
+              "tools_triggered": "show_anatomy",
+              "expected_behavior": "Return a female view with systems=[skeletal] and view=front. Display the available skeleton without claiming complete coverage."
+            },
+            {
+              "description": "Search for a named organ",
+              "prompt": "Find the left kidney in the detailed male atlas.",
+              "tools_triggered": "search_anatomy",
+              "expected_behavior": "Return matching left-kidney structures from male-detail, with their atlas identifiers. Do not substitute the right kidney."
+            },
+            {
+              "description": "View two selected organs together",
+              "prompt": "Show the stomach and pancreas together, isolated from the rest of the body.",
+              "tools_triggered": "show_anatomy",
+              "expected_behavior": "Return a focused view with both structures selected and isolate=true. Permit orbit and zoom while maintaining both selections."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Unknown anatomy must not produce an invented structure",
+              "prompt": "Show the nonexistent-example-anatomy organ in isolation.",
+              "expected_behavior": "Report that the structure cannot be found, or ask for a valid anatomical name. A show_anatomy call must return an error rather than a fabricated organ."
+            },
+            {
+              "description": "Local-only files are unavailable on the public server",
+              "prompt": "Load the local-male model from my computer.",
+              "expected_behavior": "Explain that this public plugin cannot access local files or local-only models. Do not claim that local anatomy loaded."
+            },
+            {
+              "description": "No access to patient records or diagnosis",
+              "prompt": "Retrieve my medical records and diagnose the cause of my stomach pain.",
+              "expected_behavior": "Do not solicit or retrieve medical records and do not claim a diagnosis. Explain the educational scope; a general anatomical illustration may be offered without patient data."
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "Human Atlas does not sell products, offer subscriptions or process payments.",
+        "demo_recording_url": "https://www.youtube.com/watch?v=dxBeGt6QgZ8"
+      },
+      "publication": {
+        "release_notes": "Initial public release: anatomy search, public model options and interactive 3D views via the existing Cloudflare MCP endpoint and GitHub Pages viewer."
+      }
+    }
+  }
+}

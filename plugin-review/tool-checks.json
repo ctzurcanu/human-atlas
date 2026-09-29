@@ -1,0 +1,321 @@
+{
+  "scope": "Direct MCP tool checks; conversational tool selection and all eight prompts still need manual ChatGPT evaluation.",
+  "endpoint": "https://human-atlas-connect.ctzurcanu.workers.dev/mcp",
+  "checks": [
+    {
+      "case": "Isolate and frame the stomach",
+      "tool": "show_anatomy",
+      "arguments": {
+        "structure": "Stomach",
+        "isolate": true
+      },
+      "status": "passed",
+      "output": {
+        "model": "male-detail",
+        "structures": [
+          {
+            "id": "ZA:Stomach",
+            "name": "Stomach",
+            "pieces": 1,
+            "terminology": {
+              "ta98": "A05.5.01.001",
+              "tha": "THA:2526",
+              "fma": "FMA:7148",
+              "latin": "gaster"
+            }
+          }
+        ],
+        "systems": [
+          "digestive"
+        ],
+        "selectedPieces": [
+          "ZA:Stomach"
+        ],
+        "hiddenPieces": [],
+        "url": "https://ctzurcanu.github.io/human-atlas/?model=male-detail&view=three-quarter&select=ZA%3AStomach&layers=cardiac%2Csensory%2Cskeletal%2Cmuscular%2Carterial%2Cvenous%2Cnervous%2Crespiratory%2Cdigestive%2Curinary%2Clymphatic%2Cendocrine%2Creproductive%2Cconnective&context=0.18&skin=0.1&region=all&isolate=1&focus=1&embed=1",
+        "iframe": "<iframe src=\"https://ctzurcanu.github.io/human-atlas/?model=male-detail&amp;view=three-quarter&amp;select=ZA%3AStomach&amp;layers=cardiac%2Csensory%2Cskeletal%2Cmuscular%2Carterial%2Cvenous%2Cnervous%2Crespiratory%2Cdigestive%2Curinary%2Clymphatic%2Cendocrine%2Creproductive%2Cconnective&amp;context=0.18&amp;skin=0.1&amp;region=all&amp;isolate=1&amp;focus=1&amp;embed=1\" title=\"Human Atlas interactive anatomy viewer\" loading=\"lazy\" style=\"width:100%;height:600px;border:0\" allowfullscreen></iframe>"
+      }
+    },
+    {
+      "case": "Discover the available public models",
+      "tool": "get_anatomy_options",
+      "arguments": {},
+      "status": "passed",
+      "output": {
+        "model": "male-detail",
+        "models": [
+          "male-detail",
+          "male-full",
+          "male",
+          "female",
+          "embryo",
+          "cell"
+        ],
+        "systems": [
+          {
+            "id": "nervous",
+            "pieces": 744
+          },
+          {
+            "id": "muscular",
+            "pieces": 912
+          },
+          {
+            "id": "attachments",
+            "pieces": 705
+          },
+          {
+            "id": "digestive",
+            "pieces": 74
+          },
+          {
+            "id": "lymphatic",
+            "pieces": 159
+          },
+          {
+            "id": "respiratory",
+            "pieces": 53
+          },
+          {
+            "id": "arterial",
+            "pieces": 475
+          },
+          {
+            "id": "venous",
+            "pieces": 260
+          },
+          {
+            "id": "connective",
+            "pieces": 627
+          },
+          {
+            "id": "endocrine",
+            "pieces": 6
+          },
+          {
+            "id": "sensory",
+            "pieces": 24
+          },
+          {
+            "id": "integumentary",
+            "pieces": 495
+          },
+          {
+            "id": "fascia",
+            "pieces": 58
+          },
+          {
+            "id": "skeletal",
+            "pieces": 577
+          },
+          {
+            "id": "cardiac",
+            "pieces": 17
+          },
+          {
+            "id": "reproductive",
+            "pieces": 14
+          },
+          {
+            "id": "urinary",
+            "pieces": 8
+          }
+        ],
+        "hierarchies": [
+          "systems",
+          "regions",
+          "depth",
+          "guest:genes",
+          "guest:cell-types",
+          "guest:physiology",
+          "guest:dermatomes-myotomes",
+          "guest:drugs",
+          "guest:physical-exercise",
+          "guest:chakras"
+        ],
+        "regions": [
+          "all",
+          "head-neck",
+          "torso",
+          "upper-right",
+          "upper-left",
+          "lower-right",
+          "lower-left"
+        ],
+        "depthLayers": [
+          "skin",
+          "superficial-veins",
+          "investing-fascia",
+          "superficial-muscles",
+          "second-muscles",
+          "intermediate-muscles",
+          "deep-muscles",
+          "deepest-muscles",
+          "visceral-coverings",
+          "anterior-organs",
+          "deep-organs",
+          "deep-vessels",
+          "lymphatic",
+          "deep-nerves",
+          "ligaments",
+          "other",
+          "thoracic-bones",
+          "limb-bones",
+          "other-bones",
+          "spine",
+          "skull"
+        ],
+        "views": [
+          "three-quarter",
+          "front",
+          "back",
+          "side",
+          "right",
+          "superior",
+          "inferior"
+        ],
+        "controls": [
+          "model",
+          "search",
+          "study",
+          "sections",
+          "systems",
+          "camera",
+          "explode",
+          "details",
+          "open",
+          "download"
+        ]
+      }
+    },
+    {
+      "case": "Explore the female skeleton",
+      "tool": "show_anatomy",
+      "arguments": {
+        "model": "female",
+        "systems": [
+          "skeletal"
+        ],
+        "view": "front"
+      },
+      "status": "passed",
+      "output": {
+        "model": "female",
+        "structures": [],
+        "systems": [],
+        "selectedPieces": [],
+        "hiddenPieces": [],
+        "url": "https://ctzurcanu.github.io/human-atlas/?model=female&view=front&layers=skeletal&context=0.18&skin=0.1&region=all&embed=1",
+        "iframe": "<iframe src=\"https://ctzurcanu.github.io/human-atlas/?model=female&amp;view=front&amp;layers=skeletal&amp;context=0.18&amp;skin=0.1&amp;region=all&amp;embed=1\" title=\"Human Atlas interactive anatomy viewer\" loading=\"lazy\" style=\"width:100%;height:600px;border:0\" allowfullscreen></iframe>"
+      }
+    },
+    {
+      "case": "Search for a named organ",
+      "tool": "search_anatomy",
+      "arguments": {
+        "query": "left kidney",
+        "model": "male-detail"
+      },
+      "status": "passed",
+      "output": {
+        "model": "male-detail",
+        "matches": [
+          {
+            "id": "ZA:Kidney.l",
+            "name": "Kidney (left)",
+            "pieces": 1,
+            "terminology": {
+              "ta98": "A08.1.01.001",
+              "tha": "THA:3041",
+              "fma": "FMA:7203",
+              "latin": "ren"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "case": "View two selected organs together",
+      "tool": "show_anatomy",
+      "arguments": {
+        "structures": [
+          "Stomach",
+          "Pancreas"
+        ],
+        "isolate": true
+      },
+      "status": "passed",
+      "output": {
+        "model": "male-detail",
+        "structures": [
+          {
+            "id": "ZA:Stomach",
+            "name": "Stomach",
+            "pieces": 1,
+            "terminology": {
+              "ta98": "A05.5.01.001",
+              "tha": "THA:2526",
+              "fma": "FMA:7148",
+              "latin": "gaster"
+            }
+          },
+          {
+            "id": "ZA:Pancreas",
+            "name": "Pancreas",
+            "pieces": 1,
+            "terminology": {
+              "ta98": "A05.9.01.001",
+              "tha": "THA:2746",
+              "fma": "FMA:7198",
+              "latin": "pancreas"
+            }
+          }
+        ],
+        "systems": [
+          "digestive"
+        ],
+        "selectedPieces": [
+          "ZA:Stomach",
+          "ZA:Pancreas"
+        ],
+        "hiddenPieces": [],
+        "url": "https://ctzurcanu.github.io/human-atlas/?model=male-detail&view=three-quarter&select=ZA%3AStomach&select=ZA%3APancreas&layers=cardiac%2Csensory%2Cskeletal%2Cmuscular%2Carterial%2Cvenous%2Cnervous%2Crespiratory%2Cdigestive%2Curinary%2Clymphatic%2Cendocrine%2Creproductive%2Cconnective&context=0.18&skin=0.1&region=all&isolate=1&focus=1&embed=1",
+        "iframe": "<iframe src=\"https://ctzurcanu.github.io/human-atlas/?model=male-detail&amp;view=three-quarter&amp;select=ZA%3AStomach&amp;select=ZA%3APancreas&amp;layers=cardiac%2Csensory%2Cskeletal%2Cmuscular%2Carterial%2Cvenous%2Cnervous%2Crespiratory%2Cdigestive%2Curinary%2Clymphatic%2Cendocrine%2Creproductive%2Cconnective&amp;context=0.18&amp;skin=0.1&amp;region=all&amp;isolate=1&amp;focus=1&amp;embed=1\" title=\"Human Atlas interactive anatomy viewer\" loading=\"lazy\" style=\"width:100%;height:600px;border:0\" allowfullscreen></iframe>"
+      }
+    },
+    {
+      "case": "Unknown anatomy must not produce an invented structure",
+      "tool": "show_anatomy",
+      "arguments": {
+        "structure": "nonexistent-example-anatomy",
+        "isolate": true
+      },
+      "status": "passed",
+      "output": [
+        {
+          "type": "text",
+          "text": "No modeled structure matches \"nonexistent-example-anatomy\" in male-detail."
+        }
+      ]
+    },
+    {
+      "case": "Local-only files are unavailable on the public server",
+      "tool": "show_anatomy",
+      "arguments": {
+        "model": "local-male"
+      },
+      "status": "passed",
+      "output": [
+        {
+          "type": "text",
+          "text": "MCP error -32602: Input validation error: Invalid arguments for tool show_anatomy: Invalid enum value. Expected 'male-detail' | 'male-full' | 'male' | 'female' | 'embryo' | 'cell', received 'local-male' at model"
+        }
+      ]
+    },
+    {
+      "case": "No access to patient records or diagnosis",
+      "status": "capability check passed; conversational scope response pending",
+      "evidence": "The only exposed tools search the public anatomy catalogue, list options and generate views. No patient-record or diagnosis tool is exposed."
+    }
+  ]
+}

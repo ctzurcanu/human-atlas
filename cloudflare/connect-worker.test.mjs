@@ -16,7 +16,7 @@ before(async()=>{
   reconstructForTest(){Object.assign(this,new AtlasRoom(this.ctx,this.env));}
   expireForTest(){this.meta.hostMissingUntil=Date.now()-1;this.save();return this.alarm();}
  }`;
- mf=new Miniflare({modules:true,script,compatibilityDate:'2026-04-07',bindings:{ALLOWED_VIEWER_ORIGINS:viewer},durableObjects:{ROOMS:{className:'TestAtlasRoom',useSQLite:true}}});
+ mf=new Miniflare({modules:true,script,compatibilityDate:'2026-04-07',bindings:{ALLOWED_VIEWER_ORIGINS:viewer,OPENAI_APPS_CHALLENGE:'human-atlas-test-challenge'},durableObjects:{ROOMS:{className:'TestAtlasRoom',useSQLite:true}}});
 });
 after(async()=>{await mf?.dispose();});
 async function fixture(t){
@@ -39,6 +39,14 @@ async function fixture(t){
  return {client};
 }
 const pose={model:'male-detail',camera:[1,1,3,0,.8,0,0,0],up:[0,1,0],rotation:[0,0,0,1]};
+test('OpenAI domain challenge returns only the configured token',async()=>{
+ const url=`${origin}/.well-known/openai-apps-challenge`;
+ const response=await mf.dispatchFetch(url);assert.equal(response.status,200);
+ assert.equal(await response.text(),'human-atlas-test-challenge');
+ assert.ok(response.headers.get('Content-Type').startsWith('text/plain'));
+ const head=await mf.dispatchFetch(url,{method:'HEAD'});assert.equal(head.status,200);assert.equal(await head.text(),'');
+ assert.equal((await mf.dispatchFetch(url,{method:'POST'})).status,405);
+});
 test('public MCP initializes, discovers tools, searches and returns the GitHub Pages UI',async()=>{
  const rpc=async(method,params={})=>{
   const response=await mf.dispatchFetch(`${origin}/mcp`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});

@@ -18,6 +18,11 @@ const json=(data,headers={})=>Response.json(data,{headers:{'Cache-Control':'no-s
 export default {
  async fetch(request,env){
   const url=new URL(request.url);
+  if(url.pathname==='/.well-known/openai-apps-challenge'){
+   if(!env.OPENAI_APPS_CHALLENGE)return new Response('Not configured',{status:404});
+   if(!['GET','HEAD'].includes(request.method))return new Response('Use GET',{status:405});
+   return new Response(request.method==='HEAD'?null:env.OPENAI_APPS_CHALLENGE,{headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'no-store'}});
+  }
   if(url.pathname==='/mcp')return handleMcp(request,env);
   if(url.pathname==='/'||url.pathname==='/health')return json({service:'human-atlas-connect',status:'ok',protocol:1});
   if(url.pathname!==CONNECT_PATH&&url.pathname!==`${CONNECT_PATH}/identity`)return new Response('Not found',{status:404});
