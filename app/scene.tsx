@@ -92,6 +92,8 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   const bounds=atlas.parts.map(p=>new T.Box3(new T.Vector3().fromArray(p.bounds[0]),new T.Vector3().fromArray(p.bounds[1])));
   const modelBounds=new T.Box3();atlas.parts.forEach((part,index)=>{if(!part.suppressed)modelBounds.union(bounds[index]);});
   let currentArea:ViewArea=usableViewArea([]),currentLabelArea:LabelArea=labelAreaForPanels(0,0,[]),layoutDirty=true,areaInitialized=false;
+  let initialSelectionFitPending=!!(latest.current.isolate||latest.current.focus)&&!latest.current.camera;
+  controls.addEventListener('start',()=>{initialSelectionFitPending=false;});
   const viewBounds=modelBounds.clone(),framingPoint=new T.Vector3();
   const anatomyEntries=hierarchyEntries(atlas);let explosionLayout:HierarchicalExplosionLayout|null=null;
   let packingWidth=1,packingHeight=1,explosionAspect=0,lastExplode=0,explosionVelocity=0,zoomVelocity=0;
@@ -750,11 +752,14 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     layoutDirty=false;const areas=readLayoutAreas();currentArea=areas.view;currentLabelArea=areas.labels;
     const aspect=Math.max(1,el.clientWidth)/Math.max(1,el.clientHeight);if(camera.aspect!==aspect){const view=camera.view;camera.aspect=aspect;if(view?.enabled)camera.setViewOffset(aspect,1,view.offsetX/view.fullWidth*aspect,view.offsetY/view.fullHeight,aspect,1);}
     camera.updateProjectionMatrix();if(!presenting){syncCaptureResolution();renderer.setSize(el.clientWidth,el.clientHeight);}
-    // Opening panels changes label limits, never the user's camera placement.
+    // Follow the initial detail-panel entrance before handing camera placement
+    // to the user. Later panel changes preserve their chosen camera.
+    if(initialSelectionFitPending&&!s.camera)lastFocus=-1;
     if(!areaInitialized)fit(s.view,Math.min(1,amount*6));
     areaInitialized=true;dirty=true;
     renderer.domElement.dataset.viewArea=JSON.stringify(currentArea);renderer.domElement.dataset.viewAnchor=JSON.stringify(screenAnchor(currentArea,preferredAnchor(currentArea)));
    }
+   if(ready&&!panelsAnimating)initialSelectionFitPending=false;
    if(presenting){const xrFrame=renderer.xr.getFrame(),sources=xrSession?.inputSources;const left=[...(sources??[])].find(source=>source.handedness==='left');const stick=left?.gamepad?.axes[3]??0;
     if(!following&&Math.abs(stick)>.15)xrZoom=T.MathUtils.clamp(xrZoom*Math.exp(stick*dt*1.25),.25,4);
     if(questVr&&xrActiveMode==='immersive-vr'&&xrOrbitHeld&&!following&&left&&xrFrame){const space=renderer.xr.getReferenceSpace(),pose=space&&xrFrame.getPose(left.targetRaySpace,space);if(pose){const {x,y,z,w}=pose.transform.orientation,aim=xrAim.set(0,0,-1).applyQuaternion(xrControllerQuaternion.set(x,y,z,w));const current={yaw:Math.atan2(aim.x,-aim.z),pitch:Math.asin(T.MathUtils.clamp(aim.y,-1,1))};xrOrbit=advanceControllerOrbit(xrLastLeftAim,current,xrOrbit);xrLastLeftAim=current;}}
@@ -818,7 +823,9 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    const isolateKey=s.isolate?s.selected.join(',')+':'+s.reset:'';
    const focusChanged=(s.focus??0)!==lastFocus;lastFocus=s.focus??0;
    if(isolateKey!==lastIsolate||(s.isolate&&moving)||focusChanged&&!!s.focus){
-    if(s.isolate||focusChanged&&!!s.focus){const box=new T.Box3();atlas.parts.forEach((p,i)=>{if(s.selected.includes(p.id)&&pickers[i])box.union(new T.Box3().setFromObject(pickers[i]!));});
+    // URL selection is available before its mesh finishes loading. Frame from
+    // catalogue bounds immediately instead of consuming focus on an empty box.
+    if(s.isolate||focusChanged&&!!s.focus){const box=new T.Box3();atlas.parts.forEach((p,i)=>{if(s.selected.includes(p.id))box.union(worldBox.copy(bounds[i]).applyMatrix4(pickers[i]?.matrixWorld??new T.Matrix4()));});
      if(!box.isEmpty()){const center=box.getCenter(new T.Vector3()),area=viewArea(),direction=directionFor(s.view).normalize();setFrameOffset(camera,area);const distance=Math.max(.006,frameDistance(box,direction,camera.up,camera.aspect,area,camera.fov)*1.35);controls.maxDistance=Math.max(.12,distance*1.6);controls.target.copy(center);camera.position.copy(center).addScaledVector(direction,distance);controls.update();dirty=true;}
     }else if(lastIsolate&&!selectionCleared){camera.clearViewOffset();fit(s.view,Math.min(1,amount*6));}
     lastIsolate=isolateKey;
