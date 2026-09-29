@@ -1,5 +1,7 @@
 # Cloudflare Connect setup
 
+The same Worker also serves the public, unauthenticated Streamable HTTP MCP endpoint at `/mcp`. MCP uses stateless JSON responses and does not allocate rooms or write to Durable Object storage. The three anatomy tools use compact catalogues generated automatically before deployment; the UI and large model geometry remain on GitHub Pages. `npm run test:connect-cloudflare` covers MCP discovery, search, focused views, UI resources, origin rejection, and the existing host/guest flows.
+
 The atlas stays on GitHub Pages. This Worker handles live sessions at `/atlas-connect`, with one SQLite-backed Durable Object per invitation. It uses the Free plan's supported storage backend and WebSocket hibernation. Camera motion is held in socket attachments rather than written to SQLite on every frame. The initial implementation accepts up to 200 guests per room; actual capacity also depends on Cloudflare's daily quotas and payload sizes.
 
 ## 1. Connect your account

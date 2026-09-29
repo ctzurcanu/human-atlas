@@ -5,6 +5,8 @@
   "compatibility_date": "2026-04-07",
   "workers_dev": true,
   "preview_urls": false,
+  "build": {"command": "node scripts/build-cloudflare-mcp.mjs"},
+  "rules": [{"type":"Text","globs":["**/view.html"],"fallthrough":true}],
   "vars": {"ALLOWED_VIEWER_ORIGINS": "https://ctzurcanu.github.io"},
   "durable_objects": {
     "bindings": [{"name": "ROOMS", "class_name": "AtlasRoom"}]

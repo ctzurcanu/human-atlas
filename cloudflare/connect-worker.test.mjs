@@ -9,7 +9,7 @@ const code=()=>randomBytes(24).toString('base64url');
 const viewer='https://ctzurcanu.github.io',origin='https://relay.example';
 let mf;
 before(async()=>{
- const bundle=await build({entryPoints:[fileURLToPath(new URL('connect-worker.mjs',import.meta.url))],bundle:true,format:'esm',platform:'browser',external:['cloudflare:workers'],write:false});
+ const bundle=await build({entryPoints:[fileURLToPath(new URL('connect-worker.mjs',import.meta.url))],bundle:true,format:'esm',platform:'browser',external:['cloudflare:workers'],loader:{'.html':'text'},write:false});
  // Only the test bundle exports this RPC method. Reconstructing the object
  // exercises exactly the constructor used when Cloudflare wakes a sleeping room.
  const script=bundle.outputFiles[0].text+`\nexport class TestAtlasRoom extends AtlasRoom {
@@ -39,6 +39,29 @@ async function fixture(t){
  return {client};
 }
 const pose={model:'male-detail',camera:[1,1,3,0,.8,0,0,0],up:[0,1,0],rotation:[0,0,0,1]};
+test('public MCP initializes, discovers tools, searches and returns the GitHub Pages UI',async()=>{
+ const rpc=async(method,params={})=>{
+  const response=await mf.dispatchFetch(`${origin}/mcp`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json, text/event-stream'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params})});
+  assert.equal(response.status,200);return (await response.json()).result;
+ };
+ const init=await rpc('initialize',{protocolVersion:'2025-06-18',capabilities:{},clientInfo:{name:'test',version:'1'}});
+ assert.equal(init.serverInfo.name,'human-atlas');
+ const tools=(await rpc('tools/list')).tools;
+ assert.equal(tools.length,3);
+ assert.ok(!JSON.stringify(tools.find(t=>t.name==='show_anatomy').inputSchema).includes('local-male'));
+ const search=await rpc('tools/call',{name:'search_anatomy',arguments:{query:'Stomach'}});
+ assert.ok(search.structuredContent.matches.some(m=>m.id==='ZA:Stomach'));
+ const view=await rpc('tools/call',{name:'show_anatomy',arguments:{structure:'Stomach'}});
+ assert.equal(new URL(view.structuredContent.url).origin,viewer);
+ const options=await rpc('tools/call',{name:'get_anatomy_options',arguments:{}});
+ assert.ok(options.structuredContent.models.every(id=>!id.startsWith('local-')));
+ const resources=(await rpc('resources/list')).resources;
+ const ui=await rpc('resources/read',{uri:resources[0].uri});
+ assert.ok(ui.contents[0].text.includes('ui/initialize'));
+ assert.deepEqual(ui.contents[0]._meta.ui.csp.frameDomains,[viewer]);
+ const forbidden=await mf.dispatchFetch(`${origin}/mcp`,{method:'POST',headers:{Origin:'https://untrusted.example'}});
+ assert.equal(forbidden.status,403);
+});
 const snapshot={version:1,model:'male-detail',hierarchy:'systems',guestSources:[],state:{focus:0,contextOpacity:1,region:'all',peel:0,depthHidden:[],hidden:[],labels:true,explode:0,visible:['muscular'],selected:[],isolate:false,view:'three-quarter',rotate:false,reset:0},choice:null,ui:{panel:'advanced',frontPanel:'advanced',details:false,layersVisible:true,mobileLayersOpen:false,addSelection:false,query:''},covering:[],pose,advanced:{document:{schemaVersion:1,type:'connect',views:[]},slideIndex:null}};
 test('health and identity return the relay origin; unrelated browser origins are rejected',async()=>{
  const health=await mf.dispatchFetch(`${origin}/health`);assert.equal((await health.json()).status,'ok');

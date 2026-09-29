@@ -1,4 +1,5 @@
 import {DurableObject} from 'cloudflare:workers';
+import {handleMcp} from './mcp-worker.mjs';
 import {CONNECT_PATH,MAX_MESSAGE_BYTES,validSnapshot,validPose} from '../shared/connect-protocol.mjs';
 
 const validCode=value=>typeof value==='string'&&/^[\w-]{32}$/.test(value);
@@ -17,6 +18,7 @@ const json=(data,headers={})=>Response.json(data,{headers:{'Cache-Control':'no-s
 export default {
  async fetch(request,env){
   const url=new URL(request.url);
+  if(url.pathname==='/mcp')return handleMcp(request,env);
   if(url.pathname==='/'||url.pathname==='/health')return json({service:'human-atlas-connect',status:'ok',protocol:1});
   if(url.pathname!==CONNECT_PATH&&url.pathname!==`${CONNECT_PATH}/identity`)return new Response('Not found',{status:404});
   if(!allowedOrigin(request,env))return new Response('Forbidden',{status:403});

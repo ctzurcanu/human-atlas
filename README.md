@@ -146,6 +146,10 @@ You can use `model=male-detail`, `male-full`, or `male` instead of `female`. Set
 
 ## Use with an MCP client
 
+The public Streamable HTTP MCP endpoint is **https://human-atlas-connect.ctzurcanu.workers.dev/mcp**. It runs on the existing Cloudflare host/guest relay Worker, requires no authentication, and offers `get_anatomy_options`, `search_anatomy`, and `show_anatomy`. Add this URL as a remote MCP server in ChatGPT developer mode or another compatible client. The interactive UI continues to load the viewer and 3D models from GitHub Pages. The public endpoint exposes only deployed models; local models remain available through the stdio server below.
+
+Deploy the relay and MCP together with `npm run connect:cloudflare:deploy`. Wrangler automatically builds compact catalogues from the current model and terminology files using `scripts/build-cloudflare-mcp.mjs`. Generated catalogues are ignored by Git. Run `npm run test:connect-cloudflare` to verify the public transport and host/guest behavior. Both services share the existing Cloudflare Free account quotas.
+
 Human Atlas includes a local stdio MCP server. It searches the packaged anatomy catalogues and creates focused views of the deployed viewer. Run `npm ci`, then add this server to your MCP client's configuration (replace the path with your checkout's absolute path):
 
 ```json
