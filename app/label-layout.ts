@@ -3,6 +3,23 @@ import type {Laterality} from './laterality';
 export interface LabelAnchor {id:string;x:number;y:number;text:string;fullText?:string;laterality?:Laterality}
 export interface LabelPlacement extends LabelAnchor {side:'left'|'right';label:string;left:number;right:number;top:number;bottom:number;leaderX:number;leaderY:number}
 export interface LabelArea {left:number;right:number;top:number;bottom:number}
+export interface LabelPanel extends LabelArea {kind:'top'|'bottom'|'panel'}
+export const LABEL_PANEL_GAP=5;
+
+export function labelAreaForPanels(width:number,height:number,panels:LabelPanel[]):LabelArea{
+ const area={left:LABEL_PANEL_GAP,right:width-LABEL_PANEL_GAP,top:LABEL_PANEL_GAP,bottom:height-LABEL_PANEL_GAP};
+ for(const panel of panels){
+  if(panel.right<=0||panel.left>=width||panel.bottom<=0||panel.top>=height)continue;
+  if(panel.kind==='top')area.top=Math.max(area.top,panel.bottom+LABEL_PANEL_GAP);
+  else if(panel.kind==='bottom')area.bottom=Math.min(area.bottom,panel.top-LABEL_PANEL_GAP);
+  else if(panel.right-panel.left<width/2){
+   if((panel.left+panel.right)/2<width/2)area.left=Math.max(area.left,panel.right+LABEL_PANEL_GAP);
+   else area.right=Math.min(area.right,panel.left-LABEL_PANEL_GAP);
+  }else if(panel.top>=height-panel.bottom)area.bottom=Math.min(area.bottom,panel.top-LABEL_PANEL_GAP);
+  else area.top=Math.max(area.top,panel.bottom+LABEL_PANEL_GAP);
+ }
+ return area;
+}
 
 const clamp=(value:number,min:number,max:number)=>Math.max(min,Math.min(max,value));
 

@@ -12,7 +12,7 @@ An interactive 3D anatomy explorer built with React, Three.js, and targeted publ
 - Move from assembled anatomy to a spaced inventory of every visible piece.
 - Search anatomical names and source identifiers.
 - Isolate a selected structure and read its details.
-- Download a clean PNG of the current 3D view, without the interface.
+- Download a PNG of the anatomy or the visible page, and record video with labels and controls.
 - After positioning the model, select the bookmark icon at the top right, name the view, and select **Save view** in the panel. Reopen saved views from that same panel. They are stored in this browser's localStorage.
 - Use compact controls and detail panels on mobile.
 
@@ -29,7 +29,7 @@ Open http://localhost:3016. To build the static site, run `npm run build`; the o
 
 ### Browser data cache
 
-Downloaded model catalogues, compressed geometry (including VR), textures, built-in hierarchies and transcript branches are reused from IndexedDB on later visits. The small file-version index is stored in localStorage; model files exceed localStorage's approximately 5 MiB capacity. Each build publishes `asset-manifest.json` with content hashes, so changed files refresh automatically while unchanged files remain cached. Local development uses file sizes and modification times. The cache is limited to 512 MiB and evicts the least recently used files; browsers can also reclaim this storage. Blocked or full storage falls back to ordinary downloads. Connect traffic and external hierarchy URLs are not cached.
+Downloaded model catalogues, decoded geometry (including VR), textures, built-in hierarchies and transcript branches are reused from IndexedDB on later visits. The first visit decodes each compressed geometry chunk and stores decoded bytes. It also assembles a single validated geometry bundle for faster repeat visits on non-Quest browsers; a later visit reads that bundle instead of 41 separate chunks for the detailed male model. The small file-version index is stored in localStorage; model files exceed localStorage's approximately 5 MiB capacity. Each build publishes `asset-manifest.json` with content hashes, so changed files refresh automatically while unchanged files remain cached. Local development uses file sizes and modification times. The cache is limited to 512 MiB and evicts the least recently used files; browsers can also reclaim this storage. Blocked or full storage falls back to ordinary downloads. Connect traffic and external hierarchy URLs are not cached.
 
 Add **`?rc=1`** to the viewer URL to reset the cache, or **`&rc=1`** when there are already query parameters, for example `http://localhost:3016/?model=cell&rc=1`. The flag is consumed once before loading; other query parameters and saved-view fragments remain intact. Only this atlas deployment's cached files and version index are cleared. Saved views, slides and connection preferences are preserved. Run `npm run test:cache` to verify persistence, file updates, reset, eviction, aborts, damaged files and storage failures.
 

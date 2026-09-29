@@ -9,7 +9,7 @@ export const EMBED_UI=[
  {id:'explode',label:'Explode slider'},
  {id:'details',label:'Structure details'},
  {id:'open',label:'Open full viewer'},
- {id:'download',label:'Download PNG'},
+ {id:'download',label:'Download'},
 ] as const;
 export type EmbedUi=typeof EMBED_UI[number]['id'];
 export const DEFAULT_EMBED_UI:EmbedUi[]=EMBED_UI.filter(item=>!['explode','study','camera','download'].includes(item.id)).map(item=>item.id);

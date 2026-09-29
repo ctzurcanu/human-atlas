@@ -103,6 +103,32 @@ test('cached compressed and HTTP-decoded downloads both decode once',async()=>{
  const hit=await decoded.load(base+'models/body.bin.gz');assert.equal(hit.headers.has('content-encoding'),false);assert.deepEqual(Buffer.from(await decodeModelResponse(hit,data.length,true)),data);
 });
 
+test('model chunks persist decoded bytes and skip decompression on repeat visits',async()=>{
+ const source=Buffer.from('model vertices and normals'.repeat(1000)),compressed=gzipSync(source),f=fixture({'models/body.bin.gz':compressed});
+ await browser(f,async()=>{
+  await initializeAssetCache('/human-atlas/');
+  assert.deepEqual(Buffer.from(await loadModelBuffer(base+'models/body.bin.gz',source.length,true,new AbortController().signal)),source);
+  const db=await new Promise((resolve,reject)=>{const request=f.factory.open('human-atlas-assets-v1:/human-atlas/',1);request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
+  const file=await new Promise((resolve,reject)=>{const tx=db.transaction('files','readonly'),request=tx.objectStore('files').get(base+'models/body.bin.gz');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});
+  assert.equal(file.body.byteLength,source.length);assert.ok(file.headers.some(([name,value])=>name==='x-atlas-decoded'&&value==='1'));db.close();
+  await initializeAssetCache('/human-atlas/');
+  assert.deepEqual(Buffer.from(await loadModelBuffer(base+'models/body.bin.gz',source.length,true,new AbortController().signal)),source);
+  assert.equal(f.calls.get('models/body.bin.gz'),1);
+ });
+});
+
+test('whole-model bundle survives refresh and invalidates when any chunk changes',async()=>{
+ const f=fixture({'models/a.bin':'aaaa','models/b.bin':'bbbb'}),urls=[base+'models/a.bin',base+'models/b.bin'];
+ let cache=f.cache();await cache.initialize();
+ await cache.rememberModelBundle(urls,[new TextEncoder().encode('aaaa').buffer,new TextEncoder().encode('bbbb').buffer]);
+ cache=f.cache();await cache.initialize();
+ assert.equal(new TextDecoder().decode(await cache.loadModelBundle(urls,[4,4])),'aaaabbbb');
+ f.files.set('models/b.bin','cccc');cache=f.cache();await cache.initialize();
+ assert.equal(await cache.loadModelBundle(urls,[4,4]),undefined);
+ await cache.rememberModelBundle(urls,[new TextEncoder().encode('aaaa').buffer,new TextEncoder().encode('cccc').buffer]);
+ assert.equal(await cache.loadModelBundle(urls,[4,5]),undefined);
+});
+
 test('damaged cached binary and JSON recover with one fresh download',async()=>{
  const f=fixture({'models/body.bin':'valid-data','models/body.json':'{"valid":true}'});
  await browser(f,async()=>{

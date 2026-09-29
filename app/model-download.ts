@@ -1,4 +1,4 @@
-import {fetchAsset,forgetAsset,isCachedAsset} from './asset-cache';
+import {fetchModelAsset,forgetAsset,isCachedAsset,rememberDecodedModel} from './asset-cache';
 
 /** Static hosts may serve .gz as a compressed response or as a gzip file.
  * Fetch already decodes Content-Encoding; inspect the payload to avoid decoding twice.
@@ -14,13 +14,15 @@ export async function decodeModelResponse(response:Response,expectedBytes:number
 
 /** Discard a damaged cached chunk and retry it once from the source. */
 export async function loadModelBuffer(url:string,expectedBytes:number,compressed:boolean,signal:AbortSignal):Promise<ArrayBuffer>{
- const response=await fetchAsset(url,{signal});
- try{const buffer=await decodeModelResponse(response,expectedBytes,compressed);if(signal.aborted)throw signal.reason??new DOMException('Aborted','AbortError');return buffer;}
+ const response=await fetchModelAsset(url,{signal});
+ if(response instanceof ArrayBuffer){if(response.byteLength===expectedBytes)return response;await forgetAsset(url);const fresh=await fetchModelAsset(url,{signal,cache:'reload'});if(fresh instanceof ArrayBuffer)throw new Error('An anatomy file was incomplete. Please reload the viewer.');const buffer=await decodeModelResponse(fresh,expectedBytes,compressed);if(signal.aborted)throw signal.reason??new DOMException('Aborted','AbortError');await rememberDecodedModel(url,buffer);return buffer;}
+ try{const buffer=await decodeModelResponse(response,expectedBytes,compressed);if(signal.aborted)throw signal.reason??new DOMException('Aborted','AbortError');if(response.headers.get('x-atlas-decoded')!=='1')await rememberDecodedModel(url,buffer);return buffer;}
  catch(error){
   if(signal.aborted)throw error;
   await forgetAsset(url);
   if(!isCachedAsset(response))throw error;
-  const fresh=await fetchAsset(url,{signal,cache:'reload'});
-  try{return await decodeModelResponse(fresh,expectedBytes,compressed);}catch(error){await forgetAsset(url);throw error;}
+  const fresh=await fetchModelAsset(url,{signal,cache:'reload'});
+  if(fresh instanceof ArrayBuffer)throw new Error('An anatomy file could not be reloaded.');
+  try{const buffer=await decodeModelResponse(fresh,expectedBytes,compressed);if(signal.aborted)throw signal.reason??new DOMException('Aborted','AbortError');await rememberDecodedModel(url,buffer);return buffer;}catch(error){await forgetAsset(url);throw error;}
  }
 }

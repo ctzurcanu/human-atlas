@@ -1169,6 +1169,7 @@ The Systems browser follows the major organ systems in [Wikipedia's List of syst
 
 - [three.js](https://github.com/mrdoob/three.js): MIT, Three.js Authors.
 - [meshoptimizer](https://github.com/zeux/meshoptimizer): MIT, Arseny Kapoulkine.
+- [html-to-image](https://github.com/bubkoo/html-to-image): MIT, W.Y. and contributors. Renders the atlas interface into a local canvas for PNG and video exports, including embedded fonts.
 - [fflate](https://github.com/101arrowz/fflate): MIT, Arjun Barrett. Compresses large saved views into browser-only URL fragments; [URI fragment documentation](https://developer.mozilla.org/en-US/docs/Web/URI/Reference/Fragment) describes why fragments are not sent in HTTP requests.
 - [Roboto Condensed](https://github.com/googlefonts/roboto-classic): SIL Open Font License 1.1, Copyright 2011 The Roboto Project Authors.
 - [IBM Plex](https://github.com/IBM/plex): SIL Open Font License 1.1, IBM Corp.
@@ -1178,6 +1179,11 @@ The Systems browser follows the major organ systems in [Wikipedia's List of syst
 - [MDN Storage quotas and eviction criteria](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria): localStorage limits, browser-managed IndexedDB quotas and eviction.
 - [MDN IndexedDB API](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API): asynchronous storage of large files and cache metadata.
 - [fake-indexeddb](https://github.com/dumbmatter/fakeIndexedDB): Apache-2.0, David R. Miller and contributors. Used only in cache tests; no runtime dependency.
+
+## Recording references
+
+- [W3C MediaStream Recording specification](https://www.w3.org/TR/mediastream-recording/): browser recording options and the target encoding bitrate.
+- [MDN MediaRecorder constructor](https://developer.mozilla.org/en-US/docs/Web/API/MediaRecorder/MediaRecorder): codec selection and `videoBitsPerSecond` configuration.
 
 ## Connect hosting references
 
