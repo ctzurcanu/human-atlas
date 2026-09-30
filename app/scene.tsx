@@ -81,7 +81,8 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   const key=new T.DirectionalLight(0xfffaf4,referenceModel?1.65:2.05);key.position.set(-2,4,3);scene.add(key);
   const rim=new T.DirectionalLight(0xe9f0ff,referenceModel ? .65 : 1.1);rim.position.set(2,2,-3);scene.add(rim);
   const theme=window.matchMedia('(prefers-color-scheme: dark)');
-  const applyTheme=()=>{renderer.setClearColor(theme.matches?'#141b23':'#f2f3f3',xrSession?.environmentBlendMode==='opaque'||!xrSession?1:0);dirty=true;};
+  const isDark=()=>document.documentElement.dataset.theme!=='light';
+  const applyTheme=()=>{renderer.setClearColor(isDark()?'#141b23':'#f2f3f3',xrSession?.environmentBlendMode==='opaque'||!xrSession?1:0);dirty=true;};
   applyTheme();theme.addEventListener('change',applyTheme);
   const width=T.MathUtils.ceilPowerOfTwo(atlas.parts.length),data=new Float32Array(width*4),partTexture=new T.DataTexture(data,width,1,T.RGBAFormat,T.FloatType);partTexture.needsUpdate=true;
   const selectedData=new Uint8Array(width*4),selectionTexture=new T.DataTexture(selectedData,width,1);selectionTexture.needsUpdate=true;

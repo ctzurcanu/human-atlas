@@ -89,7 +89,7 @@ const labelStyles=new WeakMap<SVGSVGElement,{theme:string;styles:Map<string,Labe
 // Atlas labels use these SVG primitives. Painting them directly avoids image
 // decoding between a camera frame and its corresponding label positions.
 function drawLiveLabels(context:CanvasRenderingContext2D,labels:SVGSVGElement,width:number){
- const theme=`${matchMedia('(prefers-color-scheme: dark)').matches}:${width<768}`;
+ const theme=`${document.documentElement.dataset.theme!=='light'}:${width<768}`;
  let cached=labelStyles.get(labels);if(!cached||cached.theme!==theme){cached={theme,styles:new Map()};labelStyles.set(labels,cached);}
  const visit=(element:Element,parentKey:string)=>{
   const tag=element.tagName.toLowerCase();if(tag==='title')return;
@@ -121,7 +121,7 @@ export function drawPageFrame(output:HTMLCanvasElement,scene:HTMLCanvasElement,l
  const context=output.getContext('2d');if(!context)throw new Error('The page frame could not be created.');
  const scale=Math.min(output.width/sourceWidth,output.height/sourceHeight),width=sourceWidth*scale,height=sourceHeight*scale,x=(output.width-width)/2,y=(output.height-height)/2;
  context.imageSmoothingEnabled=true;context.imageSmoothingQuality='high';
- context.fillStyle=matchMedia('(prefers-color-scheme: dark)').matches?'#141b23':'#f2f3f3';context.fillRect(0,0,output.width,output.height);
+ context.fillStyle=document.documentElement.dataset.theme!=='light'?'#141b23':'#f2f3f3';context.fillRect(0,0,output.width,output.height);
  context.drawImage(scene,x,y,width,height);
  if(labels instanceof SVGSVGElement){context.save();context.translate(x,y);context.scale(scale,scale);context.beginPath();context.rect(0,0,sourceWidth,sourceHeight);context.clip();drawLiveLabels(context,labels,sourceWidth);context.restore();}
  else if(labels)context.drawImage(labels,x,y,width,height);

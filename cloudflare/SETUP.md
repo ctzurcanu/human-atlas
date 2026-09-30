@@ -65,3 +65,7 @@ Invitations retain the GitHub Pages viewer URL and carry both the random room co
 - **Free quota exceeded:** review Workers and Durable Objects usage in Cloudflare; operations resume after quota reset. Hibernation saves idle compute, but active sessions still consume resources.
 
 Official documentation links are in `ATTRIBUTION.md`.
+
+### OpenAI plugin domain verification
+
+The Worker exposes `/.well-known/openai-apps-challenge` when `OPENAI_APPS_CHALLENGE` is configured. Set the exact token from the OpenAI submission portal using `npx wrangler secret put OPENAI_APPS_CHALLENGE --config cloudflare/wrangler.jsonc`, then deploy. The route returns only the token as plain text for GET, an empty body for HEAD, and 404 until configured. Do not replace another plugin's token at the same URL. See `plugin-review/README.md` for the package and submission steps.

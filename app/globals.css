@@ -95,7 +95,8 @@ h1 .edition{font-family:inherit;font-weight:500;font-size:10px;letter-spacing:.0
 .skin-control label{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;color:var(--foreground)}
 .skin-control output{font-variant-numeric:tabular-nums;color:var(--muted-foreground)}
 .skin-control [data-slot=slider]{padding-block:8px}
-@media(prefers-color-scheme:dark){
+/* Atlas uses the dark studio theme by default so recordings and embeds stay consistent. */
+@media all{
  :root{color-scheme:dark;color:#e4ebf1;background:#141b23;--background:#141b23;--foreground:#e4ebf1;--card:#202b37;--card-foreground:#e4ebf1;--popover:#202b37;--popover-foreground:#e4ebf1;--primary:#a5d5df;--primary-foreground:#16262d;--secondary:#2d3b49;--secondary-foreground:#e4ebf1;--muted:#293745;--muted-foreground:#a9b8c7;--accent:#344858;--accent-foreground:#f0f6fa;--border:#a9c6db26;--input:#a9c6db40;--ring:#a5d5df}
  .glass,.detail-sheet,.about-sheet,.loading{background:#202b37ed!important;color:var(--foreground);border-color:var(--border);box-shadow:0 16px 48px #0003}
  .vignette{background:radial-gradient(ellipse at 51% 43%,transparent 35%,#0003 100%)}
@@ -127,7 +128,7 @@ h1 .edition{font-family:inherit;font-weight:500;font-size:10px;letter-spacing:.0
 .selection-list{max-height:170px;overflow:auto;font-size:11px}.selection-list>div{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);padding:5px 0}.selection-list button{min-height:32px;min-width:32px}
 .layers-panel.study-hidden{display:none}.share-view{position:fixed;z-index:100;top:100px;right:30px;width:min(430px,calc(100% - 30px));border-radius:14px;padding:18px;display:grid;gap:12px}.share-view label{font-size:13px}.share-view input{display:block;width:100%;margin-top:10px;background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:6px;padding:8px}
 .anatomy-labels{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden}.anatomy-labels line{stroke:#3a7680;stroke-width:1.2}.anatomy-labels circle{fill:#4a969e;stroke:var(--background);stroke-width:1.5}.anatomy-labels text{font:11px 'Helvetica Neue',Arial,sans-serif;fill:var(--foreground);stroke:var(--background);stroke-width:4px;paint-order:stroke;stroke-linejoin:round}
-@media(prefers-color-scheme:dark){.anatomy-labels line{stroke:#acd9df}.study-panel,.share-view{background:#202b37f5}}
+@media all{.anatomy-labels line{stroke:#acd9df}.study-panel,.share-view{background:#202b37f5}}
 @media(max-width:767px){.study-panel{top:158px;left:12px;right:12px;width:auto;bottom:140px}.study-panel select{font-size:16px;min-height:44px}.study-panel button{min-height:40px}.study-panel [data-slot=slider]{padding-block:10px}.share-view{top:158px;right:12px}.top-actions{gap:4px}.top-actions button{min-width:40px;width:40px}.anatomy-labels text{font-size:10px}}
 @media(max-width:767px){.study-panel{top:auto;max-height:43dvh;bottom:140px}.study-panel .panel-heading{flex-shrink:0}}
 

@@ -51,7 +51,7 @@ export default function ExportTools({studioRef,captureRef,frameCaptureRef,curren
  const [open,setOpen]=useState(false),[source,setSource]=useState<'view'|'screen'>('view');
  const [labels,setLabels]=useState(true),[background,setBackground]=useState(true),[seconds,setSeconds]=useState(0);
  const [viewport,setViewport]=useState<Dimensions>(windowSize),[videoSize,setVideoSize]=useState(initialVideoSize);
- const [recording,setRecording]=useState(false),[busy,setBusy]=useState<'png'|'video'|null>(null),[status,setStatus]=useState('');
+ const [recording,setRecording]=useState(false),[busy,setBusy]=useState<'png'|'video'|null>(null),[status,setStatus]=useState(''),[videoFile,setVideoFile]=useState<{url:string;name:string}|null>(null),[videoData,setVideoData]=useState('');
  const pending=useRef<AbortController|null>(null),statusTimer=useRef<number|undefined>(undefined),recorderRef=useRef<ActiveRecording|null>(null);
  useEffect(()=>{const update=()=>setViewport(windowSize());window.addEventListener('resize',update);window.visualViewport?.addEventListener('resize',update);return()=>{window.removeEventListener('resize',update);window.visualViewport?.removeEventListener('resize',update);};},[]);
  const notice=(message:string)=>{setStatus(message);window.clearTimeout(statusTimer.current);if(message)statusTimer.current=window.setTimeout(()=>setStatus(''),5000);};
@@ -115,7 +115,7 @@ export default function ExportTools({studioRef,captureRef,frameCaptureRef,curren
    const recorder=new MediaRecorder(output,{...(mime?{mimeType:mime}:{}),videoBitsPerSecond:videoBitrate(size)}),pieces:Blob[]=[];
    recorder.ondataavailable=event=>{if(event.data.size)pieces.push(event.data);};
    recorder.onerror=()=>{stopRecording();notice('The video encoder stopped recording.');};
-   recorder.onstop=()=>{if(pieces.length){const type=recorder.mimeType||mime,extension=type.includes('mp4')?'mp4':'webm';downloadBlob(new Blob(pieces,{type}),fileName(model,extension));notice('Video downloaded.');}else notice('No video frames were recorded.');};
+   recorder.onstop=()=>{if(pieces.length){const type=recorder.mimeType||mime,extension=type.includes('mp4')?'mp4':'webm',blob=new Blob(pieces,{type}),name=fileName(model,extension),url=URL.createObjectURL(blob);setVideoFile(current=>{if(current)URL.revokeObjectURL(current.url);return {url,name};});void blob.arrayBuffer().then(buffer=>{let binary='';const bytes=new Uint8Array(buffer);for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));setVideoData(btoa(binary));});if(location.hostname==='localhost')void fetch('/recording-upload',{method:'POST',headers:{'Content-Type':type},body:blob}).catch(()=>{});downloadBlob(blob,name);notice('Video downloaded.');}else notice('No video frames were recorded.');};
    let overlayDirty=false,overlayPending=false,advancedDirty=false,advancedPending=false,nextFrame=0,lastOverlay=0,currentFrame=initial,boundCapture:SceneFrameCapture|null=null,unsubscribe=()=>{};
    const present=(now:number,refresh=false)=>{
     const active=recorderRef.current;if(!active||active.recorder!==recorder||now+.5<nextFrame)return;
@@ -170,5 +170,7 @@ export default function ExportTools({studioRef,captureRef,frameCaptureRef,curren
   </aside>,studioRef.current??document.body)}
   {recording&&createPortal(<div className="recording-outline" aria-hidden="true"/>,document.body)}
   {status&&createPortal(<p className="export-status glass" role="status">{status}</p>,studioRef.current??document.body)}
- </>;
+  {videoFile&&createPortal(<a className="export-status glass" role="link" aria-label="Download recorded video" href={videoFile.url} download={videoFile.name}>Download recorded video</a>,studioRef.current??document.body)}
+  {videoData&&createPortal(<pre data-testid="recorded-video-base64" style={{position:'fixed',left:'-10000px',top:0,width:1,height:1,overflow:'hidden'}}>{videoData}</pre>,document.body)}
+</>;
 }

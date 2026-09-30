@@ -202,3 +202,7 @@ Use **Share view URL** to get a URL containing the model, selected IDs, camera p
 Direct-source coverage is checked by `scripts/validate-primary-atlas.mjs` and `scripts/validate-primary-female.mjs`. They verify source hashes, part and concept identities, indices, bounds, and every raw/gzip chunk. Meshes absent from the publishers' files are not fabricated.
 
 Additional checks: `node --experimental-strip-types scripts/validate-study.mjs` and `node --experimental-strip-types scripts/validate-camera.mjs`.
+
+## Public plugin package
+
+The prepared OpenAI plugin package lives in `plugins/human-atlas`. Run `npm run plugin:package` to validate its listing metadata, images and review cases and generate `outputs/human-atlas-1.0.0.zip`. Run `npm run test:plugin-review` for direct checks against the deployed MCP server. [Submission handoff](plugin-review/README.md) covers publication pages, developer identity, domain verification, the video and conversational tests still required before review.

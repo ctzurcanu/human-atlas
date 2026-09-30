@@ -1,6 +1,6 @@
 import {fileURLToPath} from 'node:url';
 import {createReadStream} from 'node:fs';
-import {stat} from 'node:fs/promises';
+import {stat,writeFile} from 'node:fs/promises';
 import {resolve,sep} from 'node:path';
 import {defineConfig,type Plugin} from 'vite';
 import react from '@vitejs/plugin-react';
@@ -39,4 +39,5 @@ function connectRelay():Plugin{
  const identity=async(req:import('node:http').IncomingMessage,res:import('node:http').ServerResponse)=>{if(!connectIdentityCors(req,res)){res.statusCode=403;res.end();return;}res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');res.end(JSON.stringify({ip:requestIp(req),...await connectionIdentity(req)}));};
  return {name:'atlas-connect-relay',configureServer(server){server.middlewares.use('/atlas-connect/identity',identity);if(server.httpServer)attachConnectRelay(server.httpServer);},configurePreviewServer(server){server.middlewares.use('/atlas-connect/identity',identity);attachConnectRelay(server.httpServer);}};
 }
-export default defineConfig({base:process.env.VITE_BASE_PATH||'/',root:path('./web'),publicDir:path('./public'),plugins:[react(),localModels(),connectRelay(),persistentAssets()],resolve:{alias:{'@':path('./')}},css:{postcss:{plugins:[tailwindcss()]}},server:{allowedHosts:true,watch:{usePolling:true}},build:{outDir:path('./dist'),emptyOutDir:true}});
+function recordingUpload():Plugin{return {name:'atlas-recording-upload',apply:'serve',configureServer(server){server.middlewares.use('/recording-upload',async(req,res,next)=>{if(req.method!=='POST'){next();return;}const chunks:Buffer[]=[];for await(const chunk of req)chunks.push(Buffer.isBuffer(chunk)?chunk:Buffer.from(chunk));await writeFile(resolve('outputs/atlas-demo-dark.webm'),Buffer.concat(chunks));res.statusCode=201;res.end('saved');});}};}
+export default defineConfig({base:process.env.VITE_BASE_PATH||'/',root:path('./web'),publicDir:path('./public'),plugins:[react(),localModels(),connectRelay(),persistentAssets(),recordingUpload()],resolve:{alias:{'@':path('./')}},css:{postcss:{plugins:[tailwindcss()]}},server:{allowedHosts:true,watch:{usePolling:true}},build:{outDir:path('./dist'),emptyOutDir:true}});

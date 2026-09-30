@@ -15,8 +15,8 @@ assert.equal(review.test_cases.positive.length,5);assert.equal(review.test_cases
 for(const item of review.test_cases.positive)for(const field of ['description','prompt','tools_triggered','expected_behavior'])assert.ok(item[field]);
 const config=JSON.parse(await readFile(`${root}/mcp.json`,'utf8'));
 assert.equal(Object.keys(config.mcpServers).length,1);
-assert.equal(config.mcpServers['human-atlas'].type,'streamable-http');
-assert.equal(config.mcpServers['human-atlas'].url,'https://human-atlas-connect.ctzurcanu.workers.dev/mcp');
+assert.equal(config.mcpServers.atlas.type,'streamable-http');
+assert.equal(config.mcpServers.atlas.url,'https://human-atlas-connect.ctzurcanu.workers.dev/mcp');
 for(const file of new Set([listing.logo,listing.composerIcon,...listing.screenshots])){
  assert.ok(file.startsWith('./assets/')&&!file.includes('..'));
  const asset=`${root}/${file.slice(2)}`,details=await sharp(asset).metadata();
