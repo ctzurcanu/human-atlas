@@ -1,6 +1,7 @@
+import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {createReadStream} from 'node:fs';
-import {stat,writeFile} from 'node:fs/promises';
+import {stat,writeFile,readFile} from 'node:fs/promises';
 import {resolve,sep} from 'node:path';
 import {defineConfig,type Plugin} from 'vite';
 import react from '@vitejs/plugin-react';
@@ -27,10 +28,17 @@ function localModels():Plugin{
    const file=resolve(directory,name);
    if(!name||!file.startsWith(directory+sep)||!/\.(json|bin|bin\.gz|jpe?g|png|webp)$/.test(name)){next();return;}
    try{
-    const info=await stat(file);if(!info.isFile()){next();return;}
+    let served=file;
+    if(name==='ta98-runtime.json'||name==='ta98-female-runtime.json'){
+     const runtime=JSON.parse(await readFile(file,'utf8'));
+     const hash=createHash('sha256').update(await readFile(resolve(directory,name==='ta98-female-runtime.json'?'ta98-female.json':'ta98-male.json'))).digest('hex');
+     if(runtime.delivery?.sourceAtlasSha256!==hash){res.statusCode=409;res.end('Runtime is stale. Rebuild it from the current TA98 master.');return;}
+    }
+    if(name==='ta98-runtime.json'||name==='ta98-female-runtime.json')try{await stat(file+'.gz');served=file+'.gz';res.setHeader('Content-Encoding','gzip');}catch{}
+    const info=await stat(served);if(!info.isFile()){next();return;}
     res.setHeader('Content-Type',name.endsWith('.json')?'application/json':/\.jpe?g$/.test(name)?'image/jpeg':name.endsWith('.png')?'image/png':name.endsWith('.webp')?'image/webp':'application/octet-stream');
     res.setHeader('Content-Length',info.size);
-    createReadStream(file).pipe(res);
+    createReadStream(served).pipe(res);
    }catch{next();}
   });
  }};

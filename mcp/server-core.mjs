@@ -8,14 +8,30 @@ const UI_MIME = 'text/html;profile=mcp-app';
 
 export function createServer({uiHtml,publicOnly=false}) {
   const modelSchema = z.enum(Object.keys(MODELS).filter(id=>!publicOnly||!id.startsWith('local-')));
+  const structureSchema = z.object({
+    id: z.string().describe('Exact atlas concept identifier.'),
+    name: z.string().describe('Anatomical structure name.'),
+    pieces: z.number().int().nonnegative().describe('Number of modeled mesh pieces.'),
+    terminology: z.record(z.unknown()).nullable().describe('Available anatomical terminology metadata, or null.'),
+  });
   const uiMeta={ui:{csp:{frameDomains:publicOnly?['https://ctzurcanu.github.io']:['https://ctzurcanu.github.io','http://localhost:3016']},prefersBorder:false}};
   const server = new McpServer({name: 'human-atlas', version: '0.1.0'});
 
   server.registerTool('get_anatomy_options', {
-    title: 'Get Human Atlas view options',
+    title: 'Get Atlas view options',
     description: 'List model, system, hierarchy, region, depth layer, camera view and embed control IDs accepted by show_anatomy.',
     inputSchema: {model: modelSchema.default('male-detail')},
-    annotations: {readOnlyHint: true,destructiveHint:false,openWorldHint:false},
+    outputSchema: {
+      model: modelSchema,
+      models: z.array(modelSchema),
+      systems: z.array(z.object({id:z.string(),pieces:z.number().int().nonnegative()})),
+      hierarchies: z.array(z.string()),
+      regions: z.array(z.enum(REGIONS)),
+      depthLayers: z.array(z.enum(DEPTH_LAYERS)),
+      views: z.array(z.enum(VIEWS)),
+      controls: z.array(z.enum(EMBED_CONTROLS)),
+    },
+    annotations: {title:'Get Atlas view options',readOnlyHint: true,destructiveHint:false,openWorldHint:false},
   }, async ({model}) => {
     const options = anatomyOptions(model);
     if(publicOnly)options.models=options.models.filter(id=>!id.startsWith('local-'));
@@ -23,21 +39,22 @@ export function createServer({uiHtml,publicOnly=false}) {
   });
 
   server.registerTool('search_anatomy', {
-    title: 'Search Human Atlas anatomy',
-    description: 'Find exact names and IDs of structures modeled in Human Atlas. Search before showing a view when a request is ambiguous.',
+    title: 'Search Atlas anatomy',
+    description: 'Find exact names and IDs of structures modeled in Atlas. Search before showing a view when a request is ambiguous.',
     inputSchema: {
       query: z.string().min(1).describe('Anatomical name or atlas ID, such as stomach or sternocostal head.'),
       model: modelSchema.default('male-detail').describe('Atlas model. The detailed male model is the default.'),
     },
-    annotations: {readOnlyHint: true,destructiveHint:false,openWorldHint:false},
+    outputSchema: {model:modelSchema,matches:z.array(structureSchema).describe('Matching structures, ordered by relevance; empty when none match.')},
+    annotations: {title:'Search Atlas anatomy',readOnlyHint: true,destructiveHint:false,openWorldHint:false},
   }, async ({query, model}) => {
     const matches = searchAnatomy(query, model);
     return {content: [{type: 'text', text: JSON.stringify({model, matches})}], structuredContent: {model, matches}};
   });
 
   server.registerTool('show_anatomy', {
-    title: 'Show Human Atlas 3D anatomy',
-    description: 'Create an interactive Human Atlas view and copyable iframe. Optionally select one or more exact structure names or IDs; search_anatomy resolves ambiguity. View options control Systems, Regions, Depth, guest hierarchies, visibility, Explode, cuts, camera and isolation. Omit structure for the whole model.'+(publicOnly?'':' Models local-reference, local-male and local-female require the local development viewer on port 3016.'),
+    title: 'Show Atlas 3D anatomy',
+    description: 'Create an interactive Atlas view and copyable iframe. Optionally select one or more exact structure names or IDs; search_anatomy resolves ambiguity. View options control Systems, Regions, Depth, guest hierarchies, visibility, Explode, cuts, camera and isolation. Omit structure for the whole model.'+(publicOnly?'':' Models local-reference, local-male and local-female require the local development viewer on port 3016.'),
     inputSchema: {
       structure: z.string().min(1).optional().describe('Exact structure name, atlas concept ID, or piece ID.'),
       structures: z.array(z.string().min(1)).optional().describe('Additional structures to select together.'),
@@ -63,7 +80,16 @@ export function createServer({uiHtml,publicOnly=false}) {
       controls: z.array(z.enum(EMBED_CONTROLS)).optional().describe('Controls visible in the iframe: model, search, sections, study, systems, camera, explode, details, open, download. Omit for defaults; [] shows only the 3D view.'),
     },
     _meta: {ui: {resourceUri: UI_URI}},
-    annotations: {readOnlyHint: true,destructiveHint:false,openWorldHint:true},
+    outputSchema: {
+      model: modelSchema,
+      structures: z.array(structureSchema),
+      systems: z.array(z.string()).describe('Systems belonging to selected anatomy.'),
+      selectedPieces: z.array(z.string()),
+      hiddenPieces: z.array(z.string()),
+      url: z.string().url().describe('Interactive anatomy viewer URL.'),
+      iframe: z.string().describe('HTML iframe for embedding this view.'),
+    },
+    annotations: {title:'Show Atlas 3D anatomy',readOnlyHint: true,destructiveHint:false,openWorldHint:true},
   }, async args => {
     try {
       const result = anatomyView(args);
@@ -76,8 +102,8 @@ export function createServer({uiHtml,publicOnly=false}) {
     }
   });
 
-  server.registerResource('Human Atlas interactive anatomy view', UI_URI, {
-    description: 'Interactive Human Atlas view for show_anatomy results.',
+  server.registerResource('Atlas interactive anatomy view', UI_URI, {
+    description: 'Interactive Atlas view for show_anatomy results.',
     mimeType: UI_MIME,
     _meta: uiMeta,
   }, async () => ({contents: [{

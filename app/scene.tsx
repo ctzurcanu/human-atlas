@@ -11,6 +11,8 @@ import {dampMotion,smoothStep} from './transition-motion';
 import {hierarchyEntries} from './anatomy-hierarchy';
 import {resolveGuestHierarchy,type GuestHierarchy} from './guest-hierarchy';
 import {loadModelBuffer} from './model-download';
+import {OnDemandChunks} from './on-demand-chunks';
+import {partIndexBuffer} from './part-index-buffer';
 import {selectionCenter} from './camera-pivot';
 import {orbitAroundPointer} from './pointer-orbit';
 import {advanceControllerOrbit} from './xr-orbit';
@@ -317,6 +319,8 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    });
    const gpuRoles=new Set(['integumentary','muscular','cardiac','skeletal','cartilage','adipose','lung','liver','spleen','cns','organ','nervous','lymphatic','arterial','venous','tendon','connective']);
    const gpuCandidates=candidates.filter(({part})=>{
+    // Shared tissue partitions need one contour; per-piece stencil closures invent caps.
+    if(part.sectionAssembly)return false;
     const profile=sectionCapProfile(part);
     if(s.explode>.001||profile.thinShell&&!pairedSkinPart(part)||!gpuRoles.has(sectionTissue(part)))return false;
     return sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1)>=.999;
@@ -332,7 +336,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     // Reference GLBs often split one organ or muscle into material primitives.
     // Intersecting each primitive alone leaves artificial open cut edges.
     const combinable=['skeletal','muscular','cardiac','digestive','respiratory','urinary','reproductive'].includes(candidate.part.system);
-    const group=candidate.part.id.startsWith('REF:')&&combinable&&s.explode<.001?candidate.part.conceptId:candidate.part.id;
+    const group=s.explode<.001&&candidate.part.sectionAssembly?candidate.part.sectionAssembly:candidate.part.id.startsWith('REF:')&&combinable&&s.explode<.001?candidate.part.conceptId:candidate.part.id;
     const key=`${candidate.cutIndex}:${candidate.part.system}:${group}`;const job=jobs.get(key);if(job)job.push(candidate);else jobs.set(key,[candidate]);
    }
    const selected=new Set(s.selected);
@@ -382,10 +386,13 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   const chunkUrls=atlas.chunks.map(chunk=>assetUrl(chunk.gzip&&typeof DecompressionStream!=='undefined'?chunk.gzip:chunk.url));
   const chunkSizes=atlas.chunks.map(chunk=>chunk.bytes),chunkOffsets:number[]=[];let chunkTotal=0;
   for(const size of chunkSizes){chunkOffsets.push(chunkTotal);chunkTotal+=size;}
-  const useBundle=!questVr&&chunkTotal<=256*1024*1024&&chunkOffsets.every(offset=>offset%4===0);
+  const onDemand=atlas.delivery?.mode==='on-demand';
+  const demandMeshes:Array<{chunk:number;mesh:T.Mesh;ghost:T.Mesh;preview:T.Mesh;indices:number[]}>=[];
+  const chunkGeometry=new Map<number,T.BufferGeometry[]>(),chunkArrayBytes=new Map<number,number>();
+  const useBundle=!onDemand&&!questVr&&chunkTotal<=256*1024*1024&&chunkOffsets.every(offset=>offset%4===0);
   const cachedBuffers:ArrayBuffer[]=[];let bundleBuffer:ArrayBuffer|undefined;
   const skinChunks=new Set(chunkParts.flatMap((parts,index)=>parts.some(i=>atlas.parts[i].system!=='cell-boundary'&&isSkinPart(atlas.parts[i]))?[index]:[]));
-  let loadedSkinChunks=0,surfaceReady=skinChunks.size===0;
+  let loadedSkinChunks=0,surfaceReady=onDemand||skinChunks.size===0;
   const initiallySelected=new Set(latest.current.selected);
   const initialCuts=enabledSections(latest.current),initialBounds=initialCuts.length?sectionSetBounds(atlas,latest.current):null;
   const initialCutEquations=initialBounds?initialCuts.map(({section})=>sectionPlaneEquation(initialBounds,section)):[];
@@ -402,11 +409,12 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    // when it contains fewer pieces than a neurovascular chunk.
    return Number(selected(b))-Number(selected(a))||surface(b)-surface(a)||cutCounts[b]-cutCounts[a]||distal(b)-distal(a)||a-b;
   });
-  const loadChunk=async(ci:number)=>{
-   const chunk=atlas.chunks[ci],compressed=!!chunk.gzip&&typeof DecompressionStream!=='undefined';const buffer=bundleBuffer??await loadModelBuffer(chunkUrls[ci],chunk.bytes,compressed,abort.signal);if(disposed)return;
+  const loadChunk=async(ci:number,signal=abort.signal)=>{
+   const chunk=atlas.chunks[ci],compressed=!!chunk.gzip&&typeof DecompressionStream!=='undefined';const buffer=bundleBuffer??await loadModelBuffer(chunkUrls[ci],chunk.bytes,compressed,signal);if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');
    if(!bundleBuffer)cachedBuffers[ci]=buffer;
    const offset=bundleBuffer?chunkOffsets[ci]:0;
    const groups=new Map<string,T.BufferGeometry[]>();
+   const owned:T.BufferGeometry[]=[];if(onDemand)chunkGeometry.set(ci,owned);
    chunkParts[ci].forEach(i=>{const p=atlas.parts[i];
     const positions=new Float32Array(buffer,offset+p.positions,p.vertexCount*3);
     const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(p.sourceOffset?positions.slice():positions,3));
@@ -426,7 +434,9 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
      g.setAttribute('innerSide',new T.BufferAttribute(innerSide,1,true));
     }
     g.boundingBox=bounds[i].clone();g.computeBoundingSphere();const pick=new T.Mesh(g,new T.MeshBasicMaterial({side:T.DoubleSide}));materials.push(pick.material);pick.matrixAutoUpdate=false;pickers[i]=pick;geometries.push(g);
-    g.setAttribute('partIndex',new T.BufferAttribute(new Float32Array(p.vertexCount).fill(i),1));
+    g.setAttribute('partIndex',new T.BufferAttribute(partIndexBuffer(i,p.vertexCount,atlas.parts.length),1));
+    g.userData.atlasPartIndex=i;
+    if(onDemand)owned.push(g);
     const materialKey=materialKeyFor(p);const list=groups.get(materialKey)??[];list.push(g);groups.set(materialKey,list);
    });
    groups.forEach((gs,key)=>{const geometry=mergeGeometries(gs,false);if(!geometry)throw new Error('Could not assemble anatomy geometry.');geometries.push(geometry);const mesh=new T.Mesh(geometry,mats.get(key));mesh.frustumCulled=false;mesh.renderOrder=2;desktopAnatomy.add(mesh);const ghost=new T.Mesh(geometry,ghostMats.get(key));ghost.frustumCulled=false;ghost.renderOrder=1;desktopAnatomy.add(ghost);
@@ -444,11 +454,44 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
      };
      previewMaterials.set(key,material);materials.push(material);}
     const previewMesh=new T.Mesh(geometry,material);previewMesh.frustumCulled=false;previewMesh.renderOrder=1;previewScene.add(previewMesh);
+    if(onDemand){owned.push(geometry);demandMeshes.push({chunk:ci,mesh,ghost,preview:previewMesh,indices:gs.map(g=>g.userData.atlasPartIndex as number)});}
    });
+   if(onDemand){const arrays=new Set<ArrayBufferLike>();for(const geometry of owned){for(const attribute of Object.values(geometry.attributes))arrays.add((attribute instanceof T.InterleavedBufferAttribute?attribute.data.array:attribute.array).buffer);if(geometry.index)arrays.add(geometry.index.array.buffer);}chunkArrayBytes.set(ci,[...arrays].reduce((sum,buffer)=>sum+buffer.byteLength,0));}
    if(skinChunks.has(ci)){loadedSkinChunks++;if(loadedSkinChunks===skinChunks.size){surfaceReady=true;lastState=null;}}
-   previewDirty=true;loaded++;const nextProgress=Math.round(loaded/atlas.chunks.length*100);if(nextProgress===100||nextProgress-lastReportedProgress>=10){lastReportedProgress=nextProgress;onProgress(nextProgress);}dirty=true;
+   previewDirty=true;if(onDemand){lastState=null;dirty=true;return;}loaded++;const nextProgress=Math.round(loaded/atlas.chunks.length*100);if(nextProgress===100||nextProgress-lastReportedProgress>=10){lastReportedProgress=nextProgress;onProgress(nextProgress);}dirty=true;
   };
-  (async()=>{try{bundleBuffer=useBundle?await loadModelBundle(chunkUrls,chunkSizes):undefined;if(disposed)return;let cursor=0;await Promise.all(Array.from({length:questVr?3:8},async()=>{while(cursor<chunkOrder.length){const i=chunkOrder[cursor++];await loadChunk(i);}}));if(!disposed){ready=true;lastState=null;dirty=true;if(!bundleBuffer&&useBundle)void rememberModelBundle(chunkUrls,cachedBuffers);if(vrPreview||questVr&&xrSupported||xrArSupported)void prepareVr();}}catch(e){if(!disposed)onError(e instanceof Error?e.message:'Could not load the anatomy.');}})();
+  let demandState:SceneState|undefined;
+  const releaseChunk=(ci:number)=>{
+   if(!chunkGeometry.has(ci))return;
+   ++capGeneration;clearTimeout(capTimer);capTimer=0;capQueue.length=0;pendingCapSignatures.clear();clearCaps();capKey='';
+   stencilCaps.release(chunkParts[ci]);
+   for(let i=demandMeshes.length-1;i>=0;i--){const group=demandMeshes[i];if(group.chunk!==ci)continue;group.mesh.removeFromParent();group.ghost.removeFromParent();group.preview.removeFromParent();demandMeshes.splice(i,1);}
+   for(const index of chunkParts[ci]){const picker=pickers[index];if(picker){const material=picker.material as T.Material;material.dispose();const at=materials.indexOf(material);if(at>=0)materials.splice(at,1);}pickers[index]=undefined;labelAnchors.delete(index);}
+   for(const geometry of chunkGeometry.get(ci)??[]){geometry.dispose();const at=geometries.indexOf(geometry);if(at>=0)geometries.splice(at,1);}
+   chunkGeometry.delete(ci);chunkArrayBytes.delete(ci);delete cachedBuffers[ci];lastState=null;previewDirty=true;dirty=true;
+  };
+  const demand=onDemand?new OnDemandChunks(3,(ci,signal)=>loadChunk(ci,signal).catch(error=>{releaseChunk(ci);throw error;}),()=>{
+   if(disposed)return;
+   const total=demand?.total??0,pending=demand?.pending??0;
+   onProgress(total?Math.round((total-pending)/total*100):100);
+   ready=(demand?.loaded.size??0)>0||pending===0;
+   renderer.domElement.dataset.loadedGeometryChunks=String(demand?.loaded.size??0);
+   renderer.domElement.dataset.requiredGeometryChunks=String(total);
+   renderer.domElement.dataset.pendingGeometryChunks=String(pending);
+   renderer.domElement.dataset.geometryArrayBytes=String([...chunkArrayBytes.values()].reduce((sum,bytes)=>sum+bytes,0));
+   renderer.domElement.dataset.idleGeometryArrayBytes=String(demand?.idleBytes??0);
+   dirty=true;
+  },e=>{if(!disposed)onError(e instanceof Error?e.message:'Could not load the anatomy.');},{maxIdleBytes:32*1024*1024,bytes:ci=>chunkArrayBytes.get(ci)??0,release:releaseChunk}):undefined;
+  const requestGeometry=(s:SceneState)=>{
+   if(!demand||s===demandState)return;
+   demandState=s;
+   const sections=enabledSections(s).length>0;
+   const selected=new Set(s.selected);
+   demand.update(chunkOrder.filter(ci=>chunkParts[ci].some(i=>{
+    const p=atlas.parts[i];return !p.suppressed&&(selected.has(p.id)||(sections?sectionPartVisible(p,s):partVisible(p,s)));
+   })));
+  };
+  if(!onDemand)(async()=>{try{bundleBuffer=useBundle?await loadModelBundle(chunkUrls,chunkSizes):undefined;if(disposed)return;let cursor=0;await Promise.all(Array.from({length:questVr?3:8},async()=>{while(cursor<chunkOrder.length){const i=chunkOrder[cursor++];await loadChunk(i);}}));if(!disposed){ready=true;lastState=null;dirty=true;if(!bundleBuffer&&useBundle)void rememberModelBundle(chunkUrls,cachedBuffers);if(vrPreview||questVr&&xrSupported||xrArSupported)void prepareVr();}}catch(e){if(!disposed)onError(e instanceof Error?e.message:'Could not load the anatomy.');}})();
   const directionFor=(view:string)=>view==='front'?new T.Vector3(0,.02,1):view==='back'?new T.Vector3(0,.02,-1):view==='side'?new T.Vector3(1,.02,0):view==='right'?new T.Vector3(-1,.02,0):view==='superior'?new T.Vector3(0,1,.001):view==='inferior'?new T.Vector3(0,-1,.001):new T.Vector3(.35,.06,1).normalize();
   const panelSelectors='.identity,.top-actions,.advanced-panel,.layers-panel,.study-panel,.section-panel,.detail-sheet,.download-panel,.search-panel,.view-controls,.share-view,.guest-menu,.anatomy-choice-menu,.anatomy-search-results';
   const studio=el.closest('.studio')??el.parentElement!;
@@ -740,6 +783,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     else{depthAmount=requested.depth;depthVelocity=0;depthMoving=false;}
    }
    const s=depthMoving&&depthAmount!==undefined?setDepthPosition(requested,depthAmount,atlas.parts):requested;
+   requestGeometry(s);
    const transition=transitionRef.current,savedTransition=!!transition?.id&&transition.id!==lastTransitionId&&!!s.camera&&validCamera(s.camera);
    const selectionCleared=!!lastState?.selected.length&&!s.selected.length;
    const newCamera=!!s.camera&&s.camera!==lastCamera&&!selectionCleared;
@@ -910,7 +954,14 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    if(lightweightActive&&vrAnatomy&&dirty){const solidQuest=questVr&&xrActiveMode==='immersive-vr';vrAnatomy.sync(s,data,pickers,solidQuest?1:contextUniform.value,solidQuest);renderer.domElement.dataset.xrVisibleTriangles=String(vrAnatomy.mesh.geometry.drawRange.count/3);}
    if(presenting){const xrFrame=renderer.xr.getFrame();updateXrPlacement(xrFrame);xrRays.forEach((ray,i)=>{const source=xrSession?.inputSources[i];ray.visible=!!source&&xrPose(xrFrame,source);if(ray.visible){ray.position.copy(xrOrigin);ray.quaternion.copy(xrQuaternion);}});}
    if(dirty||presenting){
-    renderer.render(scene,presenting?xrRenderCamera:camera);if(lightweightActive&&dirty){renderer.domElement.dataset.xrRenderCalls=String(renderer.info.render.calls);renderer.domElement.dataset.xrRenderedTriangles=String(renderer.info.render.triangles);}
+    if(onDemand)for(const group of demandMeshes){
+     const alpha=(i:number)=>data[i*4+3]>.5?(selectedData[i*4]>.5?1:contextUniform.value)*(selectedData[i*4+1]/255)*(atlas.materials?.[atlas.parts[i].material??'']?.opacity??1):0;
+     group.mesh.visible=group.indices.some(i=>alpha(i)>=.999);
+     group.ghost.visible=group.indices.some(i=>alpha(i)>=.001&&alpha(i)<.999);
+     group.preview.visible=group.indices.some(i=>previewData[i*4]>.5);
+    }
+    renderer.render(scene,presenting?xrRenderCamera:camera);if(onDemand){renderer.domElement.dataset.renderCalls=String(renderer.info.render.calls);renderer.domElement.dataset.submittedTriangles=String(renderer.info.render.triangles);}
+    if(lightweightActive&&dirty){renderer.domElement.dataset.xrRenderCalls=String(renderer.info.render.calls);renderer.domElement.dataset.xrRenderedTriangles=String(renderer.info.render.triangles);}
     let values:number[],viewUp:number[];
     if(presenting){const tracked=renderer.xr.getCamera();tracked.matrixWorld.decompose(xrHeadCamera.position,xrHeadCamera.quaternion,xrHeadCamera.scale);xrHeadCamera.up.set(0,1,0).applyQuaternion(xrHeadCamera.quaternion);xrHeadCamera.fov=xrPresentationCamera.fov;xrHeadCamera.aspect=xrPresentationCamera.aspect;const target=xrHeadCamera.position.clone().addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(xrHeadCamera.quaternion),xrPresentationCamera.position.distanceTo(controls.target));values=captureFrame(xrHeadCamera,target,viewBounds,xrSession?.domOverlayState?viewArea():immersiveArea);viewUp=xrHeadCamera.up.toArray();}
     else{values=cameraValues();viewUp=camera.up.toArray();drawLabels(s);}
@@ -953,7 +1004,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    return new Promise<Blob>((resolve,reject)=>output.toBlob(blob=>blob?resolve(blob):reject(new Error('The PNG could not be created.')),'image/png'));
   });
   const contextLost=(e:Event)=>{e.preventDefault();onError('The 3D session was paused by your device. Reload to continue.');};renderer.domElement.addEventListener('webglcontextlost',contextLost);
-  return()=>{onCapture?.(null);onFrameCapture?.(null);disposed=true;abort.abort();vrAnatomy?.mesh.removeFromParent();vrAnatomy?.dispose();cancelAnimationFrame(frame);renderer.setAnimationLoop(null);renderer.xr.removeEventListener('sessionend',xrEnded);if(xrSession){xrSession.removeEventListener('select',xrSelect);xrSession.removeEventListener('selectstart',xrSelectStart);xrSession.removeEventListener('selectend',xrSelectEnd);void xrSession.end();}xrButton.remove();xrArButton.remove();delete (studio as HTMLElement).dataset.xrMode;xrRays.forEach(ray=>{ray.geometry.dispose();(ray.material as T.Material).dispose();});xrInfoTexture.dispose();(xrInfo.material as T.Material).dispose();clearTimeout(capTimer);clearCaps();stencilCaps.dispose();observer.disconnect();layoutObserver.disconnect();studio.removeEventListener('beforexrselect',overlaySelect);theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',cancelCameraTween);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());textureUrls.forEach(url=>URL.revokeObjectURL(url));guideGeometry.dispose();guideBorder.geometry.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
+  return()=>{onCapture?.(null);onFrameCapture?.(null);disposed=true;demand?.stop();abort.abort();vrAnatomy?.mesh.removeFromParent();vrAnatomy?.dispose();cancelAnimationFrame(frame);renderer.setAnimationLoop(null);renderer.xr.removeEventListener('sessionend',xrEnded);if(xrSession){xrSession.removeEventListener('select',xrSelect);xrSession.removeEventListener('selectstart',xrSelectStart);xrSession.removeEventListener('selectend',xrSelectEnd);void xrSession.end();}xrButton.remove();xrArButton.remove();delete (studio as HTMLElement).dataset.xrMode;xrRays.forEach(ray=>{ray.geometry.dispose();(ray.material as T.Material).dispose();});xrInfoTexture.dispose();(xrInfo.material as T.Material).dispose();clearTimeout(capTimer);clearCaps();stencilCaps.dispose();observer.disconnect();layoutObserver.disconnect();studio.removeEventListener('beforexrselect',overlaySelect);theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',cancelCameraTween);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());textureUrls.forEach(url=>URL.revokeObjectURL(url));guideGeometry.dispose();guideBorder.geometry.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
  },[atlas]);
  return <div className="scene" ref={host}/>;
 }

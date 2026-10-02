@@ -3,8 +3,8 @@ import {assetUrl} from './asset-url';
 import {fetchAsset} from './asset-cache';
 import {viewParameters} from './view-url';
 import {parseGuestHierarchy,type GuestHierarchy} from './guest-hierarchy';
-export const BUILT_IN_GUESTS=['genes','cell-types','physiology','dermatomes-myotomes','drugs','physical-exercise','chakras'] as const;
-const names=['Genes','Cell Types','Physiology','Dermatomes and Myotomes','Drugs','Physical Exercise','Chakras'];
+export const BUILT_IN_GUESTS=['ta98','genes','cell-types','physiology','dermatomes-myotomes','drugs','physical-exercise','chakras'] as const;
+const names=['TA98','Genes','Cell Types','Physiology','Dermatomes and Myotomes','Drugs','Physical Exercise','Chakras'];
 const builtIns=BUILT_IN_GUESTS.map(id=>assetUrl(`/assets/${id}.json`));
 const canonical=(input:string)=>{const url=new URL(input,location.href);if(!['http:','https:'].includes(url.protocol))throw new Error('Use an HTTP or HTTPS hierarchy URL.');return url.href;};
 export function useGuestHierarchies(){

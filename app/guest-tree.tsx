@@ -66,7 +66,7 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNav
  const renderNode=(node:ResolvedGuestNode,depth:number,subtree=false)=>{
   if(search&&renderedSearch.has(node.id))return null;if(search)renderedSearch.add(node.id);
   const visibleChildren=guestVisibleChildren(hierarchy.id,node);
-  const open=search?(search.included.has(node.id)&&!searchClosed.has(node.id))||expanded.has(node.id):expanded.has(node.id),hasChildren=visibleChildren.length>0||!!node.extension||(hierarchy.schema==='human-atlas-hierarchy/v2'&&(node.directParts.length>0||!!node.links?.length)),display=displayLaterality(node.name);
+  const open=search?(search.included.has(node.id)&&!searchClosed.has(node.id))||expanded.has(node.id):expanded.has(node.id),hasChildren=visibleChildren.length>0||!!node.extension||(hierarchy.schema==='human-atlas-hierarchy/v2'&&(node.directParts.length>0||!!node.links?.length||hierarchy.id==='ta98'&&!!node.description)),display=displayLaterality(node.name);
   const chooseDirect=(toggle=false)=>onChoose(guestChoice(node),toggle);
   const includeSubtree=subtree||!!search?.matches.has(node.id)||(visibleChildren!==node.children&&node.children.some(child=>search?.matches.has(child.id))),showDetails=!search||includeSubtree;
   const leaves=open&&hierarchy.schema==='human-atlas-hierarchy/v2'&&showDetails?anatomyLeaves(node):[],leafLimit=limits[node.id+':anatomy']??150;
@@ -74,12 +74,13 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNav
   return <div key={node.id}>
    <div className={`tree-row ${hasChildren?'tree-region':'tree-leaf'} ${node.parts.length?'':'guest-unmodeled'}`} style={style(depth)}>
     {hasChildren&&<button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${node.name}`} data-connect-key={node.id} aria-expanded={open} onClick={()=>{if(!open&&node.extension)void loadExtension(node.id);toggleOpen(node.id);}}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>}
-    <button type="button" className="tree-label" title={node.name} aria-label={node.name} onClick={event=>node.parts.length?chooseDirect(event.ctrlKey||event.metaKey):hasChildren?toggleOpen(node.id):undefined} onContextMenu={event=>{if(event.ctrlKey&&node.parts.length){event.preventDefault();chooseDirect(true);}}}>
+    <button type="button" className="tree-label" title={hierarchy.id==='ta98'?node.description??node.name:node.name} aria-label={node.name} onClick={event=>node.parts.length||hierarchy.id==='ta98'?chooseDirect(event.ctrlKey||event.metaKey):hasChildren?toggleOpen(node.id):undefined} onContextMenu={event=>{if(event.ctrlKey&&node.parts.length){event.preventDefault();chooseDirect(true);}}}>
      <span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span>{node.parts.length>0&&<span className="tree-count">{node.parts.length.toLocaleString()}</span>}
     </button>
     {check(node.name,node.parts)}
    </div>
    {open&&<>
+    {hierarchy.id==='ta98'&&showDetails&&node.description&&<div className="guest-node-info" style={style(depth+1)}><p style={{whiteSpace:'pre-line'}}>{node.description}</p></div>}
     {hierarchy.schema==='human-atlas-hierarchy/v2'&&showDetails&&(node.extension||!!node.links?.length)&&<div className="guest-node-info" style={style(depth+1)}>
      {node.extension&&<button type="button" className="guest-more" disabled={extensionBusy.has(node.id)} onClick={()=>void loadExtension(node.id)}>{extensionBusy.has(node.id)?'Loading transcripts…':'Load transcripts and protein isoforms'}</button>}
      {!!node.links?.length&&<div className="guest-biology-links" aria-label={hierarchy.id==='genes'?'Associated cell types':hierarchy.id==='cell-types'?'Marker genes':'Related hierarchies'}>{node.links.map(link=><button type="button" key={`${link.hierarchy}:${link.id}`} onClick={()=>onNavigate?.(link)} title={`Open ${link.name} in ${hierarchyNames[link.hierarchy]??link.hierarchy}`}>{link.name}</button>)}</div>}
@@ -101,7 +102,7 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNav
   </div>}
   <div className="tree-row tree-root" style={style(0)}>
    <button type="button" className="tree-expander" aria-label={`${expanded.has('all')?'Collapse':'Expand'} All`} data-connect-key="all" aria-expanded={expanded.has('all')} onClick={()=>toggleOpen('all')}>{expanded.has('all')?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
-   <button type="button" className="tree-label" onClick={()=>onChoose(hierarchyChoice(`guest:${hierarchy.id}:all`,'All',all,nodes.filter(node=>node.parts.length).map(guestChoice),terminologyForGroup('All')))} title={terminologyTitle('All',terminologyForGroup('All'),`hierarchy:guest:${hierarchy.id}:all`)}><span className="tree-name">All</span><span className="tree-count">{all.length.toLocaleString()}</span></button>
+   <button type="button" className="tree-label" onClick={()=>onChoose(hierarchyChoice(`guest:${hierarchy.id}:all`,'All',all,nodes.filter(node=>hierarchy.id==='ta98'||node.parts.length).map(guestChoice),terminologyForGroup('All')))} title={terminologyTitle('All',terminologyForGroup('All'),`hierarchy:guest:${hierarchy.id}:all`)}><span className="tree-name">All</span><span className="tree-count">{all.length.toLocaleString()}</span></button>
    {check('all anatomy',all)}
   </div>
   {expanded.has('all')&&nodes.filter(node=>!search||search.included.has(node.id)).map(node=>renderNode(node,1))}

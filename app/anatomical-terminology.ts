@@ -18,7 +18,15 @@ export function taEntityForConcept(id:string):string|undefined{
  return matches[id]?.term;
 }
 
-export function terminologyForConcept(id:string):Terminology{
+/** Parent-placement mappings cannot establish a part's exact identity. */
+export function taExactEntityForConcept(id:string):string|undefined{
+ const explicit=/^TA98(?:REGION|RECOVERED|FEMALE)?:(A\d{2}\.\d\.\d{2}\.\d{3}[FM]?)$/.exec(id)?.[1];
+ return explicit??(matches[id]?.kind==='exact'?matches[id].term:undefined);
+}
+
+export function terminologyForConcept(id:string,ta98Term?:string):Terminology{
+ const code=ta98Term??/^TA98(?:RECOVERED|REGION|FEMALE)?:(A\d{2}\.\d\.\d{2}\.\d{3}[FM]?)$/.exec(id)?.[1];
+ if(code&&codes[code])return codes[code];
  return concepts[id]??(/^FMA:?\d+$/.test(id)?{...empty,fma:`FMA:${id.replace(/^FMA:?/,'')}`}:empty);
 }
 

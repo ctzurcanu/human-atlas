@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "atlas": {
+      "type": "http",
+      "url": "https://human-atlas-connect.ctzurcanu.workers.dev/mcp"
+    }
+  }
+}

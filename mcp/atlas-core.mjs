@@ -16,7 +16,7 @@ export const MODELS = {
   'local-female': 'female.json',
 };
 export const VIEWS = ['three-quarter', 'front', 'back', 'side', 'right', 'superior', 'inferior'];
-export const HIERARCHIES = ['systems', 'regions', 'depth', 'guest:genes','guest:cell-types','guest:physiology','guest:dermatomes-myotomes','guest:drugs','guest:physical-exercise','guest:chakras'];
+export const HIERARCHIES = ['systems', 'regions', 'depth', 'guest:ta98','guest:genes','guest:cell-types','guest:physiology','guest:dermatomes-myotomes','guest:drugs','guest:physical-exercise','guest:chakras'];
 export const REGIONS = ['all', 'head-neck', 'torso', 'upper-right', 'upper-left', 'lower-right', 'lower-left'];
 export const DEPTH_LAYERS = ['skin', 'superficial-veins', 'investing-fascia', 'superficial-muscles', 'second-muscles', 'intermediate-muscles', 'deep-muscles', 'deepest-muscles', 'visceral-coverings', 'anterior-organs', 'deep-organs', 'deep-vessels', 'lymphatic', 'deep-nerves', 'ligaments', 'other', 'thoracic-bones', 'limb-bones', 'other-bones', 'spine', 'skull'];
 export const SECTION_AXES = ['axial', 'sagittal', 'coronal', 'oblique'];
@@ -152,7 +152,7 @@ export function anatomyView({structure, structures = [], model = 'male-detail', 
   if (focus ?? selected.length > 0) params.set('focus', '1');
   params.set('embed', '1');
   if (controls !== undefined) params.set('ui', [...new Set(controls)].join(','));
-  const iframe = `<iframe src="${url.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}" title="Human Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:600px;border:0" allowfullscreen></iframe>`;
+  const iframe = `<iframe src="${url.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}" title="Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:600px;border:0" allowfullscreen></iframe>`;
   return {
     model,
     structures: matches.map(concept => ({id: concept.id, name: concept.name, pieces: concept.elements.length, terminology:terminologyOf(concept.id)})),

@@ -13,6 +13,17 @@ export function partFingerprint(atlas:Atlas){
  }
  return `${atlas.parts.length.toString(36)}.${(left>>>0).toString(36)}.${(right>>>0).toString(36)}`;
 }
+/** Appending meshes preserves every old packed index; reordering does not. */
+export function compatiblePartAtlas(atlas:Atlas,fingerprint:string|null):Atlas|undefined{
+ if(!fingerprint)return undefined;
+ if(fingerprint===partFingerprint(atlas))return atlas;
+ const countText=fingerprint.split('.')[0];
+ if(!/^[0-9a-z]+$/.test(countText))return undefined;
+ const count=parseInt(countText,36);
+ if(count<=0||count>=atlas.parts.length)return undefined;
+ const prefix={...atlas,parts:atlas.parts.slice(0,count)};
+ return partFingerprint(prefix)===fingerprint?prefix:undefined;
+}
 export function packPartIds(ids:string[],atlas:Atlas,ranges:boolean){
  const positions=new Map(atlas.parts.map((part,index)=>[part.id,index]));
  const numbers=ids.map(id=>positions.get(id));

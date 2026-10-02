@@ -18,11 +18,11 @@
   "extensions": {
     "com.openai": {
       "interface": {
-        "displayName": "Atlas",
+        "displayName": "atlas",
         "shortDescription": "Explore human anatomy in 3D",
         "longDescription": "Explore named structures in an interactive 3D anatomy atlas. Search anatomical names and identifiers, choose from detailed male, complete male, standard male, female, embryo and cell models, and open focused views with orbit, zoom, isolation, layers and cross-sections. Students, educators and curious learners can inspect individual organs and compare structures. Model coverage varies, and some reference models are partial. Atlas provides general anatomy education; it does not access patient records, interpret medical scans, diagnose conditions or recommend treatment. No Atlas account is required.",
         "developerName": "Christian Tzurcanu",
-        "category": "Education",
+        "category": "Education & Research",
         "capabilities": [
           "Search anatomy",
           "Explore 3D anatomy",

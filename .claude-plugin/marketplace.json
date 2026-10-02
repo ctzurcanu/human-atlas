@@ -1,0 +1,12 @@
+{
+  "name": "atlas",
+  "owner": {"name": "Christian Tzurcanu", "url": "https://github.com/ctzurcanu"},
+  "plugins": [
+    {
+      "name": "atlas",
+      "source": "./plugins/human-atlas",
+      "description": "Search named anatomical structures and explore them in an interactive 3D human atlas.",
+      "category": "education"
+    }
+  ]
+}

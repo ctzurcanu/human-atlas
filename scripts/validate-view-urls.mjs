@@ -23,6 +23,10 @@ assert.ok(parsed.origin.length+parsed.pathname.length+parsed.search.length<4096)
 assert.ok(url.length<100000);
 assert.equal(parsed.searchParams.has('hide'),false);
 const restored=readViewUrl(url,atlas,{});
+for(const model of ['local-ta98','local-female-ta98'])for(const delivery of ['0','1']){
+ const shared=viewUrl(base+'?delivery='+delivery,model,state,camera,atlas);
+ assert.equal(viewParameters(shared).get('delivery'),delivery,'Keep the catalogue variant used by packed mesh IDs');
+}
 for(const key of ['selected','hidden','visible','view','contextOpacity','skinOpacity','guestQuery','region','section','labels'])assert.deepEqual(restored[key],state[key]);
 assert.deepEqual(restored.camera,camera);
 
@@ -69,5 +73,18 @@ const overridden=readViewUrl(override.href,anatomy,{});assert.deepEqual(overridd
 assert.deepEqual(readViewUrl(embedUrl(compact,['study','systems']),anatomy,{}).hidden,detailed.hidden);
 const changed={...anatomy,parts:[anatomy.parts[1],anatomy.parts[0],...anatomy.parts.slice(2)]};
 assert.deepEqual(readViewUrl(compact,changed,{}).hidden,[]);assert.deepEqual(readViewUrl(compact,changed,{}).selected,[]);
+// A new cardiac region must not discard the visibility in an existing view.
+const appended={...anatomy,parts:[...anatomy.parts,{...anatomy.parts[0],id:'NEW:Cardia'}]};
+assert.deepEqual(readViewUrl(compact,appended,{}).hidden,detailed.hidden);
+assert.deepEqual(readViewUrl(compact,appended,{}).selected,detailed.selected);
+assert.deepEqual(readViewUrl(compact,{...appended,defaultHidden:['NEW:Cardia']},{}).hidden,[...detailed.hidden,'NEW:Cardia']);
+// Anatomical subdivision must preserve selection AND hiding in existing links.
+const source=anatomy.parts[0],children=['NEW:Base','NEW:Shaft','NEW:Head'];
+const subdivided={...anatomy,parts:[{...source,suppressed:true,replacementParts:children},...anatomy.parts.slice(1),...children.map(id=>({...source,id}))]};
+const oldSelected=viewUrl(base,'local-ta98',{...detailed,selected:[source.id],hidden:[]},undefined,anatomy);
+assert.deepEqual(readViewUrl(oldSelected,subdivided,{}).selected,children);
+const oldHidden=viewUrl(base,'local-ta98',{...detailed,selected:[],hidden:[source.id]},undefined,anatomy);
+assert.deepEqual(readViewUrl(oldHidden,subdivided,{}).hidden,children);
+assert.deepEqual(readViewUrl(base+'?select='+encodeURIComponent(source.id),subdivided,{}).selected,children);
 const malformed=new URL(compact);malformed.searchParams.set('h','0-zzzz');assert.deepEqual(readViewUrl(malformed.href,anatomy,{}).hidden,[]);
 console.log(`Large views, legacy links, overrides and packed anatomical IDs verified (${oldUrl.length} to ${compact.length} characters).`);

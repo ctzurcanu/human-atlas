@@ -9,12 +9,24 @@ import {anatomyNodeChoice,hierarchyChoice,type HierarchyChoice} from './hierarch
 
 export type NavigationMode='systems'|'regions'|'depth'|`guest:${string}`;
 
-/** Build the same modeled parentage used by the Layers browser for details navigation. */
+/** Direct partonomic parent in the reviewed TA98 tree. Chapter and view
+ * containers are navigation aids and must never become anatomical parents.
+ * Keep the parent choice intact so selecting it selects its whole assembly,
+ * including when the inspected term has no mesh in the active sex model.
+ */
+export function ta98PartOfChoice(choice:HierarchyChoice,ancestors:HierarchyChoice[]):HierarchyChoice|undefined{
+ const term=/^hierarchy:guest:ta98:A\d{2}\.\d\.\d{2}\.\d{3}$/;
+ if(!term.test(choice.id))return;
+ const parent=ancestors.at(-1);
+ return parent&&term.test(parent.id)&&parent.children?.some(child=>child.id===choice.id)?parent:undefined;
+}
+
+/** Build browser parentage, retaining unmodeled TA98 terms for inspection. */
 export function hierarchyNavigation(atlas:Atlas,mode:NavigationMode,guest?:GuestHierarchy):HierarchyChoice{
  const available=atlas.parts.filter(part=>!part.suppressed);
  if(mode.startsWith('guest:')&&guest){
   const nodes=resolveGuestHierarchy(atlas,guest);
-  return hierarchyChoice(`guest:${guest.id}:all`,'All',[...new Map(nodes.flatMap(node=>node.parts).map(part=>[part.id,part])).values()],nodes.filter(node=>node.parts.length).map(node=>guestNodeChoice(guest.id,node)),terminologyForGroup('All'));
+  return hierarchyChoice(`guest:${guest.id}:all`,'All',[...new Map(nodes.flatMap(node=>node.parts).map(part=>[part.id,part])).values()],nodes.filter(node=>guest.id==='ta98'||node.parts.length).map(node=>guestNodeChoice(guest.id,node)),terminologyForGroup('All'));
  }
  const entries=hierarchyEntries(atlas);
  if(mode==='depth'){

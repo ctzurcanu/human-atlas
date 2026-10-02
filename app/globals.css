@@ -512,7 +512,7 @@ body:has(.studio[data-front-panel=details]) .detail-sheet{z-index:70!important}
 .detail-action-pill button svg{width:16px;height:16px}
 .detail-actions .detail-action-pill button:hover{background:var(--accent)}
 .detail-actions .detail-action-pill button.active{background:var(--primary);color:var(--primary-foreground)}
-.detail-actions .detail-action-pill button[aria-disabled=true]{opacity:.38;cursor:default}
+.detail-actions .detail-action-pill button[aria-disabled=true],.detail-actions .detail-action-pill button:disabled{opacity:.38;cursor:default}
 .detail-actions .detail-action-pill button:focus-visible{outline:2px solid var(--primary);outline-offset:-2px}
 .layers-panel{padding:14px!important}
 .layers-panel .system-tree{padding-bottom:0}

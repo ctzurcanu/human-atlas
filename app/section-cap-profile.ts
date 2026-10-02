@@ -25,6 +25,8 @@ export function hollowSectionWall(part:Part):number|undefined{
 }
 
 export function sectionCapProfile(part:Part,topology?:MeshTopology){
+ if(part.sectionAssembly&&part.sectionSolid)return {thinShell:false,width:.002,closureWidth:.00002,closureFraction:.002};
+ if(part.sectionAssembly)return {hollowWall:true,width:part.sectionWall??.001,closureWidth:.00002,closureFraction:.002};
  if(isSkinPart(part))return {thinShell:true,width:.0035,outermostOnly:part.name.startsWith('Body surface (derived)')||part.id==='FJ2810'};
  const wall=hollowSectionWall(part);
  if(wall)return {hollowWall:true,width:wall};

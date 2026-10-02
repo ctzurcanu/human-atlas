@@ -145,5 +145,9 @@ export function createStencilCaps(scene:T.Scene|T.Group,planes:[T.Plane,T.Plane]
   return result;
  };
  const dispose=()=>{for(const entry of counters.values()){for(const mesh of [...entry.outer,...entry.inner])scene.remove(mesh);entry.geometry.dispose();entry.innerPick?.dispose();}for(const mesh of quads)scene.remove(mesh);for(const material of [...countMaterials,...quadMaterials,pickMaterial])material.dispose();planeGeometry.dispose();};
- return {update,pick,dispose,activeCount:()=>active.size};
+ const release=(indices:number[])=>{
+  const removed=new Set(indices);visibleCandidates=visibleCandidates.filter(candidate=>!removed.has(candidate.index));
+  for(const index of indices){const entry=counters.get(index);if(!entry)continue;for(const mesh of [...entry.outer,...entry.inner])scene.remove(mesh);entry.geometry.dispose();entry.innerPick?.dispose();counters.delete(index);for(const cut of [0,1])active.delete(`${cut}:${index}`);}
+ };
+ return {update,pick,dispose,release,activeCount:()=>active.size};
 }

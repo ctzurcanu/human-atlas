@@ -1,8 +1,9 @@
-import {structureName,type Part} from './anatomy';
+import {structureName,type Part,type Concept} from './anatomy';
+import {taExactEntityForConcept} from './anatomical-terminology';
 import skeletalAttachments from './generated-skeletal-attachments.json';
 
 export type RelationKind='before'|'after'|'innervation'|'arterial'|'venous'|'innervates'|'supplies'|'drains'|'articulates'|'connects'|'connectedBy'|'joint'|'continuous'|'covers'|'coveredBy'|'cartilages'|'bones'|'tendons'|'fascia'|'muscles'|'origin'|'insertion'|'partOf'|'contains'|'originFor'|'insertionFor'|'originSites'|'insertionSites'|'counterpart';
-export interface ResolvedRelation {kind:RelationKind;target:Part;via?:string[];viaModeled?:boolean}
+export interface ResolvedRelation {kind:RelationKind;target:Part;via?:string[];viaModeled?:boolean;note?:string}
 type Relations=Partial<Record<RelationKind,string[]>>;
 
 // These are anatomical paths, not spatial guesses. Names are resolved against
@@ -11,7 +12,7 @@ type Relations=Partial<Record<RelationKind,string[]>>;
 // NBK448070, NBK556044, NBK470256, NBK470197, NBK482390.
 const digestiveRoute=[
  ['Oropharynx'],['Laryngopharynx'],['Oesophagus','Esophagus'],['Stomach'],
- ['Duodenum'],['Jejunum','Proximal part of jejunum'],['Middle part of jejunum'],
+ ['Duodenum','Superior part of duodenum'],['Jejunum','Proximal part of jejunum'],['Middle part of jejunum'],
  ['Distal part of jejunum'],['Ileum','Proximal part of ileum'],['Middle part of ileum'],['Distal part of ileum'],
  ['Caecum','Cecum'],['Ascending colon'],['Hepatic flexure of colon','Right colic flexure'],
  ['Transverse colon'],['Splenic flexure of colon','Left colic flexure'],
@@ -287,10 +288,28 @@ const ligamentAttachments:Record<string,string[]>={
  'calcaneofibular ligament':['Calcaneus','Fibula'],
 };
 
+// Whole-organ pelvic links, never inherited by unnamed wall/layer regions.
+// NCBI Bookshelf NBK554601, NBK547660, NBK545187, NBK557575;
+// PMC3312145 distinguishes upper vaginal autonomic and lower somatic supply.
+// Targets must exist in the active model; these links do not certify geometry.
+const uterineFunctional:Relations={innervation:['Uterovaginal plexus'],arterial:['Uterine artery','Ovarian artery'],venous:['Uterine vein','Uterine venous plexus']};
+const cervicalFunctional:Relations={innervation:['Uterovaginal plexus'],arterial:['Uterine artery','Vaginal artery'],venous:['Uterine vein']};
+const tubalFunctional:Relations={arterial:['Uterine artery','Ovarian artery'],venous:['Uterine vein','Ovarian vein']};
+const femalePelvicFunctional:Record<string,Relations>={
+ 'uterus':uterineFunctional,
+ 'cervix':cervicalFunctional,
+ 'cervix of uterus':cervicalFunctional,
+ 'uterine cervix':cervicalFunctional,
+ 'vagina':{innervation:['Uterovaginal plexus','Pudendal nerve'],arterial:['Uterine artery','Vaginal artery','Internal pudendal artery'],venous:['Vaginal vein','Vaginal venous plexus']},
+ 'uterine tube':tubalFunctional,
+ 'fallopian tube':tubalFunctional,
+ 'ovary':{arterial:['Ovarian artery','Uterine artery'],venous:['Ovarian vein']},
+};
 const explicit:Record<string,Relations>={
+ ...femalePelvicFunctional,
  'oesophagus':{innervation:['Vagus nerve (X)'],arterial:['Left gastric artery'],venous:['Left gastric vein']},
  'esophagus':{innervation:['Vagus nerve (X)'],arterial:['Left gastric artery'],venous:['Left gastric vein']},
- 'stomach':{innervation:['Vagus nerve (X)'],arterial:['Left gastric artery','Right gastric artery','Splenic artery'],venous:['Left gastric vein','Right gastric vein','Left gastro-omental vein','Right gastro-omental vein','Left gastroepiploic vein','Right gastroepiploic vein','Splenic vein']},
+ 'stomach':{innervation:['Vagus nerve (X)','Vagus nerve'],arterial:['Left gastric artery','Right gastric artery','Left gastro-omental artery','Right gastro-omental artery','Left gastroepiploic artery','Right gastroepiploic artery','Gastroepiploic artery','Short gastric arteries','Splenic artery'],venous:['Left gastric vein','Right gastric vein','Left gastro-omental vein','Right gastro-omental vein','Left gastroepiploic vein','Right gastroepiploic vein','Splenic vein']},
  'duodenum':{innervation:['Vagus nerve (X)'],arterial:['Superior pancreaticoduodenal artery','Inferior pancreaticoduodenal artery'],venous:['Superior mesenteric vein','Hepatic portal vein']},
  'jejunum':{innervation:['Vagus nerve (X)'],arterial:['Superior mesenteric artery'],venous:['Superior mesenteric vein']},
  'ileum':{innervation:['Vagus nerve (X)'],arterial:['Superior mesenteric artery'],venous:['Superior mesenteric vein']},
@@ -336,13 +355,28 @@ const partSide=(part:Part):'left'|'right'|null=>{
  return suffix?suffix.toLowerCase()==='l'?'left':'right':null;
 };
 const withoutSide=(name:string)=>key(name).replace(/\s*\((?:left|right)\)$/,'').replace(/\s+[lr]$/,'');
-const baseName=(name:string)=>/^(?:left|right) (?:atrium|ventricle)$/.test(withoutSide(name))?withoutSide(name):withoutSide(name).replace(/^(?:left|right)\s+/,'');
+const intestinalNames:Record<string,string>={'intestine duodenum':'duodenum','small intestine jejunum':'jejunum','small intestine ileum':'ileum','small intestine illium':'ileum','large intestine cecum':'cecum','large intestine descending colon':'descending colon','large intestine rectum':'rectum'};
+const baseName=(name:string)=>{const value=/^(?:left|right) (?:atrium|ventricle)$/.test(withoutSide(name))?withoutSide(name):withoutSide(name).replace(/^(?:left|right)\s+/,'');return intestinalNames[value]??value;};
 const belongsTo=(name:string,base:string)=>name===base||name.startsWith(`proximal part of ${base}`)||name.startsWith(`middle part of ${base}`)||name.startsWith(`distal part of ${base}`);
 const vascularIdentity=(name:string)=>{
  const side=sideOf(name);
  return `${withoutSide(name).replace(/^(?:left|right)\s+/,'')}|${side??''}`;
 };
 const statedVascularParent=(name:string)=>clean(name).match(/\b(?:branch(?:es)?|tributar(?:y|ies)) of (.+)$/i)?.[1]??null;
+
+const gastricRegionCodes=new Set(['A05.5.01.007','A05.5.01.009','A05.5.01.012','A05.5.01.014']);
+const gastricAssemblyCache=new WeakMap<Part[],Part[]>();
+function modeledGastricAssembly(parts:Part[]):Part[]{
+ const cached=gastricAssemblyCache.get(parts);if(cached)return cached;
+ const assemblies=new Map<string,Part[]>();
+ for(const part of parts){
+  const code=taExactEntityForConcept(part.conceptId);
+  if(part.suppressed||part.system!=='digestive'||!part.sectionAssembly||!code||!gastricRegionCodes.has(code))continue;
+  const group=assemblies.get(part.sectionAssembly)??[];group.push(part);assemblies.set(part.sectionAssembly,group);
+ }
+ const regions=[...assemblies.values()].find(group=>new Set(group.map(part=>taExactEntityForConcept(part.conceptId))).size===4)??[];
+ gastricAssemblyCache.set(parts,regions);return regions;
+}
 
 const targetIndexes=new WeakMap<Part[],{exact:Map<string,Part[]>;base:Map<string,Part[]>;concept:Map<string,Part[]>}>();
 function targets(query:string,source:Part,parts:Part[],accept:(part:Part)=>boolean=()=>true,allBonePieces=false,allAliases=false,allConceptPieces=false):Part[]{
@@ -354,6 +388,7 @@ function targets(query:string,source:Part,parts:Part[],accept:(part:Part)=>boole
  const matches=(part:Part,alt:string)=>accept(part)&&(!sideOf(alt)||!partSide(part)||partSide(part)===sideOf(alt))&&(!side||!partSide(part)||partSide(part)===side);
  const exact=alternatives.flatMap(alt=>(index.exact.get(alt.toLowerCase())??[]).filter(part=>matches(part,alt)));
  const matched=exact.length&&!allAliases?exact:[...exact,...alternatives.flatMap(alt=>(index.base.get(baseName(alt))??[]).filter(part=>matches(part,alt)))];
+ if(!matched.length&&baseName(q)==='stomach')matched.push(...modeledGastricAssembly(parts).filter(part=>matches(part,q)));
  const byConcept=new Map<string,Part>();
  for(const part of matched.filter(part=>part.id!==source.id)){
   const previous=byConcept.get(part.conceptId);
@@ -474,6 +509,13 @@ const jointGroups=(part:Part)=>Object.keys(jointBones).filter(joint=>(part.group
 
 function physicalRelations(source:Part,parts:Part[]):Relations{
  const result:Relations={},sourceBase=baseName(source.name);
+ // OpenStax A&P 2e 27.2: the ovarian ligament attaches the ovary to the uterus.
+ // Keep this named reproductive support separate from skeletal ligaments;
+ // targets() enforces the source's stated side and provides reciprocal links.
+ if(source.system==='reproductive'){
+  if(sourceBase==='ovarian ligament')result.connects=['Ovary','Uterus'];
+  else if(sourceBase==='ovary'||sourceBase==='uterus')result.connectedBy=['Ovarian ligament'];
+ }
  const joints=jointGroups(source);
  if(source.system==='connective'&&/ligament|capsule/i.test(source.name)){
   const specific=ligamentAttachments[sourceBase];
@@ -529,7 +571,8 @@ const canCarryFunctionalLinks=(part:Part)=>part.system!=='attachments'&&part.sys
 function explicitRelations(part:Part):Relations{
  if(!canCarryFunctionalLinks(part))return {};
  const name=withoutSide(part.name);
- return explicit[name]??(name.endsWith(' of stomach')?explicit.stomach:undefined)??
+ if(femalePelvicFunctional[name]&&part.system!=='reproductive')return {};
+ return explicit[name]??
   (['jejunum','ileum'].find(base=>belongsTo(name,base))?explicit[name.includes('jejunum')?'jejunum':'ileum']:undefined)??{};
 }
 const structuralCache=new WeakMap<Part,Map<string,ResolvedRelation[]>>();
@@ -755,6 +798,12 @@ function muscleNerves(source:Part):string[]{
  return direct;
 }
 
+function functionalNote(source:Part,kind:RelationKind,target:Part):string|undefined{
+ if(source.system!=='reproductive'||withoutSide(source.name)!=='vagina'||kind!=='innervation')return;
+ if(withoutSide(target.name)==='pudendal nerve')return 'Lower vagina · somatic supply';
+ if(withoutSide(target.name)==='uterovaginal plexus')return 'Upper vagina · autonomic supply';
+}
+
 function reverseFunctionalRelations(source:Part,parts:Part[]):ResolvedRelation[]{
  if(!['nervous','arterial','venous'].includes(source.system))return [];
  const result:ResolvedRelation[]=[];
@@ -764,7 +813,7 @@ function reverseFunctionalRelations(source:Part,parts:Part[]):ResolvedRelation[]
  for(const part of parts){
   const lookup=explicitRelations(part);
   if(!lookup?.[kind]||!sameSide(source,part))continue;
-  if(lookup[kind].some(query=>targets(query,part,parts).some(target=>target.conceptId===source.conceptId)))result.push({kind:reverse,target:part});
+  if(lookup[kind].some(query=>targets(query,part,parts).some(target=>target.conceptId===source.conceptId)))result.push({kind:reverse,target:part,note:functionalNote(part,kind,source)});
  }
  return result;
 }
@@ -773,11 +822,11 @@ function accepts(kind:RelationKind,source:Part,target:Part):boolean{
  if(kind==='innervation')return target.system==='nervous';
  if(kind==='arterial')return target.system==='arterial';
  if(kind==='venous')return target.system==='venous';
- if(kind==='innervates')return target.system==='muscular'&&!/·\s*Tendon$/i.test(target.name)||['digestive','respiratory','cardiac','urinary','skeletal'].includes(target.system);
+ if(kind==='innervates')return target.system==='muscular'&&!/·\s*Tendon$/i.test(target.name)||['digestive','respiratory','cardiac','urinary','reproductive','skeletal'].includes(target.system);
  if(kind==='supplies'||kind==='drains')return !['arterial','venous','nervous','attachments','regions'].includes(target.system);
  if(kind==='articulates')return isBone(target);
- if(kind==='connects')return isBone(target)||target.system==='muscular';
- if(kind==='connectedBy')return target.system==='connective'||target.system==='muscular'&&/\btendon\b/i.test(target.name);
+ if(kind==='connects')return isBone(target)||target.system==='muscular'||source.system==='reproductive'&&baseName(source.name)==='ovarian ligament'&&target.system==='reproductive'&&['ovary','uterus'].includes(baseName(target.name));
+ if(kind==='connectedBy')return target.system==='connective'||target.system==='muscular'&&/\btendon\b/i.test(target.name)||source.system==='reproductive'&&['ovary','uterus'].includes(baseName(source.name))&&target.system==='reproductive'&&baseName(target.name)==='ovarian ligament';
  if(kind==='joint')return isBone(source)?target.system==='connective':isBone(target);
  if(kind==='continuous')return target.system==='fascia'||target.system==='connective'||baseName(target.name)==='iliotibial tract';
  if(kind==='covers')return target.system==='muscular';
@@ -808,8 +857,31 @@ export function anatomicalRelations(source:Part,allParts:Iterable<Part>):Resolve
   for(const query of [...(namedVessels[kind]??[]),...(nerves[kind]??[]),...(physical[kind]??[]),...(mapped[kind]??[])]){
    for(const target of targets(query,source,parts,part=>accepts(kind,source,part),kind==='articulates'||kind==='connects'||kind==='joint',false,['before','after','innervation','arterial','venous'].includes(kind))){
     const token=`${kind}:${target.id}`;
-    if(!seen.has(token)){seen.add(token);result.push({kind,target});}
+    if(!seen.has(token)){seen.add(token);result.push({kind,target,note:functionalNote(source,kind,target)});}
    }
+  }
+ }
+ return result;
+}
+
+/** Whole-concept functional links for a complete, explicitly named assembly.
+ * This is a semantic query against the existing registry, never a geometry part
+ * or an assertion that every region has the whole organ's vascular supply.
+ */
+export function anatomicalConceptFunctionalRelations(concept:Concept,selected:Part[],parts:Part[]):ResolvedRelation[]{
+ if(selected.length<2||concept.id==='selection-set'||concept.id.startsWith('hierarchy:')||concept.id.startsWith('guest:'))return [];
+ const elements=new Set(concept.elements),ids=new Set(selected.map(part=>part.id));
+ if(elements.size!==ids.size||[...elements].some(id=>!ids.has(id)))return [];
+ if(new Set(selected.map(part=>part.system)).size!==1)return [];
+ const lookup=explicit[withoutSide(concept.name)];if(!lookup)return [];
+ const source={...selected[0],id:`functional-query:${concept.id}`,conceptId:concept.id,name:concept.name};
+ if(femalePelvicFunctional[withoutSide(concept.name)]&&source.system!=='reproductive')return [];
+ if(!canCarryFunctionalLinks(source))return [];
+ const result:ResolvedRelation[]=source.system==='digestive'?routeRelations(source,parts,[digestiveStages(parts)]).filter(relation=>!ids.has(relation.target.id)):[],seen=new Set<string>(result.map(relation=>`${relation.kind}:${relation.target.id}`));
+ for(const kind of ['innervation','arterial','venous'] as const)for(const query of lookup[kind]??[]){
+  for(const target of targets(query,source,parts,part=>accepts(kind,source,part),false,false,true)){
+   if(ids.has(target.id))continue;
+   const key=`${kind}:${target.id}`;if(seen.has(key))continue;seen.add(key);result.push({kind,target,note:functionalNote(source,kind,target)});
   }
  }
  return result;

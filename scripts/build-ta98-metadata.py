@@ -302,7 +302,7 @@ group_records['Exocrine system']['latin'] = 'glandulae exocrinae'
 output = ROOT / 'app/data/ta98-metadata.json'
 output.parent.mkdir(parents=True, exist_ok=True)
 parent_codes = {code for path in concept_paths.values() for code in path}
-code_records = {code: {'name': terms[code]['name_en'], **record(terms[code])} for code in sorted(parent_codes)}
+code_records = {code: {'name': terms[code]['name_en'], **record(terms[code])} for code in sorted(terms)}
 output.write_text(json.dumps({'source': SOURCE, 'byConcept':concepts,
                               'byConceptPath':concept_paths, 'byCode':code_records,
                               'byConceptMatch':concept_matches,
