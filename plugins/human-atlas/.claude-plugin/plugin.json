@@ -2,8 +2,17 @@
   "name": "atlas",
   "version": "1.0.0",
   "description": "Search named anatomical structures and explore them in an interactive 3D human atlas.",
-  "author": {"name": "Christian Tzurcanu", "url": "https://github.com/ctzurcanu"},
+  "author": {
+    "name": "Christian Tzurcanu",
+    "url": "https://github.com/ctzurcanu"
+  },
   "homepage": "https://ctzurcanu.github.io/human-atlas/",
   "repository": "https://github.com/ctzurcanu/human-atlas",
-  "keywords": ["anatomy", "education", "3d", "human-body"]
+  "keywords": [
+    "anatomy",
+    "education",
+    "3d",
+    "human-body"
+  ],
+  "license": "GPL-3.0-only"
 }
