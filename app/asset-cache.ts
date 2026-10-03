@@ -189,8 +189,8 @@ export async function fetchAssetJson<T>(url:string,init:RequestInit={},message='
  try{const value=await response.json() as T;abort(init.signal);return value;}
  catch(error){
   if(init.signal?.aborted)throw error;
-  await forgetAsset(url);if(!isCachedAsset(response))throw error;
+  await forgetAsset(url);if(!isCachedAsset(response))throw new Error(message);
   const fresh=await fetchAsset(url,{...init,cache:'reload'});if(!fresh.ok)throw new Error(message);
-  try{const value=await fresh.json() as T;abort(init.signal);return value;}catch(error){if(!init.signal?.aborted)await forgetAsset(url);throw error;}
+  try{const value=await fresh.json() as T;abort(init.signal);return value;}catch(error){if(init.signal?.aborted)throw error;await forgetAsset(url);throw new Error(message);}
  }
 }

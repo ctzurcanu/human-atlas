@@ -2,7 +2,7 @@ import {SYSTEMS,structureName,type Atlas,type Part,type SystemId} from './anatom
 import {taChapterForConcept,taEntityForConcept,taHierarchyForConcept,terminologyForConcept,terminologyForGroup,type Terminology} from './anatomical-terminology';
 import {isSkinPart} from './depth-layers';
 
-export type AnatomyEntry={id:string;name:string;system:SystemId;region:string;location:string[];ancestry:string[];ancestryTerms?:Record<string,Terminology>;taParentConcept?:string;parts:Part[];terminology:Terminology};
+export type AnatomyEntry={id:string;name:string;system:SystemId;region:string;location:string[];ancestry:string[];ancestryTerms?:Record<string,Terminology>;taParentConcept?:string;ta98Term?:string;ta98Kind?:'exact'|'parent';parts:Part[];terminology:Terminology};
 export type AnatomyNode=
  | {kind:'group';id:string;name:string;nodes:AnatomyNode[];parts:Part[];terminology:Terminology}
  | {kind:'bilateral';id:string;name:string;entries:AnatomyEntry[];parts:Part[];terminology:Terminology}
@@ -31,14 +31,18 @@ function integumentaryBranch(entry:AnatomyEntry){
  const name=entry.name.toLowerCase();
  return /mammar|breast|lactifer/.test(name)?'Mammary gland':/lacrimal/.test(name)?'Lacrimal glands':/adipose/.test(name)?'Subcutaneous tissue':'';
 }
-export function majorSystemFor(entry:Pick<AnatomyEntry,'name'|'system'|'parts'>&Partial<Pick<AnatomyEntry,'terminology'>>):MajorSystemId{
+export function majorSystemFor(entry:Pick<AnatomyEntry,'name'|'system'|'parts'>&Partial<Pick<AnatomyEntry,'terminology'|'ta98Term'>>):MajorSystemId{
  const name=entry.name.toLowerCase();
  if(entry.parts.every(isSkinPart))return 'integumentary';
  if(/(?:salivary|parotid|submandibular|sublingual|lacrimal|sebaceous|sweat|ceruminous) gland|gland of (?:skin|eyelid)|mammary (?:gland|lobe)|lactiferous/.test(name))return 'exocrine';
  if(entry.system==='cardiac'&&/^(?:third|fourth|lateral) ventricle|interventricular foramen/.test(name))return 'nervous';
  if(entry.system==='skeletal'&&/\b(?:teeth|tooth|gingiva)\b/.test(name))return 'digestive';
  if(entry.system==='digestive'&&/articular disc|articular disk|acromioclavicular|sternoclavicular/.test(name))return 'skeletal';
- const chapter=entry.terminology?.ta98?.slice(0,3)??taChapterForConcept(entry.parts[0]?.conceptId??'');
+ const taCode=entry.terminology?.ta98??entry.ta98Term??taEntityForConcept(entry.parts[0]?.conceptId??'');
+ // TA98 cross-lists this oral structure in the pharyngeal lymphoid ring.
+ // Systems follows tissue identity; the TA98 hierarchy retains oral ancestry.
+ if(taCode==='A05.2.01.011')return 'lymphatic';
+ const chapter=taCode?.slice(0,3)??taChapterForConcept(entry.parts[0]?.conceptId??'');
  const taSystem:Record<string,MajorSystemId>={A02:'skeletal',A03:'skeletal',A04:'muscular',A05:'digestive',A06:'respiratory',A08:'urinary',A09:'reproductive',A11:'endocrine',A12:'circulatory',A13:'lymphatic',A14:'nervous',A15:'nervous',A16:'integumentary'};
  if(chapter&&taSystem[chapter]&&entry.system!=='attachments')return taSystem[chapter];
  if(entry.system==='connective')return /eyeball|(?:lateral|medial) rectus|superior oblique|\blens\b/.test(name)?'nervous':/\bfascia\b/.test(name)?'muscular':'skeletal';
@@ -54,9 +58,15 @@ function systemBranchFor(entry:AnatomyEntry):string{
  if(system==='integumentary')return isSkin(entry)?'Skin':integumentaryBranch(entry)||(/adipose|fat/.test(name)?'Subcutaneous tissue':/\bhair|nail\b/.test(name)?'Hair & nails':'');
  if(system==='skeletal')return /cartilage|labrum|meniscus|\bdisc\b|\bdisk\b/.test(name)?'Cartilage':/\btendon\b/.test(name)?'Tendons':/ligament|capsule|joint|suture/.test(name)?'Joints and ligaments':'Bones';
  if(system==='muscular')return entry.system==='attachments'?'Muscle attachments':entry.system==='fascia'||/\bfascia\b/.test(name)?'Fascia':'Muscles';
- if(system==='circulatory')return entry.system==='arterial'||/\b(?:artery|aorta|celiac trunk)\b/.test(name)?'Arteries':entry.system==='venous'||/\b(?:vein|venous)\b/.test(name)?'Veins':'Heart';
+ if(system==='circulatory'){
+  // TA98 places A12.4 lymphatic vessels in its cardiovascular chapter.
+  // Preserve that chapter without assigning these vessels to the heart.
+  const code=entry.terminology.ta98??entry.ta98Term??taEntityForConcept(entry.id);
+  if(entry.system==='lymphatic'||code?.startsWith('A12.4.'))return 'Lymphatic trunks and ducts';
+  return entry.system==='arterial'||/\b(?:artery|aorta|celiac trunk)\b/.test(name)?'Arteries':entry.system==='venous'||/\b(?:vein|venous)\b/.test(name)?'Veins':'Heart';
+ }
  if(system==='nervous'){
-  const taCode=entry.terminology.ta98??taEntityForConcept(entry.id);
+  const taCode=entry.terminology.ta98??entry.ta98Term??taEntityForConcept(entry.id);
   if(taCode?.startsWith('A15.'))return 'Sensory organs';
   if(taCode?.startsWith('A14.'))return taCode.startsWith('A14.1.')?'Central nervous system':'Peripheral nervous system';
   return entry.system==='sensory'||entry.system==='connective'||/\b(?:eye|eyeball|retina|sclera|cornea|choroid|pupil|lens|ear|cochlea|macula lutea|conjunctiva|vitreous|lacrimal)\b/.test(name)?'Sensory organs':/^(?:allen )|\b(?:brain|cerebr|cerebell|spinal cord|spinocerebellar|vestibulospinal|tectospinal|rubrospinal|gracile fasciculus|white matter|ventricle|interventricular foramen|thalam|medulla|caudate|putamen|pallid|insula|cortex|accumbens)\b/.test(name)?'Central nervous system':'Peripheral nervous system';
@@ -67,17 +77,27 @@ function systemBranchFor(entry:AnatomyEntry):string{
  if(system==='urinary')return /kidney|renal/.test(name)?'Kidneys':'Urinary tract';
  if(system==='lymphatic')return /\bnode|nodule\b/.test(name)?'Lymph nodes':'Lymphatic organs and vessels';
  if(system==='endocrine')return 'Endocrine glands';
- if(system==='reproductive')return entry.system==='pregnancy'?'Placenta & pregnancy':/uter|ovar|vagin|clitor|vulva|female/.test(name)?'Female genital system':'Male genital system';
+ if(system==='reproductive'){
+  if(entry.system==='pregnancy')return 'Placenta & pregnancy';
+  const code=entry.terminology.ta98??entry.ta98Term??taEntityForConcept(entry.id);
+  if(code?.startsWith('A09.1.'))return 'Female genital system';
+  if(code?.startsWith('A09.2.'))return 'Male genital system';
+  return /uter|ovar|vagin|cervix|clitor|vulva|female/.test(name)?'Female genital system':'Male genital system';
+ }
  return '';
 }
 export function systemPathFor(entry:AnatomyEntry,scope?:string):string[]{
  if(scope==='cell')return [];
+ if(scope==='embryo')return entry.parts[0].groups??[];
  const branch=systemBranchFor(entry);
  if(branch==='Skin')return ['Skin',skinSourceRegions(entry)?'Named skin regions':'Body surface',entry.region,...entry.location,...entry.ancestry];
  return [...(branch?[branch]:[]),entry.region,...entry.location,...entry.ancestry];
 }
 export function regionPathFor(entry:AnatomyEntry):string[]{return [...entry.location,isSkin(entry)?'Skin':integumentaryBranch(entry)||systemName(entry.system),...entry.ancestry];}
-export function depthPathFor(entry:AnatomyEntry,layerName:string):string[]{return [entry.region,...entry.location.filter(name=>name.toLowerCase()!==layerName.toLowerCase()),...entry.ancestry];}
+export function depthPathFor(entry:AnatomyEntry,layerName:string):string[]{
+ const coelom=entry.parts.length>0&&entry.parts.every(part=>part.id.startsWith('CS23:')&&part.groups?.includes('Coelom'));
+ return [...(coelom?['Coelom']:[]),entry.region,...entry.location.filter(name=>name.toLowerCase()!==layerName.toLowerCase()),...entry.ancestry];
+}
 const normalized=(parts:Part[])=>structureName(parts[0].name).toLowerCase();
 const groupsFor=(parts:Part[])=>new Set(parts.flatMap(part=>part.groups??[]).map(group=>group.toLowerCase()));
 const has=(groups:Set<string>,pattern:RegExp)=>[...groups].some(group=>pattern.test(group));
@@ -94,6 +114,9 @@ function regionFor(parts:Part[],scope?:string){
  if(maxY-minY>1.05)return 'Whole body & spanning';
  const groups=groupsFor(parts);
  const name=normalized(parts);
+ if(parts.every(part=>part.system==='arterial')&&/^(?:(?:left|right) )?(?:brachiocephalic trunk|aortic arch|arch of aorta|proximal segment of subclavian artery)(?: \((?:left|right)\))?$/.test(name))return 'Torso & pelvis';
+ if(parts.every(part=>part.system==='lymphatic')&&/\b(cubital|axillary|deltopectoral)\b/.test(name))return 'Upper limbs';
+ if(parts.every(part=>part.system==='lymphatic')&&/\b(inguinal|popliteal)\b/.test(name))return 'Lower limbs';
  if(/\b(?:acromioclavicular|sternoclavicular|clavicle|scapula|shoulder|deltoid)\b/.test(name)||has(groups,/pectoral girdle/))return 'Upper limbs';
  if(has(groups,/^(head|neck|brain|face|skull|cranium|cerebrum|cerebellum|left head|right head|head and neck)$/))return 'Head & neck';
  if(has(groups,/^(left |right )?(upper limb|arm|forearm|hand|wrist|shoulder)( region)?$/))return 'Upper limbs';
@@ -125,14 +148,16 @@ function locationFor(parts:Part[],region:string):string[]{
   return side?[`${side} leg`,area]:[];
  }
  if(region==='Upper limbs'){
-  const area=/\b(hand|finger|thumb|digit|metacarp|carpal|wrist|palm)\b/.test(name)||has(groups,/^(left |right )?hand$/)?'Hand & wrist'
-   :/\b(forearm|radius|ulna|radial|ulnar|elbow)\b/.test(name)?'Forearm & elbow'
-   :/\b(shoulder|scapula|clavicle|clavicular|acromioclavicular|pectoral girdle|axilla)\b/.test(name)?'Shoulder'
+  const area=/\b(hand|finger|thumb|digit|metacarp|carpal|wrist|palm|distal radio-ulnar joint)\b/.test(name)||has(groups,/^(?:(left |right )?hand|distal radio-ulnar joint)$/)?'Hand & wrist'
+   :/\b(forearm|radius|ulna|radial|ulnar|elbow|cubital)\b/.test(name)?'Forearm & elbow'
+   :/\b(shoulder|scapula|clavicle|clavicular|acromioclavicular|pectoral girdle|axilla|axillary|deltopectoral)\b/.test(name)?'Shoulder'
    :/\b(arm|humerus|brachial|biceps|triceps)\b/.test(name)?'Upper arm':y<.94?'Hand & wrist':y<1.12?'Forearm & elbow':y<1.4?'Upper arm':'Shoulder';
   return side?[`${side} arm`,area]:[];
  }
  if(region==='Head & neck'){
-  if(/\b(neck|cervical|larynx|pharynx|thyroid|trachea)\b/.test(name)||has(groups,/^neck$/))return ['Neck'];
+  if(parts.every(part=>part.system==='connective')&&/^(?:(?:anterior|posterior) atlanto-occipital membrane|tectorial membrane of atlanto-axial joint|alar ligaments)$/.test(name))return ['Neck'];
+  if(parts.every(part=>part.system==='arterial')&&/^(?:(?:left|right) )?common carotid artery(?: \((?:left|right)\))?$/.test(name))return ['Neck'];
+  if(/\b(neck|cervical|larynx|pharynx|thyroid|parathyroid|trachea)\b/.test(name)||has(groups,/^neck$/))return ['Neck'];
   const area=/\b(brain|cerebr|cerebell|telencephal|ventric|thalam|hypothalam|pons|medulla|pineal|pituitary|caudate|putamen|pallid|insula|cortex|nucleus accumbens)\b/.test(name)||/^allen /.test(name)||has(groups,/^(brain|cerebrum|telencephalon)$/)?'Brain'
    :/\b(skull|crani|parietal|occipital|frontal bone|temporal bone|sphenoid|ethmoid|mandib|maxill|zygomat|vomer)\b/.test(name)||has(groups,/^cranium$/)?'Skull'
    :/\b(scalp|epicran|mastoid|temporal region|hairs of head)\b/.test(name)||has(groups,/^regions of epicranium$/)?'Scalp & epicranium'
@@ -140,6 +165,7 @@ function locationFor(parts:Part[],region:string):string[]{
   return area?['Head',area]:['Head'];
  }
  if(region==='Torso & pelvis'){
+  if(parts.every(part=>part.system==='arterial')&&/^(?:(?:left|right) )?(?:brachiocephalic trunk|aortic arch|arch of aorta|proximal segment of subclavian artery)(?: \((?:left|right)\))?$/.test(name))return ['Chest'];
   const area=/\b(back|vertebr\w*|spine|spinal|lumbar|dorsal|scapular|infrascapular|interscapular|sacral region|triangle of auscultation|erector spinae)\b/.test(name)||has(groups,/^back$/)?'Back & spine'
    :/\b(pelvi\w*|sacrum|coccyx|bladder|uterus|ovary|prostate|rectum|perine\w*|genital\w*|urethra|vagina|testis|penis|pubic|anal region|urogenital)\b/.test(name)||has(groups,/^(pelvis|pelvic region)$/)?'Pelvis'
    :/\b(abdom\w*|epigastric|hypochondriac|hypogastric|umbilic\w*|inguinal|kidney|renal|liver|stomach|intestin\w*|colon|spleen|pancreas|duodenum|jejunum|ileum)\b/.test(name)||has(groups,/^(abdomen|regions of abdomen)$/)?'Abdomen'
@@ -205,7 +231,7 @@ const GENERIC_TA_PARENTS=new Set(['human body','the integument','alimentary syst
 const GROUP_CHAPTERS:Record<MajorSystemId,string[]>={respiratory:['A06'],digestive:['A05'],circulatory:['A12'],urinary:['A08'],integumentary:['A01','A16'],skeletal:['A02','A03'],muscular:['A04'],endocrine:['A11'],exocrine:['A05','A15','A16'],lymphatic:['A13'],nervous:['A14','A15'],reproductive:['A09']};
 const normalizedGroup=(name:string)=>name.toLowerCase().replace(/\bmuscle\b/g,'').replace(/[^a-z0-9]+/g,' ').trim();
 function ancestryFor(entry:AnatomyEntry,groupCounts:Map<string,number>):string[]{
- const chapter=entry.terminology.ta98?.slice(0,3)??taChapterForConcept(entry.id);
+ const chapter=(entry.terminology.ta98??entry.ta98Term)?.slice(0,3)??taChapterForConcept(entry.id);
  const allowed=chapter?[chapter]:GROUP_CHAPTERS[majorSystemFor(entry)];
  const used=new Set([entry.name,...entry.location,entry.region,systemBranchFor(entry),systemName(entry.system),MAJOR_SYSTEMS.find(system=>system.id===majorSystemFor(entry))?.name??''].map(normalizedGroup));
  const usedCodes=new Set<string>();
@@ -215,7 +241,7 @@ function ancestryFor(entry:AnatomyEntry,groupCounts:Map<string,number>):string[]
   if(!key||used.has(key)||code&&usedCodes.has(code))return;
   used.add(key);if(code)usedCodes.add(code);result.push(name);
  };
- for(const {name,terminology} of taHierarchyForConcept(entry.id)){
+ for(const {name,terminology} of taHierarchyForConcept(entry.id,entry.ta98Term,entry.ta98Kind)){
   if(GENERIC_TA_PARENTS.has(name.toLowerCase())||!allowed.includes((terminology.ta98??'').slice(0,3)))continue;
   append(name,terminology.ta98);
  }
@@ -232,7 +258,7 @@ function ancestryFor(entry:AnatomyEntry,groupCounts:Map<string,number>):string[]
 }
 
 export function hierarchyEntries(atlas:Atlas):AnatomyEntry[]{
- const names=new Map(atlas.concepts.map(concept=>[concept.id,concept.name]));
+ const concepts=new Map(atlas.concepts.map(concept=>[concept.id,concept]));
  const byConcept=new Map<string,Part[]>();
  const groupCounts=new Map<string,number>();
  for(const part of atlas.parts){if(part.suppressed)continue;const parts=byConcept.get(part.conceptId)??[];parts.push(part);byConcept.set(part.conceptId,parts);for(const group of new Set(part.groups??[]))groupCounts.set(group,(groupCounts.get(group)??0)+1);}
@@ -240,8 +266,9 @@ export function hierarchyEntries(atlas:Atlas):AnatomyEntry[]{
   const region=regionFor(parts,atlas.scope);
   const location=atlas.scope==='cell'?[]:locationFor(parts,region);
   if(parts.every(isSkinPart))location.push(...skinDetailFor(parts));
-  const entry={id,name:names.get(id)??structureName(parts[0].name),system:parts[0].system,region,location,ancestry:[],parts,terminology:terminologyForConcept(id)} as AnatomyEntry;
-  entry.ancestry=atlas.scope==='cell'?[]:ancestryFor(entry,groupCounts);
+  const concept=concepts.get(id);
+  const entry={id,name:concept?.name??structureName(parts[0].name),system:parts[0].system,region,location,ancestry:[],parts,ta98Term:concept?.ta98Term,ta98Kind:concept?.ta98Kind,terminology:terminologyForConcept(id,concept?.ta98Term,concept?.ta98Kind)} as AnatomyEntry;
+  entry.ancestry=atlas.scope==='cell'||atlas.scope==='embryo'?[]:ancestryFor(entry,groupCounts);
   return entry;
  });
  const muscleKey=(name:string)=>name.toLowerCase().replace(/\s*\((?:left|right)\)\s*$/,'').replace(/^\((.*)\)$/,'$1').trim();
@@ -303,7 +330,7 @@ export function buildAnatomyNodes(entries:AnatomyEntry[],path:(entry:AnatomyEntr
   }
   const groups:AnatomyNode[]=[];
   for(const [name,members] of byGroup){
-   const parents=members.map(entry=>entry.ancestryTerms?.[name]??taHierarchyForConcept(entry.id).find(parent=>parent.name.toLowerCase()===name.toLowerCase())?.terminology);
+   const parents=members.map(entry=>entry.ancestryTerms?.[name]??taHierarchyForConcept(entry.id,entry.ta98Term,entry.ta98Kind).find(parent=>parent.name.toLowerCase()===name.toLowerCase())?.terminology);
    const common=parents[0]?.ta98&&parents.every(parent=>parent?.ta98===parents[0]?.ta98)?parents[0]:null;
    groups.push({kind:'group',id:`group:${depth}:${name}`,name,nodes:descend(members,depth+1),parts:members.flatMap(entry=>entry.parts),terminology:common??terminologyForGroup(name)});
   }

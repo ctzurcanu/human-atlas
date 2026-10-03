@@ -14,5 +14,6 @@
     "3d",
     "human-body"
   ],
-  "license": "GPL-3.0-only"
+  "license": "GPL-3.0-only",
+  "privacyPolicyUrl": "https://ctzurcanu.github.io/human-atlas/privacy.html"
 }

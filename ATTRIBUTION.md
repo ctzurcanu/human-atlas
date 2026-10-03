@@ -1205,3 +1205,13 @@ Identifier links use the following reference pages:
 - [Cloudflare Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/): Free-plan limits and WebSocket message billing.
 
 The viewer is for education and reference. It is not intended for clinical decisions. Preserve the applicable source credits, component licenses, and modification notices when sharing anatomy or derived images.
+
+## Embryo 3month: 3D Atlas of Human Embryology and separate HRA context
+
+Source: [3D Atlas of Human Embryology](https://www.3dembryoatlas.com/blank), © 2016 Department of Medical Biology, Academic Medical Center, University of Amsterdam; Bernadette S. de Bakker and the atlas project team. Carnegie stage 23, specimen 9226, 56–60 days after fertilization, stated specimen length 30 mm. The research is described in [de Bakker et al., Science (2016)](https://doi.org/10.1126/science.aag0053). Source content retains [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/), including its noncommercial and no-derivatives terms and disclaimer of warranties. No endorsement by the source authors is implied.
+
+The publication candidate retains all 166 CS23 source meshes, all 1,072,606 source triangles and original source material colors. Technical browser packing, coordinate conversion and one common rigid placement are recorded in the model release manifest. The earlier local review junction clipped three CS23 meshes; those clipped versions are excluded from this publication candidate. The CS23 source is displayed alongside separately selectable HRA placenta and cord objects, without welding, clipping or reconstructing CS23 tissue.
+
+Placental context: Kristen Browne and Heidi Schlehlein / HuBMAP, [Human Reference Atlas united-female](https://purl.humanatlas.io/ref-organ/united-female/v1.10), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Changes to the HRA context include independent placement, cord-end fitting, display colors, volume fitting and placental flattening. These changes do not alter the CS23 source meshes. These datasets retain separate licenses; the application code license does not replace either dataset license.
+
+“Embryo 3month” is the requested display name, not a revised source-stage claim. The placental source represents a different developmental stage. Open reference surfaces, contact/overlap at the separate cord interface, inherited defects and wall/lumen continuity remain provisional. This candidate does not establish complete or anatomically accepted assembly geometry.

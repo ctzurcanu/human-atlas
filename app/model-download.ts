@@ -1,3 +1,4 @@
+import {gunzipSync} from 'fflate';
 import {fetchModelAsset,forgetAsset,isCachedAsset,rememberDecodedModel} from './asset-cache';
 
 /** Static hosts may serve .gz as a compressed response or as a gzip file.
@@ -7,7 +8,7 @@ export async function decodeModelResponse(response:Response,expectedBytes:number
  if(!response.ok)throw new Error('An anatomy file could not be loaded.');
  const payload=await response.arrayBuffer(),signature=new Uint8Array(payload,0,Math.min(2,payload.byteLength));
  const gzip=compressed&&signature[0]===0x1f&&signature[1]===0x8b;
- const buffer=gzip?await new Response(new Blob([payload]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer():payload;
+ const buffer=gzip?(typeof DecompressionStream!=='undefined'?await new Response(new Blob([payload]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer():gunzipSync(new Uint8Array(payload)).slice().buffer as ArrayBuffer):payload;
  if(buffer.byteLength!==expectedBytes)throw new Error('An anatomy file was incomplete. Please reload the viewer.');
  return buffer;
 }

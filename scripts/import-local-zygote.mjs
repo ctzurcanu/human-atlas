@@ -40,6 +40,7 @@ function systemFor(raw,category){
   return /vein|venous/i.test(context)?'venous':'arterial';
  }
  if(layer===6){
+  if(raw.toLowerCase()==='mouth')return 'digestive';
   // Explicit intestinal leaves override broad inherited reproductive routes.
   if(/^(?:_?large_intestine_(?:cecum|descending_colon|anus|rectum)|small_intestine_(?:ileum|illium|jejunum)|intestine_duodenum|(?:sigmoid|transverse|ascending)_colon)$/i.test(raw))return 'digestive';
   const context=route?.join(' ')??raw;

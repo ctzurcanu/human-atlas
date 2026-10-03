@@ -69,6 +69,9 @@
     "build:exercise": "node scripts/build-exercise-hierarchy.mjs",
     "test:exercise": "node scripts/validate-exercise-hierarchy.mjs",
     "build:spinal-roots": "node scripts/build-spinal-root-hierarchy.mjs",
+    "build:dermatome-depth": "node scripts/prepare-dermatome-depth.mjs && python3 scripts/prepare-dermatome-depth.py",
+    "test:dermatome-depth": "python3 scripts/validate-dermatome-depth.py",
+    "test:dermatome-visibility": "node scripts/validate-dermatome-visibility.mjs",
     "test:spinal-roots": "node scripts/validate-spinal-root-hierarchy.mjs",
     "build:physiology": "node scripts/build-physiology-hierarchy.mjs",
     "test:physiology": "node scripts/validate-physiology-hierarchy.mjs",
@@ -155,7 +158,17 @@
     "test:gastric-relations": "node scripts/validate-gastric-functional-relations.mjs",
     "test:male-cardia": "python3 scripts/validate-ta98-male-cardia.py --installed && node scripts/validate-ta98-stomach-junctions.mjs",
     "test:part-index-buffer": "node scripts/validate-part-index-buffer.mjs",
-    "test:ovarian-support-relations": "node scripts/validate-ovarian-support-relations.mjs"
+    "test:ovarian-support-relations": "node scripts/validate-ovarian-support-relations.mjs",
+    "test:retinal-relations": "node scripts/validate-retinal-relations.mjs",
+    "test:dermatome-ink": "node scripts/validate-dermatome-ink.mjs",
+    "test:explosion-viewport": "node --test tests/explosion-viewport.test.mjs",
+    "test:camera-intent": "node --test tests/camera-intent.test.mjs",
+    "test:explosion-plane": "node --test tests/explosion-plane.test.mjs",
+    "prepare:embryo-pages": "node server/prepare-embryo-pages.mjs",
+    "build:embryo-pages-preview": "npm run prepare:embryo-pages && EMBRYO_PAGES_PACKAGE=outputs/embryo-pages-package VITE_EMBRYO_CATALOGUE=/models/embryo-3month/atlas.json VITE_BASE_PATH=/human-atlas/ vite build --mode embryo-local-preview --outDir ../outputs/embryo-pages-preview",
+    "test:embryo-pages": "node --test tests/embryo-pages.test.mjs",
+    "test:model-download": "node --test tests/model-download.test.mjs",
+    "test:cardiac-relations": "node --test tests/cardiac-relations.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

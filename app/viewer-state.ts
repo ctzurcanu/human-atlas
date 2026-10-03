@@ -1,3 +1,4 @@
+import {dermatomeTerritories} from './dermatome-colors';
 import {isSurfaceSystem,type Atlas,type Part,type SceneState,type SystemId,type View} from './anatomy';
 import {compatiblePartAtlas,packPartIds,partFingerprint,unpackPartIds} from './view-part-codes';
 import {DEPTH_LAYERS,depthLayerFor,isSkinPart} from './depth-layers';
@@ -37,7 +38,22 @@ function inSectionRegion(p:Part,region='all'){
  }
  return false;
 }
-export function partVisible(p:Part,s:SceneState){
+const surfaceVisibilityCache=new WeakMap<SceneState,WeakMap<readonly Part[],boolean>>();
+function opaqueBodySurfaceVisible(s:SceneState,parts?:readonly Part[]){
+ if(!parts)return visibilitySets(s).surface;
+ let snapshots=surfaceVisibilityCache.get(s);
+ if(!snapshots){snapshots=new WeakMap();surfaceVisibilityCache.set(s,snapshots);}
+ const cached=snapshots.get(parts);if(cached!==undefined)return cached;
+ const sets=visibilitySets(s);
+ // Cord coverings, nipples and amnion share the Skin layer but do not
+ // enclose the body. Only a displayed body surface conceals its internals.
+ const shown=!s.isolate&&parts.some(part=>!part.suppressed&&
+  (part.system==='cell-boundary'||isSkinPart(part)&&/\bskin\b|^body surface\b/i.test(part.name))&&
+  sets.visible.has(part.system)&&!sets.hidden.has(part.id)&&!sets.depthHidden.has(depthLayerFor(part))&&
+  inRegion(part,s.region)&&partLayerOpacity(part,s)>=.999);
+ snapshots.set(parts,shown);return shown;
+}
+export function partVisible(p:Part,s:SceneState,parts?:readonly Part[]){
  if(p.suppressed)return false;
  const sets=visibilitySets(s);
  if(s.depth!==undefined&&sets.depthHidden.has(depthLayerFor(p)))return false;
@@ -46,7 +62,7 @@ export function partVisible(p:Part,s:SceneState){
  if(partLayerOpacity(p,s)<=0)return false;
  // Some primary-source internal meshes protrude beyond the outer reference.
  // An intact, fully opaque surface should conceal unselected internal context.
- if(!isSkinPart(p)&&sets.surface&&!sets.depthHidden.has('skin')&&depthLayerOpacity('skin',s)>=.999&&(s.explode??0)<.001&&!s.sections?.some(section=>section.enabled)&&!s.section?.enabled)return false;
+ if(p.system!=='pregnancy'&&!isSkinPart(p)&&opaqueBodySurfaceVisible(s,parts)&&!sets.depthHidden.has('skin')&&depthLayerOpacity('skin',s)>=.999&&(s.explode??0)<.001&&!s.sections?.some(section=>section.enabled)&&!s.section?.enabled)return false;
  return true;
 }
 // Sections use the layer checkboxes as their source set, including pieces that
@@ -91,11 +107,11 @@ export function readViewUrl(search:string,atlas:Atlas,base:SceneState):SceneStat
  const legacyDepth=LEGACY_PEEL_LAYERS.slice(0,Math.round(number(q.get('peel'),0,7,0))).flat();
  const depth=atlas.scope!=='cell'&&q.has('dp')?number(q.get('dp'),0,1,0):undefined;
  const depthHidden=atlas.scope==='cell'?[]:(q.has('depth')?q.get('depth')!.split(','):depth!==undefined?completedDepthLayers(depth):legacyDepth).filter(id=>DEPTH_LAYERS.some(layer=>layer.id===id));
- return {...base,guestExtensions:q.get('bioExpand')?.split(',').filter(id=>/^HGNC:\d+$/.test(id)),guestView:q.get('bioView')?.slice(0,80)??undefined,guestQuery:q.get('bio')?.slice(0,200)??undefined,focus:number(q.get('focus'),0,1,0),selected,view:VIEWS.includes(view)?view:base.view,region:atlas.scope==='cell'?'all':REGIONS.includes(region as never)?region:'all',contextOpacity:number(q.get('context'),0,1,1),skinOpacity:number(q.get('skin'),0,1,base.skinOpacity??.1),peel:0,depth,depthHidden,hidden,isolate:q.get('isolate')==='1',explode:number(q.get('explode'),0,1,0),rotate:q.get('rotate')==='1',labels:q.get('labels')!=='0',visible,sections,activeSection,section:sections[activeSection],camera:cam&&validCamera(cam)?cam:undefined};
+ return {...base,dermatomeSelected:q.get('dermSelect')?.split(',').filter(id=>dermatomeTerritories.includes(id)),dermatomeHidden:q.get('dermHide')?.split(',').filter(id=>dermatomeTerritories.includes(id)),guestExtensions:q.get('bioExpand')?.split(',').filter(id=>/^HGNC:\d+$/.test(id)),guestView:q.get('bioView')?.slice(0,80)??undefined,guestQuery:q.get('bio')?.slice(0,200)??undefined,focus:number(q.get('focus'),0,1,0),selected,view:VIEWS.includes(view)?view:base.view,region:atlas.scope==='cell'?'all':REGIONS.includes(region as never)?region:'all',contextOpacity:number(q.get('context'),0,1,1),skinOpacity:number(q.get('skin'),0,1,base.skinOpacity??.1),peel:0,depth,depthHidden,hidden,isolate:q.get('isolate')==='1',explode:number(q.get('explode'),0,1,0),rotate:q.get('rotate')==='1',labels:q.get('labels')!=='0',visible,sections,activeSection,section:sections[activeSection],camera:cam&&validCamera(cam)?cam:!q.has('view')&&!q.has('focus')&&!selected.length?base.camera:undefined};
 }
 export function viewUrl(base:string,model:string,s:SceneState,camera?:number[],atlas?:Atlas){
  const delivery=viewParameters(base).get('delivery');
- const url=new URL(base);url.search='';url.hash='';const q=url.searchParams;q.set('model',model);if(s.view!=='three-quarter')q.set('view',s.view);if(s.guestView)q.set('bioView',s.guestView);if(s.guestExtensions?.length)q.set('bioExpand',s.guestExtensions.join(','));if(s.guestQuery)q.set('bio',s.guestQuery);
+ const url=new URL(base);url.search='';url.hash='';const q=url.searchParams;q.set('model',model);if(s.view!=='three-quarter')q.set('view',s.view);if(s.guestView)q.set('bioView',s.guestView);if(s.guestExtensions?.length)q.set('bioExpand',s.guestExtensions.join(','));if(s.guestQuery)q.set('bio',s.guestQuery);if(s.dermatomeHidden?.length)q.set('dermHide',s.dermatomeHidden.join(','));if(s.dermatomeSelected?.length)q.set('dermSelect',s.dermatomeSelected.join(','));
  if((model==='local-ta98'||model==='local-female-ta98')&&(delivery==='0'||delivery==='1'))q.set('delivery',delivery);
  const packedSelection=atlas&&s.selected.length?packPartIds(s.selected,atlas,false):undefined;
  const packedHidden=atlas&&s.hidden?.length?packPartIds(s.hidden,atlas,true):undefined;

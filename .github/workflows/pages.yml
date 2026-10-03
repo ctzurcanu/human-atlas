@@ -25,6 +25,11 @@ jobs:
         id: pages
       - run: npm ci
       - run: npm run check
+      - run: npm run test:explosion-viewport
+      - run: npm run test:camera-intent
+      - run: npm run test:explosion-plane
+      - run: npm run test:embryo-pages
+      - run: npm run test:model-download
       - run: npm run build
         env:
           VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}/

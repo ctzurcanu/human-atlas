@@ -31,6 +31,9 @@ const matches=(value:string,pattern:RegExp)=>pattern.test(value);
 export function isSkinPart(part:Part){
  if(part.system==='regions'||part.system==='cell-boundary')return true;
  if(part.system!=='integumentary')return false;
+ // Child surface coverings in the local embryo assembly; maternal catalogues
+ // retain their pregnancy classification and do not carry this Skin path.
+ if(part.groups?.[0]==='Skin'&&['HRA:VH_F_amnion','HRA:VH_F_umbilical_cord'].includes(part.id))return true;
  const name=structureName(part.name).toLowerCase();
  return (part.groups??[]).some(group=>/^9: regions of human body$/i.test(group))||/^body surface\b/.test(name)||/\b(skin|hairs?|eyebrow|eyelash|nail|nipple|areola|areolar tubercle|lip)\b/.test(name);
 }
@@ -42,6 +45,10 @@ export function depthLayerFor(part:Part):DepthLayerId{
 function classifyDepthLayer(part:Part):DepthLayerId{
  const name=structureName(part.name).toLowerCase();
  const groups=(part.groups??[]).join(' ').toLowerCase();
+ // CS23 cavity reference surfaces belong alongside the anterior organs in
+ // the embryo's peel order, rather than among connective-tissue ligaments.
+ if(part.id.startsWith('CS23:')&&part.groups?.includes('Coelom'))return 'anterior-organs';
+ if(part.id==='CS23:9226:130'&&part.name==='Gut surrounding mesenchyme and mesentery'&&part.groups?.includes('Mesenchymal mesenteric masses'))return 'visceral-coverings';
  switch(part.system){
   case 'regions':case 'cell-boundary':return 'skin';
   case 'integumentary':

@@ -1,4 +1,6 @@
 import {SYSTEMS,structureName,type Atlas,type Part,type SystemId} from './anatomy';
+import {taHierarchyForConcept} from './anatomical-terminology';
+import {anatomicalInnervationNames} from './anatomical-relations';
 import {createDepthOrder} from './depth-sort';
 
 export type GuestLink={hierarchy:string;id:string;name:string};
@@ -61,7 +63,32 @@ export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy,view=
  };
  if(hierarchy.schema==='human-atlas-hierarchy/v2'){
   const roots=hierarchy.views?.find(item=>item.id===view)?.roots??hierarchy.roots!;
-  const result=roots.map(id=>resolve(graph.get(id)!,id));views.set(view,result);return result;
+  const result=roots.map(id=>resolve(graph.get(id)!,id));
+  if(hierarchy.id==='dermatomes-myotomes'){
+   const makeNode=(id:string,name:string,parts:Part[],children:ResolvedGuestNode[]=[],description?:string):ResolvedGuestNode=>({id,name,parts,directParts:children.length?[]:parts,children,description});
+   const conceptNodes=(prefix:string,parts:Part[])=>{const grouped=new Map<string,Part[]>();for(const part of parts){const members=grouped.get(part.conceptId)??[];members.push(part);grouped.set(part.conceptId,members);}return [...grouped].map(([id,members])=>makeNode(`${prefix}:${id}`,structureName(concepts.get(id)?.name??members[0].name),members)).sort((a,b)=>a.name.localeCompare(b.name));};
+   // Full catalogue access is distinct from a claim that every tissue has a known root assignment.
+   const systems=SYSTEMS.flatMap(system=>{const parts=availableParts.filter(part=>part.system===system.id);return parts.length?[makeNode(`ANATOMY:${system.id}`,system.name,parts,conceptNodes(`ANATOMY:${system.id}`,parts))]:[];});
+   result.push(makeNode('ANATOMY','All anatomy · by system',availableParts,systems,'Every available modeled structure. System membership does not assert a spinal root or innervation.'));
+   const supply=new Map<string,Part[]>(),unresolved:Part[]=[];
+   for(const part of availableParts){const names=anatomicalInnervationNames(part);if(!names.length)unresolved.push(part);for(const name of names){const members=supply.get(name)??[];members.push(part);supply.set(name,members);}}
+   const nerves=[...supply].sort(([a],[b])=>a.localeCompare(b)).map(([name,parts])=>makeNode(`INNERVATION:${name}`,name,parts,conceptNodes(`INNERVATION:${name}`,parts),'Existing named innervation association. Several nerves may supply the same structure; no exclusive spinal level is inferred.'));
+   const categorized=[['CRANIAL','Cranial nerve supply',/vagus|vagal|trigeminal|facial|oculomotor|trochlear|abducens|glossopharyngeal|hypoglossal|accessory|optic|olfactory|vestibulocochlear/i],['AUTONOMIC','Autonomic plexus supply',/sympathetic|splanchnic|(?:celiac|coeliac|mesenteric|hypogastric|uterovaginal|prostatic|vesical|cardiac|pulmonary|enteric|gastric) plexus/i]] as const;
+   const used=new Set<string>(),groups:ResolvedGuestNode[]=[];
+   for(const [id,name,pattern] of categorized){const children=nerves.filter(node=>!used.has(node.id)&&pattern.test(node.name));children.forEach(node=>used.add(node.id));if(children.length)groups.push(makeNode(`INNERVATION:${id}`,name,[...new Map(children.flatMap(node=>node.parts).map(part=>[part.id,part])).values()],children));}
+   const peripheral=nerves.filter(node=>!used.has(node.id));if(peripheral.length)groups.push(makeNode('INNERVATION:PERIPHERAL','Peripheral nerve supply',[...new Map(peripheral.flatMap(node=>node.parts).map(part=>[part.id,part])).values()],peripheral));
+   if(unresolved.length)groups.push(makeNode('INNERVATION:UNRESOLVED','Innervation mapping not established',unresolved,conceptNodes('INNERVATION:UNRESOLVED',unresolved),'No curated supply mapping is recorded for these source structures. This includes terms without direct tissue innervation; no spinal root is fabricated.'));
+   result.push(makeNode('INNERVATION','Innervation · named nerves and unresolved anatomy',availableParts,groups));
+   const nerveParts=availableParts.filter(part=>part.system==='nervous'),nerveText=new Map(nerveParts.map(part=>[part.id,[part.name,...(part.groups??[]),...taHierarchyForConcept(part.conceptId).map(entry=>entry.name)].join(' ')]));
+   const cranialDefs:[string,string,RegExp][]=[['I','Olfactory',/olfactory nerve/i],['II','Optic',/optic nerve/i],['III','Oculomotor',/oculomotor nerve/i],['IV','Trochlear',/trochlear nerve/i],['V','Trigeminal',/trigeminal|ophthalmic nerve|mandibular nerve|maxillary nerve/i],['VI','Abducens',/abducens nerve/i],['VII','Facial',/facial nerve|chorda tympani/i],['VIII','Vestibulocochlear',/vestibulocochlear|cochlear nerve|vestibular nerve/i],['IX','Glossopharyngeal',/glossopharyngeal/i],['X','Vagus',/vagus|vagal|laryngeal nerve|laryngeal branch/i],['XI','Accessory',/accessory nerve/i],['XII','Hypoglossal',/hypoglossal nerve/i]];
+   const cranialChildren=cranialDefs.map(([roman,name,pattern])=>{const anatomy=nerveParts.filter(part=>pattern.test(nerveText.get(part.id)!)),targets=nerves.filter(node=>pattern.test(node.name)),children=[...conceptNodes(`CRANIAL:${roman}:ANATOMY`,anatomy),...targets],members=[...new Map(children.flatMap(child=>child.parts).map(part=>[part.id,part])).values()];return makeNode(`CRANIAL:${roman}`,`${roman} · ${name} nerve`,members,children,'Named cranial nerve anatomy and existing supply relationships. Missing modeled branches remain absent; root-specific spinal innervation is not inferred.');});
+   result.push(makeNode('CRANIAL','Cranial nerves',[...new Map(cranialChildren.flatMap(child=>child.parts).map(part=>[part.id,part])).values()],cranialChildren));
+   const autonomousDefs:[string,string,RegExp][]=[['PARASYMPATHETIC','Parasympathetic pathways',/parasympathetic|pelvic splanchnic|vagus|vagal|oculomotor nerve|facial nerve|glossopharyngeal nerve|ciliary ganglion|pterygopalatine ganglion|submandibular ganglion|otic ganglion/i],['SYMPATHETIC','Sympathetic pathways',/\bsympathetic|(?:greater|lesser|least|thoracic|lumbar) splanchnic|sympathetic trunk|rami communicantes/i],['ENTERIC','Enteric pathways',/enteric|myenteric|submucosal (?:nerve )?plexus/i],['MIXED','Mixed autonomic plexuses',/(?:celiac|coeliac|mesenteric|hypogastric|uterovaginal|prostatic|vesical|cardiac|pulmonary|gastric|renal) (?:nerve |nervous )?plexus|hypogastric nerve|cavernous nerve/i]];
+   const autonomousChildren=autonomousDefs.map(([id,name,pattern])=>{const anatomy=nerveParts.filter(part=>pattern.test(nerveText.get(part.id)!)),targets=nerves.filter(node=>pattern.test(node.name)),children=[...conceptNodes(`AUTONOMIC:${id}:ANATOMY`,anatomy),...targets],members=[...new Map(children.flatMap(child=>child.parts).map(part=>[part.id,part])).values()];return makeNode(`AUTONOMIC:${id}`,name,members,children,'Whole named source nerves and curated supply links. Mixed nerves can contain sensory and somatic fibers as well as autonomic fibers; this view does not isolate their autonomic fascicles.');});
+   result.push(makeNode('AUTONOMIC','Autonomic nervous system',[...new Map(autonomousChildren.flatMap(child=>child.parts).map(part=>[part.id,part])).values()],autonomousChildren));
+
+  }
+  views.set(view,result);return result;
  }
  const mapped=hierarchy.nodes.flatMap((node,index)=>node.unmapped?[]:[resolve(node,String(index))]);
  const assigned=new Set(mapped.flatMap(node=>node.parts.map(part=>part.id)));

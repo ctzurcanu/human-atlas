@@ -303,9 +303,16 @@ output = ROOT / 'app/data/ta98-metadata.json'
 output.parent.mkdir(parents=True, exist_ok=True)
 parent_codes = {code for path in concept_paths.values() for code in path}
 code_records = {code: {'name': terms[code]['name_en'], **record(terms[code])} for code in sorted(terms)}
-output.write_text(json.dumps({'source': SOURCE, 'byConcept':concepts,
+value={'source': SOURCE, 'byConcept':concepts,
                               'byConceptPath':concept_paths, 'byCode':code_records,
                               'byConceptMatch':concept_matches,
-                              'byGroup':group_records}, separators=(',',':'), ensure_ascii=False) + '\n')
+                              'byGroup':group_records}
+eye_source=ROOT/'.local-models/ta98-female.json'
+if eye_source.exists():
+ import importlib.util
+ eye_spec=importlib.util.spec_from_file_location('eye_identity_correction',ROOT/'scripts/stage-ta98-female-eye-identities.py')
+ eye_module=importlib.util.module_from_spec(eye_spec);eye_spec.loader.exec_module(eye_module)
+ value=eye_module.corrected_metadata(value,json.loads(eye_source.read_text()),ancestors[eye_module.WHOLE]+[eye_module.WHOLE])
+output.write_text(json.dumps(value, separators=(',',':'), ensure_ascii=False) + '\n')
 matched = sum(bool(value['ta98']) for value in concepts.values())
 print(f'{output}: {matched} atlas concepts matched to a unique TA98 term; {len(concepts)} records include a TA98, FMA, or source ontology identifier')

@@ -43,6 +43,16 @@ export function frameDistance(bounds:Box3,direction:Vector3,up:Vector3,aspect:nu
  const [x,y]=screenAnchor(area,preferredAnchor(area)),availableHeight=Math.max(.02,2*Math.min(y-area.top,area.bottom-y)),availableWidth=Math.max(.02,2*Math.min(x-area.left,area.right-x));
  return Math.max(extent(vertical)/(2*tan*availableHeight),extent(right)/(2*tan*Math.max(.001,aspect)*availableWidth))+extent(direction)/2;
 }
+/** Center an explicitly imploding assembly without changing its viewing angle. */
+export function centerBoundsInView(camera:PerspectiveCamera,target:Vector3,bounds:Box3,area:ViewArea){
+ if(bounds.isEmpty())return;
+ const center=bounds.getCenter(new Vector3()),shift=center.clone().sub(target);
+ camera.position.add(shift);target.copy(center);
+ const x=(area.left+area.right)/2,y=(area.top+area.bottom)/2;
+ camera.setViewOffset(camera.aspect,1,(.5-x)*camera.aspect,.5-y,camera.aspect,1);
+ camera.updateMatrixWorld(true);
+}
+
 /** Pull back only as far as needed; retain the current orientation and pan. */
 export function zoomOutToFit(camera:PerspectiveCamera,bounds:Box3,area:ViewArea){
  if(bounds.isEmpty())return false;

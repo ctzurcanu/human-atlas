@@ -12,9 +12,9 @@ export function hierarchyChoice(id:string,name:string,parts:Part[],children:Hier
 }
 
 export function anatomyNodeChoice(node:AnatomyNode,key:string):HierarchyChoice {
- if(node.kind==='entry')return {id:node.entry.id,name:node.name,elements:node.parts.map(part=>part.id),terminology:node.entry.terminology};
+ if(node.kind==='entry')return {id:node.entry.id,name:node.name,elements:node.parts.map(part=>part.id),terminology:node.entry.terminology,ta98Term:node.entry.ta98Term,ta98Kind:node.entry.ta98Kind};
  const children=node.kind==='group'
   ?node.nodes.map((child,index)=>anatomyNodeChoice(child,`${key}:${index}:${child.id}`))
-  :node.entries.map(entry=>({id:entry.id,name:entry.name,elements:entry.parts.map(part=>part.id),terminology:entry.terminology}));
+  :node.entries.map(entry=>({id:entry.id,name:entry.name,elements:entry.parts.map(part=>part.id),terminology:entry.terminology,ta98Term:entry.ta98Term,ta98Kind:entry.ta98Kind}));
  return hierarchyChoice(key,node.name,node.parts,children,node.terminology);
 }

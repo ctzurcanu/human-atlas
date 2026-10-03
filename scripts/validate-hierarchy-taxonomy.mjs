@@ -8,9 +8,31 @@ const {MAJOR_SYSTEMS,REGION_ORDER,SKIN_DETAIL_NAMES,buildAnatomyNodes,depthPathF
 const {DEPTH_LAYERS,depthLayerFor,isSkinPart}=await load('depth-layers.js');
 const {SYSTEMS}=await load('anatomy.js');
 const {anatomyNodeChoice}=await load('hierarchy-choice.js');
-const {atlasIdentifier,terminologyTitle}=await load('anatomical-terminology.js');
+const {atlasIdentifier,terminologyTitle,terminologyForConcept,taHierarchyForConcept}=await load('anatomical-terminology.js');
 const {hierarchyNavigation,hierarchyAncestors}=await load('hierarchy-navigation.js');
 const ta98=JSON.parse(readFileSync('app/data/ta98-metadata.json','utf8'));
+assert.equal(ta98.byConcept['LOCAL:female:cervix'].ta98,'A09.1.03.010','Pelvic cervix must not inherit dental-neck identity');
+assert(ta98.byConceptPath['LOCAL:female:cervix'].includes('A09.1.03.001'),'Cervix must descend from uterus');
+assert(!ta98.byConceptPath['LOCAL:female:cervix'].some(code=>code.startsWith('A05.')),'Pelvic cervix must not appear in digestive hierarchy');
+for(const file of ['.local-models/female.json','.local-models/ta98-female-runtime.json']){
+ if(!existsSync(file))continue;
+ const atlas=JSON.parse(readFileSync(file,'utf8'));
+ const cervix=hierarchyEntries(atlas).find(entry=>entry.id==='LOCAL:female:cervix');
+ assert(cervix,`${file}: native cervix must be a selectable leaf`);
+ assert.equal(majorSystemFor(cervix),'reproductive');
+ assert.equal(systemPathFor(cervix)[0],'Female genital system');
+ assert.equal(cervix.terminology.ta98,'A09.1.03.010');
+}
+
+// Palatine tonsil is cross-listed by TA98: oral identity, lymphoid system.
+for(const file of ['.local-models/ta98-runtime.json','.local-models/ta98-female-runtime.json']){
+ if(!existsSync(file))continue;
+ const atlas=JSON.parse(readFileSync(file,'utf8'));
+ const tonsils=hierarchyEntries(atlas).filter(entry=>entry.terminology.ta98==='A05.2.01.011');
+ assert(tonsils.length>=2,`${file}: bilateral palatine tonsils must remain selectable`);
+ for(const entry of tonsils){assert.equal(majorSystemFor(entry),'lymphatic');assert.equal(systemPathFor(entry)[0],'Lymphatic organs and vessels');}
+}
+
 assert.deepEqual(MAJOR_SYSTEMS.map(system=>system.name),[
  'Respiratory system','Digestive system','Circulatory system','Urinary system',
  'Integumentary system','Skeletal system','Muscular system','Endocrine system',
@@ -139,6 +161,7 @@ const catalogues=[
  ['cell','public/models/atlas-cell.json'],['local-male','.local-models/male.json'],
  ['local-female','.local-models/female.json'],['local-reference','.local-models/reference.json'],
  ['legacy-z-anatomy','public/models/atlas-z-anatomy.json'],
+ ['local-ta98','.local-models/ta98-runtime.json'],['local-female-ta98','.local-models/ta98-female-runtime.json'],
 ];
 const loaded=new Map();
 for(const [name,file] of catalogues)if(existsSync(file)){
@@ -178,4 +201,46 @@ if(loaded.has('male-detail')&&loaded.has('local-reference')){
   assert.deepEqual(regionPathFor(entry),regionPathFor(peer),`${entry.name}: region path differs between models`);
  }
  assert(common>=250,`Only ${common} named skin structures share the canonical model paths`);
+}
+
+// Catalogue identity must override a contradictory global/source-name mapping.
+const override={parts:[{id:'override-cervix',conceptId:'LOCAL:female:cervix',name:'Cervix',system:'reproductive',bounds:[[0,.9,0],[.02,.94,.02]]}],concepts:[{id:'LOCAL:female:cervix',name:'Cervix',elements:['override-cervix'],ta98Term:'A05.5.01.007',ta98Kind:'exact'}]};
+const explicitEntry=hierarchyEntries(override)[0];
+assert.equal(explicitEntry.terminology.ta98,'A05.5.01.007');
+assert.equal(majorSystemFor(explicitEntry),'digestive');
+assert(explicitEntry.ancestry.includes('Stomach'));
+assert(!explicitEntry.ancestry.includes('Uterus'));
+assert.equal(terminologyForConcept('LOCAL:female:cervix','A99.9.99.999','exact').ta98,null,'Unknown explicit identity must not resurrect shared fallback');
+assert.deepEqual(taHierarchyForConcept('LOCAL:female:cervix','A99.9.99.999','exact'),[]);
+assert.equal(terminologyForConcept('LOCAL:female:cervix','A05.5.01.007','parent').ta98,null,'Broader placement must not become an exact leaf badge');
+assert(taHierarchyForConcept('LOCAL:female:cervix','A05.5.01.007','parent').some(parent=>parent.terminology.ta98==='A05.5.01.007'));
+for(const name of ['local-ta98','local-female-ta98'])if(loaded.has(name)){
+ const atlas=loaded.get(name),byId=new Map(atlas.concepts.map(c=>[c.id,c]));
+ for(const entry of hierarchyEntries(atlas)){
+  const source=byId.get(entry.id);
+  if(!source?.ta98Term)continue;
+  assert.equal(entry.ta98Term,source.ta98Term);
+  if(source.ta98Kind==='parent')assert.equal(entry.terminology.ta98,null,`${name} ${entry.id}: placement identity falsely exact`);
+  else assert.equal(entry.terminology.ta98,ta98.byCode[source.ta98Term]?.ta98??null,`${name} ${entry.id}: catalogue identity lost`);
+  if(['A05.5.01.007','A05.5.01.009','A05.5.01.012','A05.5.01.014'].includes(source.ta98Term)){
+   assert(entry.ancestry.includes('Stomach'),`${name} ${entry.id}: missing whole stomach ancestry`);
+   assert.equal(majorSystemFor(entry),'digestive');
+  }
+ }
+}
+console.log('Explicit model identities, parent-placement guards and stomach ancestry verified for both runtime models.');
+
+assert.equal(terminologyForConcept('HRA:VH_F_areola_R',ta98.byConceptMatch['HRA:VH_F_areola_R'].term,'exact').fma,'FMA:223677','Agreeing catalogue identities must preserve side-specific source FMA IDs');
+assert.equal(terminologyForConcept('HRA:VH_F_aortic_arch','A12.2.04.001','exact').ontology,'UBERON:0001508','Agreeing source ontology must survive explicit catalogue identity');
+
+// CS23 Coelom is an embryo cavity reference group, not a deep ligament.
+if(existsSync('.local-models/embryo-cs23/atlas.json')){
+ const embryo=JSON.parse(readFileSync('.local-models/embryo-cs23/atlas.json'));
+ const cavities=hierarchyEntries(embryo).filter(e=>e.parts.some(p=>p.groups?.includes('Coelom')));
+ assert.equal(cavities.length,3);
+ for(const entry of cavities){
+  assert.equal(depthLayerFor(entry.parts[0]),'anterior-organs');
+  assert.deepEqual(depthPathFor(entry,'Anterior organs').slice(0,2),['Coelom','Torso & pelvis']);
+ }
+ console.log('CS23 Coelom: Anterior organs → Coelom → Torso & pelvis; all three cavities verified.');
 }

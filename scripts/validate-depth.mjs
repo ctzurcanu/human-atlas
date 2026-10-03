@@ -33,6 +33,25 @@ const base={selected:[],visible:['integumentary','muscular','skeletal'],skinOpac
 const skin=atlas.parts.find(part=>depthLayerFor(part)==='skin');
 const muscle=find('muscular','trapezius muscle');
 assert.equal(partVisible(muscle,base),false,'Opaque skin conceals internal anatomy');
+for(const file of ['.local-models/embryo-cs23/atlas.json','public/models/atlas-hra-female.json','public/models/atlas-male-complete.json']){
+ const body=JSON.parse(readFileSync(file));
+ const skins=body.parts.filter(part=>/\bskin\b|^body surface\b/i.test(part.name)&&part.system==='integumentary');const outer=skins[0];
+ assert.ok(outer,`Missing body skin in ${file}`);
+ const internal=body.parts.find(part=>!part.suppressed&&part.system==='skeletal');assert.ok(internal);
+ const intact={...base,visible:[...new Set(body.parts.map(part=>part.system))]};
+ assert.equal(partVisible(internal,intact,body.parts),false,'Displayed opaque body skin conceals internal context');
+ const hiddenSkin={...intact,hidden:skins.map(part=>part.id)};
+ assert.equal(partVisible(outer,hiddenSkin,body.parts),false,'Individual Skin checkbox hides skin');
+ assert.equal(partVisible(internal,hiddenSkin,body.parts),true,`Hiding only body skin reveals anatomy in ${file}`);
+ const onlySkinSystem={...hiddenSkin,visible:['integumentary']};
+ assert.equal(partVisible(internal,onlySkinSystem,body.parts),false,'Skin hiding does not override system checkboxes');
+ assert.equal(partVisible(internal,{...hiddenSkin,hidden:[...skins.map(part=>part.id),internal.id]},body.parts),false,'Explicitly hidden anatomy stays hidden');
+ assert.equal(partVisible(internal,{...intact,skinOpacity:0},body.parts),true,'Zero skin opacity reveals anatomy');
+}
+const embryoReference=JSON.parse(readFileSync('public/models/atlas-embryo.json'));
+const embryoSurfaceState={...base,visible:['integumentary','pregnancy']};
+for(const part of embryoReference.parts){assert.equal(partVisible(part,embryoSurfaceState),true,`Embryonic skin must not conceal external ${part.name}`);assert.equal(partVisible(part,{...embryoSurfaceState,visible:['integumentary']}),false,'Placental checkbox still hides external reference');assert.equal(partVisible(part,{...embryoSurfaceState,hidden:[part.id]}),false,'Individual reference checkbox still hides its mesh');}
+
 const peeled={...base,depthHidden:['skin','superficial-muscles']};
 assert.equal(partVisible(muscle,peeled),false,'Hidden muscle layer is removed');
 assert.equal(partVisible(find('skeletal','femur'),peeled),true,'Removing skin reveals deeper layers');

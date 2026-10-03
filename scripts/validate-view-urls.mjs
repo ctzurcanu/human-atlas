@@ -3,7 +3,7 @@ import {build} from 'esbuild';
 import {gzipSync,strToU8} from 'fflate';
 import {readFileSync} from 'node:fs';
 
-const bundle=await build({entryPoints:['app/view-url.ts','app/viewer-state.ts','app/embed.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/view-url-validation'});
+const bundle=await build({entryPoints:['app/view-url.ts','app/viewer-state.ts','app/embed.ts','app/model-defaults.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/view-url-validation'});
 const load=async file=>import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles.find(output=>output.path.endsWith(file)).text).toString('base64')}`);
 const {compactViewUrl,viewParameters}=await load('view-url.js');
 const {viewUrl,readViewUrl}=await load('viewer-state.js');
@@ -88,3 +88,17 @@ assert.deepEqual(readViewUrl(oldHidden,subdivided,{}).hidden,children);
 assert.deepEqual(readViewUrl(base+'?select='+encodeURIComponent(source.id),subdivided,{}).selected,children);
 const malformed=new URL(compact);malformed.searchParams.set('h','0-zzzz');assert.deepEqual(readViewUrl(malformed.href,anatomy,{}).hidden,[]);
 console.log(`Large views, legacy links, overrides and packed anatomical IDs verified (${oldUrl.length} to ${compact.length} characters).`);
+
+// The requested embryo starting view survives bare model URLs, while explicit
+// saved frames, view presets and focused structures keep their own framing.
+const {defaultModelCamera}=await load('model-defaults.js');
+const embryoBase={...state,selected:[],camera:defaultModelCamera('embryo')};
+const embryoDefault=readViewUrl('?model=embryo',atlas,embryoBase);
+assert.deepEqual(embryoDefault.camera,defaultModelCamera('embryo'));
+assert.deepEqual(readViewUrl('?model=embryo&frame='+camera.join(','),atlas,embryoBase).camera,camera);
+assert.equal(readViewUrl('?model=embryo&view=front',atlas,embryoBase).camera,undefined);
+assert.equal(readViewUrl('?model=embryo&focus=1',atlas,embryoBase).camera,undefined);
+assert.equal(defaultModelCamera('local-female-ta98'),undefined);
+const resetFrame=defaultModelCamera('embryo');resetFrame[0]=0;
+assert.equal(defaultModelCamera('embryo')[0],.944333,'Each Reset receives a fresh camera array');
+console.log('User embryo default frame, saved-frame precedence and view/focus presets passed.');

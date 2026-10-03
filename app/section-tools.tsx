@@ -3,13 +3,13 @@ import {Plus,X} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {type Atlas,type SceneState} from './anatomy';
 import {sectionSetBounds} from './section-set';
-import {sectionAngles,sectionFraction,sectionPoint,type SectionAxis,type SectionState} from './section-plane';
+import {sectionAngles,sectionFraction,sectionPoint,type SectionAxis,type SectionState,type Bounds3} from './section-plane';
 import {sectionStack} from './section-stack';
 
-type Props={atlas:Atlas;state:SceneState;setState:(update:(state:SceneState)=>SceneState)=>void;close:()=>void};
-export default function SectionTools({atlas,state,setState,close}:Props){
+type Props={referenceBounds?:Bounds3;showPreview?:boolean;atlas:Atlas;state:SceneState;setState:(update:(state:SceneState)=>SceneState)=>void;close:()=>void};
+export default function SectionTools({atlas,state,setState,close,referenceBounds,showPreview=true}:Props){
  const sections=sectionStack(state),active=Math.min(state.activeSection??0,sections.length-1),section=sections[active];
- const bounds=useMemo(()=>sectionSetBounds(atlas,state),[atlas,state]);
+ const atlasBounds=useMemo(()=>sectionSetBounds(atlas,state),[atlas,state]),bounds=referenceBounds??atlasBounds;
  const angles=sectionAngles(section);
  const setStack=(next:SectionState[],index:number)=>setState(current=>({...current,sections:next,activeSection:index,section:next[index],camera:undefined}));
  const update=(change:Partial<SectionState>)=>setState(current=>{
@@ -31,7 +31,7 @@ export default function SectionTools({atlas,state,setState,close}:Props){
  const positionLabel=section.axis==='axial'?['Superior','Inferior']:section.axis==='sagittal'?['Right','Left']:section.axis==='coronal'?['Anterior','Posterior']:['Start','End'];
  return <section className="section-panel glass" aria-label="Sections">
   <div className="panel-heading"><strong>Sections</strong><Button variant="ghost" className="icon-button" onClick={close} aria-label="Close sections"><X size={17}/></Button></div>
-  <div className="section-preview"><canvas aria-label="3D model with section planes"/></div>
+  {showPreview&&<div className="section-preview"><canvas aria-label="3D model with section planes"/></div>}
   <div className="section-tabs" role="tablist" aria-label="Sections">
    {sections.map((item,index)=><button type="button" role="tab" id={'section-tab-'+index} aria-controls="section-settings" aria-selected={active===index} className={active===index?'active':''} key={index} onClick={()=>setStack(sections,index)}>Section {index+1}{item.enabled?'':' · closed'}</button>)}
    {sections.length<2&&<button type="button" className="section-add icon-button" aria-label="Add second section" title="Add second section" onClick={add}><Plus size={16}/></button>}

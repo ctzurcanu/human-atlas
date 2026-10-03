@@ -10,7 +10,7 @@ import {anatomicalRelations,anatomicalConceptFunctionalRelations,type RelationKi
 import {atlasIdentifier,identifierReference,terminologyForConcept,type IdentifierKind} from './anatomical-terminology';
 import type {HierarchyChoice} from './hierarchy-choice';
 import {ta98PartOfChoice} from './hierarchy-navigation';
-import {anatomicalComponentIds,hasExpandableAnatomicalRelations} from './anatomical-components';
+import {anatomicalComponentRelations,anatomicalComponentIds,hasExpandableAnatomicalRelations,storedAssemblyParent} from './anatomical-components';
 import {ta98ModeledParent} from './ta98-modeled-parent';
 import {displayLaterality,lateralityClass} from './laterality';
 import {localDescription,wikipediaDescription,type StructureDescription} from './structure-description';
@@ -49,7 +49,7 @@ const wikipediaStructure=(name:string)=>{
  return wikipediaSearch(term);
 };
 const sliderValue=(value:number|readonly number[])=>typeof value==='number'?value:value[0];
-const relationLabels:Record<RelationKind,string>={before:'Before',after:'After',innervation:'Innervated by',arterial:'Arterial supply',venous:'Venous drainage',innervates:'Innervates',supplies:'Supplies',drains:'Drains',articulates:'Articulates with',connects:'Connects',connectedBy:'Ligaments / tendons',joint:'At this joint',continuous:'Continuous with',covers:'Covers',coveredBy:'Covered by',cartilages:'Cartilages',bones:'Bones',tendons:'Tendons',fascia:'Fascia',muscles:'Muscles',origin:'Origin on',insertion:'Inserts on',partOf:'Part of',contains:'Contains',originFor:'Origin marker for',insertionFor:'Insertion marker for',originSites:'Origin markers',insertionSites:'Insertion markers',counterpart:'Opposite side'};
+const relationLabels:Record<RelationKind,string>={before:'Before',after:'After',innervation:'Innervated by',arterial:'Arterial supply',venous:'Venous drainage',innervates:'Innervates',supplies:'Supplies',drains:'Drains',articulates:'Articulates with',connects:'Connects',connectedBy:'Ligaments / tendons',joint:'At this joint',continuous:'Continuous with',covers:'Covers',coveredBy:'Covered by',cartilages:'Cartilages',bones:'Bones',tendons:'Tendons',fascia:'Fascia',muscles:'Muscles',origin:'Origin on',insertion:'Inserts on',partOf:'Part of',contains:'Contains',originFor:'Origin marker for',insertionFor:'Insertion marker for',originSites:'Origin markers',insertionSites:'Insertion markers',counterpart:'Opposite side',adjacent:'Adjacent structures',lymphaticDrainage:'Lymph drains into',lymphaticTributaries:'Receives lymph from'};
 const relationName=(part:Part)=>`${structureName(part.name)}${surfaceRole(part.name)?` · ${surfaceRole(part.name)}`:''}`;
 const relationCache=new WeakMap<Map<string,Part>,Map<string,ResolvedRelation[]>>();
 function IdentifierPill({kind,value,href,language}:{kind:IdentifierKind;value:string;href:string;language?:string}){
@@ -59,42 +59,47 @@ function IdentifierPill({kind,value,href,language}:{kind:IdentifierKind;value:st
 export default function SelectionInspector({titleRef,choice,ancestors,selectedParts,anchorParts,relationshipDepth,relationshipExhausted,partById,concepts,scope,state,viewUrl,covering,depth,onDepth,onCenter,onIsolate,onExpandRelationships,onShowComponents,onHide,onHidePart,onChoosePart,onChooseChild}:Props){
  const title=structureName(choice.name);
  const group=!!choice.children;
+ const selectionSet=choice.id==='selection-set';
  const hasGeometry=selectedParts.length>0;
  const titleSide=displayLaterality(title).side;
  const cell=scope==='cell';
  const inspectedParts=anchorParts?.length?anchorParts:selectedParts;
  const inspectedKey=inspectedParts.map(part=>part.id).join('|');
  const relationKey=`${choice.id}|${choice.name}|${!!anchorParts?.length}|${inspectedKey}`;
- const coverageLimitation=choice.coverageLimitation??[...new Set(inspectedParts.map(part=>part.coverageLimitation).filter(Boolean))].join(' ');
+
  const allParts=useMemo(()=>[...partById.values()],[partById]);
  const selected=inspectedParts[0],systems=[...new Set(inspectedParts.map(part=>part.system))].map(id=>SYSTEMS.find(item=>item.id===id)).filter(item=>!!item),system=systems[0];
- const choiceTerm=terminologyForConcept(choice.id,choice.ta98Term);
- const terminology=choice.terminology??(choiceTerm.ta98||choiceTerm.fma||choiceTerm.ontology||choice.elements.length!==1?choiceTerm:terminologyForConcept(selected?.conceptId??choice.id));
+ const conceptById=useMemo(()=>new Map(concepts.map(concept=>[concept.id,concept])),[concepts]);
+ const coverageLimitation=choice.coverageLimitation??[...new Set(inspectedParts.map(part=>part.coverageLimitation??conceptById.get(part.conceptId)?.coverageLimitation).filter(Boolean))].join(' ');
+ const identity=choice.children?choice:conceptById.get(choice.id)??choice;
+ const choiceTerm=terminologyForConcept(identity.id,identity.ta98Term,identity.ta98Kind);
+ const terminology=identity.ta98Kind==='parent'?choiceTerm:choice.terminology??(choiceTerm.ta98||choiceTerm.fma||choiceTerm.ontology||choice.elements.length!==1?choiceTerm:terminologyForConcept(selected?.conceptId??choice.id));
  const atlasId=atlasIdentifier(choice.id);
  const localIdentifier=atlasId?{kind:atlasId.slice(0,atlasId.indexOf(':')) as 'Atlas'|'HA-G',value:atlasId.slice(atlasId.indexOf(':')+1)}:null;
  const tags=group?[]:[...new Set(inspectedParts.flatMap(part=>[part.tissue,surfaceRole(part.name),...(part.regions??[])]).filter((tag):tag is string=>!!tag))];
  const path=ancestors.map(parent=>({label:parent.name,search:parent.name}));
- const partOfChoice=ta98PartOfChoice(choice,ancestors)??ta98ModeledParent(choice,concepts,partById);
+ const partOfChoice=storedAssemblyParent(choice,concepts,partById)??ta98PartOfChoice(choice,ancestors)??ta98ModeledParent(choice,concepts,partById);
  const next=partById.get(covering[depth]),previous=partById.get(covering[depth-1]);
  const reference=(kind:IdentifierKind)=>identifierReference(kind,terminology,viewUrl);
  const [remote,setRemote]=useState<{title:string;value:StructureDescription}|null>(null);
  const lastControlToggle=useRef<{id:string;at:number}|null>(null);
  const controlChoose=(id:string)=>{const now=performance.now(),last=lastControlToggle.current;if(last?.id===id&&now-last.at<150)return;lastControlToggle.current={id,at:now};onChoosePart(id,true);};
  useEffect(()=>{
-  if(group)return;
+  if(group||selectionSet||selected?.description)return;
   let active=true;
   wikipediaDescription(title).then(value=>{if(active&&value)setRemote({title,value});});
   return()=>{active=false;};
- },[title,group]);
- const local=group?null:localDescription(title,selected,path);
- const resolved=remote?.title===title?remote.value:local;
- const description=!hasGeometry?'No selectable mesh in this model.':group?`${selectedParts.length.toLocaleString()} modeled ${selectedParts.length===1?'piece':'pieces'} in this group.`:selected?resolved?.text??'':'';
+ },[title,group,selectionSet,selected?.description]);
+ const local=group||selectionSet?null:localDescription(title,selected,path);
+ const resolved=selected?.description?local:remote?.title===title?remote.value:local;
+ const colorTerritory=import.meta.env.DEV&&/^guest:dermatomes-myotomes:(?:DERMATOME(?::|-SELECTION$)|TRIGEMINAL:)/.test(choice.id);
+ const description=colorTerritory?choice.id.includes(':C1:')?'C1 has no cutaneous dermatome.':choice.id.includes(':Co1:')?'No separate Co1 color territory is present in the source map.':'Approximate sensory territory, highlighted on the surface reference.':!hasGeometry?'No selectable mesh in this model.':selectionSet?`${inspectedParts.length.toLocaleString()} selected anatomy pieces. Choose an included structure to inspect its description.`:group?`${selectedParts.length.toLocaleString()} modeled ${selectedParts.length===1?'piece':'pieces'} in this group.`:selected?resolved?.text??'':'';
  const [relationState,setRelationState]=useState<{key:string;model:Map<string,Part>;items:ResolvedRelation[]}|null>(null);
  useEffect(()=>{
   // Mapped child choices establish Contains links without expanding every
   // leaf of a large hierarchy group. Otherwise resolve the available organ
   // links, including single-mesh organs selected through a TA98 group node.
-  if(group&&anatomicalComponentIds(choice,[],partById).length)return;
+  if(group&&anatomicalComponentIds(choice,[],partById,concepts).length)return;
   let cancelled=false,timer:ReturnType<typeof setTimeout>|undefined;
   // Give the sheet a paint before building the relationship graph. The first
   // skeletal selection can otherwise hold up the entire details panel.
@@ -111,11 +116,12 @@ export default function SelectionInspector({titleRef,choice,ancestors,selectedPa
    if(!cancelled)setRelationState({key:relationKey,model:partById,items});
   },0);});
   return()=>{cancelled=true;cancelAnimationFrame(frame);if(timer)clearTimeout(timer);};
- },[relationKey,partById,allParts,group]);
- const relations=relationState?.key===relationKey&&relationState.model===partById?relationState.items:[];
- const componentIds=anatomicalComponentIds(choice,relations,partById);
+ },[relationKey,partById,allParts,group,concepts]);
+ const rawRelations=relationState?.key===relationKey&&relationState.model===partById?relationState.items:[];
+ const relations=anatomicalComponentRelations(choice,rawRelations,partById,concepts);
+ const componentIds=anatomicalComponentIds(choice,relations,partById,concepts);
  const relationsPending=!!inspectedParts.length&&!componentIds.length&&(relationState?.key!==relationKey||relationState?.model!==partById);
- const relatedDisabled=relationshipExhausted||relationsPending||(!componentIds.length&&!hasExpandableAnatomicalRelations(relations,partById));
+ const relatedDisabled=relationshipExhausted||relationsPending||!hasExpandableAnatomicalRelations(relations,partById);
  const relationKinds=(Object.keys(relationLabels) as RelationKind[]).filter(kind=>relations.some(relation=>relation.kind===kind));
  const relationGroups=relationKinds.map(kind=>({kind,items:relations.filter(relation=>relation.kind===kind)}));
  const initialRelationGroup=useMemo(()=>relationKinds[0]?[relationKinds[0]]:[],[relationKinds[0]]);
@@ -123,7 +129,7 @@ export default function SelectionInspector({titleRef,choice,ancestors,selectedPa
  return <>
   <div className="detail-header">
    <div className="detail-accent" style={{background:system?.color}}/>
-   <div className="structure-title-row"><SheetTitle ref={titleRef} tabIndex={-1} className={`structure-title ${lateralityClass(titleSide)}`}>{group?title:<a className="structure-title-link" href={wikipediaStructure(title)} target="_blank" rel="noopener noreferrer" title={`Read about ${title} on Wikipedia`}>{title}</a>}</SheetTitle></div>
+   <div className="structure-title-row"><SheetTitle ref={titleRef} tabIndex={-1} className={`structure-title ${lateralityClass(titleSide)}`}>{group||selectionSet?title:<a className="structure-title-link" href={wikipediaStructure(title)} target="_blank" rel="noopener noreferrer" title={`Read about ${title} on Wikipedia`}>{title}</a>}</SheetTitle></div>
   </div>
   <div className="detail-scroll" key={choice.id}>
    {!!ancestors.length&&<nav className="structure-breadcrumbs" aria-label="Anatomical path">{ancestors.map((parent,index)=>{const display=displayLaterality(parent.name);return <span className="breadcrumb-step" key={`${index}:${parent.id}`}>{index>0&&<span className="breadcrumb-separator" aria-hidden="true">›</span>}<button type="button" className={lateralityClass(display.side)} onClick={()=>onChooseChild(parent)} aria-label={`Select ${parent.name}`} title={`Open ${parent.name}`}>{display.label}</button></span>;})}</nav>}
@@ -139,11 +145,11 @@ export default function SelectionInspector({titleRef,choice,ancestors,selectedPa
     </Accordion>
    </section>}
    {group&&!!choice.children?.length&&<section className="anatomical-relations" aria-label="Anatomical relationships">
-    <h3>Related structures <span className="anatomical-relations-count">{choice.children.length}</span></h3>
+    <h3>{colorTerritory?'Selected territories':'Related structures'} <span className="anatomical-relations-count">{choice.children.length}</span></h3>
     <Accordion key={choice.id} multiple defaultValue={['contains']} className="anatomical-relation-accordion">
      <AccordionItem value="contains" className="anatomical-relation-row">
-      <AccordionTrigger className="anatomical-relation-trigger"><span>Contains</span><span className="anatomical-relation-count">{choice.children.length}</span></AccordionTrigger>
-      <AccordionContent className="anatomical-relation-panel"><div className="anatomical-relation-links">{choice.children.map(child=>{const display=displayLaterality(child.name);return <span className="anatomical-relation-item" key={child.id}><button type="button" className={lateralityClass(display.side)} onClick={event=>onChooseChild(child,event.ctrlKey||event.metaKey)} aria-label={`Select ${child.name}`} title={`Select ${child.name}; Control-click to add or remove`}>{display.label}</button><small>{child.elements.length?`${child.elements.length.toLocaleString()} ${child.elements.length===1?'piece':'pieces'}`:'No mesh'}</small></span>;})}</div></AccordionContent>
+      <AccordionTrigger className="anatomical-relation-trigger"><span>{colorTerritory?'Selection':'Contains'}</span><span className="anatomical-relation-count">{choice.children.length}</span></AccordionTrigger>
+      <AccordionContent className="anatomical-relation-panel"><div className="anatomical-relation-links">{choice.children.map(child=>{const display=displayLaterality(child.name);return <span className="anatomical-relation-item" key={child.id}><button type="button" className={lateralityClass(display.side)} onClick={event=>onChooseChild(child,event.ctrlKey||event.metaKey)} aria-label={`Select ${child.name}`} title={`Select ${child.name}; Control-click to add or remove`}>{display.label}</button><small>{colorTerritory?'Surface territory':child.elements.length?`${child.elements.length.toLocaleString()} ${child.elements.length===1?'piece':'pieces'}`:'No mesh'}</small></span>;})}</div></AccordionContent>
      </AccordionItem>
     </Accordion>
    </section>}

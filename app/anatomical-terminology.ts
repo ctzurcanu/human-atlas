@@ -1,4 +1,5 @@
 import metadata from './data/ta98-metadata.json';
+import parentIndex from './data/ta98-parents.json';
 
 export type Terminology={ta98:string|null;tha:string|null;fma:string|null;latin:string|null;ontology?:string|null};
 export type IdentifierKind='La'|'TA98'|'THA'|'FMA'|'UBERON'|'Atlas'|'HA-G';
@@ -24,9 +25,18 @@ export function taExactEntityForConcept(id:string):string|undefined{
  return explicit??(matches[id]?.kind==='exact'?matches[id].term:undefined);
 }
 
-export function terminologyForConcept(id:string,ta98Term?:string):Terminology{
+export function terminologyForConcept(id:string,ta98Term?:string,ta98Kind?:'exact'|'parent'):Terminology{
+ if(ta98Kind==='parent')return empty;
  const code=ta98Term??/^TA98(?:RECOVERED|REGION|FEMALE)?:(A\d{2}\.\d\.\d{2}\.\d{3}[FM]?)$/.exec(id)?.[1];
- if(code&&codes[code])return codes[code];
+ if(code){
+  const term=codes[code];if(!term)return empty;
+  const source=concepts[id];
+  // Preserve source-specific FMA/UBERON identifiers only when the source
+  // mapping agrees with this exact catalogue identity. A conflicting name
+  // match (for example dental versus uterine cervix) must not leak its IDs.
+  return matches[id]?.kind==='exact'&&matches[id].term===code&&source
+   ?{...term,fma:source.fma??term.fma,...(source.ontology?{ontology:source.ontology}:{})}:term;
+ }
  return concepts[id]??(/^FMA:?\d+$/.test(id)?{...empty,fma:`FMA:${id.replace(/^FMA:?/,'')}`}:empty);
 }
 
@@ -36,8 +46,16 @@ export function terminologyForGroup(name:string):Terminology{
  return groupsLower.get((side??name).toLowerCase())??empty;
 }
 
-export function taHierarchyForConcept(id:string):{name:string;terminology:Terminology}[]{
- return (paths[id]??[]).map(code=>codes[code]).filter((term):term is Terminology&{name:string}=>!!term).map(term=>({name:term.name.replace(/^./,letter=>letter.toUpperCase()),terminology:term}));
+export function taHierarchyForConcept(id:string,ta98Term?:string,ta98Kind?:'exact'|'parent'):{name:string;terminology:Terminology}[]{
+ let lineage=paths[id]??[];
+ if(ta98Term){
+  if(!codes[ta98Term])return [];
+  const parents=parentIndex.parents as Record<string,string>,seen=new Set<string>([ta98Term]);
+  lineage=ta98Kind==='parent'?[ta98Term]:[];
+  let parent=parents[ta98Term];
+  while(parent&&codes[parent]&&!seen.has(parent)){seen.add(parent);lineage.unshift(parent);parent=parents[parent];}
+ }
+ return lineage.map(code=>codes[code]).filter((term):term is Terminology&{name:string}=>!!term).map(term=>({name:term.name.replace(/^./,letter=>letter.toUpperCase()),terminology:term}));
 }
 
 export function terminologyTitle(name:string,term:Terminology,id?:string):string{

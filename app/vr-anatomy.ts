@@ -8,7 +8,7 @@ import {SYSTEMS,type Atlas,type SceneState} from './anatomy';
 
 interface VrPart {id:string;sourceVertexCount:number;sourceIndexCount:number;positions:number;normals:number;indices:number;vertexCount:number;indexCount:number}
 interface VrModel {version:number;sourceTriangles:number;triangles:number;parts:VrPart[];chunk:{url:string;bytes:number;gzip:boolean}}
-interface Uniforms {rotationState:T.DataTexture;rotation:{value:T.Vector4};pivot:{value:T.Vector3};planes:T.Plane[]}
+interface Uniforms {rotationState:T.DataTexture;rotationPivots:T.DataTexture;rotation:{value:T.Vector4};pivot:{value:T.Vector3};planes:T.Plane[]}
 
 /** A single lightweight draw per eye; hidden parts never reach the GPU. */
 export async function loadVrAnatomy(atlas:Atlas,url:string,uniforms:Uniforms,signal:AbortSignal){
@@ -25,7 +25,7 @@ export async function loadVrAnatomy(atlas:Atlas,url:string,uniforms:Uniforms,sig
   geometry.setIndex(new T.BufferAttribute(new Uint32Array(buffer,part.indices,part.indexCount),1));
   geometry.setAttribute('partIndex',new T.BufferAttribute(new Float32Array(part.vertexCount).fill(i),1));
   const color=spec?.color?new T.Color().setRGB(spec.color[0]/255,spec.color[1]/255,spec.color[2]/255,T.SRGBColorSpace):new T.Color(source.tissue==='tendon'?'#d6c8b0':source.tissue==='cartilage'?'#afc0cb':SYSTEMS.find(system=>system.id===source.system)?.color??'#aebbb8');
-  if(/^spleen(?:\s|$)/i.test(source.name))color.setRGB(203/255,168/255,94/255,T.SRGBColorSpace);
+  if(/^spleen(?:\s|$)/i.test(source.name))color.setRGB(123/255,65/255,84/255,T.SRGBColorSpace);
   const colors=new Float32Array(part.vertexCount*3);
   for(let v=0;v<part.vertexCount;v++)color.toArray(colors,v*3);
   geometry.setAttribute('color',new T.BufferAttribute(colors,3));geometry.computeBoundingBox();geometry.computeBoundingSphere();
@@ -37,10 +37,10 @@ export async function loadVrAnatomy(atlas:Atlas,url:string,uniforms:Uniforms,sig
  const indices=new T.BufferAttribute(activeIndices,1).setUsage(T.DynamicDrawUsage);geometry.setIndex(indices);geometry.setDrawRange(0,0);
  const material=new T.MeshLambertMaterial({vertexColors:true,side:T.DoubleSide,alphaHash:true,clippingPlanes:uniforms.planes});
  material.onBeforeCompile=shader=>{
-  shader.uniforms.vrState={value:texture};shader.uniforms.stateWidth={value:width};shader.uniforms.rotationState={value:uniforms.rotationState};shader.uniforms.selectionRotation=uniforms.rotation;shader.uniforms.selectionPivot=uniforms.pivot;
-  shader.vertexShader='attribute float partIndex; uniform sampler2D vrState; uniform sampler2D rotationState; uniform float stateWidth; uniform vec4 selectionRotation; uniform vec3 selectionPivot; varying float vrOpacity; vec3 rotateSelected(vec3 v){return v+2.0*cross(selectionRotation.xyz,cross(selectionRotation.xyz,v)+selectionRotation.w*v);}\n'+shader.vertexShader;
+  shader.uniforms.vrState={value:texture};shader.uniforms.stateWidth={value:width};shader.uniforms.rotationState={value:uniforms.rotationState};shader.uniforms.rotationPivots={value:uniforms.rotationPivots};shader.uniforms.selectionRotation=uniforms.rotation;shader.uniforms.selectionPivot=uniforms.pivot;
+  shader.vertexShader='attribute float partIndex; uniform sampler2D vrState; uniform sampler2D rotationState; uniform sampler2D rotationPivots; uniform float stateWidth; uniform vec4 selectionRotation; uniform vec3 selectionPivot; varying float vrOpacity; vec3 rotateSelected(vec3 v){return v+2.0*cross(selectionRotation.xyz,cross(selectionRotation.xyz,v)+selectionRotation.w*v);}\n'+shader.vertexShader;
   shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\nif(texture2D(rotationState,vec2((partIndex+0.5)/stateWidth,0.5)).r>0.5)objectNormal=rotateSelected(objectNormal);');
-  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec2 uvState=vec2((partIndex+0.5)/stateWidth,0.5);vec4 state=texture2D(vrState,uvState);transformed+=state.xyz;vrOpacity=state.w;if(texture2D(rotationState,uvState).r>0.5)transformed=selectionPivot+rotateSelected(transformed-selectionPivot);');
+  shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec2 uvState=vec2((partIndex+0.5)/stateWidth,0.5);vec4 state=texture2D(vrState,uvState);transformed+=state.xyz;vrOpacity=state.w;if(texture2D(rotationState,uvState).r>0.5){vec3 pivot=texture2D(rotationPivots,uvState).xyz;transformed=pivot+rotateSelected(transformed-pivot);}');
   shader.fragmentShader='varying float vrOpacity;\n'+shader.fragmentShader;
   // Hashed opacity keeps context see-through in one depth-writing pass.
   shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.a=vrOpacity;');

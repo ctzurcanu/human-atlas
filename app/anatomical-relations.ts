@@ -1,8 +1,11 @@
+import {cardiacRelations} from './cardiac-relations';
+import {containmentExceptions,isAorticBranchGrouping,nonComponentRelationship} from './anatomical-containment';
+import {nativePartFrame} from './ta98-modeled-parent';
 import {structureName,type Part,type Concept} from './anatomy';
 import {taExactEntityForConcept} from './anatomical-terminology';
 import skeletalAttachments from './generated-skeletal-attachments.json';
 
-export type RelationKind='before'|'after'|'innervation'|'arterial'|'venous'|'innervates'|'supplies'|'drains'|'articulates'|'connects'|'connectedBy'|'joint'|'continuous'|'covers'|'coveredBy'|'cartilages'|'bones'|'tendons'|'fascia'|'muscles'|'origin'|'insertion'|'partOf'|'contains'|'originFor'|'insertionFor'|'originSites'|'insertionSites'|'counterpart';
+export type RelationKind='before'|'after'|'innervation'|'arterial'|'venous'|'innervates'|'supplies'|'drains'|'articulates'|'connects'|'connectedBy'|'joint'|'continuous'|'covers'|'coveredBy'|'cartilages'|'bones'|'tendons'|'fascia'|'muscles'|'origin'|'insertion'|'partOf'|'contains'|'originFor'|'insertionFor'|'originSites'|'insertionSites'|'counterpart'|'adjacent'|'lymphaticDrainage'|'lymphaticTributaries';
 export interface ResolvedRelation {kind:RelationKind;target:Part;via?:string[];viaModeled?:boolean;note?:string}
 type Relations=Partial<Record<RelationKind,string[]>>;
 
@@ -307,6 +310,12 @@ const femalePelvicFunctional:Record<string,Relations>={
 };
 const explicit:Record<string,Relations>={
  ...femalePelvicFunctional,
+ // Whole-organ links only. NCBI Bookshelf NBK519558 (diaphragm),
+ // NBK470452 (thyroid), NBK459205 and
+ // PMID 3376104 (appendicular artery/vein). Missing vessels stay unresolved.
+ 'diaphragm':{innervation:['Phrenic nerve'],arterial:['Musculophrenic artery','Superior phrenic arteries','Inferior phrenic artery','Inferior phrenic arteries']},
+ 'thyroid gland':{arterial:['Superior thyroid artery','Inferior thyroid artery'],venous:['Superior thyroid vein','Middle thyroid vein','Inferior thyroid vein']},
+ 'vermiform appendix':{arterial:['Appendicular artery'],venous:['Appendicular vein']},
  'oesophagus':{innervation:['Vagus nerve (X)'],arterial:['Left gastric artery'],venous:['Left gastric vein']},
  'esophagus':{innervation:['Vagus nerve (X)'],arterial:['Left gastric artery'],venous:['Left gastric vein']},
  'stomach':{innervation:['Vagus nerve (X)','Vagus nerve'],arterial:['Left gastric artery','Right gastric artery','Left gastro-omental artery','Right gastro-omental artery','Left gastroepiploic artery','Right gastroepiploic artery','Gastroepiploic artery','Short gastric arteries','Splenic artery'],venous:['Left gastric vein','Right gastric vein','Left gastro-omental vein','Right gastro-omental vein','Left gastroepiploic vein','Right gastroepiploic vein','Splenic vein']},
@@ -327,6 +336,7 @@ const explicit:Record<string,Relations>={
  'pancreas':{innervation:['Vagus nerve (X)'],arterial:['Splenic artery','Superior mesenteric artery'],venous:['Splenic vein','Superior mesenteric vein']},
  'kidney':{arterial:['{side} renal artery'],venous:['{side} renal vein']},
  'suprarenal gland':{arterial:['Superior suprarenal artery','Middle suprarenal artery','Inferior suprarenal artery'],venous:['Suprarenal vein']},
+ 'adrenal gland':{arterial:['Superior suprarenal artery','Middle suprarenal artery','Inferior suprarenal artery'],venous:['Suprarenal vein']},
  'transverse part of trapezius muscle':{innervation:['Accessory nerve (XI)']},
  'ascending part of trapezius muscle':{innervation:['Accessory nerve (XI)']},
  'descending part of trapezius muscle':{innervation:['Accessory nerve (XI)']},
@@ -355,7 +365,7 @@ const partSide=(part:Part):'left'|'right'|null=>{
  return suffix?suffix.toLowerCase()==='l'?'left':'right':null;
 };
 const withoutSide=(name:string)=>key(name).replace(/\s*\((?:left|right)\)$/,'').replace(/\s+[lr]$/,'');
-const intestinalNames:Record<string,string>={'intestine duodenum':'duodenum','small intestine jejunum':'jejunum','small intestine ileum':'ileum','small intestine illium':'ileum','large intestine cecum':'cecum','large intestine descending colon':'descending colon','large intestine rectum':'rectum'};
+const intestinalNames:Record<string,string>={'intestine duodenum':'duodenum','small intestine jejunum':'jejunum','small intestine ileum':'ileum','small intestine illium':'ileum','large intestine cecum':'cecum','large intestine descending colon':'descending colon','large intestine rectum':'rectum','appendix':'vermiform appendix','bladder':'urinary bladder'};
 const baseName=(name:string)=>{const value=/^(?:left|right) (?:atrium|ventricle)$/.test(withoutSide(name))?withoutSide(name):withoutSide(name).replace(/^(?:left|right)\s+/,'');return intestinalNames[value]??value;};
 const belongsTo=(name:string,base:string)=>name===base||name.startsWith(`proximal part of ${base}`)||name.startsWith(`middle part of ${base}`)||name.startsWith(`distal part of ${base}`);
 const vascularIdentity=(name:string)=>{
@@ -399,30 +409,51 @@ function targets(query:string,source:Part,parts:Part[],accept:(part:Part)=>boole
  return allBonePieces?resolved.flatMap(part=>isBone(part)?(index.concept.get(part.conceptId)??[]).filter(candidate=>candidate.id!==source.id&&isBone(candidate)&&accept(candidate)&&sameSide(source,candidate)):[part]):resolved;
 }
 
+// A whole pharynx remains a whole structure; this route fallback does not
+// rename it as an oropharynx or manufacture its missing regional meshes.
+const digestiveStageCache=new WeakMap<Part[],string[][]>();
+const airwayStageCache=new WeakMap<Part[],string[][]>();
+function pharyngealStages(parts:Part[]):string[][]{
+ return parts.some(part=>!part.suppressed&&['oropharynx','laryngopharynx'].includes(baseName(part.name)))
+  ?digestiveRoute.slice(0,2):[['Pharynx']];
+}
+function airwayStages(parts:Part[]):string[][]{
+ const cached=airwayStageCache.get(parts);if(cached)return cached;
+ const stages=[airwayRoute[0],...pharyngealStages(parts),...airwayRoute.slice(3)];
+ airwayStageCache.set(parts,stages);return stages;
+}
 function digestiveStages(parts:Part[]):string[][]{
+ const cached=digestiveStageCache.get(parts);if(cached)return cached;
  const hasWhole=(name:string)=>parts.some(part=>part.system==='digestive'&&baseName(part.name)===name.toLowerCase());
  const collapsed=(name:'jejunum'|'ileum')=>{
   const subdivisions=[`Proximal part of ${name}`,`Middle part of ${name}`,`Distal part of ${name}`];
   return hasWhole(name)||!subdivisions.some(label=>parts.some(part=>part.system==='digestive'&&baseName(part.name)===label.toLowerCase()))
    ?[[name[0].toUpperCase()+name.slice(1),...subdivisions]]:subdivisions.map(label=>[label]);
  };
- return [
-  ...digestiveRoute.slice(0,5),
+ const stages=[
+  ['Mouth'],['Oral cavity'],...pharyngealStages(parts),...digestiveRoute.slice(2,5),
   ...collapsed('jejunum'),
   ...collapsed('ileum'),
   ...digestiveRoute.slice(11),
  ];
+ digestiveStageCache.set(parts,stages);return stages;
 }
 
+const routeConceptNames=new WeakMap<Part[],Map<string,string[]>>();
 function routeRelations(source:Part,parts:Part[],routes:string[][][]):ResolvedRelation[]{
  const sourceKey=baseName(source.name);
+ let conceptNames=routeConceptNames.get(parts);
+ if(!conceptNames){conceptNames=new Map();for(const part of parts){const names=conceptNames.get(part.conceptId)??[];const name=baseName(part.name);if(!names.includes(name))names.push(name);conceptNames.set(part.conceptId,names);}routeConceptNames.set(parts,conceptNames);}
+ const wholeGastricRegion=source.system==='digestive'&&modeledGastricAssembly(parts).some(part=>part.id===source.id);
+ const sourceKeys=wholeGastricRegion?['stomach']:[sourceKey,...(conceptNames.get(source.conceptId)??[])];
  const intestinalPart=sourceKey.match(/^(?:proximal|middle|distal) part of (jejunum|ileum)$/);
  if(intestinalPart&&parts.some(part=>part.system==='digestive'&&baseName(part.name)===intestinalPart[1]))return [];
  const side=partSide(source);
  const result:ResolvedRelation[]=[];
  const sameSide=(group:string[])=>group.filter(label=>!side||!sideOf(label)||sideOf(label)===side);
  for(const route of routes){
-  const index=route.findIndex(group=>group.some(label=>baseName(label)===sourceKey&&(!side||!sideOf(label)||sideOf(label)===side)));
+  const directIndex=route.findIndex(group=>group.some(label=>baseName(label)===sourceKey&&(!side||!sideOf(label)||sideOf(label)===side)));
+  const index=directIndex>=0?directIndex:route.findIndex(group=>group.some(label=>sourceKeys.includes(baseName(label))&&(!side||!sideOf(label)||sideOf(label)===side)));
   if(index<0)continue;
   for(const [kind,direction] of [['before',-1],['after',1]] as const){
    const via:string[]=[];
@@ -430,9 +461,12 @@ function routeRelations(source:Part,parts:Part[],routes:string[][][]):ResolvedRe
     const group=sameSide(route[step]);
     const wholeIntestine=['jejunum','ileum'].includes(baseName(group[0]??''));
     const labels=wholeIntestine&&targets(group[0],source,parts).length?[group[0]]:group;
-    const matches=labels.flatMap(label=>targets(label,source,parts,undefined,false,true,true));
+    const matches=labels.flatMap(label=>targets(label,source,parts,undefined,false,true,true)).filter(target=>{
+     if(route!==arterialRoute)return true;
+     const frame=nativePartFrame(source);return !!frame&&!target.suppressed&&nativePartFrame(target)===frame;
+    });
     if(matches.length){
-     for(const target of matches)result.push({kind,target,...(via.length?{via:direction===1?via:[...via].reverse()}:{})});
+     for(const target of matches){const wholePharynx=sourceKey==='pharynx'||baseName(target.name)==='pharynx';const wholeRoute=wholeGastricRegion||!route[index].some(label=>baseName(label)===sourceKey)||modeledGastricAssembly(parts).some(part=>part.id===target.id);result.push({kind,target,...(via.length?{via:direction===1?via:[...via].reverse()}:{}),...(wholePharynx?{note:'Route through the pharynx’s oral/laryngeal regions; the named source surface has unverified regional extent and tissue continuity.'}:wholeRoute?{note:'Route through the whole named structure; this surface piece does not establish direct local continuity.'}:{})});}
      break;
     }
     if(group.length)via.push(group[0]);
@@ -553,43 +587,58 @@ function physicalRelations(source:Part,parts:Part[]):Relations{
   if(sourceBase==='fascia lata')result.continuous.push('Iliotibial tract');
   if(sourceBase==='tensor fasciae latae'&&!isTendon(source))result.continuous.push('Iliotibial tract');
  }
- if(source.system==='muscular'&&!isTendon(source)){
-  result.coveredBy=Object.entries(fascialCoverings).filter(([,muscles])=>muscles.some(muscle=>sourceBase===muscle.toLowerCase()||sourceBase.endsWith(` of ${muscle.toLowerCase()}`))).map(([fascia])=>fascia);
-  result.connectedBy=parts.filter(part=>isTendon(part)&&part.id!==source.id&&sameSide(source,part)&&(part.conceptId===source.conceptId||baseName(part.name).replace(/^tendon of (?:left|right) /,'tendon of ')===`tendon of ${sourceBase}`)).map(part=>part.name);
+ if(source.system==='muscular'){
+  const independentTissue=!isTendon(source)||!parts.some(part=>part.id!==source.id&&part.conceptId===source.conceptId&&!isTendon(part));
+  if(independentTissue)result.coveredBy=Object.entries(fascialCoverings).filter(([,muscles])=>muscles.some(muscle=>sourceBase===muscle.toLowerCase()||sourceBase.endsWith(` of ${muscle.toLowerCase()}`))).map(([fascia])=>fascia);
+  if(!isTendon(source))result.connectedBy=parts.filter(part=>isTendon(part)&&part.id!==source.id&&sameSide(source,part)&&(part.conceptId===source.conceptId||baseName(part.name).replace(/^tendon of (?:left|right) /,'tendon of ')===`tendon of ${sourceBase}`)).map(part=>part.name);
   if(sourceBase==='tensor fasciae latae')result.continuous=['Iliotibial tract'];
  }
  if(sourceBase==='iliotibial tract')result.continuous=['Fascia lata','Tensor fasciae latae'];
  return result;
 }
 
-const networkCache=new WeakMap<Part,Map<string,ResolvedRelation[]>>();
+const networkCache=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
 const isCartilage=(part:Part)=>/cartilage/i.test(part.name)&&!part.name.toLowerCase().includes('perichondular');
 const isTendon=(part:Part)=>/\btendon\b/i.test(part.name)&&!/\btendon sheath\b/i.test(part.name);
 export const isAnatomicalBone=(part:Part)=>part.system==='skeletal'&&!isCartilage(part)&&!/perichondular|gingiva|\bteeth\b|\btooth\b|bone tissue|bone marrow|·\s*(?:suture|ligament)\b/i.test(part.name);
 const isBone=isAnatomicalBone;
 const canCarryFunctionalLinks=(part:Part)=>part.system!=='attachments'&&part.system!=='regions'&&!/·\s*(?:ligament|suture)\b/i.test(part.name)&&(part.system!=='muscular'||!isTendon(part))&&(part.system!=='skeletal'||isBone(part));
+const isAdrenal=(part:Part)=>part.system==='endocrine'&&['adrenal gland','suprarenal gland'].includes(baseName(part.name));
+const adrenalFunctionalFrame=(source:Part,target:Part)=>{
+ if(!isAdrenal(source)&&!isAdrenal(target))return true;
+ const frame=nativePartFrame(source);
+ return !source.suppressed&&!target.suppressed&&!!frame&&nativePartFrame(target)===frame&&sameSide(source,target);
+};
 function explicitRelations(part:Part):Relations{
  if(!canCarryFunctionalLinks(part))return {};
  const name=withoutSide(part.name);
  if(femalePelvicFunctional[name]&&part.system!=='reproductive')return {};
- return explicit[name]??
+ return explicit[name]??explicit[baseName(part.name)]??
   (['jejunum','ileum'].find(base=>belongsTo(name,base))?explicit[name.includes('jejunum')?'jejunum':'ileum']:undefined)??{};
 }
-const structuralCache=new WeakMap<Part,Map<string,ResolvedRelation[]>>();
+const structuralCache=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
 const genericGroups=/^\d+:|^(?:head|neck|trunk|abdomen|thorax|pelvis|upper limb|lower limb|skin|muscles|nerves|arteries|veins|skeletal system|digestive system|respiratory system|central nervous system|peripheral nervous system|endocrine glands|visceral systems)$/i;
 const sideNeutralSourceId=(part:Part)=>part.id.startsWith('HRA:')?(part.sourceId??part.id).replace(/_([LR])(?=_|$)/i,'_{side}'):'';
 function structuralNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
- const cached=structuralCache.get(parts[0]);if(cached)return cached;
+ const cached=structuralCache.get(parts);if(cached)return cached;
  const graph=new Map<string,ResolvedRelation[]>(),byName=new Map<string,Part[]>(),byMuscleCore=new Map<string,Part[]>();
  for(const part of parts){const name=baseName(part.name),list=byName.get(name)??[];list.push(part);byName.set(name,list);if(part.system==='muscular'){const core=name.replace(/ muscle$/,'');const peers=byMuscleCore.get(core)??[];peers.push(part);byMuscleCore.set(core,peers);}}
- const add=(from:Part,kind:RelationKind,to:Part)=>{const list=graph.get(from.id)??[];if(!list.some(relation=>relation.kind===kind&&relation.target.id===to.id))list.push({kind,target:to});graph.set(from.id,list);};
+ const add=(from:Part,kind:RelationKind,to:Part,note?:string)=>{const list=graph.get(from.id)??[];if(!list.some(relation=>relation.kind===kind&&relation.target.id===to.id))list.push({kind,target:to,note});graph.set(from.id,list);};
  const link=(source:Part,parent:Part)=>{
   if(source.id===parent.id||source.conceptId===parent.conceptId||source.suppressed||parent.suppressed||!sameSide(source,parent))return;
+  if(isAorticBranchGrouping(source.name,parent.name))return;
+  if(baseName(source.name)==='proximal segment of subclavian artery'&&baseName(parent.name)==='subclavian artery'){
+   const frame=nativePartFrame(source);if(!frame||nativePartFrame(parent)!==frame)return;
+  }
+  const note=nonComponentRelationship(source.name,parent.name);
+  if(note){add(source,'adjacent',parent,note);add(parent,'adjacent',source,note);return;}
   add(source,'partOf',parent);add(parent,'contains',source);
  };
  for(const source of parts){
   const side=partSide(source);
-  if(side){
+  // A left-labeled brachiocephalic source may be a variant or misidentified
+  // segment; it is not a bilateral counterpart of the conventional trunk.
+  if(side&&baseName(source.name)!=='brachiocephalic trunk'){
    const role=source.name.match(/\s*·\s*([^·]+)$/)?.[1]??'';
    const site=source.system==='attachments'?source.name.match(/\.([eo]\d*)[lr]$/i)?.[1]??'':'';
    const sourcePairKey=sideNeutralSourceId(source);
@@ -619,17 +668,24 @@ function structuralNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
   // Keep the closest named structures, not every broad source chapter.
   for(const parent of [...parents.values()].sort((a,b)=>clean(b.name).length-clean(a.name).length).slice(0,2))link(source,parent);
  }
- if(parts[0])structuralCache.set(parts[0],graph);
+ for(const rule of containmentExceptions){
+  for(const parent of byName.get(rule.parent)??[])for(const child of byName.get(rule.child)??[]){
+   const frame=nativePartFrame(parent);
+   if(parent.system!=='nervous'||child.system!=='nervous'||!frame||nativePartFrame(child)!==frame||!sameSide(parent,child))continue;
+   add(parent,'adjacent',child,rule.note);add(child,'adjacent',parent,rule.note);
+  }
+ }
+ structuralCache.set(parts,graph);
  return graph;
 }
 function skeletalNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
- const cached=networkCache.get(parts[0]);
+ const cached=networkCache.get(parts);
  if(cached)return cached;
  const graph=new Map<string,ResolvedRelation[]>();
- const add=(from:Part,kind:RelationKind,target:Part)=>{
+ const add=(from:Part,kind:RelationKind,target:Part,note?:string)=>{
   if(from.id===target.id)return;
   const links=graph.get(from.id)??[];
-  if(!links.some(link=>link.kind===kind&&link.target.id===target.id))links.push({kind,target});
+  if(!links.some(link=>link.kind===kind&&link.target.id===target.id))links.push({kind,target,note});
   graph.set(from.id,links);
  };
  const bones=parts.filter(isBone),cartilages=parts.filter(isCartilage);
@@ -663,8 +719,37 @@ function skeletalNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
   });muscleNameCache.set(wanted,candidates);}
   return canonical(candidates.filter(part=>!side||!partSide(part)||partSide(part)===side));
  };
+ for(const disc of parts.filter(part=>!part.suppressed&&part.system==='connective'&&baseName(part.name)==='articular disc of distal radio-ulnar joint')){
+  const frame=nativePartFrame(disc);if(!frame)continue;
+  for(const name of ['Radius','Ulna'])for(const bone of boneNamed(name,partSide(disc)).filter(bone=>!bone.suppressed&&nativePartFrame(bone)===frame)){
+   const note='Structures at the distal radioulnar joint; the source disc is a coarse surface and its full fibrocartilage attachments and interfaces are unverified.';
+   add(disc,'joint',bone,note);add(bone,'joint',disc,note);
+  }
+ }
+ const upperCervicalBones:Record<string,string[]>={
+  'anterior atlanto-occipital membrane':['Atlas vertebra c1','Atlas (C1)'],
+  'posterior atlanto-occipital membrane':['Atlas vertebra c1','Atlas (C1)'],
+  'tectorial membrane of atlanto-axial joint':['Axis vertebra c2','Axis (C2)'],
+  'alar ligaments':['Axis vertebra c2','Axis (C2)'],
+ };
+ for(const tissue of parts.filter(part=>!part.suppressed&&part.system==='connective')){
+  const names=upperCervicalBones[baseName(tissue.name)],frame=nativePartFrame(tissue);
+  if(!names||!frame)continue;
+  for(const name of names)for(const bone of boneNamed(name,null).filter(bone=>!bone.suppressed&&nativePartFrame(bone)===frame)){
+   const note='Named craniocervical bone association. Exact tissue extent and entheses remain unverified; the occipital attachment has no separate native bone mesh in this source. This link does not certify a shared mesh interface.';
+   add(tissue,'joint',bone,note);add(bone,'joint',tissue,note);
+  }
+ }
  for(const muscle of muscleBodies)for(const tendon of (byConcept.get(muscle.conceptId)??[]).filter(isTendon)){
   add(muscle,'tendons',tendon);add(tendon,'muscles',muscle);
+ }
+ // Resolve the same named attachment queries used by the tendon inspector.
+ // Common/intermediate tendon names and alternate source muscle names need
+ // not share a concept ID or the literal "tendon of" prefix.
+ for(const tendon of tendons)for(const query of physicalRelations(tendon,parts).connects??[]){
+  for(const muscle of targets(query,tendon,parts,part=>muscleBodyIds.has(part.id),false,false,false)){
+   add(tendon,'connects',muscle);add(muscle,'connectedBy',tendon);
+  }
  }
 
  // Material-split bone surfaces share a concept ID; a named costal cartilage
@@ -751,7 +836,7 @@ function skeletalNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
    for(const link of reverse)add(relation.target,link.kind,member);
   }
  }
- if(parts[0])networkCache.set(parts[0],graph);
+ networkCache.set(parts,graph);
  return graph;
 }
 
@@ -775,7 +860,7 @@ function nerveRelations(source:Part,parts:Part[]):Relations{
  result.after=candidates.filter(part=>part.id!==source.id&&sameSide(source,part)&&
   baseName(nerveParent(part,identities)??'')===baseName(source.name)).map(part=>part.name);
  const muscleName=clean(source.name).match(/^Nerve to (.+?)(?: \((?:left|right)\))?$/i)?.[1];
- if(muscleName)result.innervates=[muscleName,`${muscleName} muscle`];
+ if(muscleName){const core=muscleName.replace(/ muscle$/i,'');result.innervates=[core,`${core} muscle`];}
  return result;
 }
 
@@ -798,48 +883,274 @@ function muscleNerves(source:Part):string[]{
  return direct;
 }
 
+/** Existing curated supply labels; no inferred spinal level or territory inheritance. */
+export function anatomicalInnervationNames(source:Part):string[]{
+ return [...new Set([...(explicitRelations(source).innervation??[]),...muscleNerves(source)])];
+}
+
 function functionalNote(source:Part,kind:RelationKind,target:Part):string|undefined{
+ if(isAdrenal(source)&&['arterial','venous'].includes(kind))return 'Named adrenal vascular reference. Individual capsular branches, source ostia, continuous lumens and variants remain unverified; missing native vessels are not replaced by donor meshes.';
  if(source.system!=='reproductive'||withoutSide(source.name)!=='vagina'||kind!=='innervation')return;
  if(withoutSide(target.name)==='pudendal nerve')return 'Lower vagina · somatic supply';
  if(withoutSide(target.name)==='uterovaginal plexus')return 'Upper vagina · autonomic supply';
 }
 
+// Atlas arrays are immutable snapshots. Build inverse supply links once per
+// snapshot instead of scanning every organ again for each vessel or nerve.
+const reverseFunctionalCache=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
 function reverseFunctionalRelations(source:Part,parts:Part[]):ResolvedRelation[]{
  if(!['nervous','arterial','venous'].includes(source.system))return [];
- const result:ResolvedRelation[]=[];
- if(source.system==='nervous')for(const part of parts.filter(part=>part.system==='muscular'&&sameSide(source,part)&&muscleNerves(part).some(nerve=>baseName(nerve)===baseName(source.name))))result.push({kind:'innervates',target:part});
- const kind=source.system==='nervous'?'innervation':source.system==='arterial'?'arterial':'venous';
- const reverse=source.system==='nervous'?'innervates':source.system==='arterial'?'supplies':'drains';
- for(const part of parts){
-  const lookup=explicitRelations(part);
-  if(!lookup?.[kind]||!sameSide(source,part))continue;
-  if(lookup[kind].some(query=>targets(query,part,parts).some(target=>target.conceptId===source.conceptId)))result.push({kind:reverse,target:part,note:functionalNote(part,kind,source)});
+ let graph=reverseFunctionalCache.get(parts);
+ if(!graph){
+  graph=new Map();
+  const byConcept=new Map<string,Part[]>(),nervesByName=new Map<string,Part[]>();
+  for(const part of parts){
+   const peers=byConcept.get(part.conceptId)??[];peers.push(part);byConcept.set(part.conceptId,peers);
+   if(part.system==='nervous'){const name=baseName(part.name),nerves=nervesByName.get(name)??[];nerves.push(part);nervesByName.set(name,nerves);}
+  }
+  const add=(from:Part,kind:RelationKind,target:Part,note?:string)=>{
+   const links=graph!.get(from.id)??[];
+   if(!links.some(link=>link.kind===kind&&link.target.id===target.id))links.push({kind,target,...(note?{note}:{})});
+   graph!.set(from.id,links);
+  };
+  for(const part of parts){
+   if(part.system==='muscular')for(const query of muscleNerves(part))for(const nerve of nervesByName.get(baseName(query))??[]){
+    if(sameSide(nerve,part))add(nerve,'innervates',part);
+   }
+   const lookup=explicitRelations(part);
+   for(const [kind,system,reverse] of [['innervation','nervous','innervates'],['arterial','arterial','supplies'],['venous','venous','drains']] as const){
+    const concepts=new Set((lookup[kind]??[]).flatMap(query=>targets(query,part,parts,target=>adrenalFunctionalFrame(part,target)).map(target=>target.conceptId)));
+    for(const concept of concepts)for(const target of byConcept.get(concept)??[]){
+     if(target.system===system&&sameSide(target,part)&&adrenalFunctionalFrame(part,target))add(target,reverse,part,functionalNote(part,kind,target));
+    }
+   }
+  }
+  reverseFunctionalCache.set(parts,graph);
  }
- return result;
+ return graph.get(source.id)??[];
+}
+
+const isRetina=(part:Part)=>['nervous','sensory'].includes(part.system)&&baseName(part.name)==='retina';
+const isOpticNerve=(part:Part)=>['nervous','sensory'].includes(part.system)&&['optic nerve','optic nerve (ii)'].includes(baseName(part.name));
+// OpenStax A&P 14.1: retinal ganglion axons leave through the optic nerve.
+// PMC11890264: central retinal artery supplies inner retina; outer retina has
+// a separate choroidal supply. Links describe anatomy, not mesh registration.
+function retinalRelations(source:Part,parts:Part[]):ResolvedRelation[]{
+ if(source.suppressed)return [];
+ const retina=isRetina(source),optic=isOpticNerve(source);
+ const artery=source.system==='arterial'&&baseName(source.name)==='central retinal artery';
+ const vein=source.system==='venous'&&baseName(source.name)==='central retinal vein';
+ if(!retina&&!optic&&!artery&&!vein)return [];
+ const sourceFamily=(part:Part)=>part.id.startsWith('ZA:')?'ZA':part.id.startsWith('HRA:')?'HRA':part.id.match(/^LOCAL:(male|female):/)?.[0]??part.id;
+ const side=partSide(source);
+ if(!side)return [];
+ const links:ResolvedRelation[]=[];
+ for(const target of parts){
+  if(target.suppressed||target.id===source.id||partSide(target)!==side||sourceFamily(target)!==sourceFamily(source))continue;
+  let kind:RelationKind|undefined,note:string|undefined;
+  if(retina&&isOpticNerve(target)||optic&&isRetina(target)){
+   kind='continuous';note='Retinal ganglion-cell axons collect at the optic disc and continue into the optic nerve.';
+  }else if(retina&&target.system==='arterial'&&baseName(target.name)==='central retinal artery'||artery&&isRetina(target)){
+   kind=retina?'arterial':'supplies';note='The central retinal artery supplies the inner retina; outer retinal supply is choroidal.';
+  }else if(retina&&target.system==='venous'&&baseName(target.name)==='central retinal vein'||vein&&isRetina(target)){
+   kind=retina?'venous':'drains';note='Retinal venous blood drains through the central retinal vein.';
+  }
+  if(kind)links.push({kind,target,note:source.id.startsWith('HRA:')?`${note} These donor surfaces still require registration and packing review.`:note});
+ }
+ return links;
+}
+
+function reviewedCranialConnection(source:Part,target:Part):boolean{
+ const frame=nativePartFrame(source),names=[baseName(source.name),baseName(target.name)];
+ return source.system==='nervous'&&target.system==='nervous'&&!!frame&&nativePartFrame(target)===frame&&!!partSide(source)&&partSide(target)===partSide(source)&&names.includes('chorda tympani')&&names.some(name=>['lingual nerve','facial nerve','facial nerve (vii)'].includes(name));
+}
+function reviewedEpiglotticAttachment(ligament:Part,tissue:Part):boolean{
+ const frame=nativePartFrame(ligament),name=baseName(ligament.name).replace(/-/g,''),target=baseName(tissue.name);
+ if(!frame||nativePartFrame(tissue)!==frame||ligament.suppressed||tissue.suppressed)return false;
+ return name==='thyroepiglottic ligament'&&['epiglottis','thyroid cartilage'].includes(target)
+  ||name==='hyoepiglottic ligament'&&['epiglottis','hyoid bone','body of hyoid bone'].includes(target);
+}
+function reviewedPelvicConnection(source:Part,target:Part):boolean{
+ if(source.suppressed||target.suppressed||source.system!=='reproductive'||target.system!=='reproductive')return false;
+ const frame=nativePartFrame(source);if(!frame||nativePartFrame(target)!==frame)return false;
+ const cervix=(part:Part)=>['cervix','uterine cervix','cervix uteri'].includes(baseName(part.name));
+ return cervix(source)&&baseName(target.name)==='vagina'||cervix(target)&&baseName(source.name)==='vagina';
 }
 
 function accepts(kind:RelationKind,source:Part,target:Part):boolean{
+ if(['arterial','venous','innervation','supplies','drains','innervates'].includes(kind)&&!adrenalFunctionalFrame(source,target))return false;
  if(kind==='innervation')return target.system==='nervous';
  if(kind==='arterial')return target.system==='arterial';
  if(kind==='venous')return target.system==='venous';
  if(kind==='innervates')return target.system==='muscular'&&!/·\s*Tendon$/i.test(target.name)||['digestive','respiratory','cardiac','urinary','reproductive','skeletal'].includes(target.system);
- if(kind==='supplies'||kind==='drains')return !['arterial','venous','nervous','attachments','regions'].includes(target.system);
+ if(kind==='supplies'||kind==='drains')return isRetina(target)||!['arterial','venous','nervous','attachments','regions'].includes(target.system);
  if(kind==='articulates')return isBone(target);
- if(kind==='connects')return isBone(target)||target.system==='muscular'||source.system==='reproductive'&&baseName(source.name)==='ovarian ligament'&&target.system==='reproductive'&&['ovary','uterus'].includes(baseName(target.name));
- if(kind==='connectedBy')return target.system==='connective'||target.system==='muscular'&&/\btendon\b/i.test(target.name)||source.system==='reproductive'&&['ovary','uterus'].includes(baseName(source.name))&&target.system==='reproductive'&&baseName(target.name)==='ovarian ligament';
+ if(kind==='connects')return reviewedEpiglotticAttachment(source,target)||isBone(target)||target.system==='muscular'||source.system==='reproductive'&&baseName(source.name)==='ovarian ligament'&&target.system==='reproductive'&&['ovary','uterus'].includes(baseName(target.name));
+ if(kind==='connectedBy')return reviewedEpiglotticAttachment(target,source)||target.system==='connective'||target.system==='muscular'&&/\btendon\b/i.test(target.name)||source.system==='reproductive'&&['ovary','uterus'].includes(baseName(source.name))&&target.system==='reproductive'&&baseName(target.name)==='ovarian ligament';
  if(kind==='joint')return isBone(source)?target.system==='connective':isBone(target);
- if(kind==='continuous')return target.system==='fascia'||target.system==='connective'||baseName(target.name)==='iliotibial tract';
+ if(kind==='continuous')return reviewedPelvicConnection(source,target)||reviewedCranialConnection(source,target)||isRetina(source)&&isOpticNerve(target)||isOpticNerve(source)&&isRetina(target)||target.system==='fascia'||target.system==='connective'||baseName(target.name)==='iliotibial tract';
  if(kind==='covers')return target.system==='muscular';
  if(kind==='coveredBy')return target.system==='fascia';
  return true;
 }
 
+// Anatomical flow relationships in a known native source frame. They do not
+// certify mesh junctions, ostia or patient-specific terminal anatomy.
+// References: PMID17415746 (cisterna investigation), PMID39124550 (terminal
+// variation). An unspecified 'Lymphatic duct' is not assumed to be right-sided.
+const lymphaticNetworks=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
+const renalVenousNetworks=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
+const aorticBranchNetworks=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
+const adrenalNetworks=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
+function adrenalNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
+ const cached=adrenalNetworks.get(parts);if(cached)return cached;
+ const graph=new Map<string,ResolvedRelation[]>(),kidneys=parts.filter(part=>!part.suppressed&&part.system==='urinary'&&baseName(part.name)==='kidney');
+ // PMID31501707 distinguishes normally separate adrenal/renal capsules;
+ // PMID18246295 reviews their sectional regional anatomy. This is adjacency,
+ // never a shared-tissue interface, containment or source packing acceptance.
+ for(const gland of parts.filter(part=>!part.suppressed&&isAdrenal(part))){
+  const frame=nativePartFrame(gland),side=partSide(gland);if(!frame||!side)continue;
+  for(const kidney of kidneys.filter(part=>nativePartFrame(part)===frame&&partSide(part)===side)){
+   const note='Distinct ipsilateral organs in the perinephric region. Their capsules are normally separate; this link does not imply renal containment, adrenal-renal fusion or verified source packing.';
+   for(const [from,to] of [[gland,kidney],[kidney,gland]]){
+    const list=graph.get(from.id)??[];list.push({kind:'adjacent',target:to,note});graph.set(from.id,list);
+   }
+  }
+ }
+ adrenalNetworks.set(parts,graph);return graph;
+}
+function aorticBranchNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
+ const cached=aorticBranchNetworks.get(parts);if(cached)return cached;
+ const graph=new Map<string,ResolvedRelation[]>(),arteries=parts.filter(part=>!part.suppressed&&part.system==='arterial');
+ const add=(source:Part,target:Part,note='Conventional aortic arch branching reference. Source ostia, continuous lumens and anatomical variants are unverified; this relationship does not certify a mesh junction.')=>{
+  for(const [from,to,kind] of [[source,target,'after'],[target,source,'before']] as const){
+   const links=graph.get(from.id)??[];if(!links.some(link=>link.kind===kind&&link.target.id===to.id))links.push({kind,target:to,note});graph.set(from.id,links);
+  }
+ };
+ for(const source of arteries){
+  const frame=nativePartFrame(source);if(!frame)continue;
+  const name=baseName(source.name);
+  if(name==='common carotid artery'){
+   const side=partSide(source);if(!side)continue;
+   for(const target of arteries.filter(part=>nativePartFrame(part)===frame&&partSide(part)===side&&['internal carotid artery','external carotid artery'].includes(baseName(part.name))))add(source,target,'Common carotid bifurcation into the ipsilateral internal and external carotid arteries. Source bifurcation surfaces, lumen continuity and anatomical variants remain unverified.');
+   continue;
+  }
+  if(name==='proximal segment of subclavian artery'&&partSide(source)==='left'){
+   for(const target of arteries.filter(part=>nativePartFrame(part)===frame&&baseName(part.name)==='subclavian artery'&&partSide(part)==='left'))add(source,target,'Adjoining native source partitions share 12 distal boundary coordinates. This establishes the source surface interface, not biological lumen continuity or complete vessel walls.');
+   continue;
+  }
+  const branch=name==='aortic arch'||name==='arch of aorta'?'arch':name==='brachiocephalic trunk'&&partSide(source)!=='left'?'trunk':undefined;
+  if(!branch)continue;
+  for(const target of arteries){
+   if(nativePartFrame(target)!==frame)continue;
+   const key=baseName(target.name),side=partSide(target);
+   if(branch==='arch'&&side==='left'){
+    if(key==='proximal segment of subclavian artery'){add(source,target);continue;}
+    if(key==='subclavian artery'&&arteries.some(part=>nativePartFrame(part)===frame&&baseName(part.name)==='proximal segment of subclavian artery'&&partSide(part)==='left'))continue;
+   }
+   if(branch==='arch'?(key==='brachiocephalic trunk'&&side!=='left'||['common carotid artery','subclavian artery'].includes(key)&&side==='left'):['common carotid artery','subclavian artery'].includes(key)&&side==='right')add(source,target);
+  }
+ }
+ aorticBranchNetworks.set(parts,graph);return graph;
+}
+function renalVenousNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
+ const cached=renalVenousNetworks.get(parts);if(cached)return cached;
+ const graph=new Map<string,ResolvedRelation[]>();
+ const veins=parts.filter(part=>!part.suppressed&&part.system==='venous');
+ for(const source of veins){
+  const side=/^intrarenal veins of (left|right) kidney$/i.exec(source.name)?.[1]?.toLowerCase();
+  const frame=nativePartFrame(source);if(!side||!frame)continue;
+  for(const target of veins.filter(part=>baseName(part.name)==='renal vein'&&partSide(part)===side&&nativePartFrame(part)===frame)){
+   const note='Intrarenal venous tributaries drain into the ipsilateral renal vein. This named source network does not establish every tributary, lumen or a continuous mesh junction.';
+   for(const [from,to,kind] of [[source,target,'after'],[target,source,'before']] as const){
+    const list=graph.get(from.id)??[];list.push({kind,target:to,note});graph.set(from.id,list);
+   }
+  }
+ }
+ renalVenousNetworks.set(parts,graph);return graph;
+}
+function lymphaticNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
+ const cached=lymphaticNetworks.get(parts);if(cached)return cached;
+ const graph=new Map<string,ResolvedRelation[]>(),named=new Map<string,Part[]>();
+ for(const part of parts){if(part.suppressed||!['lymphatic','venous'].includes(part.system))continue;const key=baseName(part.name),list=named.get(key)??[];list.push(part);named.set(key,list);}
+ const add=(source:Part,target:Part,note:string,via?:string[])=>{
+  for(const [from,to,kind] of [[source,target,'lymphaticDrainage'],[target,source,'lymphaticTributaries']] as const){
+   const list=graph.get(from.id)??[];if(!list.some(link=>link.kind===kind&&link.target.id===to.id))list.push({kind,target:to,note,via,viaModeled:via?false:undefined});graph.set(from.id,list);
+  }
+ };
+ const sameFrame=(source:Part,name:string,system:string,side?:'left'|'right')=>{
+  const frame=nativePartFrame(source);if(!frame)return [];
+  const candidates=(named.get(name)??[]).filter(part=>part.system===system&&nativePartFrame(part)===frame&&(!side||partSide(part)===side));
+  const largest=new Map<string,Part>();for(const part of candidates){const prior=largest.get(part.conceptId);if(!prior||part.vertexCount>prior.vertexCount)largest.set(part.conceptId,part);}return [...largest.values()];
+ };
+ for(const spleen of named.get('spleen')??[]){
+  if(spleen.system!=='lymphatic')continue;
+  for(const name of ['splenic nodes','splenic lymph nodes'])for(const nodes of sameFrame(spleen,name,'lymphatic'))add(spleen,nodes,'Regional splenic lymph drainage reference at the capsule and hilum. This source group does not resolve each collector, hilar node or efferent junction; source interfaces remain unverified. Blood-borne splenic cell traffic is not represented by this link.');
+ }
+ for(const cisterna of named.get('cisterna chyli')??[]){if(cisterna.system!=='lymphatic')continue;for(const duct of sameFrame(cisterna,'thoracic duct','lymphatic'))add(cisterna,duct,'Lymph passes from the modeled cisterna chyli into the thoracic duct. Cisterna anatomy varies; surface continuity and lumen junction are unverified.');}
+ for(const duct of named.get('thoracic duct')??[]){
+  if(duct.system!=='lymphatic')continue;
+  for(const name of ['internal jugular vein','subclavian vein'])for(const vein of sameFrame(duct,name,'venous','left'))add(duct,vein,'Typical left jugulosubclavian termination, represented here by the two adjoining venous segments. These are references to one venous-angle region, not two independent outlets. Terminal anatomy varies; source mesh junctions are unverified.',['Left venous angle']);
+ }
+ for(const duct of named.get('lymphatic duct')??[]){
+  if(duct.system!=='lymphatic'||partSide(duct)!=='right')continue;
+  for(const name of ['internal jugular vein','subclavian vein'])for(const vein of sameFrame(duct,name,'venous','right'))add(duct,vein,'Typical right jugulosubclavian termination, represented by its adjoining venous segments. The terminal junction and its anatomical variants are unverified.',['Right venous angle']);
+ }
+ lymphaticNetworks.set(parts,graph);return graph;
+}
+
+const reviewedRouteCache=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
+function reviewedNativeRoutes(parts:Part[]):Map<string,ResolvedRelation[]>{
+ const cached=reviewedRouteCache.get(parts);if(cached)return cached;
+ const graph=new Map<string,ResolvedRelation[]>(),available=parts.filter(p=>!p.suppressed);
+ const add=(source:Part,target:Part,kind:RelationKind,inverse:RelationKind,note:string)=>{
+  const frame=nativePartFrame(source);if(!frame||nativePartFrame(target)!==frame||source.id===target.id)return;
+  for(const [from,to,k] of [[source,target,kind],[target,source,inverse]] as const){const list=graph.get(from.id)??[];if(!list.some(r=>r.kind===k&&r.target.id===to.id))list.push({kind:k,target:to,note});graph.set(from.id,list);}
+ };
+ const named=(source:Part,names:string[],system:string,side?:'left'|'right'|null)=>available.filter(p=>p.system===system&&nativePartFrame(p)===nativePartFrame(source)&&names.includes(baseName(p.name))&&(!side||partSide(p)===side));
+ for(const source of available){
+  const name=baseName(source.name),side=partSide(source);if(!nativePartFrame(source))continue;
+  // IARC cervical anatomy, NCBI Bookshelf NBK568392: the vaginal
+  // portion of the cervix enters the vaginal vault, with the fornices around it.
+  if(source.system==='reproductive'&&['cervix','uterine cervix','cervix uteri'].includes(name)){
+   for(const target of named(source,['vagina'],'reproductive'))add(source,target,'continuous','continuous','Cervix–vagina anatomical junction: the vaginal portion of the cervix enters the vaginal vault, surrounded by the fornices; the cervical canal opens into the vagina at the external os. Source wall attachment, shared coordinates and lumen continuity remain unverified.');
+  }
+  // NCBI Bookshelf NBK538202: named epiglottic ligament attachments.
+  // Resolve native peers only; independently registered donor ligaments must
+  // not appear attached to the main body's epiglottis merely by name.
+  const epiglotticLigament=name.replace(/-/g,'');
+  if(['hyoepiglottic ligament','thyroepiglottic ligament'].includes(epiglotticLigament)){
+   const note='Named epiglottic ligament attachment reference. Source tissue extent, entheses and shared mesh interfaces remain unverified.';
+   for(const target of named(source,['epiglottis'],'respiratory'))add(source,target,'connects','connectedBy',note);
+   if(epiglotticLigament==='thyroepiglottic ligament'){
+    for(const target of available.filter(p=>nativePartFrame(p)===nativePartFrame(source)&&baseName(p.name)==='thyroid cartilage'))add(source,target,'connects','connectedBy',note);
+   }else{
+    for(const target of available.filter(p=>nativePartFrame(p)===nativePartFrame(source)&&['hyoid bone','body of hyoid bone'].includes(baseName(p.name))))add(source,target,'connects','connectedBy',note);
+   }
+  }
+  if(name==='chorda tympani'&&source.system==='nervous'&&side){
+   for(const target of named(source,['facial nerve','facial nerve (vii)','lingual nerve'],'nervous',side))add(source,target,'continuous','continuous','Chorda tympani branches from the facial/intermediate nerve and joins the ipsilateral lingual nerve. It carries taste afferents and parasympathetic efferents; this connection is not a one-direction axonal-flow claim. Source fascicles and physical junctions remain unverified.');
+  }
+  if(name==='ascending lumbar vein'&&source.system==='venous'&&side){
+   const outlets=side==='right'?['azygos vein']:['hemi-azygos vein','hemiazygos vein'];
+   for(const target of named(source,outlets,'venous'))add(source,target,'after','before','Named ascending-lumbar collateral drainage into the ipsilateral azygos/hemiazygos system. Caudal venous roots and subcostal communications vary; a direct end-to-end mesh continuation or universal junction is not asserted. Source lumen junctions remain unverified.');
+  }
+  if(name==='lumbar veins'&&source.system==='venous'&&side){
+   for(const target of named(source,['inferior vena cava','inferior vena cava (abdominal part)'],'venous'))add(source,target,'after','before','Lumbar venous drainage to the inferior vena cava; tributary levels and variants in this grouped source are unverified.');
+   for(const target of named(source,['ascending lumbar vein'],'venous',side))add(source,target,'after','before','Segmental lumbar veins communicate with the ipsilateral ascending lumbar collateral pathway. This grouped surface does not verify each segmental tributary or lumen junction.');
+  }
+  if(name==='dorsal digital arteries of foot'&&source.system==='arterial'&&side){
+   for(const target of named(source,['dorsal metatarsal arteries'],'arterial',side))add(target,source,'after','before','Dorsal metatarsal branches continue into dorsal digital arteries of the toes. Individual branch coverage, source wall layers and lumen junctions remain unverified.');
+  }
+ }
+ reviewedRouteCache.set(parts,graph);return graph;
+}
 export function anatomicalRelations(source:Part,allParts:Iterable<Part>):ResolvedRelation[]{
  const parts=Array.isArray(allParts)?allParts:[...allParts];
  const lookup=explicitRelations(source);
  const namedMuscleNerve=source.system==='muscular'&&!isTendon(source)?[`Nerve to ${baseName(source.name).replace(/ muscle$/,'')} muscle`]:[];
  const mapped:Relations={...lookup,innervation:[...(lookup.innervation??[]),...muscleNerves(source),...namedMuscleNerve]};
- const route=routeRelations(source,parts,[digestiveStages(parts),airwayRoute,leftAirwayRoute,arterialRoute,legArterialRoute,legVenousRoute,armArterialRoute,armVenousRoute,portalVenousRoute,portalMesentericRoute,greatSaphenousRoute,smallSaphenousRoute,rightHeartRoute,inferiorCavaRoute,leftHeartRoute,urinaryRoute,spermRoute]);
+ const route=routeRelations(source,parts,[digestiveStages(parts),airwayStages(parts),leftAirwayRoute,arterialRoute,legArterialRoute,legVenousRoute,armArterialRoute,armVenousRoute,portalVenousRoute,portalMesentericRoute,greatSaphenousRoute,smallSaphenousRoute,rightHeartRoute,inferiorCavaRoute,leftHeartRoute,urinaryRoute,spermRoute]);
  const branches=branchRelations(source,parts,[...airwayBranches,...arterialBranches,...nerveBranches]);
  const namedVessels=namedVascularRelations(source,parts);
  const nerves=nerveRelations(source,parts);
@@ -848,7 +1159,7 @@ export function anatomicalRelations(source:Part,allParts:Iterable<Part>):Resolve
  const result:ResolvedRelation[]=[];
  const seen=new Set<string>();
  const needsSkeletalNetwork=['skeletal','muscular','fascia','connective','arterial','venous','nervous'].includes(source.system);
- for(const relation of [...route,...branches,...downstreamShortcuts(source,parts),...(structuralNetwork(parts).get(source.id)??[]),...(needsSkeletalNetwork?skeletalNetwork(parts).get(source.id)??[]:[]),...reverse]){
+ for(const relation of [...route,...branches,...downstreamShortcuts(source,parts),...(structuralNetwork(parts).get(source.id)??[]),...(needsSkeletalNetwork?skeletalNetwork(parts).get(source.id)??[]:[]),...reverse,...retinalRelations(source,parts),...(lymphaticNetwork(parts).get(source.id)??[]),...(renalVenousNetwork(parts).get(source.id)??[]),...(aorticBranchNetwork(parts).get(source.id)??[]),...(adrenalNetwork(parts).get(source.id)??[]),...(reviewedNativeRoutes(parts).get(source.id)??[]),...(cardiacRelations(parts).get(source.id)??[])]){
   if(!accepts(relation.kind,source,relation.target))continue;
   const token=`${relation.kind}:${relation.target.id}`;
   if(!seen.has(token)){seen.add(token);result.push(relation);}

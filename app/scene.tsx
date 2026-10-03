@@ -1,3 +1,9 @@
+import {captureExplosionView,fitExplosionView,type ExplosionView} from './explosion-view';
+import {explicitCameraAction} from './camera-intent';
+import {viewPlaneLayout,viewPlanePoint} from './explosion-plane';
+import {triplanarSurfaceTexture} from './surface-texture-mapping';
+import {embryoSurfaceShader,type EmbryoSurface} from './embryo-material';
+import {appendAnatomyLabelCallouts} from './anatomy-label-renderer';
 import {assetUrl} from './asset-url';
 import {fetchAsset,loadModelBundle,rememberModelBundle} from './asset-cache';
 import {inRegion,partVisible,sectionPartVisible} from './viewer-state';
@@ -6,7 +12,7 @@ import * as T from 'three';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js';
 import {RoomEnvironment} from 'three/examples/jsm/environments/RoomEnvironment.js';
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import {createHierarchicalExplosionLayout,explosionBoundsAt,nextExplosionBounds,type ExplodeHierarchy,type HierarchicalExplosionLayout} from './hierarchical-explosion';
+import {createHierarchicalExplosionLayout,explosionBoundsAt,type ExplodeHierarchy,type HierarchicalExplosionLayout} from './hierarchical-explosion';
 import {dampMotion,smoothStep} from './transition-motion';
 import {hierarchyEntries} from './anatomy-hierarchy';
 import {resolveGuestHierarchy,type GuestHierarchy} from './guest-hierarchy';
@@ -14,7 +20,7 @@ import {loadModelBuffer} from './model-download';
 import {OnDemandChunks} from './on-demand-chunks';
 import {partIndexBuffer} from './part-index-buffer';
 import {selectionCenter} from './camera-pivot';
-import {orbitAroundPointer} from './pointer-orbit';
+import {freeOrbitAroundPivot,panPinch,orbitAroundPointer} from './pointer-orbit';
 import {advanceControllerOrbit} from './xr-orbit';
 import {labelAreaForPanels,layoutAnatomyLabels,type LabelAnchor,type LabelArea,type LabelPanel} from './label-layout';
 import {displayLaterality,lateralityClass} from './laterality';
@@ -35,17 +41,17 @@ import type {SceneCapture} from './export-tools';
 import type {CaptureSize,SceneFrameCapture} from './page-capture';
 import type {VrAnatomy} from './vr-anatomy';
 import type {ScenePose} from './connect-state';
-import {applyFrame,captureCameraPose,captureFrame,cameraPoseForFrame,decodeFrame,frameDistance,immersiveArea,interpolateCameraPose,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea,zoomInToFill,zoomOutToFit,type CameraPose,type ViewArea,type ViewRect} from './view-framing';
+import {applyFrame,captureCameraPose,captureFrame,cameraPoseForFrame,decodeFrame,frameDistance,immersiveArea,interpolateCameraPose,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea,type CameraPose,type ViewArea,type ViewRect} from './view-framing';
 import {validCamera} from '../shared/camera-frame.mjs';
 interface Props {atlas:Atlas;vrModelUrl:string;state:SceneState;hierarchy:ExplodeHierarchy;guestHierarchy?:GuestHierarchy;remotePoseRef?:{current:ScenePose|null};remoteModel?:string;onPose?:(pose:Omit<ScenePose,'model'>)=>void;cameraTransition?:{id:number;from:number[]};sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onSelect:(id:string,toggle?:boolean)=>void;onHidePart:(id:string,peel?:boolean)=>void;onCamera?:(camera:number[])=>void;onCovering?:(ids:string[])=>void;onExplosionSteps?:(steps:number)=>void;onCapture?:(capture:SceneCapture|null)=>void;onFrameCapture?:(capture:SceneFrameCapture|null)=>void;onProgress:(n:number)=>void;onError:(s:string)=>void}
-type SceneMaterial={color:number[];map?:string;normalMap?:string;normalScale?:number;roughness?:number;metalness?:number;opacity?:number;vertexColors?:boolean};
+type SceneMaterial={appearance?:EmbryoSurface;color:number[];map?:string;surfaceMapping?:'object-triplanar';normalMap?:string;normalScale?:number;roughness?:number;metalness?:number;opacity?:number;vertexColors?:boolean};
 export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHierarchy,remotePoseRef,remoteModel,onPose,cameraTransition,sectionTool=false,onSectionPosition,onSelect,onHidePart,onCamera,onCovering,onExplosionSteps,onCapture,onFrameCapture,onProgress,onError}:Props){
  const guestNodes=useMemo(()=>guestHierarchy?resolveGuestHierarchy(atlas,guestHierarchy):undefined,[atlas,guestHierarchy]);
  const host=useRef<HTMLDivElement>(null),latest=useRef(state),transitionRef=useRef(cameraTransition),hierarchyRef=useRef(hierarchy),guestNodesRef=useRef(guestNodes),guestKeyRef=useRef(''),sectionToolRef=useRef(sectionTool),sectionPositionRef=useRef(onSectionPosition),select=useRef(onSelect),hidePart=useRef(onHidePart),cameraCallback=useRef(onCamera),coveringCallback=useRef(onCovering),stepsCallback=useRef(onExplosionSteps);
  latest.current=state;transitionRef.current=cameraTransition;hierarchyRef.current=hierarchy;guestNodesRef.current=guestNodes;guestKeyRef.current=guestHierarchy?`${guestHierarchy.id}:${guestHierarchy.revision??0}:${guestHierarchy.roots?.join(',')??guestHierarchy.source??''}`:'';sectionToolRef.current=sectionTool;sectionPositionRef.current=onSectionPosition;select.current=onSelect;hidePart.current=onHidePart;cameraCallback.current=onCamera;coveringCallback.current=onCovering;stepsCallback.current=onExplosionSteps;
  const remoteRef=useRef(remotePoseRef),remoteModelRef=useRef(remoteModel),poseCallback=useRef(onPose);remoteRef.current=remotePoseRef;remoteModelRef.current=remoteModel;poseCallback.current=onPose;
  useEffect(()=>{
-  const el=host.current!;let disposed=false,frame=0,dirty=true,ready=false,lastView='',lastReset=-1,lastIsolate='',lastSelection='',lastRegion='',layoutKey='',amount=0;
+  const el=host.current!;let disposed=false,frame=0,dirty=true,ready=false,lastView='',lastReset=-1,layoutKey='',amount=0;
   let lastState:SceneState|null=null,depthAmount:number|undefined,depthVelocity=0;
   let lastTransitionId=0;
   let cameraTween:{from:CameraPose;to:CameraPose;start:number;duration:number;source:'saved'|'action'}|null=null;
@@ -89,18 +95,18 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   const width=T.MathUtils.ceilPowerOfTwo(atlas.parts.length),data=new Float32Array(width*4),partTexture=new T.DataTexture(data,width,1,T.RGBAFormat,T.FloatType);partTexture.needsUpdate=true;
   const selectedData=new Uint8Array(width*4),selectionTexture=new T.DataTexture(selectedData,width,1);selectionTexture.needsUpdate=true;
   const previewData=new Uint8Array(width*4),previewTexture=new T.DataTexture(previewData,width,1);previewTexture.needsUpdate=true;
+  const rotationPivotData=new Float32Array(width*4),rotationPivotTexture=new T.DataTexture(rotationPivotData,width,1,T.RGBAFormat,T.FloatType);let rotationClusters:number[][]=[];
   const rotationData=new Uint8Array(width*4),rotationTexture=new T.DataTexture(rotationData,width,1);rotationTexture.needsUpdate=true;
   const selectedRotation=new T.Quaternion(),rotationUniform={value:new T.Vector4(0,0,0,1)},pivotUniform={value:new T.Vector3()},rotationPartIndices=new Set<number>(),partIndices=new Map(atlas.parts.map((part,i)=>[part.id,i]));
   const materials:T.Material[]=[],geometries:T.BufferGeometry[]=[],pickers:(T.Mesh|undefined)[]=[],centers=atlas.parts.map(p=>new T.Vector3().fromArray(p.bounds[0]).add(new T.Vector3().fromArray(p.bounds[1])).multiplyScalar(.5));
   const bounds=atlas.parts.map(p=>new T.Box3(new T.Vector3().fromArray(p.bounds[0]),new T.Vector3().fromArray(p.bounds[1])));
   const modelBounds=new T.Box3();atlas.parts.forEach((part,index)=>{if(!part.suppressed)modelBounds.union(bounds[index]);});
   let currentArea:ViewArea=usableViewArea([]),currentLabelArea:LabelArea=labelAreaForPanels(0,0,[]),layoutDirty=true,areaInitialized=false;
-  let initialSelectionFitPending=!!(latest.current.isolate||latest.current.focus)&&!latest.current.camera;
-  controls.addEventListener('start',()=>{initialSelectionFitPending=false;});
   const viewBounds=modelBounds.clone(),framingPoint=new T.Vector3();
   const anatomyEntries=hierarchyEntries(atlas);let explosionLayout:HierarchicalExplosionLayout|null=null;
-  let packingWidth=1,packingHeight=1,explosionAspect=0,lastExplode=0,explosionVelocity=0,zoomVelocity=0;
-  const explosionFitBounds=new T.Box3(),explosionVisibleBounds=new T.Box3();let explosionFitPending=false,implosionFillActive=false;
+  let packingWidth=1,packingHeight=1,explosionAspect=0,lastExplode=0,explosionVelocity=0;
+  const explosionVisibleBounds=new T.Box3();let explosionFitActive=false;let explosionStartView:ExplosionView|null=null;
+  const abandonExplosionView=()=>{explosionFitActive=false;explosionStartView=null;};
   const hover=document.createElement('div');hover.className='part-hover';hover.setAttribute('role','tooltip');hover.hidden=true;
   const hoverLabel=document.createElement('span');hover.appendChild(hoverLabel);el.appendChild(hover);
   type Target={index:number;x:number;y:number;left:number;right:number;top:number;bottom:number};let targets:Target[]=[];
@@ -191,13 +197,28 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   const materialFor=(system:string,ghost=false,source?:SceneMaterial,skinSensitive=system==='integumentary'||system==='regions'||system==='cell-boundary',innerFace?:InnerFace)=>{
    const color=source?.color?`#${source.color.map(value=>Math.round(Math.max(0,Math.min(255,value))).toString(16).padStart(2,'0')).join('')}`:system==='tendon'?'#d6c8b0':system==='cartilage'?'#afc0cb':SYSTEMS.find(s=>s.id===system)?.color??'#aebbb8';
    const m=new T.MeshStandardMaterial({color,map:source?.map?textureFor(source.map):null,normalMap:source?.normalMap?textureFor(source.normalMap,true):null,normalScale:new T.Vector2(source?.normalScale??1,source?.normalScale??1),vertexColors:!!source?.vertexColors,metalness:referenceModel?Math.min(.08,source?.metalness??.02):source?.metalness??.02,roughness:referenceModel?Math.max(.63,source?.roughness??.76):source?.roughness??.76,side:T.DoubleSide,transparent:ghost,opacity:1,depthWrite:!ghost,clippingPlanes:clipPlanes});
-   const muscleSurface=system==='muscular'&&!source?.map;
-   m.customProgramCacheKey=()=>system+':'+ghost+':'+skinSensitive+':'+muscleSurface+':'+innerFace;
+   const muscleSurface=system==='muscular'&&!source?.map&&atlas.scope!=='embryo';
+   const projectedSurface=source?.map&&source.surfaceMapping==='object-triplanar';
+   const embryoSurface=atlas.scope==='embryo'&&source?.appearance?embryoSurfaceShader(source.appearance):null;
+   m.customProgramCacheKey=()=>system+':'+ghost+':'+skinSensitive+':'+muscleSurface+':'+innerFace+':'+(source?.appearance??'')+':'+(source?.surfaceMapping??'');
    m.onBeforeCompile=shader=>{
-    shader.uniforms.contextOpacity=contextUniform;shader.uniforms.partState={value:partTexture};shader.uniforms.selectionState={value:selectionTexture};shader.uniforms.rotationState={value:rotationTexture};shader.uniforms.stateWidth={value:width};shader.uniforms.selectionRotation=rotationUniform;shader.uniforms.selectionPivot=pivotUniform;
-    shader.vertexShader='attribute float partIndex; uniform sampler2D partState; uniform sampler2D selectionState; uniform sampler2D rotationState; uniform float stateWidth; uniform vec4 selectionRotation; uniform vec3 selectionPivot; varying float partVisible; varying float partSelected; varying float partOpacity; vec3 rotateSelected(vec3 v){return v+2.0*cross(selectionRotation.xyz,cross(selectionRotation.xyz,v)+selectionRotation.w*v);}\n'+shader.vertexShader;
+    shader.uniforms.contextOpacity=contextUniform;shader.uniforms.partState={value:partTexture};shader.uniforms.selectionState={value:selectionTexture};shader.uniforms.rotationState={value:rotationTexture};shader.uniforms.stateWidth={value:width};shader.uniforms.rotationPivots={value:rotationPivotTexture};shader.uniforms.selectionRotation=rotationUniform;shader.uniforms.selectionPivot=pivotUniform;
+    shader.vertexShader='attribute float partIndex; uniform sampler2D partState; uniform sampler2D selectionState; uniform sampler2D rotationState; uniform sampler2D rotationPivots; uniform float stateWidth; uniform vec4 selectionRotation; uniform vec3 selectionPivot; varying float partVisible; varying float partSelected; varying float partOpacity; vec3 rotateSelected(vec3 v){return v+2.0*cross(selectionRotation.xyz,cross(selectionRotation.xyz,v)+selectionRotation.w*v);}\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\nif (texture2D(rotationState,vec2((partIndex+0.5)/stateWidth,0.5)).r>0.5) objectNormal=rotateSelected(objectNormal);');
-    shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec2 stateUv = vec2((partIndex + 0.5) / stateWidth, 0.5); vec4 state = texture2D(partState, stateUv); transformed += state.xyz; partVisible = state.w; vec4 selection=texture2D(selectionState,stateUv); partSelected=selection.r; partOpacity=selection.g; if(texture2D(rotationState,stateUv).r>0.5) transformed=selectionPivot+rotateSelected(transformed-selectionPivot);');
+    shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec2 stateUv = vec2((partIndex + 0.5) / stateWidth, 0.5); vec4 state = texture2D(partState, stateUv); transformed += state.xyz; partVisible = state.w; vec4 selection=texture2D(selectionState,stateUv); partSelected=selection.r; partOpacity=selection.g; if(texture2D(rotationState,stateUv).r>0.5){vec3 pivot=texture2D(rotationPivots,stateUv).xyz;transformed=pivot+rotateSelected(transformed-pivot);}');
+    if(projectedSurface){
+     shader.vertexShader=triplanarSurfaceTexture.vertex+shader.vertexShader;
+     shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>'+triplanarSurfaceTexture.position);
+     shader.fragmentShader=triplanarSurfaceTexture.fragment+shader.fragmentShader;
+     shader.fragmentShader=shader.fragmentShader.replace('#include <map_fragment>',triplanarSurfaceTexture.map);
+    }
+    if(embryoSurface){
+     shader.vertexShader='varying vec3 embryoSurfacePosition;\n'+shader.vertexShader;
+     shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nembryoSurfacePosition=position;');
+     shader.fragmentShader=embryoSurface.pars+shader.fragmentShader;
+     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\n'+embryoSurface.color);
+     shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\n'+embryoSurface.normal);
+    }
     shader.fragmentShader='uniform float contextOpacity; varying float partVisible; varying float partSelected; varying float partOpacity;\n'+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif (partVisible < 0.5) discard;');
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
@@ -245,19 +266,23 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   const materialSpecs=new Map<string,{system:string;source?:SceneMaterial;skinSensitive?:boolean;innerFace?:InnerFace}>([...SYSTEMS.map(s=>s.id),'tendon','cartilage'].map(id=>[id,{system:id}]));
   materialSpecs.set('integumentary:internal',{system:'integumentary',skinSensitive:false});
   if(atlas.version==='BodyParts3D 4.0')materialSpecs.set('integumentary:paired-skin',{system:'integumentary',skinSensitive:true,innerFace:'skin'});
-  const spleenColor:[number,number,number]=[203,168,94];
+  const spleenColor:[number,number,number]=[123,65,84];
+  // Keep this display styling separate from shared iris/exterior materials.
+  // Female source caps provide the visible eye interior, not retina tissue.
+  const darkEyeInteriorIds=new Set(['ZA:Retina.l','ZA:Retina.r','HRA:VH_F_retina_L','HRA:VH_F_retina_R','LOCAL:female:r_pupil:177','LOCAL:female:l_pupil:179']);
+  const darkEyeInterior=(part:typeof atlas.parts[number])=>darkEyeInteriorIds.has(part.id);
   for(const part of atlas.parts)if(part.material&&atlas.materials?.[part.material]){
    const source=atlas.materials[part.material];
    const internal=part.system==='integumentary'&&!isSkinPart(part);
    const innerFace=innerFaceFor(part);
    const spleen=/^spleen(?:\s|$)/i.test(part.name);
-   materialSpecs.set(`source:${part.system}:${part.material}${internal?':internal':''}${innerFace?`:${innerFace}`:''}${spleen?':spleen':''}`,{system:part.system,skinSensitive:isSkinPart(part),innerFace,source:spleen?{...source,color:spleenColor,map:undefined,normalMap:undefined}:source});
+   materialSpecs.set(`source:${part.system}:${part.material}${internal?':internal':''}${innerFace?`:${innerFace}`:''}${spleen?':spleen':''}${darkEyeInterior(part)?':black-eye-interior':''}`,{system:part.system,skinSensitive:isSkinPart(part),innerFace,source:darkEyeInterior(part)?{...source,color:[0,0,0],map:undefined,normalMap:undefined,metalness:0,roughness:1}:spleen&&!part.material.endsWith(':reviewed-spleen')?{...source,color:spleenColor,map:undefined,normalMap:undefined}:source});
   }
   const materialKeyFor=(part:typeof atlas.parts[number])=>{
    const innerFace=innerFaceFor(part);
    const spleen=/^spleen(?:\s|$)/i.test(part.name);
    if(pairedSkinPart(part)&&!part.material)return 'integumentary:paired-skin';
-   return part.material&&atlas.materials?.[part.material]?`source:${part.system}:${part.material}${part.system==='integumentary'&&!isSkinPart(part)?':internal':''}${innerFace?`:${innerFace}`:''}${spleen?':spleen':''}`:part.tissue==='tendon'||part.tissue==='cartilage'?part.tissue:part.system==='integumentary'&&!isSkinPart(part)?'integumentary:internal':part.system;
+   return part.material&&atlas.materials?.[part.material]?`source:${part.system}:${part.material}${part.system==='integumentary'&&!isSkinPart(part)?':internal':''}${innerFace?`:${innerFace}`:''}${spleen?':spleen':''}${darkEyeInterior(part)?':black-eye-interior':''}`:part.tissue==='tendon'||part.tissue==='cartilage'?part.tissue:part.system==='integumentary'&&!isSkinPart(part)?'integumentary:internal':part.system;
   };
   const mats=new Map([...materialSpecs].map(([key,{system,source,skinSensitive,innerFace}])=>[key,materialFor(system,false,source,skinSensitive,innerFace)])),ghostMats=new Map([...materialSpecs].map(([key,{system,source,skinSensitive,innerFace}])=>[key,materialFor(system,true,source,skinSensitive,innerFace)]));
   // Cut patterns use plane coordinates, so source meshes need no UVs. Keep
@@ -311,6 +336,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    const candidates:CapCandidate[]=cuts.flatMap(({index:cutIndex})=>{
     const plane=clipPlanes[cutIndex].clone(),offset=-plane.constant,normal=plane.normal.toArray() as Point3;
     return atlas.parts.map((part,index)=>({part,index,cutIndex,plane})).filter(({part,index})=>{
+     if(part.sectionSolid===false&&!part.sectionAssembly)return false;
      if(!pickers[index]||!sectionPartVisible(part,s)||sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1)<.001)return false;
      if(s.explode>.001)return true;
      const range=sectionRange({min:part.bounds[0] as Point3,max:part.bounds[1] as Point3},normal);
@@ -383,7 +409,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   let loaded=0,lastReportedProgress=0;
   const chunkParts=Array.from({length:atlas.chunks.length},()=>[] as number[]);
   atlas.parts.forEach((part,index)=>chunkParts[part.chunk].push(index));
-  const chunkUrls=atlas.chunks.map(chunk=>assetUrl(chunk.gzip&&typeof DecompressionStream!=='undefined'?chunk.gzip:chunk.url));
+  const chunkUrls=atlas.chunks.map(chunk=>assetUrl(chunk.gzip??chunk.url));
   const chunkSizes=atlas.chunks.map(chunk=>chunk.bytes),chunkOffsets:number[]=[];let chunkTotal=0;
   for(const size of chunkSizes){chunkOffsets.push(chunkTotal);chunkTotal+=size;}
   const onDemand=atlas.delivery?.mode==='on-demand';
@@ -410,7 +436,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    return Number(selected(b))-Number(selected(a))||surface(b)-surface(a)||cutCounts[b]-cutCounts[a]||distal(b)-distal(a)||a-b;
   });
   const loadChunk=async(ci:number,signal=abort.signal)=>{
-   const chunk=atlas.chunks[ci],compressed=!!chunk.gzip&&typeof DecompressionStream!=='undefined';const buffer=bundleBuffer??await loadModelBuffer(chunkUrls[ci],chunk.bytes,compressed,signal);if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');
+   const chunk=atlas.chunks[ci],compressed=!!chunk.gzip;const buffer=bundleBuffer??await loadModelBuffer(chunkUrls[ci],chunk.bytes,compressed,signal);if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');
    if(!bundleBuffer)cachedBuffers[ci]=buffer;
    const offset=bundleBuffer?chunkOffsets[ci]:0;
    const groups=new Map<string,T.BufferGeometry[]>();
@@ -488,7 +514,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    const sections=enabledSections(s).length>0;
    const selected=new Set(s.selected);
    demand.update(chunkOrder.filter(ci=>chunkParts[ci].some(i=>{
-    const p=atlas.parts[i];return !p.suppressed&&(selected.has(p.id)||(sections?sectionPartVisible(p,s):partVisible(p,s)));
+    const p=atlas.parts[i];return !p.suppressed&&(selected.has(p.id)||(sections?sectionPartVisible(p,s):partVisible(p,s,atlas.parts)));
    })));
   };
   if(!onDemand)(async()=>{try{bundleBuffer=useBundle?await loadModelBundle(chunkUrls,chunkSizes):undefined;if(disposed)return;let cursor=0;await Promise.all(Array.from({length:questVr?3:8},async()=>{while(cursor<chunkOrder.length){const i=chunkOrder[cursor++];await loadChunk(i);}}));if(!disposed){ready=true;lastState=null;dirty=true;if(!bundleBuffer&&useBundle)void rememberModelBundle(chunkUrls,cachedBuffers);if(vrPreview||questVr&&xrSupported||xrArSupported)void prepareVr();}}catch(e){if(!disposed)onError(e instanceof Error?e.message:'Could not load the anatomy.');}})();
@@ -512,8 +538,8 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    const normalDistance=frameDistance(modelBounds,direction,camera.up,camera.aspect,area,camera.fov)*1.08,atlasDistance=frameDistance(packed,direction,camera.up,camera.aspect,area,camera.fov)*1.08;
    const distance=T.MathUtils.lerp(normalDistance,atlasDistance,extent);
    modelBounds.getCenter(controls.target);const pivot=latest.current.isolate||amount<.05?selectionCenter(atlas.parts,latest.current.selected,data):null;if(pivot)controls.target.copy(pivot);let fittedDistance=distance;
-   if((atlas.scope==='embryo'||latest.current.region&&latest.current.region!=='all')&&!pivot){const box=new T.Box3();atlas.parts.forEach((p,i)=>{if(!isSkinPart(p)&&(enabledSections(latest.current).length?sectionPartVisible(p,latest.current):partVisible(p,latest.current)))box.union(bounds[i]);});if(!box.isEmpty()){box.getCenter(controls.target);fittedDistance=frameDistance(box,direction,camera.up,camera.aspect,area,camera.fov)*1.1;}}
-   controls.maxDistance=Math.max(fittedDistance*1.25,.2);camera.position.copy(controls.target).addScaledVector(direction,fittedDistance);controls.update();if(enabledSections(latest.current).length){lastSectionOrientation='';lastSectionPoint=undefined;}dirty=true;
+   if((atlas.scope==='embryo'||latest.current.region&&latest.current.region!=='all')&&!pivot){const box=new T.Box3();atlas.parts.forEach((p,i)=>{if(!isSkinPart(p)&&(enabledSections(latest.current).length?sectionPartVisible(p,latest.current):partVisible(p,latest.current,atlas.parts)))box.union(bounds[i]);});if(!box.isEmpty()){box.getCenter(controls.target);fittedDistance=frameDistance(box,direction,camera.up,camera.aspect,area,camera.fov)*1.1;}}
+   controls.maxDistance=atlas.scope==='embryo'?Infinity:Math.max(fittedDistance*1.25,.2);camera.position.copy(controls.target).addScaledVector(direction,fittedDistance);controls.update();dirty=true;
   };
   const markLayoutDirty=()=>{layoutDirty=true;};
   const observer=new ResizeObserver(markLayoutDirty);observer.observe(el);
@@ -537,20 +563,26 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     let targetDistance=distance;
     atlas.parts.forEach((part,i)=>{if(!selected.has(part.id)||!pickers[i])return;const mesh=pickers[i]!;const hit=raycaster.intersectObject(mesh,false).find(hit=>keptBySections(hit.point));if(hit)targetDistance=Math.min(targetDistance,hit.distance);});
     raycaster.far=Math.max(0,targetDistance-.001);
-    atlas.parts.forEach((part,i)=>{const mesh=pickers[i];if(!mesh||selected.has(part.id)||!partVisible(part,inspectionState)||partLayerOpacity(part,s)<.01)return;if(!rotationPartIndices.has(i)){worldBox.copy(bounds[i]).translate(mesh.position);if(!raycaster.ray.intersectsBox(worldBox))return;}const hit=raycaster.intersectObject(mesh,false).find(hit=>keptBySections(hit.point));if(hit)candidates.set(i,Math.min(candidates.get(i)??Infinity,hit.distance));});
+    atlas.parts.forEach((part,i)=>{const mesh=pickers[i];if(!mesh||selected.has(part.id)||!partVisible(part,inspectionState,atlas.parts)||partLayerOpacity(part,s)<.01)return;if(!rotationPartIndices.has(i)){worldBox.copy(bounds[i]).translate(mesh.position);if(!raycaster.ray.intersectsBox(worldBox))return;}const hit=raycaster.intersectObject(mesh,false).find(hit=>keptBySections(hit.point));if(hit)candidates.set(i,Math.min(candidates.get(i)??Infinity,hit.distance));});
    }
    coveringCallback.current?.([...candidates].sort((a,b)=>a[1]-b[1]).map(([i])=>atlas.parts[i].id));
   };
-  const selectionPivot=()=>amount>.05&&!latest.current.isolate?null:selectionCenter(atlas.parts,latest.current.selected,data);
   const syncSelectedRotation=()=>{
    const box=new T.Box3();for(const i of rotationPartIndices)box.union(bounds[i].clone().translate(new T.Vector3(data[i*4],data[i*4+1],data[i*4+2])));
    const pivot=box.isEmpty()?null:box.getCenter(new T.Vector3());pivotUniform.value.copy(pivot??new T.Vector3());rotationUniform.value.set(selectedRotation.x,selectedRotation.y,selectedRotation.z,selectedRotation.w);
-   if(pivot)for(const i of rotationPartIndices){const mesh=pickers[i];if(!mesh)continue;
-    mesh.quaternion.copy(selectedRotation);mesh.position.set(data[i*4],data[i*4+1],data[i*4+2]).sub(pivot).applyQuaternion(selectedRotation).add(pivot);mesh.updateMatrix();mesh.updateMatrixWorld(true);
+   // Rotate each selected exploded cluster about its own center. A shared
+   // selection pivot would swing multiple cluster centers out of the POV plane.
+   for(const members of rotationClusters){const clusterBox=new T.Box3();
+    for(const i of members)clusterBox.union(bounds[i].clone().translate(new T.Vector3(data[i*4],data[i*4+1],data[i*4+2])));
+    const center=clusterBox.getCenter(new T.Vector3());
+    for(const i of members){rotationPivotData.set([center.x,center.y,center.z,1],i*4);const mesh=pickers[i];if(!mesh)continue;
+     mesh.quaternion.copy(selectedRotation);mesh.position.set(data[i*4],data[i*4+1],data[i*4+2]).sub(center).applyQuaternion(selectedRotation).add(center);mesh.updateMatrix();mesh.updateMatrixWorld(true);
+    }
    }
+   rotationPivotTexture.needsUpdate=true;
    dirty=true;
   };
-  const pressPoints=new Map<number,{x:number;y:number;lastX:number;lastY:number;rotating:boolean;orbitCandidate:boolean;orbiting:boolean;pivot?:T.Vector3}>();
+  const pressPoints=new Map<number,{x:number;y:number;lastX:number;lastY:number;pointerType:string;rotating:boolean;orbitCandidate:boolean;orbiting:boolean;pivot?:T.Vector3}>();
   const solidContext=()=> ((lastState??latest.current).depthHidden?.includes('skin')||depthLayerOpacity('skin',lastState??latest.current)<.95)&&atlas.parts.some((p,i)=>!isSkinPart(p)&&data[i*4+3]>.5);
   const canPick=(i:number,hasSolid:boolean)=>{
    const part=atlas.parts[i],selected=latest.current.selected.includes(part.id);
@@ -592,19 +624,33 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    return found;
   };
   const pointerPivot=(clientX:number,clientY:number)=>{
-   const point=new T.Vector3();pickAt(clientX,clientY,16,point);
+   const point=new T.Vector3(NaN,NaN,NaN);pickAt(clientX,clientY,16,point);
    if(Number.isFinite(point.x))return point;
+   if(atlas.scope==='embryo'){if(atlas.coordinateFrame?.origin)return new T.Vector3().fromArray(atlas.coordinateFrame.origin);const index=atlas.parts.findIndex(part=>part.name==='Vertebrae');if(index>=0){const mesh=pickers[index];return worldBox.copy(bounds[index]).applyMatrix4(mesh?.matrixWorld??new T.Matrix4().makeTranslation(data[index*4],data[index*4+1],data[index*4+2])).getCenter(new T.Vector3());}return controls.target.clone();}
    const rect=renderer.domElement.getBoundingClientRect();
    pointer.set((clientX-rect.left)/rect.width*2-1,-(clientY-rect.top)/rect.height*2+1);
    raycaster.setFromCamera(pointer,camera);
    const plane=new T.Plane().setFromNormalAndCoplanarPoint(camera.getWorldDirection(new T.Vector3()),controls.target);
    return raycaster.ray.intersectPlane(plane,point)??controls.target.clone();
   };
-  const down=(e:PointerEvent)=>{if(remoteRef.current)return;cancelCameraTween();const toggling=e.ctrlKey||e.metaKey,rotating=!toggling&&!sectionToolRef.current&&amount>.04&&!latest.current.isolate&&rotationPartIndices.size>0&&e.button===0,orbitCandidate=!toggling&&!rotating&&!sectionToolRef.current&&(amount<=.04||latest.current.isolate)&&e.button===0&&e.pointerType!=='touch';pressPoints.set(e.pointerId,{x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,rotating,orbitCandidate,orbiting:false});hover.hidden=true;tap.down(e.pointerId,e.clientX,e.clientY,e.pointerType==='touch'?16:10);if(rotating||toggling||orbitCandidate){e.preventDefault();e.stopImmediatePropagation();renderer.domElement.setPointerCapture(e.pointerId);}};
+  const down=(e:PointerEvent)=>{if(remoteRef.current)return;cancelCameraTween();const toggling=e.ctrlKey||e.metaKey,rotating=!toggling&&!sectionToolRef.current&&amount>.04&&!latest.current.isolate&&rotationPartIndices.size>0&&e.button===0,orbitCandidate=!toggling&&!rotating&&!sectionToolRef.current&&(amount<=.04||latest.current.isolate)&&e.button===0&&(e.pointerType!=='touch'||atlas.scope==='embryo');pressPoints.set(e.pointerId,{pointerType:e.pointerType,x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,rotating,orbitCandidate,orbiting:false});hover.hidden=true;tap.down(e.pointerId,e.clientX,e.clientY,e.pointerType==='touch'?16:10);if(rotating||toggling||orbitCandidate){e.preventDefault();e.stopImmediatePropagation();renderer.domElement.setPointerCapture(e.pointerId);}};
   const move=(e:PointerEvent)=>{
    if(remoteRef.current)return;
    tap.move(e.pointerId,e.clientX,e.clientY);
    const press=pressPoints.get(e.pointerId);
+   if(press&&!press.rotating&&!sectionToolRef.current&&e.buttons&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>8)abandonExplosionView();
+   if(atlas.scope==='embryo'&&press?.orbitCandidate&&e.pointerType==='touch'){
+    const touches=[...pressPoints.values()].filter(point=>point.pointerType==='touch'&&point.orbitCandidate);
+    if(touches.length>=2){
+     e.preventDefault();e.stopImmediatePropagation();
+     const pair=touches.slice(0,2),before=pair.map(point=>new T.Vector2(point.lastX,point.lastY)) as [T.Vector2,T.Vector2];
+     press.lastX=e.clientX;press.lastY=e.clientY;
+     const after=pair.map(point=>new T.Vector2(point.lastX,point.lastY)) as [T.Vector2,T.Vector2];
+     for(const point of touches){point.orbiting=true;point.pivot=controls.target.clone();}
+     abandonExplosionView();panPinch(camera,controls.target,before,after,renderer.domElement.clientHeight,controls.minDistance,controls.maxDistance);controls.update();dirty=true;
+     hover.hidden=true;return;
+    }
+   }
    if(press?.rotating){
     e.preventDefault();e.stopImmediatePropagation();
     const dx=e.clientX-press.lastX;press.lastX=e.clientX;
@@ -612,11 +658,11 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     hover.hidden=true;renderer.domElement.style.cursor='grabbing';return;
    }
    if(press?.orbitCandidate){
-    if(!press.orbiting&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>8){press.pivot=pointerPivot(press.x,press.y);press.orbiting=true;}
+    if(!press.orbiting&&Math.hypot(e.clientX-press.x,e.clientY-press.y)>8){abandonExplosionView();press.pivot=pointerPivot(press.x,press.y);renderer.domElement.dataset.orbitPivot=JSON.stringify(press.pivot.toArray());press.orbiting=true;}
     if(press.orbiting&&press.pivot){
      e.preventDefault();e.stopImmediatePropagation();
      const dx=e.clientX-press.lastX,dy=e.clientY-press.lastY;press.lastX=e.clientX;press.lastY=e.clientY;
-     if(dx||dy){const rect=renderer.domElement.getBoundingClientRect();pointer.set((press.x-rect.left)/rect.width*2-1,-(press.y-rect.top)/rect.height*2+1);orbitAroundPointer(camera,controls.target,press.pivot,pointer,dx,dy,rect.height,controls.minPolarAngle,controls.maxPolarAngle);controls.update();dirty=true;}
+     if(dx||dy){const rect=renderer.domElement.getBoundingClientRect();pointer.set((press.x-rect.left)/rect.width*2-1,-(press.y-rect.top)/rect.height*2+1);if(atlas.scope==='embryo')freeOrbitAroundPivot(camera,controls.target,press.pivot,dx,dy,rect.height);else orbitAroundPointer(camera,controls.target,press.pivot,pointer,dx,dy,rect.height,controls.minPolarAngle,controls.maxPolarAngle);controls.update();dirty=true;}
      hover.hidden=true;renderer.domElement.style.cursor='grabbing';return;
     }
    }
@@ -641,7 +687,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
   const preventContextMenu=(e:MouseEvent)=>{if(e.ctrlKey)e.preventDefault();};
   renderer.domElement.addEventListener('contextmenu',preventContextMenu);
   renderer.domElement.addEventListener('pointerdown',down,true);renderer.domElement.addEventListener('pointermove',move);renderer.domElement.addEventListener('pointerup',up);renderer.domElement.addEventListener('pointercancel',cancel);renderer.domElement.addEventListener('pointerleave',leave);
-  renderer.domElement.addEventListener('wheel',cancelCameraTween);
+  renderer.domElement.addEventListener('wheel',cancelCameraTween);renderer.domElement.addEventListener('wheel',abandonExplosionView);
   const xrDirection=new T.Vector3(0,0,-1),xrOrigin=new T.Vector3(),xrQuaternion=new T.Quaternion(),xrAim=new T.Vector3(),xrControllerQuaternion=new T.Quaternion(),xrOrbitQuaternion=new T.Quaternion(),xrOrbitEuler=new T.Euler(0,0,0,'YXZ');
   const setLightweight=(enabled:boolean)=>{lightweightActive=enabled;desktopAnatomy.visible=!enabled;rim.visible=!enabled;if(vrAnatomy)vrAnatomy.mesh.visible=enabled;
    if(enabled){clearTimeout(capTimer);capTimer=0;capGeneration++;capQueue.length=0;pendingCapSignatures.clear();capKey='vr';guideFill.visible=false;guideBorder.visible=false;}
@@ -652,7 +698,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    xrButton.disabled=true;xrButton.textContent='Preparing VR…';xrArButton.disabled=true;xrArButton.textContent='Preparing AR…';
    vrPreparation=(async()=>{
     const {loadVrAnatomy}=await import('./vr-anatomy');
-    const prepared=await loadVrAnatomy(atlas,vrModelUrl,{rotationState:rotationTexture,rotation:rotationUniform,pivot:pivotUniform,planes:clipPlanes},abort.signal);
+    const prepared=await loadVrAnatomy(atlas,vrModelUrl,{rotationState:rotationTexture,rotationPivots:rotationPivotTexture,rotation:rotationUniform,pivot:pivotUniform,planes:clipPlanes},abort.signal);
     if(disposed){prepared.dispose();return;}
     prepared.sync(latest.current,data,pickers,contextUniform.value);
     // Compile and upload before entering the headset's frame loop.
@@ -734,7 +780,8 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     for(const group of candidates.filter(group=>!parents.has(group.id)).sort((a,b)=>b.count-a.count).slice(0,w<768?50:180)){
      const previous=first.get(group.id)??group;
      const x=T.MathUtils.lerp(previous.x,group.x,mix),y=T.MathUtils.lerp(previous.y,group.y,mix),z=T.MathUtils.lerp(previous.z,group.z,mix),height=T.MathUtils.lerp(previous.height,group.height,mix);
-     projected.set(x,y+height/2,z).project(camera);if(projected.z< -1||projected.z>1)continue;
+     const before=from===0?new T.Vector3(previous.x,previous.y,previous.z):viewPlanePoint(previous.x,previous.y,camera.quaternion);
+     projected.copy(before).lerp(viewPlanePoint(group.x,group.y,camera.quaternion),mix).add(new T.Vector3(0,height/2,0).applyQuaternion(camera.quaternion)).project(camera);if(projected.z< -1||projected.z>1)continue;
      const screenX=(projected.x+1)*w/2,screenY=(1-projected.y)*h/2-10;
      const display=displayLaterality(group.name),name=display.label.length>32?`${display.label.slice(0,31)}…`:display.label,labelWidth=Math.min(220,name.length*6.2+14);
      const box={left:screenX-labelWidth/2,right:screenX+labelWidth/2,top:screenY-17,bottom:screenY+2};
@@ -757,20 +804,9 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    const labelBounds=currentLabelArea;
    const measure=(text:string)=>{const context=labelMeasure.getContext('2d');if(!context)return text.length*6.8;context.font='12px Arial';return context.measureText(text).width;};
    const placements=layoutAnatomyLabels(anchors,labelBounds,measure);
-   const leaders=document.createElementNS('http://www.w3.org/2000/svg','g');leaders.setAttribute('class','selected-anatomy-label');labelLayer.appendChild(leaders);
-   const pills=document.createElementNS('http://www.w3.org/2000/svg','g');pills.setAttribute('class','selected-anatomy-label');labelLayer.appendChild(pills);
-   const make=(parent:SVGGElement,name:string,attrs:Record<string,string>)=>{const element=document.createElementNS('http://www.w3.org/2000/svg',name);Object.entries(attrs).forEach(([key,value])=>element.setAttribute(key,value));parent.appendChild(element);return element;};
-   for(const placed of placements){
-    make(leaders,'line',{class:lateralityClass(placed.laterality??null),x1:String(placed.x),y1:String(placed.y),x2:String(placed.leaderX),y2:String(placed.leaderY)});
-    make(leaders,'circle',{class:lateralityClass(placed.laterality??null),cx:String(placed.x),cy:String(placed.y),r:'3'});
-   }
-   for(const placed of placements){
-    make(pills,'rect',{class:lateralityClass(placed.laterality??null),x:String(placed.left),y:String(placed.top),width:String(placed.right-placed.left),height:String(placed.bottom-placed.top),rx:'5'});
-    const label=make(pills,'text',{class:lateralityClass(placed.laterality??null),x:String(placed.left+8),y:String(placed.leaderY+3.5)});label.textContent=placed.label;
-    const title=make(pills,'title',{});title.textContent=placed.fullText??placed.text;
-   }
+   appendAnatomyLabelCallouts(labelLayer,placements);
   };
-  const clock=new T.Clock();let lastExtent=-1,lastCamera:number[]|undefined,lastFocus=0,lastRotationKey='',lastSectionOrientation='',lastSectionPoint:T.Vector3|undefined,selectionStencil=false,lastRemotePose:ScenePose|null=null,panelsAnimating=false;
+  const clock=new T.Clock();let lastExtent=-1,lastCamera:number[]|undefined,lastFocus=0,lastRotationKey='',selectionStencil=false,lastRemotePose:ScenePose|null=null,panelsAnimating=false;
   const animate=(now=performance.now())=>{
    if(disposed)return;const presenting=renderer.xr.isPresenting;if(!presenting)frame=requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05),requested=latest.current;if(!presenting)attachPreview();
    const following=!!remoteRef.current,reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -787,24 +823,20 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    const transition=transitionRef.current,savedTransition=!!transition?.id&&transition.id!==lastTransitionId&&!!s.camera&&validCamera(s.camera);
    const selectionCleared=!!lastState?.selected.length&&!s.selected.length;
    const newCamera=!!s.camera&&s.camera!==lastCamera&&!selectionCleared;
-   const actionTransition=s.view!==lastView||s.reset!==lastReset||(s.region??'all')!==lastRegion||!!s.focus&&s.focus!==lastFocus||s.isolate&&s.selected.join(',')+':'+s.reset!==lastIsolate||!s.isolate&&!!lastIsolate&&!selectionCleared||newCamera;
+   const actionTransition=explicitCameraAction(s,{view:lastView,reset:lastReset,focus:lastFocus},newCamera);
    const startPose=ready&&!following&&!reducedMotion&&lastView!==''&&(savedTransition||actionTransition)?captureCameraPose(camera,controls.target):null;
    if(savedTransition)lastTransitionId=transition!.id;
    if(reducedMotion||!transition&&cameraTween?.source==='saved')cancelCameraTween();
-   controls.enabled=!following&&!presenting;controls.enableDamping=!following&&!presenting&&!cameraTween;
+   controls.enabled=!following&&!presenting;controls.enableDamping=atlas.scope!=='embryo'&&!following&&!presenting&&!cameraTween&&!explosionFitActive;
    if(!presenting){const animating=studio.ownerDocument.getAnimations().some(animation=>{const target=(animation.effect as KeyframeEffect|null)?.target;return target instanceof Element&&(target.closest(panelSelectors)||target.querySelector(panelSelectors));});if(animating||panelsAnimating)layoutDirty=true;panelsAnimating=animating;}
    if(layoutDirty){
     layoutDirty=false;const areas=readLayoutAreas();currentArea=areas.view;currentLabelArea=areas.labels;
     const aspect=Math.max(1,el.clientWidth)/Math.max(1,el.clientHeight);if(camera.aspect!==aspect){const view=camera.view;camera.aspect=aspect;if(view?.enabled)camera.setViewOffset(aspect,1,view.offsetX/view.fullWidth*aspect,view.offsetY/view.fullHeight,aspect,1);}
     camera.updateProjectionMatrix();if(!presenting){syncCaptureResolution();renderer.setSize(el.clientWidth,el.clientHeight);}
-    // Follow the initial detail-panel entrance before handing camera placement
-    // to the user. Later panel changes preserve their chosen camera.
-    if(initialSelectionFitPending&&!s.camera)lastFocus=-1;
     if(!areaInitialized)fit(s.view,Math.min(1,amount*6));
     areaInitialized=true;dirty=true;
     renderer.domElement.dataset.viewArea=JSON.stringify(currentArea);renderer.domElement.dataset.viewAnchor=JSON.stringify(screenAnchor(currentArea,preferredAnchor(currentArea)));
    }
-   if(ready&&!panelsAnimating)initialSelectionFitPending=false;
    if(presenting){const xrFrame=renderer.xr.getFrame(),sources=xrSession?.inputSources;const left=[...(sources??[])].find(source=>source.handedness==='left');const stick=left?.gamepad?.axes[3]??0;
     if(!following&&Math.abs(stick)>.15)xrZoom=T.MathUtils.clamp(xrZoom*Math.exp(stick*dt*1.25),.25,4);
     if(questVr&&xrActiveMode==='immersive-vr'&&xrOrbitHeld&&!following&&left&&xrFrame){const space=renderer.xr.getReferenceSpace(),pose=space&&xrFrame.getPose(left.targetRaySpace,space);if(pose){const {x,y,z,w}=pose.transform.orientation,aim=xrAim.set(0,0,-1).applyQuaternion(xrControllerQuaternion.set(x,y,z,w));const current={yaw:Math.atan2(aim.x,-aim.z),pitch:Math.asin(T.MathUtils.clamp(aim.y,-1,1))};xrOrbit=advanceControllerOrbit(xrLastLeftAim,current,xrOrbit);xrLastLeftAim=current;}}
@@ -830,84 +862,54 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     dirty=true;}
    const explosionRequested=s.explode!==lastExplode;
    if(explosionRequested&&!savedTransition&&!newCamera)cancelCameraTween();
-   if(explosionRequested)implosionFillActive=s.explode<lastExplode&&!s.isolate;
+   if(explosionRequested&&!savedTransition&&!newCamera){if(!explosionStartView||lastExplode===0&&amount===0)explosionStartView=captureExplosionView(camera,controls.target);explosionFitActive=true;}
+   if(savedTransition||actionTransition){explosionFitActive=false;explosionStartView=null;}
    lastExplode=s.explode;
    const moving=Math.abs(amount-s.explode)>.00001||Math.abs(explosionVelocity)>.0001;
    if(moving&&!reducedMotion){const motion=dampMotion(amount,explosionVelocity,s.explode,Math.max(amount,s.explode)*(explosionLayout?.steps??1)<=2?.32:.22,dt);amount=T.MathUtils.clamp(motion.value,0,1);explosionVelocity=motion.velocity;dirty=true;}
    else if(amount!==s.explode||explosionVelocity){amount=s.explode;explosionVelocity=0;lastExtent=-1;dirty=true;}
    if(changed||moving||lastExtent<0){
     const selection=new Set(s.selected),activeCut=enabledSections(s).length>0;
-    const visibleParts=atlas.parts.filter(p=>activeCut?sectionPartVisible(p,s):partVisible(p,s));
+    const visibleParts=atlas.parts.filter(p=>activeCut?sectionPartVisible(p,s):partVisible(p,s,atlas.parts));
     const nextLayoutKey=visibleParts.map(p=>p.id).join(',')+':'+hierarchyRef.current+':'+(hierarchyRef.current==='guest'?guestKeyRef.current:'');
     const explosionChanged=!!lastState&&s.explode!==lastState.explode,layoutChanged=nextLayoutKey!==layoutKey||explosionChanged&&camera.aspect!==explosionAspect;
     if(layoutChanged){explosionLayout=createHierarchicalExplosionLayout(atlas,anatomyEntries,new Set(visibleParts.map(part=>part.id)),hierarchyRef.current,camera.aspect,guestNodesRef.current);layoutKey=nextLayoutKey;explosionAspect=camera.aspect;stepsCallback.current?.(explosionLayout.steps);}
-    const stages=explosionLayout!.stages,progress=amount*explosionLayout!.steps,from=Math.min(stages.length-1,Math.floor(progress)),to=Math.min(stages.length-1,from+1),blend=smoothStep(progress-from);
+    const stages=viewPlaneLayout(explosionLayout!,atlas.parts,camera.quaternion).stages,progress=amount*explosionLayout!.steps,from=Math.min(stages.length-1,Math.floor(progress)),to=Math.min(stages.length-1,from+1),blend=smoothStep(progress-from);
     packingWidth=T.MathUtils.lerp(stages[from].width,stages[to].width,blend);packingHeight=T.MathUtils.lerp(stages[from].height,stages[to].height,blend);
-    if(explosionRequested||layoutChanged&&amount>.001&&!selectionCleared){
-     explosionFitPending=s.explode>0&&!s.isolate&&!implosionFillActive&&!s.camera;
-     if(explosionFitPending){const box=nextExplosionBounds(explosionLayout!,atlas.parts,new Set(visibleParts.map(part=>part.id)),amount,s.explode);explosionFitBounds.min.fromArray(box.min);explosionFitBounds.max.fromArray(box.max);}
-    }
     const clusterStageIndex=Math.min(stages.length-1,Math.floor(progress+.05)),clusterStage=stages[clusterStageIndex],selectedClusters=new Set<number>();
     if(clusterStageIndex>0)for(const id of s.selected){const i=partIndices.get(id),cluster=i===undefined?-1:clusterStage.clusterIds[i];if(cluster>=0)selectedClusters.add(cluster);}
     const rotationKey=s.selected.join(',')+':'+s.reset+':'+clusterStageIndex+':'+[...selectedClusters].join(',');
     if(layoutChanged||rotationKey!==lastRotationKey||s.explode<=.04)selectedRotation.identity();lastRotationKey=rotationKey;
-    rotationPartIndices.clear();rotationData.fill(0);
+    rotationClusters=[...selectedClusters].map(cluster=>clusterStage.clusters[cluster]);rotationPartIndices.clear();rotationData.fill(0);
     for(const cluster of selectedClusters)for(const i of clusterStage.clusters[cluster]){rotationPartIndices.add(i);rotationData[i*4]=255;}
 
     viewBounds.makeEmpty();explosionVisibleBounds.makeEmpty();
     atlas.parts.forEach((p,i)=>{
      const c=centers[i],j=i*3,dx=T.MathUtils.lerp(stages[from].positions[j],stages[to].positions[j],blend)-c.x,dy=T.MathUtils.lerp(stages[from].positions[j+1],stages[to].positions[j+1],blend)-c.y,dz=T.MathUtils.lerp(stages[from].positions[j+2],stages[to].positions[j+2],blend)-c.z;
      const selected=selection.has(p.id),checked=sectionPartVisible(p,s);
-     data.set([dx,dy,dz,(activeCut?checked:partVisible(p,s))&&(!isSkinPart(p)||surfaceReady||selected||activeCut)?1:0],i*4);selectedData[i*4]=selected?255:0;selectedData[i*4+1]=Math.round(partLayerOpacity(p,s)*255);previewData[i*4]=(hasSurfacePreview?isSkinPart(p):checked)?255:0;
-     if(activeCut?checked:partVisible(p,s)){explosionVisibleBounds.expandByPoint(framingPoint.set(bounds[i].min.x+dx,bounds[i].min.y+dy,bounds[i].min.z+dz));explosionVisibleBounds.expandByPoint(framingPoint.set(bounds[i].max.x+dx,bounds[i].max.y+dy,bounds[i].max.z+dz));}
-     if(selection.size?selected:activeCut?checked:partVisible(p,s)){viewBounds.expandByPoint(framingPoint.set(bounds[i].min.x+dx,bounds[i].min.y+dy,bounds[i].min.z+dz));viewBounds.expandByPoint(framingPoint.set(bounds[i].max.x+dx,bounds[i].max.y+dy,bounds[i].max.z+dz));}
+     data.set([dx,dy,dz,(activeCut?checked:partVisible(p,s,atlas.parts))&&(!isSkinPart(p)||surfaceReady||selected||activeCut)?1:0],i*4);selectedData[i*4]=selected?255:0;selectedData[i*4+1]=Math.round(partLayerOpacity(p,s)*255);previewData[i*4]=(hasSurfacePreview?isSkinPart(p):checked)?255:0;
+     if(activeCut?checked:partVisible(p,s,atlas.parts)){explosionVisibleBounds.expandByPoint(framingPoint.set(bounds[i].min.x+dx,bounds[i].min.y+dy,bounds[i].min.z+dz));explosionVisibleBounds.expandByPoint(framingPoint.set(bounds[i].max.x+dx,bounds[i].max.y+dy,bounds[i].max.z+dz));}
+     if(selection.size?selected:activeCut?checked:partVisible(p,s,atlas.parts)){viewBounds.expandByPoint(framingPoint.set(bounds[i].min.x+dx,bounds[i].min.y+dy,bounds[i].min.z+dz));viewBounds.expandByPoint(framingPoint.set(bounds[i].max.x+dx,bounds[i].max.y+dy,bounds[i].max.z+dz));}
      const mesh=pickers[i];if(mesh){mesh.quaternion.identity();mesh.position.set(dx,dy,dz);mesh.updateMatrix();mesh.updateMatrixWorld(true);}
     });if(viewBounds.isEmpty())viewBounds.copy(modelBounds);syncSelectedRotation();partTexture.needsUpdate=true;selectionTexture.needsUpdate=true;previewTexture.needsUpdate=true;rotationTexture.needsUpdate=true;lastState=s;lastExtent=amount;dirty=true;if(changed)queueCaps(s);
    }
-   if(s.view!==lastView||s.reset!==lastReset||s.region!==lastRegion){if(s.focus)lastFocus=-1;fit(amount>.04?'front':s.view,Math.min(1,amount*6));lastView=s.view;lastReset=s.reset;lastRegion=s.region??'all';}
-   const isolateKey=s.isolate?s.selected.join(',')+':'+s.reset:'';
+   if(s.view!==lastView||s.reset!==lastReset){if(s.focus)lastFocus=-1;fit(amount>.04?'front':s.view,Math.min(1,amount*6));lastView=s.view;lastReset=s.reset;}
+   // Selection, isolation and visibility never change the camera or orbit target.
+   // Only an explicit Center command increments focus.
    const focusChanged=(s.focus??0)!==lastFocus;lastFocus=s.focus??0;
-   if(isolateKey!==lastIsolate||(s.isolate&&moving)||focusChanged&&!!s.focus){
-    // URL selection is available before its mesh finishes loading. Frame from
-    // catalogue bounds immediately instead of consuming focus on an empty box.
-    if(s.isolate||focusChanged&&!!s.focus){const box=new T.Box3();atlas.parts.forEach((p,i)=>{if(s.selected.includes(p.id))box.union(worldBox.copy(bounds[i]).applyMatrix4(pickers[i]?.matrixWorld??new T.Matrix4()));});
-     if(!box.isEmpty()){const center=box.getCenter(new T.Vector3()),area=viewArea(),direction=directionFor(s.view).normalize();setFrameOffset(camera,area);const distance=Math.max(.006,frameDistance(box,direction,camera.up,camera.aspect,area,camera.fov)*1.35);controls.maxDistance=Math.max(.12,distance*1.6);controls.target.copy(center);camera.position.copy(center).addScaledVector(direction,distance);controls.update();dirty=true;}
-    }else if(lastIsolate&&!selectionCleared){camera.clearViewOffset();fit(s.view,Math.min(1,amount*6));}
-    lastIsolate=isolateKey;
+   if(focusChanged&&!!s.focus){const box=new T.Box3();atlas.parts.forEach((p,i)=>{if(s.selected.includes(p.id))box.union(worldBox.copy(bounds[i]).applyMatrix4(pickers[i]?.matrixWorld??new T.Matrix4()));});
+    if(!box.isEmpty()){const center=box.getCenter(new T.Vector3()),area=viewArea(),direction=directionFor(s.view).normalize();setFrameOffset(camera,area);const distance=Math.max(.006,frameDistance(box,direction,camera.up,camera.aspect,area,camera.fov)*1.35);controls.maxDistance=atlas.scope==='embryo'?Infinity:Math.max(.12,distance*1.6);controls.target.copy(center);camera.position.copy(center).addScaledVector(direction,distance);controls.update();dirty=true;}
    }
-   const selectionKey=s.selected.join(',')+':'+s.reset;if(selectionKey!==lastSelection||moving&&s.selected.length>0){const pivot=selectionPivot();if(pivot){controls.target.copy(pivot);controls.update();}lastSelection=selectionKey;dirty=true;}
    const canOrbit=amount<=.04||s.isolate;controls.enableRotate=canOrbit;controls.mouseButtons.LEFT=canOrbit?T.MOUSE.ROTATE:T.MOUSE.PAN;controls.touches.ONE=canOrbit?T.TOUCH.ROTATE:T.TOUCH.PAN;controls.autoRotate=!following&&!presenting&&s.rotate&&!s.isolate&&canOrbit&&!cameraTween;controls.autoRotateSpeed=.65;if(!presenting)controls.update();if(controls.autoRotate)dirty=true;
    if(!s.camera)lastCamera=undefined;
    if(s.camera&&s.camera!==lastCamera){applyFrame(camera,controls.target,s.camera,viewBounds,viewArea());controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.05);controls.update();lastCamera=s.camera;dirty=true;}
-   const section=s.section?.enabled?s.section:enabledSections(s)[0]?.section,orientation=section?.enabled?[section.axis,section.azimuth??'',section.elevation??'',section.flip].join(':'):'';
-   if(orientation){const point=new T.Vector3().fromArray(sectionPoint(sectionBounds,section!));
-    if(orientation!==lastSectionOrientation&&!s.camera){
-     const direction=new T.Vector3().fromArray(sectionNormal(section!)).multiplyScalar(section!.flip?-1:1);
-     camera.up.copy(Math.abs(direction.y)>.9?new T.Vector3(0,0,-1):new T.Vector3(0,1,0));
-     const right=new T.Vector3().crossVectors(camera.up,direction).normalize(),up=new T.Vector3().crossVectors(direction,right).normalize();
-     const cutBox=new T.Box3(),cutNormal=sectionNormal(section!),cutOffset=sectionDot(point.toArray() as Point3,cutNormal);
-     atlas.parts.forEach((part,i)=>{if(!sectionPartVisible(part,s))return;const partBounds={min:part.bounds[0] as Point3,max:part.bounds[1] as Point3},range=sectionRange(partBounds,cutNormal);if(range.min>cutOffset+.001||range.max<cutOffset-.001)return;
-      if(clipPlanes.some(plane=>sectionRange(partBounds,plane.normal.toArray() as Point3).max+plane.constant<-.001))return;
-      cutBox.union(bounds[i]);});
-     const size=cutBox.isEmpty()?new T.Vector3().fromArray(sectionBounds.max).sub(new T.Vector3().fromArray(sectionBounds.min)):cutBox.getSize(new T.Vector3());
-     const spanX=Math.abs(right.x)*size.x+Math.abs(right.y)*size.y+Math.abs(right.z)*size.z;
-     const spanY=Math.abs(up.x)*size.x+Math.abs(up.y)*size.y+Math.abs(up.z)*size.z;
-     const area=viewArea(),tan=Math.tan(T.MathUtils.degToRad(camera.fov/2));
-     const distance=Math.max(.12,spanX/Math.max(.08,area.right-area.left)/camera.aspect,spanY/Math.max(.08,area.bottom-area.top))/(2*tan)*(referenceModel ? .9 : 1.12);
-     setFrameOffset(camera,area);
-     controls.maxDistance=Math.max(controls.maxDistance,distance*1.5);
-     controls.target.copy(point);camera.position.copy(point).addScaledVector(direction,distance);controls.update();dirty=true;
-    }
-    else if(lastSectionPoint&&orientation===lastSectionOrientation&&!point.equals(lastSectionPoint)){const delta=point.clone().sub(lastSectionPoint);controls.target.add(delta);camera.position.add(delta);controls.update();dirty=true;}
-    lastSectionPoint=point;
-   }else if(lastSectionOrientation){camera.up.set(0,1,0);if(!s.camera)fit(s.view,Math.min(1,amount*6));lastSectionPoint=undefined;dirty=true;}
-   lastSectionOrientation=orientation;
+   // Section edits move only the clipping planes, never the view.
    if(startPose){
     let destination=captureCameraPose(camera,controls.target);
     if(s.camera&&validCamera(s.camera)&&explosionLayout){
-     const finalParts=atlas.parts.filter(part=>enabledSections(requested).length?sectionPartVisible(part,requested):partVisible(part,requested)),ids=new Set(requested.selected.length?requested.selected:finalParts.map(part=>part.id));
+     const finalParts=atlas.parts.filter(part=>enabledSections(requested).length?sectionPartVisible(part,requested):partVisible(part,requested,atlas.parts)),ids=new Set(requested.selected.length?requested.selected:finalParts.map(part=>part.id));
      const finalLayout=s===requested?explosionLayout:createHierarchicalExplosionLayout(atlas,anatomyEntries,new Set(finalParts.map(part=>part.id)),hierarchyRef.current,camera.aspect,guestNodesRef.current);
-     const box=explosionBoundsAt(finalLayout,atlas.parts,ids,requested.explode),finalBounds=new T.Box3(new T.Vector3().fromArray(box.min),new T.Vector3().fromArray(box.max));
+     const box=explosionBoundsAt(viewPlaneLayout(finalLayout,atlas.parts,camera.quaternion),atlas.parts,ids,requested.explode),finalBounds=new T.Box3(new T.Vector3().fromArray(box.min),new T.Vector3().fromArray(box.max));
      destination=cameraPoseForFrame(s.camera,finalBounds.isEmpty()?modelBounds:finalBounds,camera,viewArea());
     }
     cameraTween={from:startPose,to:destination,start:now,duration:1100,source:savedTransition?'saved':'action'};controls.enableDamping=false;
@@ -923,30 +925,32 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     applyFrame(camera,controls.target,remote.camera,viewBounds,viewArea());if(remote.camera.length!==12)camera.up.fromArray(remote.up);controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.05);controls.update();
     selectedRotation.fromArray(remote.rotation).normalize();syncSelectedRotation();lastRemotePose=remote;dirty=true;
    }
-   const zoomStart=camera.position.clone(),zoomStartDistance=camera.position.distanceTo(controls.target);
-   let fittedZoom=false;
-   if(explosionFitPending&&!cameraTween){
-    for(const i of rotationPartIndices){const mesh=pickers[i];if(mesh&&data[i*4+3]>.5)explosionFitBounds.union(worldBox.copy(bounds[i]).applyMatrix4(mesh.matrixWorld));}
-    fittedZoom=zoomOutToFit(camera,explosionFitBounds,viewArea());
+   // Permanent view-plane invariant: reproject after every camera update,
+   // including saved views, sections, roll and isolated cluster inspection.
+   if(dirty&&amount>0&&explosionLayout){
+    const stages=viewPlaneLayout(explosionLayout,atlas.parts,camera.quaternion).stages,progress=amount*explosionLayout.steps;
+    const from=Math.min(explosionLayout.steps,Math.floor(progress)),to=Math.min(explosionLayout.steps,from+1),blend=smoothStep(progress-from);
+    explosionVisibleBounds.makeEmpty();viewBounds.makeEmpty();
+    atlas.parts.forEach((part,i)=>{const j=i*3,c=centers[i];
+     const dx=T.MathUtils.lerp(stages[from].positions[j],stages[to].positions[j],blend)-c.x,dy=T.MathUtils.lerp(stages[from].positions[j+1],stages[to].positions[j+1],blend)-c.y,dz=T.MathUtils.lerp(stages[from].positions[j+2],stages[to].positions[j+2],blend)-c.z;
+     data[i*4]=dx;data[i*4+1]=dy;data[i*4+2]=dz;
+     const mesh=pickers[i];if(mesh){mesh.quaternion.identity();mesh.position.set(dx,dy,dz);mesh.updateMatrix();mesh.updateMatrixWorld(true);}
+     if(data[i*4+3]>.5){worldBox.copy(bounds[i]).translate(framingPoint.set(dx,dy,dz));explosionVisibleBounds.union(worldBox);if(!s.selected.length||s.selected.includes(part.id))viewBounds.union(worldBox);}
+    });
+    if(viewBounds.isEmpty())viewBounds.copy(modelBounds);syncSelectedRotation();partTexture.needsUpdate=true;
    }
-   if(implosionFillActive&&!cameraTween&&!s.camera){
-    const box=explosionVisibleBounds.clone();
-    for(const i of rotationPartIndices){const mesh=pickers[i];if(mesh&&data[i*4+3]>.5)box.union(worldBox.copy(bounds[i]).applyMatrix4(mesh.matrixWorld));}
-    let fitted=zoomOutToFit(camera,box,viewArea());
-    fitted=zoomInToFill(camera,box,viewArea(),Math.max(0,camera.position.distanceTo(controls.target)-controls.minDistance))||fitted;
-    fittedZoom=fitted||fittedZoom;
+   // Explicit Explode/Implode authorizes fitting only for this transition.
+   // Never activate this because selection, panels or visibility changed.
+   if(explosionFitActive&&explosionStartView&&!cameraTween&&!following&&!presenting&&explosionLayout){
+    // Never fit the future layout on the command's first frame.
+    if(!explosionRequested){
+     const box=explosionVisibleBounds.clone();
+     for(const i of rotationPartIndices){const mesh=pickers[i];if(mesh&&data[i*4+3]>.5)box.union(worldBox.copy(bounds[i]).applyMatrix4(mesh.matrixWorld));}
+     fitExplosionView(camera,controls.target,explosionStartView,box,viewArea(),amount);
+     controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.25);dirty=true;
+    }
+    if(!moving&&!explosionRequested){explosionFitActive=false;if(s.explode===0)explosionStartView=null;}
    }
-   if((explosionFitPending||implosionFillActive)&&!cameraTween&&!s.camera){
-    const desiredDistance=camera.position.distanceTo(controls.target),motion=dampMotion(Math.log(Math.max(.000001,zoomStartDistance)),zoomVelocity,Math.log(Math.max(.000001,desiredDistance)),.16,dt);
-    const settled=Math.abs(motion.value-Math.log(Math.max(.000001,desiredDistance)))<.00001&&Math.abs(motion.velocity)<.0001;
-    zoomVelocity=reducedMotion||settled?0:motion.velocity;
-    if(!reducedMotion&&!settled){camera.position.copy(controls.target).addScaledVector(zoomStart.sub(controls.target).normalize(),Math.exp(motion.value));camera.updateMatrixWorld(true);dirty=true;}
-    // Fit the moving geometry as well as the upcoming mark; gradual zoom must
-    // never allow the current parts to cross a panel or viewport edge.
-    fittedZoom=zoomOutToFit(camera,explosionVisibleBounds,viewArea())||fittedZoom;
-    if(fittedZoom||zoomVelocity){controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.25);controls.update();dirty=true;}
-    if(!moving&&settled){explosionFitPending=false;implosionFillActive=false;}
-   }else if(s.camera){explosionFitPending=false;implosionFillActive=false;zoomVelocity=0;}
    // Keep depth precision near the anatomy as the camera moves. A fixed tiny near
    // plane causes close skin and muscle surfaces to fight at whole-body distances.
    const near=Math.max(.00001,Math.min(.05,camera.position.distanceTo(controls.target)/500));
@@ -965,7 +969,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     let values:number[],viewUp:number[];
     if(presenting){const tracked=renderer.xr.getCamera();tracked.matrixWorld.decompose(xrHeadCamera.position,xrHeadCamera.quaternion,xrHeadCamera.scale);xrHeadCamera.up.set(0,1,0).applyQuaternion(xrHeadCamera.quaternion);xrHeadCamera.fov=xrPresentationCamera.fov;xrHeadCamera.aspect=xrPresentationCamera.aspect;const target=xrHeadCamera.position.clone().addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(xrHeadCamera.quaternion),xrPresentationCamera.position.distanceTo(controls.target));values=captureFrame(xrHeadCamera,target,viewBounds,xrSession?.domOverlayState?viewArea():immersiveArea);viewUp=xrHeadCamera.up.toArray();}
     else{values=cameraValues();viewUp=camera.up.toArray();drawLabels(s);}
-    cameraCallback.current?.(values);if(!following)poseCallback.current?.({camera:values,up:viewUp,rotation:selectedRotation.toArray()});renderer.domElement.dataset.cameraFrame=JSON.stringify(values);targets=[];
+    cameraCallback.current?.(values);if(!following)poseCallback.current?.({camera:values,up:viewUp,rotation:selectedRotation.toArray()});renderer.domElement.dataset.cameraFrame=JSON.stringify(values);renderer.domElement.dataset.cameraPose=JSON.stringify({position:camera.position.toArray(),target:controls.target.toArray(),up:camera.up.toArray(),quaternion:camera.quaternion.toArray(),view:camera.view});targets=[];
     if(!presenting&&amount>.45){
      const hasSolid=solidContext();
      atlas.parts.forEach((p,i)=>{
@@ -979,13 +983,13 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
       targets.push({index:i,x:(projected.x+1)*el.clientWidth/2,y:(1-projected.y)*el.clientHeight/2,left,right,top,bottom});
      });
     }
-    if(!pageFrameListeners.size)rememberPageFrame();for(const listener of pageFrameListeners)listener({canvas:renderer.domElement,labels:labelLayer,transitioning:!!cameraTween||moving||depthMoving||explosionFitPending||implosionFillActive},now);dirty=false;
+    if(!pageFrameListeners.size)rememberPageFrame();for(const listener of pageFrameListeners)listener({canvas:renderer.domElement,labels:labelLayer,transitioning:!!cameraTween||moving||depthMoving},now);dirty=false;
    }
    if(!presenting&&previewCanvas&&(previewDirty||changed))drawPreview(s);
    if(!presenting&&ready){const key=[s.selected.join(','),s.visible.join(','),s.region,s.skinOpacity,s.depth,s.explode,...selectedRotation.toArray().map(v=>v.toFixed(2)),...camera.position.toArray().map(v=>v.toFixed(2)),...controls.target.toArray().map(v=>v.toFixed(2))].join(':');if((key!==lastCoveringKey||s.hidden!==lastCoveringHidden||s.depthHidden!==lastCoveringDepth)&&performance.now()-lastCoveringScan>250){scanCovering(s);lastCoveringKey=key;lastCoveringHidden=s.hidden;lastCoveringDepth=s.depthHidden;lastCoveringScan=performance.now();}}
 
   };animate();
-  const capturePageFrame:SceneFrameCapture=Object.assign((size?:CaptureSize)=>{captureSize=size;const resolutionChanged=syncCaptureResolution();if(!pageCaptureCanvas||resolutionChanged){pageCaptureCanvas??=document.createElement('canvas');renderer.render(scene,renderer.xr.isPresenting?xrRenderCamera:camera);rememberPageFrame();}return {canvas:pageCaptureCanvas,labels:labelLayer,transitioning:!!cameraTween||Math.abs(amount-latest.current.explode)>.00001||depthAmount!==undefined&&Math.abs(depthAmount-(latest.current.depth??depthAmount))>.00001||explosionFitPending||implosionFillActive};},{release:()=>{pageFrameListeners.clear();pageCaptureCanvas=null;captureSize=undefined;syncCaptureResolution();},invalidate:()=>{dirty=true;},subscribe:(listener:Parameters<SceneFrameCapture['subscribe']>[0],size:CaptureSize)=>{captureSize=size;syncCaptureResolution();pageCaptureCanvas=null;pageFrameListeners.add(listener);dirty=true;return()=>{pageFrameListeners.delete(listener);};}});
+  const capturePageFrame:SceneFrameCapture=Object.assign((size?:CaptureSize)=>{captureSize=size;const resolutionChanged=syncCaptureResolution();if(!pageCaptureCanvas||resolutionChanged){pageCaptureCanvas??=document.createElement('canvas');renderer.render(scene,renderer.xr.isPresenting?xrRenderCamera:camera);rememberPageFrame();}return {canvas:pageCaptureCanvas,labels:labelLayer,transitioning:!!cameraTween||Math.abs(amount-latest.current.explode)>.00001||depthAmount!==undefined&&Math.abs(depthAmount-(latest.current.depth??depthAmount))>.00001};},{release:()=>{pageFrameListeners.clear();pageCaptureCanvas=null;captureSize=undefined;syncCaptureResolution();},invalidate:()=>{dirty=true;},subscribe:(listener:Parameters<SceneFrameCapture['subscribe']>[0],size:CaptureSize)=>{captureSize=size;syncCaptureResolution();pageCaptureCanvas=null;pageFrameListeners.add(listener);dirty=true;return()=>{pageFrameListeners.delete(listener);};}});
   onFrameCapture?.(capturePageFrame);
   onCapture?.(async(options={labels:false,background:true})=>{
    if(!ready||disposed)throw new Error('The 3D view is still loading.');
@@ -1004,7 +1008,7 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    return new Promise<Blob>((resolve,reject)=>output.toBlob(blob=>blob?resolve(blob):reject(new Error('The PNG could not be created.')),'image/png'));
   });
   const contextLost=(e:Event)=>{e.preventDefault();onError('The 3D session was paused by your device. Reload to continue.');};renderer.domElement.addEventListener('webglcontextlost',contextLost);
-  return()=>{onCapture?.(null);onFrameCapture?.(null);disposed=true;demand?.stop();abort.abort();vrAnatomy?.mesh.removeFromParent();vrAnatomy?.dispose();cancelAnimationFrame(frame);renderer.setAnimationLoop(null);renderer.xr.removeEventListener('sessionend',xrEnded);if(xrSession){xrSession.removeEventListener('select',xrSelect);xrSession.removeEventListener('selectstart',xrSelectStart);xrSession.removeEventListener('selectend',xrSelectEnd);void xrSession.end();}xrButton.remove();xrArButton.remove();delete (studio as HTMLElement).dataset.xrMode;xrRays.forEach(ray=>{ray.geometry.dispose();(ray.material as T.Material).dispose();});xrInfoTexture.dispose();(xrInfo.material as T.Material).dispose();clearTimeout(capTimer);clearCaps();stencilCaps.dispose();observer.disconnect();layoutObserver.disconnect();studio.removeEventListener('beforexrselect',overlaySelect);theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',cancelCameraTween);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());textureUrls.forEach(url=>URL.revokeObjectURL(url));guideGeometry.dispose();guideBorder.geometry.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
+  return()=>{onCapture?.(null);onFrameCapture?.(null);disposed=true;demand?.stop();abort.abort();vrAnatomy?.mesh.removeFromParent();vrAnatomy?.dispose();cancelAnimationFrame(frame);renderer.setAnimationLoop(null);renderer.xr.removeEventListener('sessionend',xrEnded);if(xrSession){xrSession.removeEventListener('select',xrSelect);xrSession.removeEventListener('selectstart',xrSelectStart);xrSession.removeEventListener('selectend',xrSelectEnd);void xrSession.end();}xrButton.remove();xrArButton.remove();delete (studio as HTMLElement).dataset.xrMode;xrRays.forEach(ray=>{ray.geometry.dispose();(ray.material as T.Material).dispose();});xrInfoTexture.dispose();(xrInfo.material as T.Material).dispose();clearTimeout(capTimer);clearCaps();stencilCaps.dispose();observer.disconnect();layoutObserver.disconnect();studio.removeEventListener('beforexrselect',overlaySelect);theme.removeEventListener('change',applyTheme);renderer.domElement.removeEventListener('wheel',cancelCameraTween);renderer.domElement.removeEventListener('wheel',abandonExplosionView);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());textureUrls.forEach(url=>URL.revokeObjectURL(url));guideGeometry.dispose();guideBorder.geometry.dispose();guideFill.material.dispose();previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)&&o!==guideFill){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();rotationPivotTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
  },[atlas]);
  return <div className="scene" ref={host}/>;
 }

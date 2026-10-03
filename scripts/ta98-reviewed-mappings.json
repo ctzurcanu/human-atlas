@@ -1,6 +1,28 @@
 [
   {
     "names": [
+      "chorda tympani"
+    ],
+    "term": "A14.2.01.118",
+    "systems": [
+      "nervous"
+    ],
+    "kind": "exact",
+    "note": "Named chorda tympani is the facial/intermediate nerve branch joining the lingual nerve; it is not the whole parasympathetic root of a ganglion. Use its cranial VII TA98 entry rather than a shared synonym for a root."
+  },
+  {
+    "names": [
+      "cervix"
+    ],
+    "term": "A09.1.03.010",
+    "systems": [
+      "reproductive"
+    ],
+    "kind": "exact",
+    "note": "Pelvic reproductive cervix is cervix uteri, not the homonymous dental cervix dentis. Native female source identity reviewed against its uterine/vaginal assembly."
+  },
+  {
+    "names": [
       "vertebra c7"
     ],
     "term": "A02.2.02.301",
