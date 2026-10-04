@@ -148,7 +148,7 @@ function locationFor(parts:Part[],region:string):string[]{
   return side?[`${side} leg`,area]:[];
  }
  if(region==='Upper limbs'){
-  const area=/\b(hand|finger|thumb|digit|metacarp|carpal|wrist|palm|distal radio-ulnar joint)\b/.test(name)||has(groups,/^(?:(left |right )?hand|distal radio-ulnar joint)$/)?'Hand & wrist'
+  const area=/\b(hand|finger|thumb|digit|metacarp|carpal|wrist|palm|palmar|distal radio-ulnar joint)\b/.test(name)||has(groups,/^(?:(left |right )?hand|distal radio-ulnar joint)$/)?'Hand & wrist'
    :/\b(forearm|radius|ulna|radial|ulnar|elbow|cubital)\b/.test(name)?'Forearm & elbow'
    :/\b(shoulder|scapula|clavicle|clavicular|acromioclavicular|pectoral girdle|axilla|axillary|deltopectoral)\b/.test(name)?'Shoulder'
    :/\b(arm|humerus|brachial|biceps|triceps)\b/.test(name)?'Upper arm':y<.94?'Hand & wrist':y<1.12?'Forearm & elbow':y<1.4?'Upper arm':'Shoulder';

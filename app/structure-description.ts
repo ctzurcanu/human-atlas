@@ -1,3 +1,5 @@
+import {endocrineDescription} from './endocrine-relations';
+import {digestiveDuctDescription} from './digestive-duct-relations';
 import {cardiacValveDescription} from './cardiac-relations';
 import {explanation,structureName,type Part} from './anatomy';
 import type {AnatomyPathNode} from './anatomy-path';
@@ -19,6 +21,8 @@ const lowerFirst=(value:string)=>value[0]?.toLowerCase()+value.slice(1);
 
 export function localDescription(name:string,part:Part|undefined,path:AnatomyPathNode[]):StructureDescription{
  if(part?.description)return {text:part.description};
+ const endocrine=part&&endocrineDescription(part);if(endocrine)return endocrine;
+ const duct=part&&digestiveDuctDescription(part);if(duct)return duct;
  const cardiac=part&&cardiacValveDescription(part);if(cardiac)return cardiac;
  const specific=explanation(name);
  if(specific)return {text:specific};

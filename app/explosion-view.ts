@@ -1,5 +1,14 @@
 import {Box3,PerspectiveCamera,Vector3} from 'three';
 import {zoomOutToFit,type ViewArea} from './view-framing';
+import {dampMotion} from './transition-motion';
+
+/** The command frame is the existing arrangement, including mid-motion reversals. */
+export function advanceExplosionMotion(value:number,velocity:number,target:number,steps:number,dt:number,reducedMotion:boolean,commandFrame:boolean){
+ if(commandFrame)return {value,velocity};
+ if(reducedMotion||Math.abs(value-target)<=.00001&&Math.abs(velocity)<=.0001)return {value:target,velocity:0};
+ const next=dampMotion(value,velocity,target,Math.max(value,target)*steps<=2?.32:.22,dt);
+ return {value:Math.max(0,Math.min(1,next.value)),velocity:next.velocity};
+}
 
 /** A lossless view checkpoint, independent of anatomy bounds and URL framing. */
 export function captureExplosionView(camera:PerspectiveCamera,target:Vector3){

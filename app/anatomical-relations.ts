@@ -1,12 +1,21 @@
+import {endocrineRelations} from './endocrine-relations';
+import {digestiveDuctRelations} from './digestive-duct-relations';
+import {hepaticRelations,isNativeWholeLiver} from './hepatic-relations';
+import {cranialRelations} from './cranial-relations';
 import {cardiacRelations} from './cardiac-relations';
+import {pulmonaryRelations,isReviewedPulmonaryCovering} from './pulmonary-relations';
+import {coronaryRelations,isCoronaryArtery} from './coronary-relations';
 import {containmentExceptions,isAorticBranchGrouping,nonComponentRelationship} from './anatomical-containment';
 import {nativePartFrame} from './ta98-modeled-parent';
+import {fibularRelations} from './fibular-relations';
+import {handVascularRelations} from './hand-vascular-relations';
+import {hasNativeUrinaryRoute,nativeUrinaryRelations,urinaryPartFrame} from './urinary-relations';
 import {structureName,type Part,type Concept} from './anatomy';
 import {taExactEntityForConcept} from './anatomical-terminology';
 import skeletalAttachments from './generated-skeletal-attachments.json';
 
 export type RelationKind='before'|'after'|'innervation'|'arterial'|'venous'|'innervates'|'supplies'|'drains'|'articulates'|'connects'|'connectedBy'|'joint'|'continuous'|'covers'|'coveredBy'|'cartilages'|'bones'|'tendons'|'fascia'|'muscles'|'origin'|'insertion'|'partOf'|'contains'|'originFor'|'insertionFor'|'originSites'|'insertionSites'|'counterpart'|'adjacent'|'lymphaticDrainage'|'lymphaticTributaries';
-export interface ResolvedRelation {kind:RelationKind;target:Part;via?:string[];viaModeled?:boolean;note?:string}
+export interface ResolvedRelation {kind:RelationKind;target:Part;via?:string[];viaModeled?:boolean;viaRoutes?:{via:string[];modeled:boolean}[];note?:string}
 type Relations=Partial<Record<RelationKind,string[]>>;
 
 // These are anatomical paths, not spatial guesses. Names are resolved against
@@ -110,6 +119,12 @@ const nerveBranches:[string[],string[][]][]=[
  [['Radial nerve'],[['Deep branch of radial nerve','Radial nerve (deep branch)'],['Superficial branch of radial nerve','Radial nerve (superficial br)']]],
  [['Ulnar nerve'],[['Deep branch of ulnar nerve'],['Superficial branch of ulnar nerve'],['Dorsal branch of ulnar nerve'],['Palmar branch of ulnar nerve']]],
  [['Median nerve'],[['Anterior interosseous nerve of forearm'],['Palmar branch of median nerve'],['Common palmar digital branches of median nerve']]],
+ [['Common palmar digital nerves of median nerve'],[['Proper palmar digital nerves of median nerve']]],
+ [['Superficial branch of ulnar nerve'],[['Common palmar digital nerves of ulnar nerve']]],
+ // The female source is a distal digital network, not a palmar cutaneous nerve.
+ [['Superficial branch of ulnar nerve'],[['Palmar branch ulnar nerve']]],
+ [['Common palmar digital nerves of ulnar nerve'],[['Proper palmar digital nerves of ulnar nerve']]],
+ [['Deep branch of radial nerve'],[['Posterior interosseous nerve of forearm']]],
  [['Femoral nerve'],[['Saphenous nerve'],['Anterior cutaneous branches of femoral nerve']]],
  [['Obturator nerve'],[['Anterior branch of obturator nerve'],['Posterior branch of obturator nerve']]],
  [['Trigeminal nerve (V)'],[['Ophthalmic nerve'],['Maxillary nerve'],['Anterior division of mandibular nerve'],['Posterior division of mandibular nerve']]],
@@ -365,8 +380,22 @@ const partSide=(part:Part):'left'|'right'|null=>{
  return suffix?suffix.toLowerCase()==='l'?'left':'right':null;
 };
 const withoutSide=(name:string)=>key(name).replace(/\s*\((?:left|right)\)$/,'').replace(/\s+[lr]$/,'');
-const intestinalNames:Record<string,string>={'intestine duodenum':'duodenum','small intestine jejunum':'jejunum','small intestine ileum':'ileum','small intestine illium':'ileum','large intestine cecum':'cecum','large intestine descending colon':'descending colon','large intestine rectum':'rectum','appendix':'vermiform appendix','bladder':'urinary bladder'};
-const baseName=(name:string)=>{const value=/^(?:left|right) (?:atrium|ventricle)$/.test(withoutSide(name))?withoutSide(name):withoutSide(name).replace(/^(?:left|right)\s+/,'');return intestinalNames[value]??value;};
+// Naming and branching reference: NCBI Bookshelf NBK532968. These synonyms
+// resolve the existing native nerve records without inferring mesh junctions.
+const anatomicalNameAliases:Record<string,string>={'common peroneal nerve':'common fibular nerve','deep peroneal nerve':'deep fibular nerve','superficial peroneal nerve':'superficial fibular nerve','peroneal artery':'fibular artery','peroneal veins':'fibular veins','intestine duodenum':'duodenum','small intestine jejunum':'jejunum','small intestine ileum':'ileum','small intestine illium':'ileum','large intestine cecum':'cecum','large intestine descending colon':'descending colon','large intestine rectum':'rectum','appendix':'vermiform appendix','bladder':'urinary bladder'};
+// Qualified source labels retain the parent nerve and its sensory territory.
+Object.assign(anatomicalNameAliases,{
+ 'palmar branch ulnar nerve':'unpartitioned palmar digital network of ulnar nerve',
+ 'common palmar digital branches median nerve':'common palmar digital nerves of median nerve',
+ 'common palmar digital branches of median nerve':'common palmar digital nerves of median nerve',
+ 'proper palmar digital branches median nerve':'proper palmar digital nerves of median nerve',
+ 'proper palmar digital branches of median nerve':'proper palmar digital nerves of median nerve',
+ 'common palmar digital branches of ulnar nerve':'common palmar digital nerves of ulnar nerve',
+ 'proper palmar digital branches of ulnar nerve':'proper palmar digital nerves of ulnar nerve',
+ 'deep branch radial nerve':'deep branch of radial nerve',
+ 'superficial branch radial nerve':'superficial branch of radial nerve',
+});
+const baseName=(name:string)=>{const value=/^(?:left|right) (?:atrium|ventricle)$/.test(withoutSide(name))?withoutSide(name):withoutSide(name).replace(/^(?:left|right)\s+/,'');return anatomicalNameAliases[value]??value;};
 const belongsTo=(name:string,base:string)=>name===base||name.startsWith(`proximal part of ${base}`)||name.startsWith(`middle part of ${base}`)||name.startsWith(`distal part of ${base}`);
 const vascularIdentity=(name:string)=>{
  const side=sideOf(name);
@@ -452,6 +481,7 @@ function routeRelations(source:Part,parts:Part[],routes:string[][][]):ResolvedRe
  const result:ResolvedRelation[]=[];
  const sameSide=(group:string[])=>group.filter(label=>!side||!sideOf(label)||sideOf(label)===side);
  for(const route of routes){
+  if(route===urinaryRoute&&hasNativeUrinaryRoute(source))continue;
   const directIndex=route.findIndex(group=>group.some(label=>baseName(label)===sourceKey&&(!side||!sideOf(label)||sideOf(label)===side)));
   const index=directIndex>=0?directIndex:route.findIndex(group=>group.some(label=>sourceKeys.includes(baseName(label))&&(!side||!sideOf(label)||sideOf(label)===side)));
   if(index<0)continue;
@@ -483,6 +513,7 @@ function downstreamShortcuts(source:Part,parts:Part[]):ResolvedRelation[]{
  ];
  const result:ResolvedRelation[]=[];
  for(const [first,middle,last] of shortcuts){
+  if(first==='Kidney'&&hasNativeUrinaryRoute(source))continue;
   const sourceKey=baseName(source.name);
   if(sourceKey!==first.toLowerCase()&&sourceKey!==last.toLowerCase())continue;
   const intermediary=targets(middle,source,parts);
@@ -841,7 +872,7 @@ function skeletalNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
 }
 
 function nerveParent(source:Part,identities:Set<string>):string|null{
- if(source.system!=='nervous'||!/\bnerve\b/i.test(source.name))return null;
+ if(source.system!=='nervous'||!/\bnerves?\b/i.test(source.name))return null;
  const sourceSide=sideOf(source.name);
  const exists=(label:string)=>identities.has(`${baseName(label)}|${sourceSide??''}`)||!sourceSide&&[...identities].some(identity=>identity.startsWith(`${baseName(label)}|`));
  for(const [parent,children] of nerveBranches){
@@ -889,6 +920,17 @@ export function anatomicalInnervationNames(source:Part):string[]{
 }
 
 function functionalNote(source:Part,kind:RelationKind,target:Part):string|undefined{
+ if(['before','after'].includes(kind)&&source.system==='nervous'&&target.system==='nervous'){
+  const names=[baseName(source.name),baseName(target.name)];
+  if(names.includes('unpartitioned palmar digital network of ulnar nerve'))return 'Provisional distal digital network through the superficial ulnar branch. Common/proper digital subdivisions and the physical junction are unverified; the palmar cutaneous branch is a distinct structure.';
+  if(names.some(name=>/^(?:common|proper) palmar digital nerves of (?:median|ulnar) nerve$/.test(name)))return 'Named digital branching relationship, preserving median versus ulnar territory. Source fascicles, individual sensory territories and physical junctions remain unverified; this is not a one-direction axonal-flow claim.';
+  if(names.includes('deep branch of radial nerve'))return 'Deep radial motor/proprioceptive branch. Its source extent and posterior interosseous transition remain unverified; no cutaneous sensory territory is inferred.';
+  if(names.includes('superficial branch of radial nerve'))return 'Superficial radial cutaneous branch. Individual skin territories, variants and physical source junctions remain unverified.';
+ }
+ if(isBone(source)&&baseName(source.name)==='fibula'&&kind==='arterial'){
+  if(baseName(target.name)==='fibular artery')return 'Fibular (peroneal) arterial nutrient and periosteal branches supply the fibular shaft. Individual source branches, nutrient foramina and mesh contacts remain unverified.';
+  if(baseName(target.name)==='anterior tibial artery')return 'Proximal fibular head/epiphyseal arterial branches; the named artery is not a reconstructed local nutrient branch.';
+ }
  if(isAdrenal(source)&&['arterial','venous'].includes(kind))return 'Named adrenal vascular reference. Individual capsular branches, source ostia, continuous lumens and variants remain unverified; missing native vessels are not replaced by donor meshes.';
  if(source.system!=='reproductive'||withoutSide(source.name)!=='vagina'||kind!=='innervation')return;
  if(withoutSide(target.name)==='pudendal nerve')return 'Lower vagina · somatic supply';
@@ -978,6 +1020,42 @@ function reviewedPelvicConnection(source:Part,target:Part):boolean{
 }
 
 function accepts(kind:RelationKind,source:Part,target:Part):boolean{
+ if(['before','after','arterial','supplies','venous','drains','innervation','innervates'].includes(kind)&&[source,target].some(p=>isNativeWholeLiver(p)||['Hepatic portal vein','Hepatic veins'].includes(p.name))){
+  const frame=nativePartFrame(source),other=nativePartFrame(target);
+  if((frame||other)&&(source.suppressed||target.suppressed||!frame||frame!==other))return false;
+ }
+ if(['before','after'].includes(kind)&&[source,target].some(p=>p.system==='respiratory'&&/trachea|bronchus|bronchi/.test(baseName(p.name)))){
+  const frame=nativePartFrame(source),other=nativePartFrame(target);
+  if((frame||other)&&(source.suppressed||target.suppressed||!frame||frame!==other))return false;
+ }
+ if(['before','after','adjacent'].includes(kind)&&[source,target].some(isCoronaryArtery)){
+  const frame=nativePartFrame(source),other=nativePartFrame(target);
+  if(frame||other)if(source.suppressed||target.suppressed||kind!=='adjacent'&&(source.system!=='arterial'||target.system!=='arterial')||!frame||frame!==other)return false;
+ }
+ if(['before','after'].includes(kind)&&[source,target].some(p=>p.system==='urinary')){
+  const frame=urinaryPartFrame(source),other=urinaryPartFrame(target);
+  if((frame||other)&&(source.suppressed||target.suppressed||!frame||frame!==other))return false;
+ }
+ // UAMS upper-limb nerve table: these are named branching associations,
+ // not source-tissue containment or certified mesh junctions.
+ if(['before','after'].includes(kind)&&[source,target].some(part=>/^(?:(?:median|ulnar|radial) nerve|(?:common|proper) palmar digital nerves of (?:median|ulnar) nerve|(?:deep|superficial) branch of (?:radial|ulnar) nerve|unpartitioned palmar digital network of ulnar nerve)$/.test(baseName(part.name)))){
+  const frame=nativePartFrame(source);
+  if(source.suppressed||target.suppressed||source.system!=='nervous'||target.system!=='nervous'||!frame||nativePartFrame(target)!==frame)return false;
+ }
+
+ if([source,target].some(part=>part.id.startsWith('LOCAL:female:ta98-fibula:'))&&(source.suppressed||target.suppressed||nativePartFrame(source)!==nativePartFrame(target)))return false;
+ // Peroneal is the source synonym of fibular, not an additional nerve.
+ // Resolving that alias must not connect independently registered donors.
+ if(['before','after','innervation','innervates'].includes(kind)&&[source,target].some(part=>part.system==='nervous'&&/^(?:common|deep|superficial) fibular nerve$/.test(baseName(part.name)))){
+  if(source.suppressed||target.suppressed)return false;
+  if(['before','after'].includes(kind)&&(source.system!=='nervous'||target.system!=='nervous'))return false;
+  const frame=nativePartFrame(source),other=nativePartFrame(target);
+  if((frame||other)&&frame!==other)return false;
+ }
+ if(['arterial','supplies'].includes(kind)){
+  const fibula=[source,target].find(p=>isBone(p)&&/^(?:fibula|.+ of fibula)$/.test(baseName(p.name)));
+  if(fibula){const frame=nativePartFrame(fibula);if(!frame||nativePartFrame(source)!==frame||nativePartFrame(target)!==frame)return false;}
+ }
  if(['arterial','venous','innervation','supplies','drains','innervates'].includes(kind)&&!adrenalFunctionalFrame(source,target))return false;
  if(kind==='innervation')return target.system==='nervous';
  if(kind==='arterial')return target.system==='arterial';
@@ -989,8 +1067,8 @@ function accepts(kind:RelationKind,source:Part,target:Part):boolean{
  if(kind==='connectedBy')return reviewedEpiglotticAttachment(target,source)||target.system==='connective'||target.system==='muscular'&&/\btendon\b/i.test(target.name)||source.system==='reproductive'&&['ovary','uterus'].includes(baseName(source.name))&&target.system==='reproductive'&&baseName(target.name)==='ovarian ligament';
  if(kind==='joint')return isBone(source)?target.system==='connective':isBone(target);
  if(kind==='continuous')return reviewedPelvicConnection(source,target)||reviewedCranialConnection(source,target)||isRetina(source)&&isOpticNerve(target)||isOpticNerve(source)&&isRetina(target)||target.system==='fascia'||target.system==='connective'||baseName(target.name)==='iliotibial tract';
- if(kind==='covers')return target.system==='muscular';
- if(kind==='coveredBy')return target.system==='fascia';
+ if(kind==='covers')return isReviewedPulmonaryCovering(source,target)||target.system==='muscular';
+ if(kind==='coveredBy')return isReviewedPulmonaryCovering(target,source)||target.system==='fascia';
  return true;
 }
 
@@ -1159,10 +1237,10 @@ export function anatomicalRelations(source:Part,allParts:Iterable<Part>):Resolve
  const result:ResolvedRelation[]=[];
  const seen=new Set<string>();
  const needsSkeletalNetwork=['skeletal','muscular','fascia','connective','arterial','venous','nervous'].includes(source.system);
- for(const relation of [...route,...branches,...downstreamShortcuts(source,parts),...(structuralNetwork(parts).get(source.id)??[]),...(needsSkeletalNetwork?skeletalNetwork(parts).get(source.id)??[]:[]),...reverse,...retinalRelations(source,parts),...(lymphaticNetwork(parts).get(source.id)??[]),...(renalVenousNetwork(parts).get(source.id)??[]),...(aorticBranchNetwork(parts).get(source.id)??[]),...(adrenalNetwork(parts).get(source.id)??[]),...(reviewedNativeRoutes(parts).get(source.id)??[]),...(cardiacRelations(parts).get(source.id)??[])]){
+ for(const relation of [...(endocrineRelations(parts).get(source.id)??[]),...(digestiveDuctRelations(parts).get(source.id)??[]),...(hepaticRelations(parts).get(source.id)??[]),...route,...branches,...downstreamShortcuts(source,parts),...(structuralNetwork(parts).get(source.id)??[]),...(needsSkeletalNetwork?skeletalNetwork(parts).get(source.id)??[]:[]),...reverse,...retinalRelations(source,parts),...(lymphaticNetwork(parts).get(source.id)??[]),...(renalVenousNetwork(parts).get(source.id)??[]),...(aorticBranchNetwork(parts).get(source.id)??[]),...(adrenalNetwork(parts).get(source.id)??[]),...(reviewedNativeRoutes(parts).get(source.id)??[]),...(cranialRelations(parts).get(source.id)??[]),...(cardiacRelations(parts).get(source.id)??[]),...(pulmonaryRelations(parts).get(source.id)??[]),...(coronaryRelations(parts).get(source.id)??[]),...(fibularRelations(parts).get(source.id)??[]),...(handVascularRelations(parts).get(source.id)??[]),...(nativeUrinaryRelations(parts).get(source.id)??[])]){
   if(!accepts(relation.kind,source,relation.target))continue;
   const token=`${relation.kind}:${relation.target.id}`;
-  if(!seen.has(token)){seen.add(token);result.push(relation);}
+  if(!seen.has(token)){seen.add(token);const note=relation.note??functionalNote(source,relation.kind,relation.target);result.push(note?{...relation,note}:relation);}
  }
  for(const kind of ['before','after','innervation','arterial','venous','innervates','supplies','drains','articulates','connects','connectedBy','joint','continuous','covers','coveredBy'] as const){
   for(const query of [...(namedVessels[kind]??[]),...(nerves[kind]??[]),...(physical[kind]??[]),...(mapped[kind]??[])]){
@@ -1184,8 +1262,13 @@ export function anatomicalConceptFunctionalRelations(concept:Concept,selected:Pa
  const elements=new Set(concept.elements),ids=new Set(selected.map(part=>part.id));
  if(elements.size!==ids.size||[...elements].some(id=>!ids.has(id)))return [];
  if(new Set(selected.map(part=>part.system)).size!==1)return [];
- const lookup=explicit[withoutSide(concept.name)];if(!lookup)return [];
- const source={...selected[0],id:`functional-query:${concept.id}`,conceptId:concept.id,name:concept.name};
+ // The whole native fibula can be assembled from regional and surface leaves.
+ // Its supply belongs to the stored complete assembly, not each named leaf.
+ const fibularWhole=baseName(concept.name)==='fibula'&&/^(?:ZA:Fibula\.[lr]|LOCAL:(?:male|female):[lr]_fibula)$/.test(concept.id)
+  &&selected.every(part=>part.system==='skeletal'&&part.sectionAssembly===concept.id&&!part.suppressed)
+  &&parts.filter(part=>!part.suppressed&&part.sectionAssembly===concept.id).every(part=>ids.has(part.id));
+ const lookup=explicit[withoutSide(concept.name)]??(fibularWhole?boneSupply.fibula:undefined);if(!lookup)return [];
+ const source={...selected[0],id:fibularWhole?concept.id:`functional-query:${concept.id}`,conceptId:concept.id,name:concept.name};
  if(femalePelvicFunctional[withoutSide(concept.name)]&&source.system!=='reproductive')return [];
  if(!canCarryFunctionalLinks(source))return [];
  const result:ResolvedRelation[]=source.system==='digestive'?routeRelations(source,parts,[digestiveStages(parts)]).filter(relation=>!ids.has(relation.target.id)):[],seen=new Set<string>(result.map(relation=>`${relation.kind}:${relation.target.id}`));

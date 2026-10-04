@@ -1,4 +1,5 @@
 import {defaultModelCamera} from './model-defaults';
+import {withReviewedCatalogueIdentities} from './reviewed-catalogue-identities';
 import {assetUrl} from './asset-url';
 import {fetchAssetJson} from './asset-cache';
 import AdvancedTools from './advanced-tools';
@@ -73,7 +74,7 @@ const cataloguePath=(model:Model)=>model==='local-female-ta98'?(new URLSearchPar
 const fetchCatalogue=(url:string,init:RequestInit,message:string)=>fetchAssetJson<Atlas>(url,init,message).catch(error=>{
  if(import.meta.env.DEV&&url.endsWith('/local-models/embryo-cs23/atlas.json')&&!init.signal?.aborted)return fetchAssetJson<Atlas>(assetUrl('/models/atlas-embryo.json'),init,message);
  throw error;
-});
+}).then(withReviewedCatalogueIdentities);
 const defaultLayers=(model:Model,sex:'male'|'female')=>model==='embryo'?[...DEFAULT_VISIBLE,'integumentary' as const,'pregnancy' as const]:model==='cell'?CELL_VISIBLE:sex==='female'||model==='male-full'||model.startsWith('local-')?[...DEFAULT_VISIBLE,'integumentary' as const]:DEFAULT_VISIBLE;
 export default function Home(){
  const detailTitle=useRef<HTMLHeadingElement>(null);

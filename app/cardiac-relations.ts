@@ -24,13 +24,19 @@ export function cardiacValveDescription(part:Part):{text:string;url:string}|unde
  return {text:`${subject}${detail} Its leaflets open and close to prevent backward blood flow.`,url:'https://www.nhlbi.nih.gov/health/heart/blood-flow'};
 }
 
+export function cardiacSourceLimitation(part:Part):string|undefined{
+ if(part.conceptId==='LOCAL:female:ventricles')return 'Combined ventricular envelope. Separate left/right chamber meshes, myocardial/endocardial layers and complete lumen anatomy are not established by this source.';
+ if(['ZA:Inferior leaflet of right atrioventricular valve','ZA:Inferior papillary muscle of left ventricle','ZA:Inferior papillary muscle of right ventricle'].includes(part.conceptId))return 'Named inferior cardiac source tissue. Its correspondence to the TA98 posterior subdivision remains unresolved; hierarchy placement identifies the broader valve or papillary group only. Extent and physical attachments remain unverified.';
+ if(part.system==='cardiac'&&nativePartFrame(part)&&valves.some(v=>v.pattern.test(nameOf(part))))return 'Named native valve tissue. Separate wall layers, nodules, lunules, commissures, annular attachments and lumen continuity remain unverified; the source label does not certify those finer features.';
+}
+
 /** Named valvular relationships, never an assertion of certified mesh contact.
  * NIH NHLBI Heart valves; OpenStax A&P 2e 19.1. Donor HRA organs do not
  * acquire a native frame just because their labels describe the same heart. */
 export function cardiacRelations(parts:Part[]):Map<string,ResolvedRelation[]>{
  const prior=cache.get(parts);if(prior)return prior;
  const graph=new Map<string,ResolvedRelation[]>(),frames=new Map<string,Part[]>();
- for(const part of parts){const frame=nativePartFrame(part);if(!frame||part.suppressed||!['cardiac','arterial'].includes(part.system))continue;const list=frames.get(frame)??[];list.push(part);frames.set(frame,list);}
+ for(const part of parts){const frame=nativePartFrame(part);if(!frame||part.suppressed||!['cardiac','arterial','venous'].includes(part.system))continue;const list=frames.get(frame)??[];list.push(part);frames.set(frame,list);}
  const add=(source:Part,target:Part,note:string)=>{
   if(source.id===target.id)return;
   for(const [from,to] of [[source,target],[target,source]]){const list=graph.get(from.id)??[];if(!list.some(r=>r.target.id===to.id))list.push({kind:'adjacent',target:to,note});graph.set(from.id,list);}
@@ -47,6 +53,18 @@ export function cardiacRelations(parts:Part[]):Map<string,ResolvedRelation[]>{
   for(const source of peers.filter(p=>p.system==='cardiac'&&/papillary.*(?:left|right) ventricle/.test(nameOf(p)))){
    const side=nameOf(source).includes('left ventricle')?'left':'right';
    for(const target of named(side==='left'?chambers.leftVentricle:chambers.rightVentricle))add(source,target,`Named ${side} ventricular papillary muscle projects from its ventricular wall. Chordal attachment and shared source tissue interfaces remain unverified; semilunar valves have no papillary/chordal apparatus.`);
+  }
+  const inflows=[
+   {names:['superior vena cava','inferior vena cava','inferior vena cava (thoracic part)'],chambers:chambers.rightAtrium},
+   {names:['left inferior pulmonary vein','left superior pulmonary vein','right inferior pulmonary vein','right superior pulmonary vein'],chambers:chambers.leftAtrium},
+  ];
+  for(const inflow of inflows)for(const source of peers.filter(p=>['venous','cardiac'].includes(p.system)&&inflow.names.includes(nameOf(p)))){
+   for(const target of named(inflow.chambers)){
+    const note=`Named venous return to the ${inflow.chambers[0]}. Source openings, wall/lumen continuity and physical venous–atrial contact remain unverified.`;
+    for(const [from,to,kind] of [[source,target,'after'],[target,source,'before']] as const){
+     const list=graph.get(from.id)??[];if(!list.some(r=>r.kind===kind&&r.target.id===to.id))list.push({kind,target:to,note});graph.set(from.id,list);
+    }
+   }
   }
  }
  cache.set(parts,graph);return graph;

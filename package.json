@@ -48,6 +48,9 @@
     "test:relation-reciprocity": "node scripts/validate-relation-reciprocity.mjs",
     "audit:relations": "node scripts/audit-anatomical-coverage.mjs",
     "test:relationship-selection": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/validate-relationship-selection.mjs",
+    "test:hand-nerves": "node --test tests/hand-nerve-branches.test.mjs tests/relationship-summary.test.mjs tests/ulnar-digital-source.test.mjs",
+    "test:hand-vessels": "node --test tests/hand-vessel-identity.test.mjs",
+    "test:hand-arteries": "node --test tests/hand-arterial-branches.test.mjs",
     "test:selection-identity": "node scripts/validate-requested-selection-choice.mjs",
     "test:label-layout": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/validate-label-layout.mjs",
     "test:framing": "node --disable-warning=ExperimentalWarning --experimental-strip-types scripts/validate-view-framing.mjs",
@@ -168,7 +171,10 @@
     "build:embryo-pages-preview": "npm run prepare:embryo-pages && EMBRYO_PAGES_PACKAGE=outputs/embryo-pages-package VITE_EMBRYO_CATALOGUE=/models/embryo-3month/atlas.json VITE_BASE_PATH=/human-atlas/ vite build --mode embryo-local-preview --outDir ../outputs/embryo-pages-preview",
     "test:embryo-pages": "node --test tests/embryo-pages.test.mjs",
     "test:model-download": "node --test tests/model-download.test.mjs",
-    "test:cardiac-relations": "node --test tests/cardiac-relations.test.mjs"
+    "test:cardiac-relations": "node --test tests/cardiac-relations.test.mjs",
+    "test:fibular-supply": "node --test tests/fibular-supply.test.mjs",
+    "test:urinary-paths": "node --test tests/urinary-native-paths.test.mjs",
+    "test:coronary-paths": "node --test tests/coronary-native-paths.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

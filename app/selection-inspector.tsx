@@ -1,3 +1,6 @@
+import {endocrineSourceLimitation,endocrineDescription} from './endocrine-relations';
+import {digestiveDuctSourceLimitation,digestiveDuctDescription} from './digestive-duct-relations';
+import {hepaticSourceLimitation} from './hepatic-relations';
 import {useEffect,useMemo,useRef,useState,type RefObject} from 'react';
 import {Crosshair,EyeOff,Focus,Network} from 'lucide-react';
 import {Button} from '@/components/ui/button';
@@ -13,6 +16,14 @@ import {ta98PartOfChoice} from './hierarchy-navigation';
 import {anatomicalComponentRelations,anatomicalComponentIds,hasExpandableAnatomicalRelations,storedAssemblyParent} from './anatomical-components';
 import {ta98ModeledParent} from './ta98-modeled-parent';
 import {displayLaterality,lateralityClass} from './laterality';
+import {mergeRelationshipNotes} from './relationship-summary';
+import {nerveSourceCoverageLimitation} from './nerve-source-review';
+import {handVesselCoverageLimitation} from './hand-vascular-relations';
+import {urinarySourceCoverageLimitation} from './urinary-relations';
+import {coronarySourceLimitation} from './coronary-relations';
+import {cardiacSourceLimitation} from './cardiac-relations';
+import {pulmonarySourceLimitation} from './pulmonary-relations';
+import {cranialSourceLimitation} from './cranial-relations';
 import {localDescription,wikipediaDescription,type StructureDescription} from './structure-description';
 
 interface Props {
@@ -70,7 +81,7 @@ export default function SelectionInspector({titleRef,choice,ancestors,selectedPa
  const allParts=useMemo(()=>[...partById.values()],[partById]);
  const selected=inspectedParts[0],systems=[...new Set(inspectedParts.map(part=>part.system))].map(id=>SYSTEMS.find(item=>item.id===id)).filter(item=>!!item),system=systems[0];
  const conceptById=useMemo(()=>new Map(concepts.map(concept=>[concept.id,concept])),[concepts]);
- const coverageLimitation=choice.coverageLimitation??[...new Set(inspectedParts.map(part=>part.coverageLimitation??conceptById.get(part.conceptId)?.coverageLimitation).filter(Boolean))].join(' ');
+ const coverageLimitation=choice.coverageLimitation??[...new Set(inspectedParts.map(part=>part.coverageLimitation??conceptById.get(part.conceptId)?.coverageLimitation??nerveSourceCoverageLimitation(part)??handVesselCoverageLimitation(part)??urinarySourceCoverageLimitation(part)??coronarySourceLimitation(part)??cardiacSourceLimitation(part)??pulmonarySourceLimitation(part)??cranialSourceLimitation(part)??hepaticSourceLimitation(part)??digestiveDuctSourceLimitation(part)??endocrineSourceLimitation(part)).filter(Boolean))].join(' ');
  const identity=choice.children?choice:conceptById.get(choice.id)??choice;
  const choiceTerm=terminologyForConcept(identity.id,identity.ta98Term,identity.ta98Kind);
  const terminology=identity.ta98Kind==='parent'?choiceTerm:choice.terminology??(choiceTerm.ta98||choiceTerm.fma||choiceTerm.ontology||choice.elements.length!==1?choiceTerm:terminologyForConcept(selected?.conceptId??choice.id));
@@ -84,14 +95,15 @@ export default function SelectionInspector({titleRef,choice,ancestors,selectedPa
  const [remote,setRemote]=useState<{title:string;value:StructureDescription}|null>(null);
  const lastControlToggle=useRef<{id:string;at:number}|null>(null);
  const controlChoose=(id:string)=>{const now=performance.now(),last=lastControlToggle.current;if(last?.id===id&&now-last.at<150)return;lastControlToggle.current={id,at:now};onChoosePart(id,true);};
+ const reviewedDescription=selected&&(digestiveDuctDescription(selected)??endocrineDescription(selected));
  useEffect(()=>{
-  if(group||selectionSet||selected?.description)return;
+  if(group||selectionSet||selected?.description||reviewedDescription)return;
   let active=true;
   wikipediaDescription(title).then(value=>{if(active&&value)setRemote({title,value});});
   return()=>{active=false;};
- },[title,group,selectionSet,selected?.description]);
+ },[title,group,selectionSet,selected?.description,reviewedDescription?.text]);
  const local=group||selectionSet?null:localDescription(title,selected,path);
- const resolved=selected?.description?local:remote?.title===title?remote.value:local;
+ const resolved=selected?.description?local:reviewedDescription??(remote?.title===title?remote.value:local);
  const colorTerritory=import.meta.env.DEV&&/^guest:dermatomes-myotomes:(?:DERMATOME(?::|-SELECTION$)|TRIGEMINAL:)/.test(choice.id);
  const description=colorTerritory?choice.id.includes(':C1:')?'C1 has no cutaneous dermatome.':choice.id.includes(':Co1:')?'No separate Co1 color territory is present in the source map.':'Approximate sensory territory, highlighted on the surface reference.':!hasGeometry?'No selectable mesh in this model.':selectionSet?`${inspectedParts.length.toLocaleString()} selected anatomy pieces. Choose an included structure to inspect its description.`:group?`${selectedParts.length.toLocaleString()} modeled ${selectedParts.length===1?'piece':'pieces'} in this group.`:selected?resolved?.text??'':'';
  const [relationState,setRelationState]=useState<{key:string;model:Map<string,Part>;items:ResolvedRelation[]}|null>(null);
@@ -107,12 +119,11 @@ export default function SelectionInspector({titleRef,choice,ancestors,selectedPa
    if(cancelled)return;
    let cache=relationCache.get(partById);
    if(!cache){cache=new Map();relationCache.set(partById,cache);}
-   const seen=new Set<string>();
-   const items=[...anatomicalConceptFunctionalRelations(choice,inspectedParts,allParts),...inspectedParts.flatMap(part=>{
+   const items=mergeRelationshipNotes([...anatomicalConceptFunctionalRelations(choice,inspectedParts,allParts),...inspectedParts.flatMap(part=>{
     let relations=cache.get(part.id);
     if(!relations){relations=anatomicalRelations(part,allParts);cache.set(part.id,relations);}
     return relations;
-   })].filter(relation=>{const key=`${relation.kind}:${relation.target.id}`;if(seen.has(key))return false;seen.add(key);return true;});
+   })]);
    if(!cancelled)setRelationState({key:relationKey,model:partById,items});
   },0);});
   return()=>{cancelled=true;cancelAnimationFrame(frame);if(timer)clearTimeout(timer);};
@@ -158,7 +169,7 @@ export default function SelectionInspector({titleRef,choice,ancestors,selectedPa
     {!relationsPending&&<Accordion key={inspectedKey} multiple defaultValue={initialRelationGroup} className="anatomical-relation-accordion">
      {relationGroups.map(({kind,items})=><AccordionItem value={kind} className="anatomical-relation-row" key={kind}>
       <AccordionTrigger className="anatomical-relation-trigger"><span>{relationLabels[kind]}</span><span className="anatomical-relation-count">{items.length}</span></AccordionTrigger>
-      <AccordionContent className="anatomical-relation-panel"><div className="anatomical-relation-links">{items.map(({target,via,viaModeled,note})=>{const fullName=relationName(target),display=displayLaterality(fullName);return <span className="anatomical-relation-item" key={target.id}><button type="button" className={lateralityClass(display.side)} onContextMenu={event=>{if(event.ctrlKey){event.preventDefault();event.shiftKey?onHidePart(target.id):controlChoose(target.id);}}} onClick={event=>event.shiftKey?onHidePart(target.id):event.ctrlKey?controlChoose(target.id):onChoosePart(target.id,event.metaKey)} aria-label={`Select ${fullName}`} title={`Select ${fullName}; Control-click to add or remove; Shift-click to hide`}>{display.label}</button>{note&&<small>{note}</small>}{via?.length&&<small>via {via.join(' → ')}{viaModeled?'':' (not modeled)'}</small>}</span>;})}</div></AccordionContent>
+      <AccordionContent className="anatomical-relation-panel"><div className="anatomical-relation-links">{items.map(({target,via,viaModeled,viaRoutes,note})=>{const fullName=relationName(target),display=displayLaterality(fullName);return <span className="anatomical-relation-item" key={target.id}><button type="button" className={lateralityClass(display.side)} onContextMenu={event=>{if(event.ctrlKey){event.preventDefault();event.shiftKey?onHidePart(target.id):controlChoose(target.id);}}} onClick={event=>event.shiftKey?onHidePart(target.id):event.ctrlKey?controlChoose(target.id):onChoosePart(target.id,event.metaKey)} aria-label={`Select ${fullName}`} title={`Select ${fullName}; Control-click to add or remove; Shift-click to hide`}>{display.label}</button>{note&&<small>{note}</small>}{(viaRoutes??(via?.length?[{via,modeled:!!viaModeled}]:[])).map((route,index)=><small key={index}>via {route.via.join(' → ')}{route.modeled?'':' (not modeled)'}</small>)}</span>;})}</div></AccordionContent>
      </AccordionItem>)}
     </Accordion>}
    </section>}

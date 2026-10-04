@@ -22,7 +22,20 @@ export function isAorticBranchGrouping(child:string|undefined,parent:string|unde
  if(p==='common carotid artery'&&c!==p&&!/^(?:wall|cervical part|thoracic part) of common carotid artery$/.test(c)&&(/\b(?:artery|arteries|arterial|branch|branches)\b/.test(c)||c.startsWith('?')))return true;
  return ['aortic arch','arch of aorta'].includes(p)&&['brachiocephalic trunk','common carotid artery','subclavian artery','proximal segment of subclavian artery'].includes(c)||p==='brachiocephalic trunk'&&['common carotid artery','subclavian artery'].includes(c)||p==='common carotid artery'&&['internal carotid artery','external carotid artery'].includes(c);
 }
+const palmarBranches:Record<string,string[]>={
+  'radial artery':['superficial palmar branch of radial artery','deep palmar arch'],
+  'ulnar artery':['deep palmar branch of ulnar artery','superficial palmar arch','common palmar digital arteries'],
+  'superficial palmar arch':['common palmar digital arteries','palmar digital arteries'],
+  'common palmar digital arteries':['proper palmar digital arteries','palmar digital arteries'],
+  'deep palmar arch':['palmar metacarpal arteries'],
+ };
 export function nonComponentRelationship(child:string|undefined,parent:string|undefined):string|undefined{
+ if(base(parent)==='gallbladder'&&['bile duct','cystic duct'].includes(base(child)))return 'The extrahepatic bile and cystic ducts communicate with the gallbladder; TA98 chapter ancestry does not make them tissue components contained within its wall. Source junctions remain unverified.';
+ const coronaryChild=base(child),coronaryParent=base(parent);
+ if((coronaryParent==='ascending aorta'&&['left coronary artery','right coronary artery'].includes(coronaryChild))||(['left coronary artery','right coronary artery','anterior interventricular artery','circumflex artery of heart','circumflex branch of left coronary artery'].includes(coronaryParent)&&coronaryChild!==coronaryParent&&!/^(?:wall|intima|media|adventitia)\b/.test(coronaryChild)&&/\b(?:artery|arteries|branch|branches)\b/.test(coronaryChild)))return 'Coronary branches are adjoining vessels, not tissue components contained within the supplying artery. Named vessel walls and ostia require separate representation.';
+ const arteryChild=base(child).replace(/arterial arch$/,'arch').replace(/branch (radial|ulnar) artery$/,'branch of $1 artery'),arteryParent=base(parent).replace(/arterial arch$/,'arch');
+ if(palmarBranches[arteryParent]?.includes(arteryChild))return 'These palmar arteries are adjoining branches, not tissue subdivisions contained within the supplying vessel. TA98 ancestry does not establish physical containment.';
+ if(['palmar digital veins','proper palmar digital veins'].includes(base(child))&&['superficial venous palmar arch','superficial palmar venous arch'].includes(base(parent)))return 'Palmar digital veins are tributaries of the superficial venous palmar arch, not tissue subdivisions contained within the arch. TA98 ancestry does not establish physical containment.';
  if(base(child)==='proximal segment of subclavian artery'&&base(parent)==='subclavian artery')return 'These are adjoining source partitions. The named subclavian source remainder is not a verified whole assembly containing the proximal segment.';
  if(isAorticBranchGrouping(child,parent))return 'A vascular branch or tributary is an adjoining vessel, not a tissue component of the named vessel. Source chapter grouping does not establish physical containment.';
  const c=base(child),p=base(parent);return containmentExceptions.find(rule=>rule.child===c&&rule.parent===p)?.note;

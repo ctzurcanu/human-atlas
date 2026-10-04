@@ -1,4 +1,4 @@
-import {captureExplosionView,fitExplosionView,type ExplosionView} from './explosion-view';
+import {advanceExplosionMotion,captureExplosionView,restoreExplosionView,fitExplosionView,type ExplosionView} from './explosion-view';
 import {explicitCameraAction} from './camera-intent';
 import {viewPlaneLayout,viewPlanePoint} from './explosion-plane';
 import {triplanarSurfaceTexture} from './surface-texture-mapping';
@@ -861,13 +861,15 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
     guideFill.visible=!lightweightActive&&sectionToolRef.current&&!enabledSections(s).length;guideBorder.visible=guideFill.visible;guideFill.position.fromArray(point);guideBorder.position.fromArray(point);guideFill.quaternion.copy(quaternion);guideBorder.quaternion.copy(quaternion);guideFill.scale.set(span,span,1);guideBorder.scale.set(span,span,1);
     dirty=true;}
    const explosionRequested=s.explode!==lastExplode;
+   const explosionCommandView=explosionRequested?captureExplosionView(camera,controls.target):null;
    if(explosionRequested&&!savedTransition&&!newCamera)cancelCameraTween();
    if(explosionRequested&&!savedTransition&&!newCamera){if(!explosionStartView||lastExplode===0&&amount===0)explosionStartView=captureExplosionView(camera,controls.target);explosionFitActive=true;}
    if(savedTransition||actionTransition){explosionFitActive=false;explosionStartView=null;}
+   if(explosionFitActive)controls.enableDamping=false;
    lastExplode=s.explode;
    const moving=Math.abs(amount-s.explode)>.00001||Math.abs(explosionVelocity)>.0001;
-   if(moving&&!reducedMotion){const motion=dampMotion(amount,explosionVelocity,s.explode,Math.max(amount,s.explode)*(explosionLayout?.steps??1)<=2?.32:.22,dt);amount=T.MathUtils.clamp(motion.value,0,1);explosionVelocity=motion.velocity;dirty=true;}
-   else if(amount!==s.explode||explosionVelocity){amount=s.explode;explosionVelocity=0;lastExtent=-1;dirty=true;}
+   const explosionMotion=advanceExplosionMotion(amount,explosionVelocity,s.explode,explosionLayout?.steps??1,dt,reducedMotion,explosionRequested);
+   if(amount!==explosionMotion.value||explosionVelocity!==explosionMotion.velocity){amount=explosionMotion.value;explosionVelocity=explosionMotion.velocity;dirty=true;}
    if(changed||moving||lastExtent<0){
     const selection=new Set(s.selected),activeCut=enabledSections(s).length>0;
     const visibleParts=atlas.parts.filter(p=>activeCut?sectionPartVisible(p,s):partVisible(p,s,atlas.parts));
@@ -943,7 +945,11 @@ export default function AnatomyScene({atlas,vrModelUrl,state,hierarchy,guestHier
    // Never activate this because selection, panels or visibility changed.
    if(explosionFitActive&&explosionStartView&&!cameraTween&&!following&&!presenting&&explosionLayout){
     // Never fit the future layout on the command's first frame.
-    if(!explosionRequested){
+    if(explosionCommandView){
+     // OrbitControls can still consume residual motion on its first update.
+     // The command itself must leave the current view exactly where it was.
+     restoreExplosionView(camera,controls.target,explosionCommandView);dirty=true;
+    }else{
      const box=explosionVisibleBounds.clone();
      for(const i of rotationPartIndices){const mesh=pickers[i];if(mesh&&data[i*4+3]>.5)box.union(worldBox.copy(bounds[i]).applyMatrix4(mesh.matrixWorld));}
      fitExplosionView(camera,controls.target,explosionStartView,box,viewArea(),amount);
