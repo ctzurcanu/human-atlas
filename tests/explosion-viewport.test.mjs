@@ -1,7 +1,26 @@
 import assert from 'node:assert/strict';import test from 'node:test';import {readFile} from 'node:fs/promises';import {existsSync} from 'node:fs';import {build} from 'esbuild';import {Box3,Vector3,PerspectiveCamera} from 'three';
 const bundle=await build({entryPoints:['app/explosion-plane.ts','app/hierarchical-explosion.ts','app/anatomy-hierarchy.ts','app/view-framing.ts','app/explosion-view.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/explosion-viewport-test'});
 const load=async name=>import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles.find(f=>f.path.endsWith(name+'.js')).contents).toString('base64'));
-const {viewPlaneLayout}=await load('explosion-plane'),{createHierarchicalExplosionLayout,explosionBoundsAt}=await load('hierarchical-explosion'),{hierarchyEntries}=await load('anatomy-hierarchy'),{setFrameOffset}=await load('view-framing'),{captureExplosionView,fitExplosionView}=await load('explosion-view');
+const {viewPlaneLayout}=await load('explosion-plane'),{createHierarchicalExplosionLayout,explosionBoundsAt}=await load('hierarchical-explosion'),{hierarchyEntries}=await load('anatomy-hierarchy'),{setFrameOffset}=await load('view-framing'),{advanceExplosionMotion,captureExplosionView,fitExplosionView}=await load('explosion-view');
+
+test('Explode and reversal commands begin at the exact existing arrangement',()=>{
+ for(const reduced of [false,true])for(const [value,velocity,target] of [[0,0,1],[.47,.3,0],[.32,-.4,.8],[1,0,0]]){
+  assert.deepEqual(advanceExplosionMotion(value,velocity,target,7,.05,reduced,true),{value,velocity});
+  const next=advanceExplosionMotion(value,velocity,target,7,.05,reduced,false);
+  assert.notEqual(next.value,value,'The following frame resumes movement');
+ }
+});
+
+test('Fitting never zooms or recenters an arrangement that already fits the current view',()=>{
+ const camera=new PerspectiveCamera(34,1.6,.001,100),target=new Vector3(.4,.7,.1);
+ camera.position.copy(target).add(new Vector3(.7,.3,2));camera.up.set(.15,1,.2).normalize();camera.lookAt(target);camera.zoom=1.2;
+ const area={left:.2,right:.85,top:.1,bottom:.9};setFrameOffset(camera,area);
+ const initial=captureExplosionView(camera,target),box=new Box3(target.clone().addScalar(-.01),target.clone().addScalar(.01));
+ for(const amount of [.000001,.2,.7,1,.5,0]){
+  fitExplosionView(camera,target,initial,box,area,amount);
+  assert.deepEqual(captureExplosionView(camera,target),initial);
+ }
+});
 const catalogs=['public/models/atlas-male-complete.json','public/models/atlas.json','public/models/atlas-hra-female.json','public/models/atlas-embryo.json','public/models/atlas-cell.json','public/models/embryo-3month/atlas.json',...['ta98-male','ta98-female-runtime','reference','male','female'].map(name=>`.local-models/${name}.json`).filter(existsSync)];
 for(const model of catalogs)test(`${model}: explode and implode remain inside the usable viewport`,async()=>{
  const atlas=JSON.parse(await readFile(model)),ids=new Set(atlas.parts.filter(p=>!p.suppressed).map(p=>p.id));

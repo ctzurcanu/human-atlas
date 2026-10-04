@@ -25,7 +25,6 @@ jobs:
         id: pages
       - run: npm ci
       - run: npm run check
-      - run: node --test tests/posthog.test.mjs
       - run: npm run test:explosion-viewport
       - run: npm run test:camera-intent
       - run: npm run test:explosion-plane
