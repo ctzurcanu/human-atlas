@@ -1,5 +1,13 @@
 # TA98 digestive duct review
 
+## Cystic fold construction, 10 October 2026
+
+The complete authority inventory below still applies. The current male cystic source is the installed finite FJ3080 wall; the female source is LOCAL:female:cystic_duct:authored. Both represent A05.8.02.011. Its child A05.8.02.012 (Plica spiralis / spiral fold) lacks geometry in both. The existing related arterial and neural sources do not represent their small duct-wall branches.
+
+Construct three separate oblique crescentic mucosal projections rooted in the actual cystic lumen boundary. Each fold is a finite tissue volume with a basal footprint shared with the duct, a raised luminal surface and tapered edges. One collective .012 mesh may contain three disconnected folds, as the term describes a series. No duplicated exposed basal faces, lumen disks, additional whole-duct surface, organ relocation or new image texture. Conforming subdivision is limited to the cystic footprint support; retain gallbladder/trunk mouths, all original coordinates and unrelated anatomy. The cystic parent selects its wall and folds; the .012 child selects the folds alone. Standard selection, visibility, labels and continuous section caps must work.
+
+Reference: Pina et al., 46 adult human extrahepatic tracts, https://www.thieme-connect.com/products/ejournals/html/10.1055/s-0035-1567879 . The study describes separate oblique/transverse endoluminal folds, variable number and extension, and no mandatory continuous helix. This construction represents that morphology, retaining the TA98 name. It does not copy patient geometry. Projection is limited by the existing local lumen radius and leaves a central passage. Verify each fold's components, closed finite volume, opposed basal contacts, self-intersections, complete macro-lumen continuity, inherited mouth coordinates/normals and actual longitudinal/cross-sectional renders before local installation. The dimensions are illustration parameters, not measurements of these two subjects.
+
 All 124 authority descendants of liver, gallbladder, pancreas and duodenum are retained below. The initial inventory preceded geometry changes; later construction and delivery evidence is recorded below. A whole-organ exterior does not represent sinusoids, lobules or segmental vascular territories. Openings are not solids. An authored provisional tissue interval is a representation, not anatomical acceptance.
 
 | TA98 | Term | Parent | Representation | Male sources | Female sources | Missing active exact M/F |
