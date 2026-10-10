@@ -709,3 +709,56 @@ The native `LOCAL:female:l_gastric_vein:1793` is an additional named source cand
 2026-10-11 installed native female gastric venous course improvement: ordinary catalogue SHA256 `dace8f8f1bde32846f5583c66ce3e1e9c9ec12578e42500da2484648e8e4fcef` contains the 878-triangle, one-envelope repair and whole-cycle B/C posterior shifts. Independent exact saved-array and packed source-attribute replay proves all faces and fixed controls retained, original UV interpolation, all eight native/portal seam coordinates and quantized normals exact, and every unrelated anatomy/material/visibility record unchanged. Current-source, bank-hash-bound checks of 107 neighbors find zero newly crossing stable face pairs and no remaining primary contacts on changed triangles. Duct crossings20 → 0 (innermost6 → 0); independent closed diagnostic envelopes, including all operation caps, give zero candidate intersections and no bidirectional vertex/centroid containment. Before-sampling alone misses the original penetrating sliver; caps are diagnostics only and none are exported. Actual packed exterior and literal section reviewed in Blender and the ordinary local atlas. The same material needs no new images; native vertex records1638 → 555, raw part bytes52,236 → 24,968, new bank gzip11,325 bytes, triangles804 → 878. Original catalogue/forest are preserved hash-bound before installation. Male ordinary catalogue remains `ef928b80bb233ddeb072f687ffd00f800aa626e00d96acde9b113feca20aa167`.
 
 The current A12.3.12.015 hierarchy now has one explicit native female parent-scoped exterior representation instead of the inventory’s earlier missing correspondence. It is not an exact completed vein or new accepted TA98 term: blood lumen, coats, clinical course/calibre and two-mouth source identity remain unbuilt/unverified. The ordinary row selects the native mesh; its hide/restore checkbox and exclusive label selection preserve camera. Native portal outflow and left gastric arterial context resolve reciprocally with strict source/frame guards. TA98-code search returns a qualified parent placement, with no false exact identifier. Existing whole-stomach drainage remains. Complete current forest ownership/pairs replay (2947 leaves,2746 owners,112824 spatial pairs) passes; all8-model 7474-term selection sets, functional relations, camera intent,5 POV explosion-plane and16 viewport/start/reversal/return tests pass. Coverage reports now bind each catalogue file/SHA so validation cannot silently test an older local atlas. Existing report checked in; no ignore rules or public deployment changed. Evidence: gastric-vein-course{,-replay,-lumen-exclusion}.json, gastric-vein-packed-validation.json, gastric-vein-browser-review.json, gastric-vein-installed-review.json and current forest validation. Further biliary subdivisions, vascular wall/lumen coverage and whole-body acceptance remain required.
+
+2026-10-11 vascular-wall inventory and outer triangulation plan, before geometry change: current native gastric source remains parent-scoped, with blood lumen/coats, third mouth and left/right branch identity unresolved. The shared vessel coats are A12.0.00.017 Tunica externa, .019 Tunica media and .018 Tunica intima, all authoritative children of cardiovascular systemA12.0.00.000. Organ-specific coat instances need contextual part-of links; the generic parentage is retained. Vasa vasorumA12.0.00.028 requires its own vessel geometry; a venous valveA12.0.00.023 must not be invented without evidence of applicability. The full general vascular category inventory46 below records current sources/missing representations in both ordinary models, in addition to the portal-family37 already inventoried. A general category is not automatically a separate solid in this gastric source.
+
+| TA98 | Term | Authority parent | Male source concepts | Female source concepts |
+| --- | --- | --- | --- | --- |
+| A12.0.00.000 | cardiovascular system | A01.0.00.000 | TA98GROUP:A12.0.00.000 (parent) | missing distinct representation |
+| A12.0.00.001 | blood vessel | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.002 | arteriolovenular anastomosis | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.003 | artery | A12.0.00.000 | TA98GROUP:A12.0.00.003 (parent) | missing distinct representation |
+| A12.0.00.004 | nutrient artery | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.005 | arteriole | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.006 | arterial circle | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.007 | vascular circle | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.008 | cistern | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.009 | blood | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.010 | vascular plexus | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.011 | venous plexus | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.012 | arterial plexus | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.013 | rete mirabile | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.014 | articular vascular plexus | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.015 | venous plexus | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.016 | sinus venosus | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.017 | tunica externa | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.018 | tunica intima | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.019 | tunica media | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.020 | valve | A12.0.00.000 | missing distinct representation | HRA:VH_F_valve (exact); TA98FEMALE:A12.0.00.020 (exact) |
+| A12.0.00.021 | cusp | A12.0.00.020 | missing distinct representation | missing distinct representation |
+| A12.0.00.022 | cusp | A12.0.00.020 | missing distinct representation | missing distinct representation |
+| A12.0.00.023 | venous valve | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.024 | anastomotic vessel | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.025 | capillary | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.026 | collateral vessel | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.027 | sinusoid | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.028 | vasa vasorum | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.029 | vessels of nerves | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.030 | vein | A12.0.00.000 | TA98GROUP:A12.0.00.030 (parent) | missing distinct representation |
+| A12.0.00.031 | vena comitans | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.032 | cutaneous vein | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.033 | emissary vein | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.034 | nutrient vein | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.035 | deep vein | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.036 | superficial vein | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.037 | venule | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.038 | lymphatic vessel | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.039 | superficial lymph vessel | A12.0.00.038 | missing distinct representation | missing distinct representation |
+| A12.0.00.040 | deep lymph vessel | A12.0.00.038 | missing distinct representation | missing distinct representation |
+| A12.0.00.041 | lymphatic plexus | A12.0.00.038 | missing distinct representation | missing distinct representation |
+| A12.0.00.042 | lymphatic valvule | A12.0.00.038 | missing distinct representation | missing distinct representation |
+| A12.0.00.043 | lymph | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.044 | lymphatic capillary | A12.0.00.000 | missing distinct representation | missing distinct representation |
+| A12.0.00.045 | lymphatic rete | A12.0.00.000 | missing distinct representation | missing distinct representation |
+
+The installed exterior has an almost-collinear face221 of area7.63237×10⁻¹³m² and minimum altitude6.938nm. Its orientation opposes native parent716, and its two endpoint stars admit no valid shared inward field. Plan: flip only the shared diagonal of same-parent faces221/222, retaining all geometric controls,878 triangles, source ownership/materials and all three openings. Both new triangles remain inside the original parent716 domain. This is numerical triangulation repair, with no guessed biological shape or wall thickness. Recheck every supported inward star, self-crossings, original packed seams/UVs and body-neighbor/lumen exclusion, then inspect actual facets/reference courses before local installation. Independent supplied2024 models separate left/right gastric veins with an anastomotic connection and separate portal mouths. That informs source-scope review, but does not prove the native two-mouth source is combined or establish its unjoined third-mouth identity. Do not partition its names or assign coat thickness yet. Source and candidate contracts are in gastric-vein-triangulation-plan.json; original catalogue/body remain fixed.
