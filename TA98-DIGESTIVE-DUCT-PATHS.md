@@ -653,3 +653,51 @@ For local installation, the improved patch is packed into the existing **whole c
 The browser review also caught idle SVG replacement during label clicks. Ordinary and dermatome callouts now retain their existing click/focus targets until the view/layout/selection changes. Actual exclusive compound-duct label selection preserves the exact camera, as do section changes. Eighteen selector/interface/label/camera checks, five explosion-plane checks and TypeScript pass. Original source bytes and the pre-update forest are preserved by hash, and the common-hepatic construction tools explicitly recover their pinned baseline rather than silently reading a changed ordinary catalogue. `native-biliary-tangent-{atlas-validation,packed-validation,packing,browser}.json` bind the installation evidence. The local-only installer checks these exact hashes and all gates; it publishes nothing and does not modify the male model. Regenerate the complete current female forest and verify the ordinary atlas after installation. Clinical calibre, existing native vessel contacts, papillary endings, named hepatic/bile/pancreatic boundaries and whole-body TA98 acceptance remain unfinished.
 
 Installed and verified in the ordinary female atlas, 11 October 2026: final SHA256 `d473734b65b4c4c2d3fb782a81308fa5fad9db0a947151fa34546a84fe2eaabe`. This supersedes the intermediate catalogue hash above only by correcting a stale aggregate triangle count: 5,948,626→5,945,544, the actual sum of all stored part faces including suppressed references. Every other catalogue field and bank byte is identical. The ordinary JSON and gzip match the final candidate; the installer also checks actual bank bytes and their gzip. Independent Float32 paired-patch Jacobians remain negative. The refreshed female forest has 2,947 leaves, 2,746 ownership groups, eight roots and 112,824 spatial candidates; exhaustive source/bank/pair replay passes for all four current/native male/female forests. All sixteen explosion-viewport/start/reversal/return checks pass. The ordinary atlas's compound-duct label selects its one part and preserves the exact physical camera. Male remains `ef928b80…`. This installs the bounded whole-wall improvement, not the provisional named common-hepatic partition, and adds no accepted distinct TA98 term. Residual contour creasing, native vessel conflicts and named duct boundaries remain work in progress.
+
+### Native gastric venous source repair plan — 11 October 2026
+
+The six actual duct-inner/left-gastric-source crossing segments occupy X=−18.918…−18.425 mm, Y=1194.984…1195.355 mm and Z=25.845…26.089 mm. The source has three components, 38 tested self-crossings, four exactly zero-area faces and three four-edge openings. Removing only the exact zero-area faces restores manifold/winding/link checks; it does not join the overlapping pieces. Two source rims share all eight literal coordinates with the native portal vein, and no complete duplicate triangle is shared. Do not infer that the third opening or two portal mouths establish a clinical variant.
+
+Authority inventory from the [IFAA portal-vein section](https://ifaa.unifr.ch/Public/EntryPage/TA98%20Tree/TA98%20EN/12.3.12%20TA98%20EN.htm) follows. The active/hidden source references are recorded per model; missing distinct representations remain obligations. These are outer vessel/vascular-region references, not verified venous coats or blood lumens; the ligamentous remnants are separate tissues.
+
+| TA98 | Term | Parent | Male sources | Female sources |
+|---|---|---|---|---|
+| A05.8.01.011 | ligamentum venosum | A05.8.01.008 | missing |  (hidden: HRA:VH_F_ligamentum_venosum) |
+| A05.8.01.015 | round ligament of the liver | A05.8.01.014 | missing |  (hidden: HRA:VH_F_round_ligament_of_liver) |
+| A12.3.12.001 | hepatic portal vein | A12.3.00.001 | ZA:Hepatic portal vein (hidden: FJ3124, FJ1913, FJ1914, FJ2405, FJ3073, FJ3074, FJ3111, FJ3112, FJ3113, FJ3122, FJ1893, FJ2404, FJ3102, FJ3125, FJ3126, FJ3127, FJ3128) | LOCAL:female:portal_vein:1795 |
+| A12.3.12.002 | right branch | A12.3.12.001 |  (hidden: FJ1913, FJ1914, FJ2405, FJ3073, FJ3074, FJ3111, FJ3112, FJ3113, FJ3122) | missing |
+| A12.3.12.003 | anterior branch | A12.3.12.002 |  (hidden: FJ3073, FJ3074) | missing |
+| A12.3.12.004 | posterior branch | A12.3.12.002 |  (hidden: FJ3111, FJ3112, FJ3113) | missing |
+| A12.3.12.005 | left branch | A12.3.12.001 |  (hidden: FJ3124, FJ1893, FJ2404, FJ3102, FJ3125, FJ3126, FJ3127, FJ3128) | missing |
+| A12.3.12.006 | transverse part | A12.3.12.005 | missing | missing |
+| A12.3.12.007 | caudate branches | A12.3.12.006 |  (hidden: FJ3124) | missing |
+| A12.3.12.008 | umbilical part | A12.3.12.005 | missing | missing |
+| A12.3.12.009 | lateral branches | A12.3.12.008 |  (hidden: FJ3125, FJ3126) | missing |
+| A12.3.12.010 | umbilical vein | A12.3.12.008 |  (hidden: LOCAL:male:r_umbilical_vein:1492, LOCAL:male:l_umbilical_vein:1509) | LOCAL:female:l_umbilical_vein:1777, LOCAL:female:r_umbilical_vein:1775 |
+| A12.3.12.011 | medial branches | A12.3.12.008 |  (hidden: FJ3127, FJ3128) | missing |
+| A12.3.12.012 | cystic vein | A12.3.12.001 | missing |  (hidden: HRA:VH_F_cystic_vein) |
+| A12.3.12.013 | para-umbilical veins | A12.3.12.001 | missing | missing |
+| A12.3.12.014 | superior posterior pancreaticoduodenal vein | A12.3.12.001 |  (hidden: FJ3545, FJ3646, FJ3655) | missing |
+| A12.3.12.015 | left gastric vein | A12.3.12.001 |  (hidden: FJ3500) | missing |
+| A12.3.12.016 | right gastric vein | A12.3.12.001 |  (hidden: FJ3595) | missing |
+| A12.3.12.017 | prepyloric vein | A12.3.12.001 | missing | missing |
+| A12.3.12.018 | superior mesenteric vein | A12.3.12.001 | ZA:Superior mesenteric vein | LOCAL:female:superior_mesenteric_vein:1755 |
+| A12.3.12.019 | jejunal veins | A12.3.12.018 | missing | missing |
+| A12.3.12.020 | ileal veins | A12.3.12.018 |  (hidden: FJ3438) | missing |
+| A12.3.12.021 | right gastro-omental vein | A12.3.12.018 | ZA:Right gastro-omental vein | missing |
+| A12.3.12.022 | pancreatic veins | A12.3.12.018 | missing | missing |
+| A12.3.12.023 | pancreaticoduodenal veins | A12.3.12.018 |  (hidden: FJ3545, FJ3646, FJ3655) | missing |
+| A12.3.12.024 | ileocolic vein | A12.3.12.018 |  (hidden: FJ3415, FJ3440) | LOCAL:female:ileocolic_vein:1748, LOCAL:female:ileocolic_vein:1749 |
+| A12.3.12.025 | appendicular vein | A12.3.12.024 |  (hidden: LOCAL:male:appendicular_vein:1461) | LOCAL:female:appendicular_vein:1747 |
+| A12.3.12.026 | right colic vein | A12.3.12.018 | ZA:Right colic vein | LOCAL:female:right_colic_vein:1752 |
+| A12.3.12.027 | middle colic vein | A12.3.12.018 | ZA:Middle colic vein | LOCAL:female:middle_colic_vein:1750 |
+| A12.3.12.028 | splenic vein | A12.3.12.001 | ZA:Splenic vein | LOCAL:female:splenic_vein:1796 |
+| A12.3.12.029 | pancreatic veins | A12.3.12.028 | missing | missing |
+| A12.3.12.030 | short gastric veins | A12.3.12.028 | missing | missing |
+| A12.3.12.031 | left gastro-omental vein | A12.3.12.028 | ZA:Left gastro-omental vein | missing |
+| A12.3.12.032 | inferior mesenteric vein | A12.3.12.028 | ZA:Inferior mesenteric vein | LOCAL:female:inferior_mesenteric_vein:1754 |
+| A12.3.12.033 | left colic vein | A12.3.12.032 |  (hidden: FJ3400, FJ3429, FJ3495) |  (hidden: HRA:VH_F_left_colic_vein) |
+| A12.3.12.034 | sigmoid veins | A12.3.12.032 | ZA:Sigmoid veins | LOCAL:female:sigmoid_veins:1753 |
+| A12.3.12.035 | superior rectal vein | A12.3.12.032 |  (hidden: FJ3657) | LOCAL:female:superior_rectal_vein:1789 |
+
+The native `LOCAL:female:l_gastric_vein:1793` is an additional named source candidate, presently without reviewed exact TA98 correspondence. Before geometry edits, define the repair as the complete three-piece source assembly: remove only the four zero-area faces, temporarily close the three source ports for exact volume union in the existing Blender instance, then remove every temporary cap and retain all original rim coordinates. Preserve portal interfaces and the rest of the body. An opening remains empty; this stage must not create a blood-lumen disk, invent a named branch, or equate an outer envelope with a venous wall layer. Inspect actual external and cut surfaces and verify topology, connected components, self-crossings, source-normal/rim preservation and body packing before placement changes or installation. The closed operation meshes are temporary only. Original catalogue and source arrays remain local and unchanged. Full source/plan data are bound in `gastric-vein-repair-plan.json` and `native-biliary-vein-contact.json`.
