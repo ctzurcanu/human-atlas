@@ -1243,3 +1243,48 @@ The existing Blender window was used for literal source and corrected side inspe
 Installation remains rejected by the current adjoining screen. Innermost SMA pairs 194→76 remain; juxta-intestinal lymph nodes 20→63 worsen. Whole exterior diagnostics worsen against greater omentum 1415→1587, transverse colon serosa 2526→2538/subserosa 2511→2520, and rectum serosa 88→92. These are indexed source surface-pair diagnostics, sometimes including internal/terminal caps, not clinical defect totals. The original context checker missed neurovascular lining due to system-label mismatch; the separately bound supplement uses actual arterial/venous/lymphatic/nervous labels. Preserve all original vessels, nodes and forest-owned tissue; resolve the remaining innermost conflicts and adjoining complete ownership groups before installing any candidate. Both ordinary male/female catalogues and `.gitignore` remain unchanged.
 
 Evidence is bound in `reports/male-ileal-mesenteric-root-review-v31b.json` (stage, independent containment, 29-neighbor context, actual-system neurovascular supplement, Blender loader and actual screenshots/browser metadata). Candidate SHA256 `c7b389c6f492938b1dcb433bd22cd0dd676262881cee215548e8c1e21a177361`. This geometry does not establish microscopic features, complete D/J finite walls, clinical wall identity or full-body TA98 coverage.
+
+
+### 2026-10-11 · Whole ileal lateral course screen (v32)
+
+Frozen before geometry modification: `reports/male-ileal-lateral-course-plan-v32.json` SHA256 `524801231017b41699108b079c0a7e4a1b99643ae499b28347c5c606d92f012c` binds the current v31b candidate, ordinary catalogue/full forest, complete 99 intestinal and 83 vascular inventories, actual contact locations, and all additional fixed SMA/nodal/greater-omentum descendants below. Field is one common x(y) displacement of all native D/J/I exterior and nine ileal interfaces: four disjoint signed C2 bands, bounded 3/6/9 mm trials. All source vessels/nodes/body stay fixed. First 509 gastric points, all nine terminal 12 rings, literal faces and shared tissue interfaces remain exact. Continuous map determinant 1 does not establish discrete tissue validity. Preserve the original 60 mm source-control and length guards, all prism/surface/topology/containment/render/packing gates. No installation or clinical acceptance.
+
+| TA98 | Parent | Name | Existing source ownership | Missing distinct mapping |
+|---|---|---|---|---|
+| A10.1.02.201 | A10.1.02.002 | greater omentum | ZA:Greater omentum (source-object:dd0a8c5418613fa82701) | False |
+| A10.1.02.202 | A10.1.02.201 | gastrophrenic ligament | none | True |
+| A10.1.02.203 | A10.1.02.201 | gastrosplenic ligament | none | True |
+| A10.1.02.204 | A10.1.02.201 | presplenic fold | none | True |
+| A10.1.02.205 | A10.1.02.201 | gastrocolic ligament | none | True |
+| A10.1.02.206 | A10.1.02.201 | phrenicosplenic ligament | none | True |
+| A10.1.02.207 | A10.1.02.201 | splenorenal ligament | none | True |
+| A10.1.02.208 | A10.1.02.201 | pancreaticosplenic ligament | none | True |
+| A10.1.02.209 | A10.1.02.201 | pancreaticocolic ligament | none | True |
+| A10.1.02.210 | A10.1.02.201 | splenocolic ligament | none | True |
+| A10.1.02.211 | A10.1.02.201 | phrenicocolic ligament | none | True |
+| A12.2.12.053 | A12.2.12.001 | superior mesenteric artery | FJ3406 (source-object:10118e88f61f4904536a); FJ3553 (source-object:2aaec5d5811623b1f1f8); ZA:Superior mesenteric artery (source-object:c018744be07bf0df3f7a) | False |
+| A12.2.12.054 | A12.2.12.053 | inferior pancreaticoduodenal artery | ZA:Inferior pancreaticoduodenal artery (source-object:94a4ed23cf6190fcb9f1) | False |
+| A12.2.12.055 | A12.2.12.054 | anterior branch | FJ3401 (source-object:14f3781798bfb23401c8) | False |
+| A12.2.12.056 | A12.2.12.054 | posterior branch | FJ3546 (source-object:192f4a46e94e1d96edce) | False |
+| A12.2.12.057 | A12.2.12.053 | jejunal arteries | none | True |
+| A12.2.12.058 | A12.2.12.053 | ileal arteries | FJ3437 (source-object:94bc3b6ab1a748ab5962) | False |
+| A12.2.12.059 | A12.2.12.053 | ileocolic artery | FJ3406 (source-object:10118e88f61f4904536a); FJ3553 (source-object:2aaec5d5811623b1f1f8); ZA:Ileocolic artery (source-object:e23a7e2c8ae2cb7488f1) | False |
+| A12.2.12.060 | A12.2.12.059 | anterior caecal artery | FJ3406 (source-object:10118e88f61f4904536a) | False |
+| A12.2.12.061 | A12.2.12.059 | posterior caecal artery | FJ3553 (source-object:2aaec5d5811623b1f1f8) | False |
+| A12.2.12.062 | A12.2.12.059 | appendicular artery | ZA:Appendicular artery (source-object:db63c7d08a84b9cc42f5) | False |
+| A12.2.12.063 | A12.2.12.059 | ileal branch | ZA:Ileal branch of ileocolic artery (source-object:3988b8ed2b9c4f32fe6c) | False |
+| A12.2.12.064 | A12.2.12.059 | colic branch | ZA:Colic branch of ileocolic artery (source-object:bdd073027b44073b6c30) | False |
+| A12.2.12.065 | A12.2.12.053 | right colic artery | ZA:Right colic artery (source-object:9e277e703f0044df5b04) | False |
+| A12.2.12.066 | A12.2.12.053 | right flexural artery | none | True |
+| A12.2.12.067 | A12.2.12.053 | middle colic artery | ZA:Middle colic artery (source-object:6510b8ccbd52206c281d) | False |
+| A12.2.12.068 | A12.2.12.053 | marginal artery | ZA:Marginal artery (source-object:e50c247a3a435d7a47f4) | False |
+| A13.3.03.033 | A13.3.03.014 | superior mesenteric nodes | none | True |
+| A13.3.03.034 | A13.3.03.033 | juxta-intestinal mesenteric nodes | ZA:Juxta-intestinal mesenteric nodes (source-object:c94f4d37168bd9b828ad) | False |
+| A13.3.03.035 | A13.3.03.033 | central superior mesenteric nodes | ZA:Central superior mesenteric nodes (source-object:5ea14f0fdfe63e6cde64) | False |
+| A13.3.03.036 | A13.3.03.033 | ileocolic nodes | ZA:Ileocolic nodes (source-object:a0a9634f73b03cc33d30) | False |
+| A13.3.03.037 | A13.3.03.033 | precaecal nodes | ZA:Precaecal nodes (source-object:1a0e28261cb2aebfed79) | False |
+| A13.3.03.038 | A13.3.03.033 | retrocaecal nodes | ZA:Retrocaecal nodes (source-object:2ac3b7f711c5ecce7b79) | False |
+| A13.3.03.039 | A13.3.03.033 | appendicular nodes | ZA:Appendicular nodes (source-object:0644016b746a07676cf2) | False |
+| A13.3.03.040 | A13.3.03.033 | mesocolic nodes | none | True |
+| A13.3.03.041 | A13.3.03.040 | paracolic nodes | none | True |
+| A13.3.03.042 | A13.3.03.040 | colic nodes | ZA:Left colic nodes (source-object:2b1ee14266b39470f266); ZA:Right colic nodes (source-object:5def63ddea88e2443997) | False |
