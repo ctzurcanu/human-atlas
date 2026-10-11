@@ -831,3 +831,90 @@ The pre-edit support binds14 actual fixed neighbor meshes and all20 installed fo
 The tenth gate fails:22 actual ileal innermost-sheet crossing pairs remain. All22 have exactly the same original SMV face parent and innermost packed face as the source; six inner faces meet SMV original strips182/183. Do not install or waive them as physiological wall entry. The independent replay correctly decodes gastric masks/actual inner draw groups and excludes outer faces and annular caps. The pre-edit preparation's17 disjoint bounds were conservative **whole stored carrier** bounds, not a count of isolated innermost facets; that prior wording is corrected here. Full source SMV/ileal-inner audit finds485 crossing pairs across50 source strips. Exact binary-rational segment tests show cut184 itself intersects the actual inner surface twice; cuts185/186/187 also intersect it. Thus enlarging the return blend alone cannot solve placement while keeping the same invalid cut anchors. All ileal wall fields/folds belong to one existing forest group `source-object:baa41c806765b98e718f`; coupled course/packing correction must preserve their shared coordinates and every arterial/venous attachment. Existing vessels and the lining are not removed to conceal the conflict. Evidence: `smv-ileal-inner-conflict-v1.json` SHA256 `ae338fa8076964f1256fbd94dfa8c1aa1886b6af39581f7b3ebb179ae9a4a993`; `smv-ileal-cut-obligation-v1.json` SHA256 `265d2984dfff649a2be51a66b7b0bef8c53cabd209baf3b434cbd85d9fc57221`.
 
 Actual exterior, identical-camera source/candidate longitudinal cuts, transverse junction cut and unchanged ileal/arterial context were reviewed at `http://localhost:3016/portal-confluence-review.html?candidate=smv-return`. Source/Candidate and context/section toggles preserve the exact raw camera; transverse inspection uses an explicit orbit. No filled section guide plane is introduced. TypeScript, camera-intent and all five explosion-plane checks pass. Ordinary male e2da0ae6… and female c6573313… catalogue bytes remain unchanged; the approved splenic exterior remains installed. Preview files are local diagnostic data only, with no new production image/material/geometry allocation. All remaining tributary interfaces, whole-course/compartment correction, blood boundaries, finite coats and full TA98 coverage remain unfinished; no new anatomical completion count is added.
+
+2026-10-11 male ileal source frame, before a twelve-part movement trial: current male e2da0ae6…/complete forest and unchanged local male catalogue276aed1c… are bound to `ileal-source-registration-v1.json`, SHA256 `3ccc74bf6822ed985a1db49e3d44453de1bd1cee0647b4dec875f000c0ec5380`. Every imported ileal source coordinate independently replays the same1.070466223 height resize within59.722nm. Ten actual skeletal surface-area proxies show median68.908mm/max75.562mm mismatch under that combined resize. The original175cm local reference skeleton has median13.905mm mismatch against the current ZA skeleton; fitting seven bony proxies reduces median to3.796mm, with held-out L2/L4/coccyx and a15.234mm maximum. These proxies are not certified homologous landmarks. The fitted positive similarity has scale0.975186477 and a proper rotation; the installed skeleton is fixed. The current hybrid duodenal–jejunal and jejunal–ileal outer ports remain disconnected by nearest-centre gaps36.948/49.631mm. Original local male duodenum/jejunum/ileum form a separate source family with exact twelve-control outer joins; none of that proves finite-wall or clinical acceptance. Existing Blender is now accessible; no new process or file was opened.
+
+Freeze `reports/ta98-male/ileal-frame-trial-plan-v1.json`, SHA256 `75e8e2c30faa923df5c741feeb5d50825def41d354b2d65a35e219c77bd43046`, before posing any intestinal candidate. Its complete80-row small-intestine inventory below retains authoritative names/parents, source matches and missing active sources; a source match is not accepted distinct geometry. One common positive similarity may be tested on the existing twelve-record ileal forest group, keeping every source face/UV and all shared tissue coordinates/normals together. Native skeleton/fascia/vessels, current duodenum/jejunum/caecal fields remain fixed and must be checked against the whole changed extent. This diagnostic trial cannot be installed from centroid scores or lower crossing counts. All current terminal gaps, finite lumen/wall defects and microscopic representation obligations remain explicit; no new histological partition or anatomical completion is claimed.
+
+| TA98 | Name | Parent | Representation class | Active source matches |
+|---|---|---|---|---|
+| A05.6.01.001 | small intestine | A05.0.00.000 | organ / anatomical region | Missing active source |
+| A05.6.01.002 | serosa | A05.6.01.001 | wall layer / tissue | ZA:BOWELWALL:jejunum:serosa, LOCAL:male:BOWELWALL:ileum:serosa |
+| A05.6.01.003 | subserosa | A05.6.01.001 | wall layer / tissue | ZA:BOWELWALL:jejunum:subserosa, LOCAL:male:BOWELWALL:ileum:subserosa |
+| A05.6.01.004 | muscular layer | A05.6.01.001 | wall layer / tissue | Missing active source |
+| A05.6.01.005 | longitudinal layer | A05.6.01.004 | organ / anatomical region | ZA:BOWELWALL:jejunum:longitudinal-muscle, LOCAL:male:BOWELWALL:ileum:longitudinal-muscle, LOCAL:male:BOWELWALL:duodenum:longitudinal-muscle |
+| A05.6.01.006 | circular layer | A05.6.01.004 | organ / anatomical region | ZA:BOWELWALL:jejunum:circular-muscle, LOCAL:male:BOWELWALL:ileum:circular-muscle, LOCAL:male:BOWELWALL:duodenum:circular-muscle |
+| A05.6.01.007 | circular folds | A05.6.01.001 | fold / surface feature | Missing active source |
+| A05.6.01.008 | submucosa | A05.6.01.001 | wall layer / tissue | ZA:BOWELWALL:jejunum:submucosa, LOCAL:male:BOWELWALL:ileum:submucosa, LOCAL:male:BOWELWALL:duodenum:submucosa |
+| A05.6.01.009 | mucosa | A05.6.01.001 | wall layer / tissue | Missing active source |
+| A05.6.01.010 | muscularis mucosae | A05.6.01.009 | wall layer / tissue | ZA:BOWELWALL:jejunum:muscularis-mucosae, LOCAL:male:BOWELWALL:ileum:muscularis-mucosae, LOCAL:male:BOWELWALL:duodenum:muscularis-mucosae |
+| A05.6.01.011 | intestinal villi | A05.6.01.009 | microscopic structure | Missing active source |
+| A05.6.01.012 | intestinal glands | A05.6.01.009 | microscopic structure | Missing active source |
+| A05.6.01.013 | solitary lymphoid nodules | A05.6.01.009 | microscopic structure | Missing active source |
+| A05.6.01.014 | aggregated lymphoid nodules | A05.6.01.009 | microscopic structure | Missing active source |
+| A05.6.02.001 | duodenum | A05.6.01.001 | organ / anatomical region | Missing active source |
+| A05.6.02.002 | superior part | A05.6.02.001 | organ / anatomical region | GASTRIC:male:pyloric-connection |
+| A05.6.02.003 | ampulla | A05.6.02.002 | organ / anatomical region | Missing active source |
+| A05.6.02.004 | superior duodenal flexure | A05.6.02.001 | organ / anatomical region | Missing active source |
+| A05.6.02.005 | descending part | A05.6.02.001 | organ / anatomical region | Missing active source |
+| A05.6.02.006 | inferior duodenal flexure | A05.6.02.001 | organ / anatomical region | Missing active source |
+| A05.6.02.007 | inferior part | A05.6.02.001 | organ / anatomical region | Missing active source |
+| A05.6.02.008 | ascending part | A05.6.02.001 | organ / anatomical region | Missing active source |
+| A05.6.02.009 | duodenojejunal flexure | A05.6.02.001 | organ / anatomical region | Missing active source |
+| A05.6.02.010 | hidden part of duodenum | A05.6.02.001 | organ / anatomical region | Missing active source |
+| A05.6.02.011 | suspensory muscle of duodenum | A05.6.02.001 | organ / anatomical region | Missing active source |
+| A05.6.02.012 | phrenicocoeliac part | A05.6.02.011 | organ / anatomical region | Missing active source |
+| A05.6.02.013 | coeliacoduodenal part | A05.6.02.011 | organ / anatomical region | Missing active source |
+| A05.6.02.014 | longitudinal fold of duodenum | A05.6.02.001 | fold / surface feature | Missing active source |
+| A05.6.02.015 | major duodenal papilla | A05.6.02.001 | organ / anatomical region | Missing active source |
+| A05.6.02.016 | minor duodenal papilla | A05.6.02.001 | organ / anatomical region | Missing active source |
+| A05.6.02.017 | duodenal glands | A05.6.02.001 | microscopic structure | Missing active source |
+| SIW:duodenum:mucosa | Tunica mucosa | A05.6.02.001 | wall layer / tissue | Missing active source |
+| SIW:duodenum:epithelium | Epithelium mucosae | SIW:duodenum:mucosa | wall layer / tissue | LOCAL:male:BOWELWALL:duodenum:epithelium |
+| SIW:duodenum:lamina-propria | Lamina propria mucosae | SIW:duodenum:mucosa | wall layer / tissue | LOCAL:male:BOWELWALL:duodenum:lamina-propria |
+| SIW:duodenum:muscularis-mucosae | Lamina muscularis mucosae | SIW:duodenum:mucosa | wall layer / tissue | LOCAL:male:BOWELWALL:duodenum:muscularis-mucosae |
+| SIW:duodenum:circular-folds | Plicae circulares | SIW:duodenum:mucosa | fold / surface feature | Missing active source |
+| SIW:duodenum:villi | Villi intestinales | SIW:duodenum:mucosa | microscopic structure | Missing active source |
+| SIW:duodenum:intestinal-glands | Glandulae intestinales | SIW:duodenum:mucosa | microscopic structure | Missing active source |
+| SIW:duodenum:solitary-nodules | Noduli lymphoidei solitarii | SIW:duodenum:mucosa | microscopic structure | Missing active source |
+| SIW:duodenum:submucosa | Tela submucosa | A05.6.02.001 | wall layer / tissue | LOCAL:male:BOWELWALL:duodenum:submucosa |
+| SIW:duodenum:duodenal-glands | Glandulae duodenales | SIW:duodenum:submucosa | microscopic structure | Missing active source |
+| SIW:duodenum:muscularis | Tunica muscularis | A05.6.02.001 | wall layer / tissue | Missing active source |
+| SIW:duodenum:circular-muscle | Stratum circulare | SIW:duodenum:muscularis | organ / anatomical region | LOCAL:male:BOWELWALL:duodenum:circular-muscle |
+| SIW:duodenum:longitudinal-muscle | Stratum longitudinale | SIW:duodenum:muscularis | organ / anatomical region | LOCAL:male:BOWELWALL:duodenum:longitudinal-muscle |
+| SIW:duodenum:subserosa | Tela subserosa | A05.6.02.001 | wall layer / tissue | Missing active source |
+| SIW:duodenum:serosa | Tunica serosa | A05.6.02.001 | wall layer / tissue | Missing active source |
+| SIW:duodenum:adventitia | Tunica adventitia | A05.6.02.001 | organ / anatomical region | Missing active source |
+| A05.6.03.001 | jejunum | A05.6.01.001 | organ / anatomical region | Missing active source |
+| SIW:jejunum:mucosa | Tunica mucosa | A05.6.03.001 | wall layer / tissue | Missing active source |
+| SIW:jejunum:epithelium | Epithelium mucosae | SIW:jejunum:mucosa | wall layer / tissue | ZA:BOWELWALL:jejunum:epithelium |
+| SIW:jejunum:lamina-propria | Lamina propria mucosae | SIW:jejunum:mucosa | wall layer / tissue | ZA:BOWELWALL:jejunum:lamina-propria |
+| SIW:jejunum:muscularis-mucosae | Lamina muscularis mucosae | SIW:jejunum:mucosa | wall layer / tissue | ZA:BOWELWALL:jejunum:muscularis-mucosae |
+| SIW:jejunum:circular-folds | Plicae circulares | SIW:jejunum:mucosa | fold / surface feature | Missing active source |
+| SIW:jejunum:villi | Villi intestinales | SIW:jejunum:mucosa | microscopic structure | Missing active source |
+| SIW:jejunum:intestinal-glands | Glandulae intestinales | SIW:jejunum:mucosa | microscopic structure | Missing active source |
+| SIW:jejunum:solitary-nodules | Noduli lymphoidei solitarii | SIW:jejunum:mucosa | microscopic structure | Missing active source |
+| SIW:jejunum:submucosa | Tela submucosa | A05.6.03.001 | wall layer / tissue | ZA:BOWELWALL:jejunum:submucosa |
+| SIW:jejunum:muscularis | Tunica muscularis | A05.6.03.001 | wall layer / tissue | Missing active source |
+| SIW:jejunum:circular-muscle | Stratum circulare | SIW:jejunum:muscularis | organ / anatomical region | ZA:BOWELWALL:jejunum:circular-muscle |
+| SIW:jejunum:longitudinal-muscle | Stratum longitudinale | SIW:jejunum:muscularis | organ / anatomical region | ZA:BOWELWALL:jejunum:longitudinal-muscle |
+| SIW:jejunum:subserosa | Tela subserosa | A05.6.03.001 | wall layer / tissue | ZA:BOWELWALL:jejunum:subserosa |
+| SIW:jejunum:serosa | Tunica serosa | A05.6.03.001 | wall layer / tissue | ZA:BOWELWALL:jejunum:serosa |
+| A05.6.04.001 | ileum | A05.6.01.001 | organ / anatomical region | Missing active source |
+| A05.6.04.002 | terminal ileum | A05.6.04.001 | organ / anatomical region | Missing active source |
+| A05.6.04.003 | ileal diverticulum | A05.6.04.001 | organ / anatomical region | Missing active source |
+| SIW:ileum:mucosa | Tunica mucosa | A05.6.04.001 | wall layer / tissue | Missing active source |
+| SIW:ileum:epithelium | Epithelium mucosae | SIW:ileum:mucosa | wall layer / tissue | LOCAL:male:BOWELWALL:ileum:epithelium |
+| SIW:ileum:lamina-propria | Lamina propria mucosae | SIW:ileum:mucosa | wall layer / tissue | LOCAL:male:BOWELWALL:ileum:lamina-propria |
+| SIW:ileum:muscularis-mucosae | Lamina muscularis mucosae | SIW:ileum:mucosa | wall layer / tissue | LOCAL:male:BOWELWALL:ileum:muscularis-mucosae |
+| SIW:ileum:circular-folds | Plicae circulares | SIW:ileum:mucosa | fold / surface feature | Missing active source |
+| SIW:ileum:villi | Villi intestinales | SIW:ileum:mucosa | microscopic structure | Missing active source |
+| SIW:ileum:intestinal-glands | Glandulae intestinales | SIW:ileum:mucosa | microscopic structure | Missing active source |
+| SIW:ileum:solitary-nodules | Noduli lymphoidei solitarii | SIW:ileum:mucosa | microscopic structure | Missing active source |
+| SIW:ileum:aggregated-nodules | Noduli lymphoidei aggregati | SIW:ileum:mucosa | microscopic structure | Missing active source |
+| SIW:ileum:submucosa | Tela submucosa | A05.6.04.001 | wall layer / tissue | LOCAL:male:BOWELWALL:ileum:submucosa |
+| SIW:ileum:muscularis | Tunica muscularis | A05.6.04.001 | wall layer / tissue | Missing active source |
+| SIW:ileum:circular-muscle | Stratum circulare | SIW:ileum:muscularis | organ / anatomical region | LOCAL:male:BOWELWALL:ileum:circular-muscle |
+| SIW:ileum:longitudinal-muscle | Stratum longitudinale | SIW:ileum:muscularis | organ / anatomical region | LOCAL:male:BOWELWALL:ileum:longitudinal-muscle |
+| SIW:ileum:subserosa | Tela subserosa | A05.6.04.001 | wall layer / tissue | LOCAL:male:BOWELWALL:ileum:subserosa |
+| SIW:ileum:serosa | Tunica serosa | A05.6.04.001 | wall layer / tissue | LOCAL:male:BOWELWALL:ileum:serosa |
