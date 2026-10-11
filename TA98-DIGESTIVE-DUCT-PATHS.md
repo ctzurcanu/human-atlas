@@ -836,7 +836,7 @@ Actual exterior, identical-camera source/candidate longitudinal cuts, transverse
 
 Freeze `reports/ta98-male/ileal-frame-trial-plan-v1.json`, SHA256 `75e8e2c30faa923df5c741feeb5d50825def41d354b2d65a35e219c77bd43046`, before posing any intestinal candidate. Its complete80-row small-intestine inventory below retains authoritative names/parents, source matches and missing active sources; a source match is not accepted distinct geometry. One common positive similarity may be tested on the existing twelve-record ileal forest group, keeping every source face/UV and all shared tissue coordinates/normals together. Native skeleton/fascia/vessels, current duodenum/jejunum/caecal fields remain fixed and must be checked against the whole changed extent. This diagnostic trial cannot be installed from centroid scores or lower crossing counts. All current terminal gaps, finite lumen/wall defects and microscopic representation obligations remain explicit; no new histological partition or anatomical completion is claimed.
 
-| TA98 | Name | Parent | Representation class | Active source matches |
+| Term ID (A… = TA98; SIW… = local extension) | Name | Parent | Representation class | Active source matches |
 |---|---|---|---|---|
 | A05.6.01.001 | small intestine | A05.0.00.000 | organ / anatomical region | Missing active source |
 | A05.6.01.002 | serosa | A05.6.01.001 | wall layer / tissue | ZA:BOWELWALL:jejunum:serosa, LOCAL:male:BOWELWALL:ileum:serosa |
@@ -880,11 +880,11 @@ Freeze `reports/ta98-male/ileal-frame-trial-plan-v1.json`, SHA256 `75e8e2c30faa9
 | SIW:duodenum:submucosa | Tela submucosa | A05.6.02.001 | wall layer / tissue | LOCAL:male:BOWELWALL:duodenum:submucosa |
 | SIW:duodenum:duodenal-glands | Glandulae duodenales | SIW:duodenum:submucosa | microscopic structure | Missing active source |
 | SIW:duodenum:muscularis | Tunica muscularis | A05.6.02.001 | wall layer / tissue | Missing active source |
-| SIW:duodenum:circular-muscle | Stratum circulare | SIW:duodenum:muscularis | organ / anatomical region | LOCAL:male:BOWELWALL:duodenum:circular-muscle |
-| SIW:duodenum:longitudinal-muscle | Stratum longitudinale | SIW:duodenum:muscularis | organ / anatomical region | LOCAL:male:BOWELWALL:duodenum:longitudinal-muscle |
+| SIW:duodenum:circular-muscle | Stratum circulare | SIW:duodenum:muscularis | wall layer / tissue | LOCAL:male:BOWELWALL:duodenum:circular-muscle |
+| SIW:duodenum:longitudinal-muscle | Stratum longitudinale | SIW:duodenum:muscularis | wall layer / tissue | LOCAL:male:BOWELWALL:duodenum:longitudinal-muscle |
 | SIW:duodenum:subserosa | Tela subserosa | A05.6.02.001 | wall layer / tissue | Missing active source |
 | SIW:duodenum:serosa | Tunica serosa | A05.6.02.001 | wall layer / tissue | Missing active source |
-| SIW:duodenum:adventitia | Tunica adventitia | A05.6.02.001 | organ / anatomical region | Missing active source |
+| SIW:duodenum:adventitia | Tunica adventitia | A05.6.02.001 | wall layer / tissue | Missing active source |
 | A05.6.03.001 | jejunum | A05.6.01.001 | organ / anatomical region | Missing active source |
 | SIW:jejunum:mucosa | Tunica mucosa | A05.6.03.001 | wall layer / tissue | Missing active source |
 | SIW:jejunum:epithelium | Epithelium mucosae | SIW:jejunum:mucosa | wall layer / tissue | ZA:BOWELWALL:jejunum:epithelium |
@@ -896,8 +896,8 @@ Freeze `reports/ta98-male/ileal-frame-trial-plan-v1.json`, SHA256 `75e8e2c30faa9
 | SIW:jejunum:solitary-nodules | Noduli lymphoidei solitarii | SIW:jejunum:mucosa | microscopic structure | Missing active source |
 | SIW:jejunum:submucosa | Tela submucosa | A05.6.03.001 | wall layer / tissue | ZA:BOWELWALL:jejunum:submucosa |
 | SIW:jejunum:muscularis | Tunica muscularis | A05.6.03.001 | wall layer / tissue | Missing active source |
-| SIW:jejunum:circular-muscle | Stratum circulare | SIW:jejunum:muscularis | organ / anatomical region | ZA:BOWELWALL:jejunum:circular-muscle |
-| SIW:jejunum:longitudinal-muscle | Stratum longitudinale | SIW:jejunum:muscularis | organ / anatomical region | ZA:BOWELWALL:jejunum:longitudinal-muscle |
+| SIW:jejunum:circular-muscle | Stratum circulare | SIW:jejunum:muscularis | wall layer / tissue | ZA:BOWELWALL:jejunum:circular-muscle |
+| SIW:jejunum:longitudinal-muscle | Stratum longitudinale | SIW:jejunum:muscularis | wall layer / tissue | ZA:BOWELWALL:jejunum:longitudinal-muscle |
 | SIW:jejunum:subserosa | Tela subserosa | A05.6.03.001 | wall layer / tissue | ZA:BOWELWALL:jejunum:subserosa |
 | SIW:jejunum:serosa | Tunica serosa | A05.6.03.001 | wall layer / tissue | ZA:BOWELWALL:jejunum:serosa |
 | A05.6.04.001 | ileum | A05.6.01.001 | organ / anatomical region | Missing active source |
@@ -914,7 +914,15 @@ Freeze `reports/ta98-male/ileal-frame-trial-plan-v1.json`, SHA256 `75e8e2c30faa9
 | SIW:ileum:aggregated-nodules | Noduli lymphoidei aggregati | SIW:ileum:mucosa | microscopic structure | Missing active source |
 | SIW:ileum:submucosa | Tela submucosa | A05.6.04.001 | wall layer / tissue | LOCAL:male:BOWELWALL:ileum:submucosa |
 | SIW:ileum:muscularis | Tunica muscularis | A05.6.04.001 | wall layer / tissue | Missing active source |
-| SIW:ileum:circular-muscle | Stratum circulare | SIW:ileum:muscularis | organ / anatomical region | LOCAL:male:BOWELWALL:ileum:circular-muscle |
-| SIW:ileum:longitudinal-muscle | Stratum longitudinale | SIW:ileum:muscularis | organ / anatomical region | LOCAL:male:BOWELWALL:ileum:longitudinal-muscle |
+| SIW:ileum:circular-muscle | Stratum circulare | SIW:ileum:muscularis | wall layer / tissue | LOCAL:male:BOWELWALL:ileum:circular-muscle |
+| SIW:ileum:longitudinal-muscle | Stratum longitudinale | SIW:ileum:muscularis | wall layer / tissue | LOCAL:male:BOWELWALL:ileum:longitudinal-muscle |
 | SIW:ileum:subserosa | Tela subserosa | A05.6.04.001 | wall layer / tissue | LOCAL:male:BOWELWALL:ileum:subserosa |
 | SIW:ileum:serosa | Tunica serosa | A05.6.04.001 | wall layer / tissue | LOCAL:male:BOWELWALL:ileum:serosa |
+
+2026-10-11 inventory scope correction: the80 current small-intestine tree rows above comprise **35 authoritative TA98 terms and45 local regional extensions**, not80 official TA98 terms. All35 canonical descendants and parent pairs replay from `app/data/ta98-parents.json` against the official authority source. SIW rows explicitly carry no TA98 code; Latin stratum/tunica/tela/lamina/epithelium rows are tissue layers, not generic organ regions. The original frozen pre-edit plan remains archived; this classification correction changes no transform, source, support or numerical guard. Amendment: `ileal-full-inventory-amendment-v2.json`, SHA256 `deb5681d4b67f894416e523704ee1eba25ba46d5964fc37fd94f732368689598`.
+
+2026-10-11 twelve-part source-frame trial, rejected for installation: `ileal-frame-trial-v1.json` SHA256 `5e757cf1f013a09fcacec9fa6407af29341a97af28edfd22c8a9c4f3a5cb7877` poses all twelve owned ileal wall/fold records with one common positive similarity. One shared35,424-control position pool and one shared normal pool serve all twelve records; the candidate archive is1,089,581bytes, with no new images or production resources. Maximum control movement75.415mm and local Float32 packing error6.264nm remain within the frozen diagnostic guards. Every index, UV/chart, normal sign, material and draw group remains unchanged. Independent saved-array/normal/topology/shared-field replay passes for all12 records with zero shared-field conflicts; all1,199 inherited outer self-crossing pairs remain identical, with zero new source-parent pairs. Independent report: `ileal-frame-independent-v1.json`, SHA256 `4061c033b0afac951d2332066927f0f00124278b644c4dc23a14175f80743c75`. These are kinematic/source preservation checks, not complete tissue acceptance.
+
+Actual ileal innermost-sheet/SMV crossings485→160 and SMA crossings827→109 improve, and source duodenal outer/inner contacts545/458→0/0. Current jejunal outer/ileal outer crossings worsen2,786→7,748; the corresponding inner-sheet/jejunal-outer pairs2,495→7,091 are compartment diagnostics, not specifically a vessel-in-lumen count. This blocks installation; reducing vascular counts does not justify worsening a neighboring organ or retain a disconnected mixed-source food route. Do not continue isolated ileum displacement tuning. Resolve the entire duodenal–jejunal–ileal course and its true adjoining openings in one consistent source/body frame, keeping all wall fields and mesenteric attachments together. The separate coherent local male source family has exact12-control exterior joins but still fails whole-surface/lumen acceptance; neither it nor a skeletal centroid fit is an accepted substitute.
+
+Three upright fixed-camera actual mesh views were rendered and inspected in the already-open Blender: current imported source against unchanged ZA pelvis/lumbar skeleton, the common ileal frame trial with fixed SMA/SMV, and a registered local skeletal scaffold overlay. The imported scaffold is visibly cranial to its target; the trial moves the entire ileal group lower together. Registered scaffold retains visible source-shape differences and is diagnostic only. The first sideways diagnostic views are retained; explicit world-Y camera up corrects the later views. All prior scene/object pointers and the existing active scene are preserved; no new Blender process or main-file save. Images: `outputs/male-ileal-registration-{current,frame-trial,registered-scaffold}-v2.png`. Root review: `ileal-frame-root-review-v1.json` SHA256 `a6971ff9a7ab9c492978795044b8f1ee8d31dbcd3813bc6db350fefa88f80b9b`. Ordinary malee2da0ae6… and femalec6573313… stay unchanged; the verified installed splenic repair is preserved. Clinical registration, true endplate/compartment correspondence, full body packing,1199 source self contacts, both intestinal terminal gaps and complete TA98/microscopic coverage remain unfinished.
