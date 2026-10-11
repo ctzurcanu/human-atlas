@@ -1288,3 +1288,6 @@ Frozen before geometry modification: `reports/male-ileal-lateral-course-plan-v32
 | A13.3.03.040 | A13.3.03.033 | mesocolic nodes | none | True |
 | A13.3.03.041 | A13.3.03.040 | paracolic nodes | none | True |
 | A13.3.03.042 | A13.3.03.040 | colic nodes | ZA:Left colic nodes (source-object:2b1ee14266b39470f266); ZA:Right colic nodes (source-object:5def63ddea88e2443997) | False |
+
+
+V32 trials rejected: 3/6/9 mm lateral shear introduces 4/6/12 whole exterior self crossings; 6/9 mm also invert 22/190 continuous prisms and exceed the source control guard. Lining totals are106/107/206 versus v31b139 for the selected fixed sources, but none can be accepted. Before the next construction, freeze `reports/male-ileal-local-course-plan-v32b.json` SHA256 `c187980394ad2a62c16696963726a6f0f3d34313a0456e35c03c53fdbb9729e8`: four compact C2 40 mm support kernels centered at actual conflicting ring centers, 3/6 mm trials in horizontal directions away from the actual artery/nodal surfaces. All source forest-owned neighbors and endpoints remain fixed; all9 fields and adjacent whole exterior share the identical ambient map. This nonlinear map has no assumed continuous determinant or inverse; require the original full discrete finite tissue, source, containment, packing and rendered checks. No installation.
