@@ -1319,3 +1319,52 @@ V33/v33b whole review completed and both families rejected. Source-exact compart
 Station10/20 mm trials retain all mapped ring areas within about2.5e-7 relative float32 rounding and corresponding wall distances within9.8e-5, preserve all gastric/terminal points and literal faces, but create264/637 whole-bowel self crossings;20 mm also inverts80 finite prisms. Every position independently replays. No valid diagnostic is selected from v33b and no trial becomes an ordinary source. Actual original/rejected-posterior Blender side views with native fascia/spine were inspected in separate preserved scenes without saving the main file. TypeScript passes for the local review route; the in-app browser backend became unavailable, so no new browser/camera proof is claimed.
 
 Evidence: `reports/male-ileal-compartment-root-review-v33.json`, with source/bank/forest/authority bindings, compartment views, full neurovascular source screen, calibre diagnostics and complete independent station replay. Preserve coherent v32b as an uninstalled seed. Next solve complete station-centre/frame placement against fixed fascia/bodywall and all neighboring tissues simultaneously, preserving calibre, tissue dimensions, end interfaces and self separation. No squeezing, erased branches, relocated fixed skeleton, clinical acceptance or ordinary male/female geometry replacement. Full TA98 coverage remains incomplete.
+
+
+### 2026-10-12 · Simultaneous calibre-preserving loop-bundle fit (v34)
+
+Before reconstruction freeze `reports/male-ileal-bundle-fit-plan-v34.json` SHA256 `e39ffc6124a5d5b09275b0afdcec40626a328c77783b3930af741b32ad30603f`. Coherent v32b seed only. All634 whole stations/all9 ileal depths translate with common station vectors; literal interfaces, ring area and wall distances retained. Contact normals come from actual unchanged fascia and all neurovascular/bodywall/adjoining source pairs, then smooth across20mm source arc. Maximum3 iterations,0.75mm step/5mm total, scales1/.5/.25/.125. Every source60mm/length/whole-self/prism guard remains. Each accepted numerical step must decrease actual defects without increasing any tested bodyguide/foreign lining/adjoining source. Final full finite-wall/all-source containment/render gates remain mandatory; force proxies are not proof. No installation or clinical acceptance. Complete previously bound intestinal/vascular inventories remain, plus fixed-guide descendants below.
+
+| TA98 | Parent | Name | Existing sources | Missing distinct mapping |
+|---|---|---|---|---|
+| A01.2.04.003 | A01.2.04.001 | epigastric region | ZA:Epigastric region.l; ZA:Epigastric region.r | False |
+| A03.2.07.002 | A03.2.07.001 | iliolumbar ligament | ZA:Iliolumbar ligament.l; ZA:Iliolumbar ligament.r | False |
+| A04.5.02.011 | A04.5.02.006 | transversalis fascia | ZA:Transversalis fascia | False |
+| A04.5.02.012 | A04.5.02.011 | interfoveolar ligament | none | True |
+| A04.5.02.013 | A04.5.02.011 | iliopubic tract | none | True |
+| A04.5.02.014 | A04.5.02.011 | umbilical fascia | none | True |
+| A12.2.08.041 | A12.2.08.029 | superior epigastric artery | ZA:Superior epigastric artery.l; ZA:Superior epigastric artery.r | False |
+| A12.2.15.002 | A12.2.15.001 | iliolumbar artery | ZA:Iliolumbar artery.l; ZA:Iliolumbar artery.r | False |
+| A12.2.15.003 | A12.2.15.002 | lumbar branch | ZA:Lumbar branch of iliolumbar artery.l; ZA:Lumbar branch of iliolumbar artery.r | False |
+| A12.2.15.004 | A12.2.15.002 | spinal branch | ZA:Spinal branch of iliolumbar artery.l; ZA:Spinal branch of iliolumbar artery.r | False |
+| A12.2.15.005 | A12.2.15.002 | iliacus branch | ZA:Iliacus branch of iliolumbar artery.l; ZA:Iliacus branch of iliolumbar artery.r | False |
+| A12.2.16.003 | A12.2.16.002 | inferior epigastric artery | ZA:Inferior epigastric artery.l; ZA:Inferior epigastric artery.r | False |
+| A12.2.16.004 | A12.2.16.003 | pubic branch | none | True |
+| A12.2.16.005 | A12.2.16.004 | obturator branch | none | True |
+| A12.2.16.006 | A12.2.16.004 | accessory obturator artery | none | True |
+| A12.2.16.007F | A12.2.16.003 | artery of round ligament of uterus | none | True |
+| A12.2.16.007M | A12.2.16.003 | cremasteric artery | none | True |
+| A12.2.16.011 | A12.2.16.010 | superficial epigastric artery | ZA:Superficial epigastric artery.l; ZA:Superficial epigastric artery.r | False |
+| A12.3.04.019 | A12.3.04.018 | superior epigastric veins | ZA:Superior epigastric veins.l; ZA:Superior epigastric veins.r | False |
+| A12.3.08.012 | A12.3.08.005 | thoraco-epigastric veins | none | True |
+| A12.3.10.003 | A12.3.10.001 | iliolumbar vein | ZA:Iliolumbar vein.l; ZA:Iliolumbar vein.r | False |
+| A12.3.10.025 | A12.3.10.024 | inferior epigastric vein | ZA:Inferior epigastric vein.l; ZA:Inferior epigastric vein.r | False |
+| A12.3.10.026 | A12.3.10.025 | pubic vein | none | True |
+| A12.3.10.032 | A12.3.10.026 | accessory obturator vein | none | True |
+| A12.3.11.006 | A12.3.11.003 | superficial epigastric vein | ZA:Superficial epigastric vein.l; ZA:Superficial epigastric vein.r | False |
+| A12.3.12.025 | A12.3.12.024 | appendicular vein | LOCAL:male:appendicular_vein:1461 | False |
+| A13.3.03.013 | A13.3.03.002 | inferior epigastric nodes | ZA:Inferior epigastric nodes.l; ZA:Inferior epigastric nodes.r | False |
+| A14.2.04.006 | A14.2.04.001 | intercostal nerves | ZA:Intercostal nerves.l; ZA:Intercostal nerves.r | False |
+| A14.2.04.007 | A14.2.04.006 | muscular branches | none | True |
+| A14.2.04.008 | A14.2.04.006 | collateral branch | none | True |
+| A14.2.04.009 | A14.2.04.006 | lateral pectoral cutaneous branch | none | True |
+| A14.2.04.010 | A14.2.04.009 | lateral mammary branches | none | True |
+| A14.2.04.011 | A14.2.04.006 | lateral abdominal cutaneous branch | none | True |
+| A14.2.04.012 | A14.2.04.006 | intercostobrachial nerves | none | True |
+| A14.2.04.013 | A14.2.04.006 | anterior pectoral cutaneous branch | none | True |
+| A14.2.04.014 | A14.2.04.013 | medial mammary branches | none | True |
+| A14.2.04.015 | A14.2.04.006 | anterior abdominal cutaneous branch | none | True |
+| A14.2.04.016 | A14.2.04.006 | subcostal nerve | none | True |
+| A14.2.07.008 | A14.2.07.002 | genitofemoral nerve | ZA:Genitofemoral nerve.l; ZA:Genitofemoral nerve.r | False |
+| A14.2.07.009 | A14.2.07.008 | genital branch | ZA:Genital branch of genitofemoral nerve.l; ZA:Genital branch of genitofemoral nerve.r | False |
+| A14.2.07.010 | A14.2.07.008 | femoral branch | ZA:Femoral branch of genitofemoral nerve.l; ZA:Femoral branch of genitofemoral nerve.r | False |
