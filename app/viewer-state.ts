@@ -56,13 +56,15 @@ function opaqueBodySurfaceVisible(s:SceneState,parts?:readonly Part[]){
 export function partVisible(p:Part,s:SceneState,parts?:readonly Part[]){
  if(p.suppressed)return false;
  const sets=visibilitySets(s);
+ // A wall assembly stays selected while peeling its constituent tissues.
+ // Explicitly removed coats must disappear despite that retained selection.
+ if((p.bowelWallSource||p.pairedTissue&&p.tissueWallAssembly&&p.tissueWallLayer)&&sets.hidden.has(p.id))return false;
  if(s.depth!==undefined&&sets.depthHidden.has(depthLayerFor(p)))return false;
  if(sets.selected.has(p.id))return true;
  if(s.isolate||sets.hidden.has(p.id)||sets.depthHidden.has(depthLayerFor(p))||!sets.visible.has(p.system)||!inRegion(p,s.region))return false;
  if(partLayerOpacity(p,s)<=0)return false;
- // Some primary-source internal meshes protrude beyond the outer reference.
- // An intact, fully opaque surface should conceal unselected internal context.
- if(p.system!=='pregnancy'&&!isSkinPart(p)&&opaqueBodySurfaceVisible(s,parts)&&!sets.depthHidden.has('skin')&&depthLayerOpacity('skin',s)>=.999&&(s.explode??0)<.001&&!s.sections?.some(section=>section.enabled)&&!s.section?.enabled)return false;
+ // Checked anatomy remains present beneath opaque skin. Depth testing handles
+ // occlusion; source placement defects must not be hidden by deleting context.
  return true;
 }
 // Sections use the layer checkboxes as their source set, including pieces that
@@ -70,6 +72,7 @@ export function partVisible(p:Part,s:SceneState,parts?:readonly Part[]){
 export function sectionPartVisible(p:Part,s:SceneState){
  const sets=visibilitySets(s);
  if(p.suppressed||s.depth!==undefined&&sets.depthHidden.has(depthLayerFor(p)))return false;
+ if((p.bowelWallSource||p.pairedTissue&&p.tissueWallAssembly&&p.tissueWallLayer)&&sets.hidden.has(p.id))return false;
  if(s.isolate)return sets.selected.has(p.id);
  // A single whole-body skin mesh is still one checked item in a section.
  // Excluding it by region made 100% skin appear absent in every regional cut.
@@ -113,6 +116,7 @@ export function viewUrl(base:string,model:string,s:SceneState,camera?:number[],a
  const delivery=viewParameters(base).get('delivery');
  const url=new URL(base);url.search='';url.hash='';const q=url.searchParams;q.set('model',model);if(s.view!=='three-quarter')q.set('view',s.view);if(s.guestView)q.set('bioView',s.guestView);if(s.guestExtensions?.length)q.set('bioExpand',s.guestExtensions.join(','));if(s.guestQuery)q.set('bio',s.guestQuery);if(s.dermatomeHidden?.length)q.set('dermHide',s.dermatomeHidden.join(','));if(s.dermatomeSelected?.length)q.set('dermSelect',s.dermatomeSelected.join(','));
  if((model==='local-ta98'||model==='local-female-ta98')&&(delivery==='0'||delivery==='1'))q.set('delivery',delivery);
+ if(model==='local-female-ta98'&&atlas?.hepaticBoundaryPreview?.localReviewOnly&&!atlas.hepaticBoundaryPreview.ordinaryAtlasInstalled)q.set('hepatic',atlas.hepaticBoundaryPreview.variant??'repair');
  const packedSelection=atlas&&s.selected.length?packPartIds(s.selected,atlas,false):undefined;
  const packedHidden=atlas&&s.hidden?.length?packPartIds(s.hidden,atlas,true):undefined;
  if(packedSelection||packedHidden)q.set('p',partFingerprint(atlas!));

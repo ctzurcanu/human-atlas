@@ -1,5 +1,92 @@
 [
   {
+    "conceptIds": [
+      "LOCAL:female:bile_duct"
+    ],
+    "names": [
+      "bile duct",
+      "biliary and pancreatic ducts"
+    ],
+    "term": "A05.0.00.000",
+    "systems": [
+      "digestive"
+    ],
+    "kind": "parent",
+    "note": "Native combined duct source reviewed in its own liver/gallbladder/pancreas frame against separately labelled local reference ducts. Whole source is not exact common bile duct: hepatic branches and a pancreatic course share this mesh. Region boundaries, lumens and wall layers remain unverified. See TA98-DIGESTIVE-DUCT-PATHS.md and biliary-source-scope-review.json."
+  },
+  {
+    "conceptIds": [
+      "HRA:VH_F_ileocecal_valve"
+    ],
+    "names": [
+      "ileocecal valve"
+    ],
+    "term": "A05.7.02.001",
+    "systems": [
+      "digestive"
+    ],
+    "kind": "parent",
+    "note": "Original female HRA source is a 44-triangle open annular sheet with two 12-edge rims. Broader caecal placement only; no exact papilla, orifice solid, named lips, frenula or finite tissue layers are established. Terminal ileal source has 98 detected crossing pairs; native-body registration and anatomy remain unaccepted. See TA98-LARGE-INTESTINE.md and local ileocaecal-hra-reference evidence."
+  },
+  {
+    "conceptIds": [
+      "HRA:VH_F_duodenum_superior"
+    ],
+    "names": [
+      "superior part of duodenum"
+    ],
+    "term": "A05.6.02.002",
+    "systems": [
+      "digestive"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped superior duodenal region; its ampulla is a component. Do not identify this partial region as the whole duodenum. Donor registration remains unverified."
+  },
+  {
+    "names": [
+      "skull cranium"
+    ],
+    "conceptIds": [
+      "LOCAL:female:skull_cranium"
+    ],
+    "term": "A02.1.00.001",
+    "systems": [
+      "skeletal"
+    ],
+    "kind": "parent",
+    "note": "Source-qualified combined female cranial source reviewed in actual front/back/left and uncapped coronal/sagittal/axial Blender views. Broader placement under cranium only: three material pieces and seven components do not establish separate bones, layers or foraminal identities. Mandible and upper cervical guides remain separate. Original source has 388 detected crossing pairs and nonmanifold/degenerate faces; local repair trials are not installed or anatomically accepted. See TA98-CRANIAL-ASSEMBLY.md."
+  },
+  {
+    "names": [
+      "bronchus (left)",
+      "left bronchus"
+    ],
+    "conceptIds": [
+      "LOCAL:female:l_bronchus"
+    ],
+    "term": "A06.4.01.004",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Native named side-qualified proximal airway runs from the tracheal bifurcation to the first downstream branches; packed-source seams and actual front/back/uncapped-coronal Blender renders reviewed. Main bronchus identity only, not complete walls, lumen continuity, carina or finer branch representation. See female-native-airway-source.json and TA98-PULMONARY-ASSEMBLY.md."
+  },
+  {
+    "names": [
+      "bronchus (right)",
+      "right bronchus"
+    ],
+    "conceptIds": [
+      "LOCAL:female:r_bronchus"
+    ],
+    "term": "A06.4.01.003",
+    "systems": [
+      "respiratory"
+    ],
+    "kind": "exact",
+    "note": "Native named side-qualified proximal airway runs from the tracheal bifurcation to the first downstream branches; packed-source seams and actual front/back/uncapped-coronal Blender renders reviewed. Main bronchus identity only, not complete walls, lumen continuity, carina or finer branch representation. See female-native-airway-source.json and TA98-PULMONARY-ASSEMBLY.md."
+  },
+  {
     "names": [
       "chorda tympani"
     ],
@@ -1738,10 +1825,11 @@
     ],
     "term": "A05.7.04.001",
     "systems": [
+      "digestive",
       "reproductive"
     ],
     "kind": "exact",
-    "note": "Reviewed atlas synonym of the TA98 term."
+    "note": "Explicit native rectal exterior synonym. Digestive classification and the legacy inherited reproductive route both resolve to the same TA98 identity; neither establishes finite coats, a patent paired lumen or source registration."
   },
   {
     "names": [
@@ -2490,6 +2578,12 @@
     "names": [
       "intrarenal veins of left kidney",
       "intrarenal veins of right kidney"
+    ],
+    "conceptIds": [
+      "ZA:Intrarenal veins of left kidney",
+      "ZA:Intrarenal veins of right kidney",
+      "REF:Intrarenal veins of left kidney",
+      "REF:Intrarenal veins of right kidney"
     ],
     "term": "A08.1.04.001",
     "systems": [
@@ -4429,5 +4523,530 @@
     ],
     "kind": "parent",
     "note": "Model quadrant subdivision under the TA98 subcutaneous tissue; keep skin classification intact."
+  },
+  {
+    "names": [
+      "common palmar digital branches of median nerve",
+      "common palmar digital branches median nerve"
+    ],
+    "term": "A14.2.03.038",
+    "systems": [
+      "nervous"
+    ],
+    "kind": "exact",
+    "note": "Median common digital nerves; unverified native source extents are not complete sensory territories."
+  },
+  {
+    "names": [
+      "proper palmar digital branches of median nerve",
+      "proper palmar digital branches median nerve"
+    ],
+    "term": "A14.2.03.039",
+    "systems": [
+      "nervous"
+    ],
+    "kind": "exact",
+    "note": "Median proper digital nerves; preserve their distinct digital and laterality identity."
+  },
+  {
+    "names": [
+      "common palmar digital branches of ulnar nerve"
+    ],
+    "term": "A14.2.03.046",
+    "systems": [
+      "nervous"
+    ],
+    "kind": "exact",
+    "note": "Common digital nerves from the superficial ulnar branch, not the median territory."
+  },
+  {
+    "names": [
+      "proper palmar digital branches of ulnar nerve"
+    ],
+    "term": "A14.2.03.047",
+    "systems": [
+      "nervous"
+    ],
+    "kind": "exact",
+    "note": "Proper digital nerves in the ulnar territory, not the median territory."
+  },
+  {
+    "names": [
+      "deep branch radial nerve"
+    ],
+    "term": "A14.2.03.054",
+    "systems": [
+      "nervous"
+    ],
+    "kind": "exact",
+    "note": "Named deep radial branch; do not relabel its unverified full extent as the posterior interosseous nerve."
+  },
+  {
+    "names": [
+      "superficial branch radial nerve"
+    ],
+    "term": "A14.2.03.056",
+    "systems": [
+      "nervous"
+    ],
+    "kind": "exact",
+    "note": "Named superficial radial branch, distinct from the deep motor branch."
+  },
+  {
+    "names": [
+      "anterior interosseous nerve of forearm"
+    ],
+    "term": "A14.2.03.034",
+    "systems": [
+      "nervous"
+    ],
+    "kind": "exact",
+    "note": "Forearm qualifier distinguishes the named upper-limb nerve. Source fascicles, junction and exact transition extent remain unverified."
+  },
+  {
+    "names": [
+      "posterior interosseous nerve of forearm"
+    ],
+    "term": "A14.2.03.055",
+    "systems": [
+      "nervous"
+    ],
+    "kind": "exact",
+    "note": "Forearm qualifier distinguishes the named upper-limb nerve. Source fascicles, junction and exact transition extent remain unverified."
+  },
+  {
+    "names": [
+      "palmar branch ulnar nerve"
+    ],
+    "conceptIds": [
+      "LOCAL:female:l_palmar_branch_ulnar_nerve",
+      "LOCAL:female:r_palmar_branch_ulnar_nerve"
+    ],
+    "term": "A14.2.03.045",
+    "systems": [
+      "nervous"
+    ],
+    "kind": "parent",
+    "note": "Native female source extends along ring/little fingers to the distal phalanges: unpartitioned distal palmar digital network. Provisional superficial ulnar parent placement only; do not identify as the palm-only cutaneous branch or count separated common/proper digital representations."
+  },
+  {
+    "names": [
+      "dorsal digital veins",
+      "dorsal digital veins of hand"
+    ],
+    "conceptIds": [
+      "LOCAL:female:l_dorsal_digital_veins",
+      "LOCAL:female:r_dorsal_digital_veins",
+      "ZA:Dorsal digital veins of hand.l",
+      "ZA:Dorsal digital veins of hand.r"
+    ],
+    "term": "A12.3.08.023",
+    "systems": [
+      "venous"
+    ],
+    "kind": "parent",
+    "note": "Named native hand digital venous branches belong under the dorsal venous network of hand; they do not constitute its complete mesh. Never assign the foot dorsal digital vein identifier by unqualified name. Source hand extent recorded in the coupled hand-junction inventory."
+  },
+  {
+    "names": [
+      "dorsal digital veins foot",
+      "dorsal digital veins of foot"
+    ],
+    "conceptIds": [
+      "LOCAL:female:l_dorsal_digital_veins_foot",
+      "LOCAL:female:r_dorsal_digital_veins_foot",
+      "ZA:Dorsal digital veins of foot.l",
+      "ZA:Dorsal digital veins of foot.r"
+    ],
+    "term": "A12.3.11.014",
+    "systems": [
+      "venous"
+    ],
+    "kind": "exact",
+    "note": "Explicitly foot-qualified native sources in the original foot frame; distinct from the hand digital venous networks. Original vessel walls, lumens, junctions and packing remain unverified."
+  },
+  {
+    "names": [
+      "proper palmar digital veins"
+    ],
+    "conceptIds": [
+      "LOCAL:female:l_proper_palmar_digital_veins",
+      "LOCAL:female:r_proper_palmar_digital_veins"
+    ],
+    "term": "A12.3.08.027",
+    "systems": [
+      "venous"
+    ],
+    "kind": "parent",
+    "note": "Native female proper palmar digital venous branches: partial collective representation under palmar digital veins, not an exact complete set. Both sources have five components and twenty exact shared coordinates with their native superficial palmar venous arch. Shared coordinates do not prove walls, lumens, full tributary extent or anatomical acceptance."
+  },
+  {
+    "names": [
+      "superficial palmar branch radial artery"
+    ],
+    "conceptIds": [
+      "LOCAL:female:l_superficial_palmar_branch_radial_artery",
+      "LOCAL:female:r_superficial_palmar_branch_radial_artery"
+    ],
+    "term": "A12.2.09.031",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Qualified native radial arterial branch; original source seams with radial artery and superficial palmar arch are recorded. Wall/lumen continuity, variants and packing remain unverified."
+  },
+  {
+    "names": [
+      "deep palmar branch ulnar artery"
+    ],
+    "conceptIds": [
+      "LOCAL:female:l_deep_palmar_branch_ulnar_artery",
+      "LOCAL:female:r_deep_palmar_branch_ulnar_artery"
+    ],
+    "term": "A12.2.09.055",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Qualified native ulnar arterial branch; source seams with ulnar artery and deep palmar arch are recorded. Wall/lumen continuity, variants and packing remain unverified."
+  },
+  {
+    "names": [
+      "palmar digital arteries"
+    ],
+    "conceptIds": [
+      "LOCAL:female:l_palmar_digital_arteries",
+      "LOCAL:female:r_palmar_digital_arteries"
+    ],
+    "term": "A12.2.09.057",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "parent",
+    "note": "Combined native female common/proper digital arterial source placed under common palmar digital arteries. No separate common/proper representation or complete digit-specific territory is established. Eighteen exact coordinates join the superficial arch per side; walls, lumens and packing remain unverified."
+  },
+  {
+    "names": [
+      "urethra"
+    ],
+    "conceptIds": [
+      "LOCAL:female:urethra"
+    ],
+    "term": "A08.4.01.001F",
+    "systems": [
+      "urinary"
+    ],
+    "kind": "exact",
+    "note": "Sex-qualified native female whole urethral source, distinct from the male umbrella. Original bladder junction and exterior source extent require review; walls, glands, sphincters and lumen remain unverified."
+  },
+  {
+    "names": [
+      "septal branches of anterior interventricular artery"
+    ],
+    "conceptIds": [
+      "ZA:Septal branches of anterior interventricular artery"
+    ],
+    "term": "A12.2.03.205",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Qualified native anterior interventricular septal arterial group, distinct from right coronary posterior septal branches. Source exterior does not establish complete branches, lumens or perfusion territories."
+  },
+  {
+    "names": [
+      "right inferolateral branch of right coronary artery"
+    ],
+    "conceptIds": [
+      "ZA:Right inferolateral branch of right coronary artery"
+    ],
+    "term": "A12.2.03.101",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "parent",
+    "note": "Native right coronary branch with inferolateral source label. Not equated with TA98 right posterolateral branch without anatomical extent review. Not an exact whole right coronary artery."
+  },
+  {
+    "names": [
+      "bicuspid atrioventricular valve (left)"
+    ],
+    "conceptIds": [
+      "LOCAL:female:l_bicuspid_atrioventricular_valve"
+    ],
+    "term": "A12.1.04.003",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "tricuspid atrioventricular valve"
+    ],
+    "conceptIds": [
+      "LOCAL:female:tricuspid_atrioventricular_valve"
+    ],
+    "term": "A12.1.02.003",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "aortic semilunar valve"
+    ],
+    "conceptIds": [
+      "LOCAL:female:aortic_semilunar_valve"
+    ],
+    "term": "A12.1.04.012",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "pulmonary semilunar valve"
+    ],
+    "conceptIds": [
+      "LOCAL:female:pulmonary_semilunar_valve"
+    ],
+    "term": "A12.1.02.010",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "atrium (left)"
+    ],
+    "conceptIds": [
+      "LOCAL:female:l_atrium"
+    ],
+    "term": "A12.1.03.001",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "atrium (right)"
+    ],
+    "conceptIds": [
+      "LOCAL:female:r_atrium"
+    ],
+    "term": "A12.1.01.001",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "ventricles"
+    ],
+    "conceptIds": [
+      "LOCAL:female:ventricles"
+    ],
+    "term": "A12.1.00.012",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "parent",
+    "note": "Combined native female ventricular envelope, placed under the generic ventricular group only. It does not independently establish either left/right ventricular chamber or complete wall/lumen tissue."
+  },
+  {
+    "names": [
+      "anterior semilunar leaflet of pulmonary valve"
+    ],
+    "conceptIds": [
+      "ZA:Anterior semilunar leaflet of pulmonary valve"
+    ],
+    "term": "A12.1.02.013",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "left semilunar leaflet of pulmonary valve"
+    ],
+    "conceptIds": [
+      "ZA:Left semilunar leaflet of pulmonary valve"
+    ],
+    "term": "A12.1.02.012",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "right semilunar leaflet of pulmonary valve"
+    ],
+    "conceptIds": [
+      "ZA:Right semilunar leaflet of pulmonary valve"
+    ],
+    "term": "A12.1.02.011",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "left coronary leaflet"
+    ],
+    "conceptIds": [
+      "ZA:Left coronary leaflet"
+    ],
+    "term": "A12.1.04.014",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "right coronary leaflet"
+    ],
+    "conceptIds": [
+      "ZA:Right coronary leaflet"
+    ],
+    "term": "A12.1.04.013",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "non-coronary leaflet"
+    ],
+    "conceptIds": [
+      "ZA:Non-coronary leaflet"
+    ],
+    "term": "A12.1.04.015",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "posterior leaflet of left atrioventricular valve"
+    ],
+    "conceptIds": [
+      "ZA:Posterior leaflet of left atrioventricular valve"
+    ],
+    "term": "A12.1.04.005",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "septal leaflet of right atrioventricular valve"
+    ],
+    "conceptIds": [
+      "ZA:Septal leaflet of right atrioventricular valve"
+    ],
+    "term": "A12.1.02.006",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "exact",
+    "note": "Source-scoped native cardiac nomenclature correspondence against TA98 12.1.02/12.1.04. Named source tissue only: extent, layers, annular/chordal junctions and lumen completeness remain unverified."
+  },
+  {
+    "names": [
+      "inferior leaflet of right atrioventricular valve"
+    ],
+    "conceptIds": [
+      "ZA:Inferior leaflet of right atrioventricular valve"
+    ],
+    "term": "A12.1.02.003",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "parent",
+    "note": "Source-qualified inferior cardiac tissue label placed under its valve/papillary group only. Inferior versus TA98 posterior identity has not been established; no posterior cusp or papillary identifier is assigned."
+  },
+  {
+    "names": [
+      "inferior papillary muscle of left ventricle"
+    ],
+    "conceptIds": [
+      "ZA:Inferior papillary muscle of left ventricle"
+    ],
+    "term": "A12.1.00.022",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "parent",
+    "note": "Source-qualified inferior cardiac tissue label placed under its valve/papillary group only. Inferior versus TA98 posterior identity has not been established; no posterior cusp or papillary identifier is assigned."
+  },
+  {
+    "names": [
+      "inferior papillary muscle of right ventricle"
+    ],
+    "conceptIds": [
+      "ZA:Inferior papillary muscle of right ventricle"
+    ],
+    "term": "A12.1.00.022",
+    "systems": [
+      "cardiac"
+    ],
+    "kind": "parent",
+    "note": "Source-qualified inferior cardiac tissue label placed under its valve/papillary group only. Inferior versus TA98 posterior identity has not been established; no posterior cusp or papillary identifier is assigned."
+  },
+  {
+    "conceptIds": [
+      "LOCAL:female:l_uterine_vein",
+      "LOCAL:female:r_uterine_vein"
+    ],
+    "names": [
+      "uterine vein (left)",
+      "uterine vein (right)"
+    ],
+    "term": "A12.3.10.015F",
+    "systems": [
+      "venous"
+    ],
+    "kind": "parent",
+    "note": "The named left/right native uterine vein trunks provide partial coverage of uterine veins. Source coordinates join both native uterine venous plexus meshes, but branch completeness, lumen/wall continuity and geometry acceptance remain unverified. See TA98-UTERINE-VASCULAR-REPAIR.md and source-interface replay; no geometry replacement is implied."
+  },
+  {
+    "conceptIds": [
+      "LOCAL:female:celiac_trunk"
+    ],
+    "names": [
+      "celiac trunk"
+    ],
+    "term": "A12.2.12.012",
+    "systems": [
+      "arterial"
+    ],
+    "kind": "exact",
+    "note": "Native celiac source identity: 133 source faces, one component and five original openings, with 6/5/7 exact common hepatic/left gastric/splenic branch coordinates. Actual native assembly rendered. Corrected source DAG venous misclassification; not a complete arterial wall/lumen or anatomical acceptance. See reports/ta98-female/celiac-native-source-identity.json."
   }
 ]

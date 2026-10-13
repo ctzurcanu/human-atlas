@@ -1,6 +1,7 @@
 import {SYSTEMS,structureName,type Atlas,type Part,type SystemId} from './anatomy';
 import {taChapterForConcept,taEntityForConcept,taHierarchyForConcept,terminologyForConcept,terminologyForGroup,type Terminology} from './anatomical-terminology';
 import {isSkinPart} from './depth-layers';
+import {vascularWallIntegration} from './vascular-wall';
 
 export type AnatomyEntry={id:string;name:string;system:SystemId;region:string;location:string[];ancestry:string[];ancestryTerms?:Record<string,Terminology>;taParentConcept?:string;ta98Term?:string;ta98Kind?:'exact'|'parent';parts:Part[];terminology:Terminology};
 export type AnatomyNode=
@@ -277,6 +278,8 @@ export function hierarchyEntries(atlas:Atlas):AnatomyEntry[]{
   const side=/\((left|right)\)\s*$/i.exec(entry.name)?.[1].toLowerCase();
   if(side)muscles.set(`${muscleKey(entry.name)}:${side}`,entry);
  }
+ const vascular=vascularWallIntegration(atlas);
+ if(vascular)for(const entry of entries){if(!entry.parts.every(p=>vascular.ids.includes(p.id)))continue;entry.ancestry=[vascular.source.name];entry.ancestryTerms={[vascular.source.name]:terminologyForConcept(vascular.source.conceptId)};entry.taParentConcept=vascular.source.conceptId;}
  for(const entry of entries)if(entry.system==='attachments'){
   const marker=/^(.+)\.[eo]\d*([lr])$/i.exec(entry.name);
   if(!marker)continue;

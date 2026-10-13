@@ -1,6 +1,6 @@
 import type {Laterality} from './laterality';
 
-export interface LabelAnchor {id:string;x:number;y:number;text:string;fullText?:string;laterality?:Laterality}
+export interface LabelAnchor {id:string;x:number;y:number;text:string;fullText?:string;laterality?:Laterality;components?:string[]}
 export interface LabelPlacement extends LabelAnchor {side:'left'|'right';label:string;left:number;right:number;top:number;bottom:number;leaderX:number;leaderY:number}
 export interface LabelArea {left:number;right:number;top:number;bottom:number}
 export interface LabelPanel extends LabelArea {kind:'top'|'bottom'|'panel'}
@@ -45,10 +45,10 @@ export function layoutAnatomyLabels(anchors:LabelAnchor[],area:LabelArea,measure
   if(preferred.length<maxPerSide)preferred.push(anchor);
   else if(alternate.length<maxPerSide)alternate.push(anchor);
  }
- const fit=(text:string)=>{
-  if(measure(text)<=maxWidth-16)return text;
+ const fit=(text:string,extra:number)=>{
+  if(measure(text)<=maxWidth-16-extra)return text;
   let lo=0,hi=text.length;
-  while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(measure(`${text.slice(0,mid)}…`)<=maxWidth-16)lo=mid;else hi=mid-1;}
+  while(lo<hi){const mid=Math.ceil((lo+hi)/2);if(measure(`${text.slice(0,mid)}…`)<=maxWidth-16-extra)lo=mid;else hi=mid-1;}
   return `${text.slice(0,lo)}…`;
  };
  const layout=(items:LabelAnchor[],side:'left'|'right')=>{
@@ -56,7 +56,7 @@ export function layoutAnatomyLabels(anchors:LabelAnchor[],area:LabelArea,measure
   const output:LabelPlacement[]=[];
   const rowTop=area.top+rowHeight/2,rowBottom=area.bottom-rowHeight/2;
   for(let index=0;index<items.length;index++){
-   const anchor=items[index],label=fit(anchor.text),width=Math.min(maxWidth,measure(label)+16);
+   const anchor=items[index],extra=anchor.components?.length?24:0,label=fit(anchor.text,extra),width=Math.min(maxWidth,measure(label)+16+extra);
    const minY=Math.max(rowTop+index*gap,index?output[index-1].leaderY+gap:rowTop),maxY=rowBottom-(items.length-1-index)*gap;
    const cy=clamp(anchor.y,minY,maxY);
    const leftX=side==='left'?area.left:area.right-width;

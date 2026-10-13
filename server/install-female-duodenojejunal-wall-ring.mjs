@@ -1,0 +1,15 @@
+// Retain a verified local interface correction in the existing first wall model.
+// Neither the native body catalogues nor their geometry banks are modified.
+import fs from 'node:fs/promises';import crypto from 'node:crypto';import {spawnSync} from 'node:child_process';import os from 'node:os';import path from 'node:path';
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),root=process.cwd(),folder='.local-models/ta98-review/small-intestine-layer-v1',report=JSON.parse(await fs.readFile('reports/ta98-female/duodenojejunal-wall-ring-replay.json')),meta=JSON.parse(await fs.readFile(folder+'/manifest.json')),raw=await fs.readFile(folder+'/wall.bin');
+if(meta.interfaceCorrection?.candidateSha256===report.candidateSha256){if(sha(raw)!==meta.binarySha256)throw Error('Retained bank changed');console.log('Verified ring correction already retained.');process.exit(0);}
+if(!report.geometryGatesPass||!report.allNineRingsExact||!report.outerControlsUnchanged||report.newControls!==0||report.newFaces!==0||report.organs.some(o=>o.newInvalidPrisms)||report.scopedCrossings.some(c=>c.newCrossingPairs.length))throw Error('Interface gates do not pass');
+if(sha(raw)!==report.sourceSha256||sha(raw)!==meta.binarySha256)throw Error('Source bank changed');
+const candidate='.local-models/ta98-review/female-duodenojejunal-wall-ring/'+report.candidate+'.npz';if(sha(await fs.readFile(candidate))!==report.candidateSha256)throw Error('Candidate changed');
+const backup='.local-models/ta98-review/female-duodenojejunal-wall-ring/source-wall.bin',priorMeta='.local-models/ta98-review/female-duodenojejunal-wall-ring/source-manifest.json';
+await fs.writeFile(backup,raw,{flag:'wx'}).catch(async e=>{if(e.code!=='EEXIST'||sha(await fs.readFile(backup))!==sha(raw))throw e;});await fs.writeFile(priorMeta,JSON.stringify(meta,null,2)+'\n',{flag:'wx'}).catch(e=>{if(e.code!=='EEXIST')throw e;});
+const python=path.join(os.homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3');
+const result=spawnSync(python,['-c',`import json,numpy as np,sys\np=np.load(sys.argv[1])\nprint(json.dumps({k:p[k].reshape(-1).tolist() for k in ['duodenum','jejunum']}))`,candidate],{encoding:'utf8'});if(result.status!==0)throw Error(result.stderr);const fields=JSON.parse(result.stdout),next=Buffer.from(raw);
+for(const organ of meta.organs){if(!fields[organ.id])continue;const inner=new Float32Array(fields[organ.id]);if(inner.length!==organ.vertices*3)throw Error('Wrong carrier size');Buffer.from(inner.buffer).copy(next,organ.inner);}
+meta.binarySha256=sha(next);meta.interfaceCorrection={candidate:report.candidate,candidateSha256:report.candidateSha256,sourceBinarySha256:report.sourceSha256,sourceSnapshot:backup,organs:report.organs.map(o=>o.organ),allNineRingsExact:true,outerControlsUnchanged:true,clinicallyAccepted:false};
+await fs.writeFile(folder+'/wall.bin',next);await fs.writeFile(folder+'/manifest.json',JSON.stringify(meta,null,2)+'\n');console.log('Retained existing female wall correction; no vertices, faces or images added.');

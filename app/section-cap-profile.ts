@@ -25,9 +25,13 @@ export function hollowSectionWall(part:Part):number|undefined{
 }
 
 export function sectionCapProfile(part:Part,topology?:MeshTopology){
+ if(part.pairedTissue)return {thinShell:false,width:0,closedWall:true};
  if(part.sectionAssembly&&part.sectionSolid)return {thinShell:false,width:.002,closureWidth:.00002,closureFraction:.002};
  if(part.sectionAssembly)return {hollowWall:true,width:part.sectionWall??.001,closureWidth:.00002,closureFraction:.002};
  if(isSkinPart(part))return {thinShell:true,width:.0035,outermostOnly:part.name.startsWith('Body surface (derived)')||part.id==='FJ2810'};
+ // Match this open conduit's provisional cut width to the adjoining native
+ // gastric wall. Its counting shell preserves both physiological mouths.
+ if(part.id==='LOCAL:female:intestine_duodenum:183')return {hollowWall:true,width:.0015};
  const wall=hollowSectionWall(part);
  if(wall)return {hollowWall:true,width:wall};
  if(part.system==='fascia'||part.system==='attachments'||part.system!=='lymphatic'&&/fascia|pleura|peritone|omentum|mesentery|mesocolon|serosa|capsule|membrane/i.test(part.name))return {thinShell:true,width:.0012};

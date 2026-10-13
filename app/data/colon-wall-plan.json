@@ -1,0 +1,150 @@
+{
+  "schema": "human-atlas-colon-wall-plan/v1",
+  "source": "User-specified colon wall hierarchy; TA98 identifiers verified against the local authority extract.",
+  "owner": "A05.7.03.001",
+  "innerToOuter": [
+    "mucosa",
+    "submucosa",
+    "muscularis",
+    "subserosa",
+    "serosa"
+  ],
+  "terms": {
+    "mucosa": {
+      "latin": "Tunica mucosa",
+      "name": "mucosa",
+      "kind": "wall union",
+      "ta98": "A05.7.01.006",
+      "children": [
+        "epithelium",
+        "lamina-propria",
+        "muscularis-mucosae",
+        "intestinal-glands"
+      ]
+    },
+    "epithelium": {
+      "latin": "Epithelium mucosae",
+      "name": "mucosal epithelium",
+      "kind": "supplementary wall layer",
+      "children": []
+    },
+    "lamina-propria": {
+      "latin": "Lamina propria mucosae",
+      "name": "lamina propria",
+      "kind": "supplementary wall layer",
+      "children": []
+    },
+    "muscularis-mucosae": {
+      "latin": "Lamina muscularis mucosae",
+      "name": "muscularis mucosae",
+      "kind": "wall layer",
+      "ta98": "A05.7.01.007",
+      "children": []
+    },
+    "intestinal-glands": {
+      "latin": "Glandulae intestinales",
+      "name": "intestinal glands",
+      "kind": "microscopic glands; not a complete coat",
+      "ta98": "A05.7.01.008",
+      "children": []
+    },
+    "submucosa": {
+      "latin": "Tela submucosa",
+      "name": "submucosa",
+      "kind": "wall layer",
+      "ta98": "A05.7.01.005",
+      "children": []
+    },
+    "muscularis": {
+      "latin": "Tunica muscularis",
+      "name": "muscular coat",
+      "kind": "wall union",
+      "ta98": "A05.7.03.011",
+      "children": [
+        "circular-muscle",
+        "longitudinal-muscle"
+      ]
+    },
+    "circular-muscle": {
+      "latin": "Stratum circulare",
+      "name": "circular muscle layer",
+      "kind": "wall layer",
+      "ta98": "A05.7.03.017",
+      "children": []
+    },
+    "longitudinal-muscle": {
+      "latin": "Stratum longitudinale",
+      "name": "longitudinal muscle layer",
+      "kind": "wall layer with local thickening",
+      "ta98": "A05.7.03.012",
+      "children": [
+        "taeniae"
+      ]
+    },
+    "taeniae": {
+      "latin": "Taeniae coli",
+      "name": "taeniae coli",
+      "kind": "union of local longitudinal muscle bands; not an additional full coat",
+      "ta98": "A05.7.03.013",
+      "children": [
+        "free-taenia",
+        "mesocolic-taenia",
+        "omental-taenia"
+      ]
+    },
+    "free-taenia": {
+      "latin": "Taenia libera",
+      "name": "free taenia",
+      "kind": "local longitudinal muscle band",
+      "ta98": "A05.7.03.016",
+      "children": [],
+      "sourcePartIds": [
+        "ZA:Free taenia"
+      ]
+    },
+    "mesocolic-taenia": {
+      "latin": "Taenia mesocolica",
+      "name": "mesocolic taenia",
+      "kind": "local longitudinal muscle band and mesocolic attachment landmark",
+      "ta98": "A05.7.03.014",
+      "children": [],
+      "sourcePartIds": [
+        "ZA:Mesocolic taenia"
+      ]
+    },
+    "omental-taenia": {
+      "latin": "Taenia omentalis",
+      "name": "omental taenia",
+      "kind": "local longitudinal muscle band and omental attachment landmark",
+      "ta98": "A05.7.03.015",
+      "children": [],
+      "sourcePartIds": [
+        "ZA:Omental taenia"
+      ]
+    },
+    "subserosa": {
+      "latin": "Tela subserosa",
+      "name": "subserosa",
+      "kind": "regional peritoneal connective interval",
+      "ta98": "A05.7.01.003",
+      "children": [
+        "epiploic-appendices"
+      ]
+    },
+    "epiploic-appendices": {
+      "latin": "Appendices epiploicae",
+      "name": "omental appendices",
+      "kind": "localized adipose appendages with peritoneal covering; not a complete coat",
+      "ta98": "A05.7.03.010",
+      "children": []
+    },
+    "serosa": {
+      "latin": "Tunica serosa",
+      "name": "serosa",
+      "kind": "regional peritoneal covering",
+      "ta98": "A05.7.01.002",
+      "children": []
+    }
+  },
+  "representation": "One paired carrier and shared ordered interface fields. Local muscle bands, wall sacculations, semilunar folds, glands and appendices require their own evidence and support masks; no overlapping full coats. Regional serosa/adventitia coverage remains to be mapped. No clinical thickness is established by the retained construction offset."
+}

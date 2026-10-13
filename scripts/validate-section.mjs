@@ -4,18 +4,34 @@ import {existsSync,readFileSync} from 'node:fs';
 import * as THREE from 'three';
 import {mergeGeometries} from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
-const bundle=await build({entryPoints:['app/section-plane.ts','app/viewer-state.ts','app/section-set.ts','app/section-stack.ts','app/section-opacity.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/section-validation'});
+const bundle=await build({entryPoints:['app/section-plane.ts','app/viewer-state.ts','app/section-set.ts','app/section-stack.ts','app/section-opacity.ts','app/gastric-region-rim.ts','app/section-assembly.ts','app/stencil-section.ts','app/stencil-caps.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/section-validation'});
 const load=async suffix=>import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles.find(file=>file.path.endsWith(suffix)).text).toString('base64')}`);
 const {sectionNormal,sectionPoint,sectionFraction,sectionPlaneEquation,sectionDot}=await load('section-plane.js');
 const {readViewUrl,viewUrl,sectionPartVisible}=await load('viewer-state.js');
 const {sectionSetBounds}=await load('section-set.js');
-const {defaultSection,enabledSections}=await load('section-stack.js');
+const {defaultSection,enabledSections,closeSections,sectionPlaneOnlyChange}=await load('section-stack.js');
 const {sectionCapOpacity}=await load('section-opacity.js');
+const planeState={selected:[],visible:['digestive'],view:'front',explode:0,reset:0,sections:[{enabled:true,axis:'axial',position:.4,flip:true}]};
+assert.ok(sectionPlaneOnlyChange(planeState,{...planeState,sections:[{...planeState.sections[0],position:.5}]}),'dragging only a live plane avoids rebuilding anatomy');
+assert.equal(sectionPlaneOnlyChange(planeState,{...planeState,selected:['different']}),false);
+assert.equal(sectionPlaneOnlyChange(planeState,{...planeState,sections:[{...planeState.sections[0],enabled:false}]}),false);
 assert.equal(defaultSection.axis,'axial');assert.equal(defaultSection.position,.38);
 const initialCuts=enabledSections({section:defaultSection});assert.equal(initialCuts.length,0);
 const simultaneous=[{...defaultSection,enabled:true},{enabled:true,axis:'sagittal',position:.5,flip:true}];
 assert.deepEqual(enabledSections({sections:simultaneous,section:simultaneous[0]}).map(cut=>cut.index),[0,1]);
 assert.deepEqual(enabledSections({sections:[simultaneous[0],{...simultaneous[1],enabled:false}],section:simultaneous[0]}).map(cut=>cut.index),[0]);
+const camera=[.2,.3,.4,.5,.6,.7,.5,.5,.5,.5,1,.5];
+for(const cuts of [[simultaneous[0]],simultaneous]){
+ const original={sections:cuts,section:cuts[0],activeSection:cuts.length-1,camera,selected:['stomach'],explode:.3};
+ const closed=closeSections(original);
+ assert.equal(enabledSections(closed).length,0,'closing the panel disables every cut');
+ assert.equal(closed.camera,camera,'closing sections preserves the camera');
+ assert.deepEqual(closed.sections,cuts.map(cut=>({...cut,enabled:false})),'closing preserves plane settings');
+ assert.equal(closed.section,closed.sections[closed.activeSection],'legacy section state matches the stack');
+ assert.ok(cuts.every(cut=>cut.enabled),'closing does not mutate the original state');
+}
+assert.equal(enabledSections(closeSections({section:simultaneous[0],camera})).length,0,'legacy cuts close too');
+assert.ok(!readFileSync('app/scene.tsx','utf8').includes('guideFill'),'the main scene has no section-plane guide');
 const bounds={min:[-1,0,-.5],max:[1,2,.5]};
 const combined=enabledSections({sections:simultaneous,section:simultaneous[0]}).map(({section})=>sectionPlaneEquation(bounds,section));
 const retained=point=>combined.every(plane=>sectionDot(plane.normal,point)+plane.constant>=0);
@@ -71,6 +87,8 @@ const armOnly={...checked,region:'upper-left',selected:[]};
 assert.equal(sectionPartVisible(humerus,armOnly),true);
 assert.equal(sectionPartVisible(femur,armOnly),false);
 assert.deepEqual(sectionSetBounds({parts:[humerus,femur,sternum]},armOnly),{min:humerus.bounds[0],max:humerus.bounds[1]});
+const displayedArmBounds=sectionSetBounds({parts:[humerus,femur,sternum]},armOnly,part=>({min:part.bounds[0].map(v=>v+2),max:part.bounds[1].map(v=>v+2)}));
+assert.deepEqual(displayedArmBounds,{min:humerus.bounds[0].map(v=>v+2),max:humerus.bounds[1].map(v=>v+2)},'section range uses displayed anatomy coordinates when exploded');
 const base={selected:[],visible:['skeletal','muscular'],explode:0,isolate:false,rotate:false,view:'front',reset:0};
 const section={enabled:true,axis:'oblique',azimuth:-137,elevation:42,position:.37,flip:true};
 const restored=readViewUrl(new URL(viewUrl('http://localhost:3016/','male-detail',{...base,section})).search,atlas,base);
@@ -260,3 +278,104 @@ if(existsSync('.local-models/reference.json')){
  assert.equal(sectionCapProfile(reference.parts.find(part=>part.name==='Anterior papillary muscle of right ventricle')).hollowWall,undefined,'solid cardiac muscles retain solid cuts');
 }
 console.log('Sections, shared URLs, closed organs, and open-surface cut geometry passed.');
+
+const {stencilShell:portShell}=await load('stencil-section.js');
+const openPortTube=new THREE.CylinderGeometry(.01,.01,.1,12,2,true),openPortCountingWall=portShell(openPortTube,.0015,false,true);
+assert.equal(openPortCountingWall.userData.repairTriangles,0,'open conduits never receive counting end disks');
+assert.equal(openPortCountingWall.userData.portRimTriangles,48,'both 12-edge mouths receive annular rims only');
+assert.ok(analyzeMeshTopology(openPortCountingWall).closed,'paired conduit counting wall is closed tissue');
+const lumenRay=new THREE.Raycaster(new THREE.Vector3(0,-.06,0),new THREE.Vector3(0,1,0));
+assert.equal(lumenRay.intersectObject(new THREE.Mesh(openPortCountingWall,new THREE.MeshBasicMaterial({side:THREE.DoubleSide}))).length,0,'a ray traverses both mouths and the lumen without a barrier');
+openPortTube.dispose();openPortCountingWall.dispose();
+
+const {createStencilCaps:conduitCaps}=await load('stencil-caps.js');
+for(const [system,name] of [['digestive','Jejunum'],['respiratory','Trachea'],['urinary','Ureter'],['reproductive','Vagina'],['arterial','Artery'],['venous','Vein']]){
+ const source=new THREE.CylinderGeometry(.01,.01,.1,12,2,true),scene=new THREE.Scene(),caps=conduitCaps(scene,[new THREE.Plane(new THREE.Vector3(0,1,0),0),new THREE.Plane(new THREE.Vector3(1,0,0),10)],()=>new THREE.Texture());
+ const part={id:`test:${name}`,name,system,bounds:[[-.01,-.05,-.01],[.01,.05,.01]]};
+ caps.update([{part,index:0,cutIndex:0,geometry:source,matrix:new THREE.Matrix4(),mode:'wall',wallWidth:sectionCapProfile(part).width}]);
+ assert.equal(scene.children.filter(mesh=>mesh.geometry.userData.openPortWall).length,4,`${name} receives annular counting across both cuts without a special source ID`);
+ caps.dispose();source.dispose();
+}
+const {gastricRegionRim}=await load('gastric-region-rim.js');
+const femalePath='.local-models/ta98-female-runtime.json';
+if(existsSync(femalePath)){
+ // Retained original regional wall remains a regression fixture after finite
+ // tissues replace it in runtime. Validate it from the provenance catalogue.
+ const runtimeFemale=JSON.parse(readFileSync(femalePath,'utf8')),female=runtimeFemale.parts.some(p=>p.pairedTissue)?JSON.parse(readFileSync('.local-models/ta98-female.json','utf8')):runtimeFemale,part=female.parts.find(part=>part.id==='TA98FEMALE:REGION:A05.5.01.014');
+ const chunk=female.chunks[part.chunk],path=chunk.url.replace('/local-models/','.local-models/');
+ const bytes=readFileSync(path),buffer=bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),source=new THREE.BufferGeometry();
+ source.setAttribute('position',new THREE.BufferAttribute(new Float32Array(buffer,part.positions,part.vertexCount*3),3));
+ source.setIndex(new THREE.BufferAttribute(new Uint32Array(buffer,part.indices,part.indexCount),1));
+ const duodenum=female.parts.find(p=>p.id==='LOCAL:female:intestine_duodenum:183'),raw=readFileSync(female.chunks[duodenum.chunk].url.replace('/local-models/','.local-models/')),data=raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),duodenalSource=new THREE.BufferGeometry();
+ duodenalSource.setAttribute('position',new THREE.BufferAttribute(new Float32Array(data,duodenum.positions,duodenum.vertexCount*3),3));duodenalSource.setIndex(new THREE.BufferAttribute(new Uint32Array(data,duodenum.indices,duodenum.indexCount),1));
+ const originalPositions=Array.from(duodenalSource.getAttribute('position').array),originalIndices=Array.from(duodenalSource.index.array),width=sectionCapProfile(duodenum).width,wall=portShell(duodenalSource,width,false,true);
+ assert.equal(width,.0015);assert.equal(wall.index.count/3,1200);assert.equal(wall.userData.portRimTriangles,48);assert.equal(wall.userData.repairTriangles,0);
+ const top=analyzeMeshTopology(wall);assert.ok(top.closed);assert.equal(top.duplicateTriangles,0);assert.equal(top.degenerateTriangles,0);
+ assert.deepEqual(Array.from(duodenalSource.getAttribute('position').array),originalPositions);assert.deepEqual(Array.from(duodenalSource.index.array),originalIndices);
+ const {createStencilCaps}=await load('stencil-caps.js'),scene=new THREE.Scene(),gpu=createStencilCaps(scene,[new THREE.Plane(new THREE.Vector3(0,1,0),-1.186),new THREE.Plane(new THREE.Vector3(1,0,0),10)],()=>new THREE.Texture()),item={part:duodenum,index:183,cutIndex:0,geometry:duodenalSource,matrix:new THREE.Matrix4(),mode:'wall',wallWidth:width};
+ gpu.update([item]);const counters=scene.children.filter(mesh=>mesh.geometry.userData.openPortWall);assert.equal(counters.length,4,'two counting passes per plane, without inset fan subtraction');
+ assert.ok(gpu.planeError()<1e-12,'cap lies exactly on the cut plane without a geometric gap');
+ const counted=counters[0].geometry;gpu.update([{...item,cutIndex:1}]);assert.ok(gpu.planeError()<1e-12,'second cap stays coincident while the plane changes');assert.equal(scene.children.find(mesh=>mesh.geometry.userData.openPortWall).geometry,counted,'cut changes reuse the paired counting wall');
+ gpu.dispose();wall.dispose();duodenalSource.dispose();console.log('Female duodenum: paired 1200-triangle counting wall, annular mouths, immutable source and cached GPU passes.');
+ const {createSectionAssemblyCache}=await load('section-assembly.js'),cache=createSectionAssemblyCache();
+ const candidate={part,index:female.parts.indexOf(part),cutIndex:0,geometry:source,matrix:new THREE.Matrix4(),mode:'wall',wallWidth:part.sectionWall};
+ const isolated=cache.collect([candidate]);assert.equal(isolated.caps[0].mode,'solid','paired pyloric wall counts actual tissue volume, not an inset sliver');
+ const {stencilShell}=await load('stencil-section.js'),verified=stencilShell(isolated.caps[0].geometry,0,isolated.caps[0].closedWall);
+ assert.equal(verified.getAttribute('position').array,isolated.caps[0].geometry.getAttribute('position').array,'verified wall counting shares immutable positions');
+ assert.equal(verified.index.array,isolated.caps[0].geometry.index.array,'verified wall counting shares immutable indices');
+ assert.equal(verified.userData.repairTriangles,0,'verified walls receive no invented fan caps');verified.dispose();
+ const expectedRim=gastricRegionRim(source);assert.ok(expectedRim,'original pyloric regional fixture has an exposed tissue rim');assert.equal(isolated.caps[0].geometry.index.count,part.indexCount+expectedRim.getAttribute('position').count,'section counting includes only the actual current annular junction rim');expectedRim.dispose();
+ const counting=isolated.caps[0].geometry;
+ const moved=cache.collect([{...candidate,cutIndex:1}]);assert.equal(moved.caps[0].geometry,counting,'dragging or changing cut planes reuses cached wall geometry');
+ const whole=female.parts.filter(p=>p.id.startsWith('TA98FEMALE:REGION:')&&p.sectionAssembly==='TA98:female-stomach-wall').map((part,index)=>{
+  const raw=readFileSync(female.chunks[part.chunk].url.replace('/local-models/','.local-models/')),data=raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),geometry=new THREE.BufferGeometry();
+  geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(data,part.positions,part.vertexCount*3),3));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(data,part.indices,part.indexCount),1));
+  return {...candidate,part,index,geometry};
+ });
+ assert.equal(whole.length,4);assert.equal(cache.collect(whole).caps[0].mode,'solid','assembled female stomach counts its existing wall volume and lumen');
+ for(let mask=1;mask<16;mask++){
+  const subset=whole.filter((_,i)=>mask&(1<<i)),cap=cache.collect(subset).caps[0];
+  assert.ok(cap.closedWall,`female gastric subset ${mask} must close only paired tissue boundaries`);
+  assert.equal(cap.mode,'solid',`female gastric subset ${mask} counts its native paired wall`);
+  const top=analyzeMeshTopology(cap.geometry);assert.ok(top.closed);assert.equal(top.duplicateTriangles,0);assert.equal(top.degenerateTriangles,0);
+ }
+ const separated=whole.map((item,i)=>({...item,matrix:new THREE.Matrix4().makeTranslation(i*.04,0,0)}));
+ const separateCaps=cache.collect(separated);
+ assert.equal(separateCaps.caps.length,4,'separated verified regional walls remain live GPU cap candidates');
+ assert.equal(separateCaps.covered.size,4,'no separated gastric region falls back to delayed CPU work');
+ for(const cap of separateCaps.caps){assert.ok(cap.closedWall);assert.equal(cap.mode,'solid');assert.ok(analyzeMeshTopology(cap.geometry).closed);}
+ const separatedGeometry=separateCaps.caps.map(cap=>cap.geometry);
+ const shifted=cache.collect(separated.map(item=>({...item,cutIndex:1,matrix:item.matrix.clone().premultiply(new THREE.Matrix4().makeTranslation(.01,0,0))})));
+ assert.deepEqual(shifted.caps.map(cap=>cap.geometry),separatedGeometry,'movement and second cut reuse each separated wall geometry');
+ console.log('All 15 nonempty female gastric regional subsets count paired tissue, without lumen fan disks.');
+ for(const item of whole)item.geometry.dispose();cache.dispose();
+ const before=Buffer.from(buffer).toString('base64'),rim=gastricRegionRim(source);assert.ok(rim,'native pyloric wall has paired boundaries');
+ assert.equal(rim.getAttribute('position').count,isolated.caps[0].geometry.index.count-part.indexCount,'rim matches the currently approved regional seam, without assuming old edge counts');
+ const edges=new Map(),pointKey=(p,i)=>[p.getX(i),p.getY(i),p.getZ(i)].map(v=>Math.round(v*1e7)).join(',');
+ for(const geometry of [source,rim]){const p=geometry.getAttribute('position'),ix=geometry.index,count=ix?.count??p.count;
+  for(let i=0;i<count;i+=3){const keys=[0,1,2].map(k=>pointKey(p,ix?ix.getX(i+k):i+k));
+   for(let k=0;k<3;k++){const a=keys[k],b=keys[(k+1)%3],key=[a,b].sort().join('|'),edge=edges.get(key)??{count:0,winding:0};edge.count++;edge.winding+=a<b?1:-1;edges.set(key,edge);}}
+ }
+ assert.ok([...edges.values()].every(edge=>edge.count===2&&edge.winding===0),'rim closes wall boundaries with matching winding');
+ assert.equal(Buffer.from(buffer).toString('base64'),before,'presentation rims do not modify source geometry');
+ rim.dispose();source.dispose();console.log('Native pyloric annular rim: actual approved boundary, no open/nonmanifold edges or winding conflicts.');
+}
+
+if(existsSync('.local-models/ta98-male.json')){
+ const male=JSON.parse(readFileSync('.local-models/ta98-male.json','utf8'));
+ const {createSectionAssemblyCache}=await load('section-assembly.js'),{stencilShell}=await load('stencil-section.js'),cache=createSectionAssemblyCache();
+ const chunks=new Map();
+ const candidates=male.parts.flatMap((part,index)=>{
+  if(part.suppressed||part.sectionAssembly!=='TA98:gastric-tract-wall')return [];
+  if(!chunks.has(part.chunk)){const bytes=readFileSync(male.chunks[part.chunk].url.replace('/local-models/','.local-models/'));chunks.set(part.chunk,bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));}
+  const data=chunks.get(part.chunk),geometry=new THREE.BufferGeometry();
+  geometry.setAttribute('position',new THREE.BufferAttribute(new Float32Array(data,part.positions,part.vertexCount*3),3));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(data,part.indices,part.indexCount),1));
+  return [{part,index,cutIndex:0,geometry,matrix:new THREE.Matrix4(),mode:'wall',wallWidth:part.sectionWall}];
+ });
+ assert.equal(candidates.length,12,'male native gastric assembly includes both adjoining conduits and seam pieces');
+ const first=cache.collect(candidates).caps[0];assert.ok(first.closedWall);assert.equal(first.mode,'solid');
+ const count=stencilShell(first.geometry,0,first.closedWall);assert.equal(count.index.array,first.geometry.index.array);assert.equal(count.getAttribute('position').array,first.geometry.getAttribute('position').array);assert.equal(count.userData.repairTriangles,0);
+ const after=cache.collect(candidates.map(item=>({...item,cutIndex:1}))).caps[0];assert.equal(after.geometry,first.geometry,'male wall is reused for the second/moving section');
+ console.log(`Male gastric wall: ${count.index.count/3} existing triangles, zero added counting arrays or fan closures.`);
+ count.dispose();cache.dispose();for(const candidate of candidates)candidate.geometry.dispose();
+}

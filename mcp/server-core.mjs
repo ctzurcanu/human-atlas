@@ -3,7 +3,7 @@ import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 import {anatomyOptions, anatomyView, DEPTH_LAYERS, EMBED_CONTROLS, MODELS, REGIONS, searchAnatomy, SECTION_AXES, VIEWS} from './atlas-core.mjs';
 
-const UI_URI = 'ui://human-atlas/anatomy-view';
+const UI_URI = 'ui://human-atlas/anatomy-view-v2';
 const UI_MIME = 'text/html;profile=mcp-app';
 
 export function createServer({uiHtml,publicOnly=false}) {
@@ -14,8 +14,12 @@ export function createServer({uiHtml,publicOnly=false}) {
     pieces: z.number().int().nonnegative().describe('Number of modeled mesh pieces.'),
     terminology: z.record(z.unknown()).nullable().describe('Available anatomical terminology metadata, or null.'),
   });
-  const uiMeta={ui:{csp:{frameDomains:publicOnly?['https://ctzurcanu.github.io']:['https://ctzurcanu.github.io','http://localhost:3016']},prefersBorder:false}};
-  const server = new McpServer({name: 'human-atlas', version: '0.1.0'});
+  const uiMeta={ui:{csp:{
+    connectDomains:['https://ctzurcanu.github.io','https://human-atlas-connect.ctzurcanu.workers.dev','wss://human-atlas-connect.ctzurcanu.workers.dev'],
+    resourceDomains:['https://ctzurcanu.github.io'],
+    frameDomains:[],
+  },prefersBorder:false}};
+  const server = new McpServer({name: 'human-atlas', version: '0.2.0'});
 
   server.registerTool('get_anatomy_options', {
     title: 'Get Atlas view options',

@@ -15,6 +15,8 @@ from collections import defaultdict
 from pathlib import Path
 
 import bpy
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from open3d_source_identity import source_identity, sided_import_needed, retain_unpartitioned_branch_source
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--glb', type=Path, required=True)
@@ -28,7 +30,7 @@ assert re.fullmatch('[0-9a-f]{64}', args.zip_sha256)
 
 source_url = 'https://anatomytool.org/open3dmodel-create'
 source_glb_url = 'https://caskanatomy.info/open3dmodelfiles/upper-limb/upper-limb-glb.zip'
-existing = {p['sourceId'].strip().casefold() for p in atlas['parts']}
+existing = {source_identity(p['sourceId']) for p in atlas['parts']}
 existing_ids = {p['id'] for p in atlas['parts']}
 glb_bytes = args.glb.read_bytes()
 assert glb_bytes[:4] == b'glTF' and struct.unpack_from('<I', glb_bytes, 4)[0] == 2
@@ -115,7 +117,7 @@ palette = {
 
 
 def included(group, name):
-    if name.casefold() in existing:
+    if not retain_unpartitioned_branch_source(name) and not sided_import_needed(name, existing):
         return False
     # Z-Anatomy already supplies the hand and wrist bones, often under spelled-
     # out ordinal names (for example, "First" versus "1st"). Keep only the
@@ -154,6 +156,8 @@ for obj in sorted((o for o in bpy.data.objects if o.type == 'MESH' and o.parent)
         by_material[mesh.polygons[face.polygon_index].material_index].append(face)
     for mirrored in (False, True):
         side_name = (name[:-2] + ('.l' if mirrored else '.r')) if not name.endswith('.r') else (name[:-2] + '.l' if mirrored else name)
+        if not retain_unpartitioned_branch_source(side_name) and source_identity(side_name) in existing:
+            continue
         display_name = re.sub(r'\.[rl]$', lambda m: ' (left)' if m.group() == '.l' else ' (right)', side_name)
         for slot, faces in sorted(by_material.items()):
             if not faces:

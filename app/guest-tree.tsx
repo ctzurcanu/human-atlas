@@ -5,7 +5,7 @@ import {depthLayerFor} from './depth-layers';
 import {partLayerOpacity} from './depth-control';
 import {resolveGuestHierarchy,type GuestHierarchy,type GuestLink,type ResolvedGuestNode} from './guest-hierarchy';
 import {displayLaterality,lateralityClass} from './laterality';
-import {guestNodeChoice,guestVisibleChildren} from './guest-choice';
+import {guestDirectAnatomyParts,guestNodeChoice,guestVisibleChildren} from './guest-choice';
 import {hierarchyChoice,type HierarchyChoice} from './hierarchy-choice';
 import {terminologyForConcept,terminologyForGroup,terminologyTitle} from './anatomical-terminology';
 import {dermatomeColors,dermatomeSelection,dermatomeTerritoriesFor} from './dermatome-colors';
@@ -29,12 +29,12 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNav
  const toggleParts=(parts:Part[])=>setState(current=>{
   const ids=new Set(parts.map(part=>part.id)),hiddenNow=new Set(current.hidden??[]);
   const allOn=parts.every(part=>!part.suppressed&&current.visible.includes(part.system)&&!hiddenNow.has(part.id)&&!current.depthHidden?.includes(depthLayerFor(part))&&partLayerOpacity(part,current)>0);
-  if(allOn){for(const id of ids)hiddenNow.add(id);return {...current,hidden:[...hiddenNow],selected:current.selected.filter(id=>!ids.has(id)),isolate:false};}
+  if(allOn){for(const id of ids)hiddenNow.add(id);return {...current,hidden:[...hiddenNow],selected:current.selected.filter(id=>!ids.has(id))};}
   const newlyEnabled=new Set(parts.filter(part=>!current.visible.includes(part.system)).map(part=>part.system));
   const restoredDepth=new Set<string>(parts.map(depthLayerFor).filter(id=>current.depthHidden?.includes(id)));
   for(const part of atlas.parts)if((newlyEnabled.has(part.system)||restoredDepth.has(depthLayerFor(part)))&&!ids.has(part.id))hiddenNow.add(part.id);
   for(const id of ids)hiddenNow.delete(id);
-  return {...current,visible:[...new Set([...current.visible,...parts.map(part=>part.system)])],hidden:[...hiddenNow],depthHidden:current.depthHidden?.filter(id=>!restoredDepth.has(id)),skinOpacity:parts.some(part=>depthLayerFor(part)==='skin')&&!(current.skinOpacity??1)?.1:current.skinOpacity,isolate:false};
+  return {...current,visible:[...new Set([...current.visible,...parts.map(part=>part.system)])],hidden:[...hiddenNow],depthHidden:current.depthHidden?.filter(id=>!restoredDepth.has(id)),skinOpacity:parts.some(part=>depthLayerFor(part)==='skin')&&!(current.skinOpacity??1)?.1:current.skinOpacity,selected:current.isolate?[...new Set([...current.selected,...ids])]:current.selected};
  });
  const check=(name:string,parts:Part[])=>{
   if(!parts.length)return null;
@@ -69,7 +69,7 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNav
   matches.slice(0,200).forEach(node=>include(node.id));return {included,matches:new Set(matches.slice(0,200).map(node=>node.id)),total:matches.length};
  },[index,query]);
  const anatomyLeaves=(node:ResolvedGuestNode)=>{
-  const groups=new Map<string,Part[]>();for(const part of node.directParts){const parts=groups.get(part.conceptId)??[];parts.push(part);groups.set(part.conceptId,parts);}
+  const groups=new Map<string,Part[]>();for(const part of guestDirectAnatomyParts(hierarchy.id,node)){const parts=groups.get(part.conceptId)??[];parts.push(part);groups.set(part.conceptId,parts);}
   return [...groups].map(([id,parts])=>({id,name:structureName(anatomyNames.get(id)??parts[0].name),parts}));
  };
  const renderedSearch=new Set<string>();

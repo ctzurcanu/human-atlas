@@ -66,11 +66,26 @@ test('public MCP initializes, discovers tools, searches and returns the GitHub P
  const resources=(await rpc('resources/list')).resources;
  const ui=await rpc('resources/read',{uri:resources[0].uri});
  assert.ok(ui.contents[0].text.includes('ui/initialize'));
- assert.deepEqual(ui.contents[0]._meta.ui.csp.frameDomains,[viewer]);
+ assert.deepEqual(ui.contents[0]._meta.ui.csp.frameDomains,[]);
+ assert.ok(ui.contents[0]._meta.ui.csp.connectDomains.includes(viewer));
+ assert.ok(ui.contents[0]._meta.ui.csp.resourceDomains.includes(viewer));
+ assert.ok(!/<iframe\b/i.test(ui.contents[0].text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'')));
  const forbidden=await mf.dispatchFetch(`${origin}/mcp`,{method:'POST',headers:{Origin:'https://untrusted.example'}});
  assert.equal(forbidden.status,403);
 });
 const snapshot={version:1,model:'male-detail',hierarchy:'systems',guestSources:[],state:{focus:0,contextOpacity:1,region:'all',peel:0,depthHidden:[],hidden:[],labels:true,explode:0,visible:['muscular'],selected:[],isolate:false,view:'three-quarter',rotate:false,reset:0},choice:null,ui:{panel:'advanced',frontPanel:'advanced',details:false,layersVisible:true,mobileLayersOpen:false,addSelection:false,query:''},covering:[],pose,advanced:{document:{schemaVersion:1,type:'connect',views:[]},slideIndex:null}};
+test('Claude browser origin can discover MCP tools while unrelated origins stay blocked',async()=>{
+ const headers={Origin:'https://claude.ai','Content-Type':'application/json',Accept:'application/json, text/event-stream'};
+ const preflight=await mf.dispatchFetch(`${origin}/mcp`,{method:'OPTIONS',headers:{Origin:headers.Origin,'Access-Control-Request-Method':'POST'}});
+ assert.equal(preflight.status,204);assert.equal(preflight.headers.get('Access-Control-Allow-Origin'),headers.Origin);
+ assert.ok(preflight.headers.get('Access-Control-Allow-Headers').includes('MCP-Protocol-Version'));
+ const response=await mf.dispatchFetch(`${origin}/mcp`,{method:'POST',headers,body:JSON.stringify({jsonrpc:'2.0',id:2,method:'tools/list',params:{}})});
+ assert.equal(response.status,200);assert.equal(response.headers.get('Access-Control-Allow-Origin'),headers.Origin);
+ assert.equal((await response.json()).result.tools.length,3);
+ assert.equal((await mf.dispatchFetch(`${origin}/mcp`,{method:'OPTIONS',headers:{Origin:'https://claude.ai.attacker.example'}})).status,403);
+ // MCP compatibility does not grant Claude access to host/guest rooms.
+ assert.equal((await mf.dispatchFetch(`${origin}/atlas-connect/identity`,{headers:{Origin:headers.Origin}})).status,403);
+});
 test('health and identity return the relay origin; unrelated browser origins are rejected',async()=>{
  const health=await mf.dispatchFetch(`${origin}/health`);assert.equal((await health.json()).status,'ok');
  const identity=await mf.dispatchFetch(`${origin}/atlas-connect/identity`,{headers:{Origin:viewer,'CF-Connecting-IP':'198.51.100.4'}});

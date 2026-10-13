@@ -1,12 +1,23 @@
 import * as T from 'three';
 
 /** A private, closed counting shell. The displayed geometry is never changed. */
-export function stencilShell(source:T.BufferGeometry,inset=0):T.BufferGeometry{
+export function stencilShell(source:T.BufferGeometry,inset=0,closedWall=false,openPorts=false):T.BufferGeometry{
  const position=source.getAttribute('position'),index=source.getIndex();
  if(!position||!index)throw new Error('Section counting needs indexed positions.');
+ // A verified paired wall needs no diagnostic weld, fan closure or inset.
+ // Reuse its immutable arrays so large gastric assemblies do not get copied.
+ if(closedWall){
+  const geometry=new T.BufferGeometry();geometry.setAttribute('position',position);geometry.setIndex(index);
+  geometry.userData.borrowedStencilPosition=true;geometry.userData.borrowedStencilIndex=true;
+  geometry.boundingBox=source.boundingBox?.clone()??null;geometry.boundingSphere=source.boundingSphere?.clone()??null;
+  geometry.userData.originalTriangles=index.count/3;geometry.userData.repairTriangles=0;return geometry;
+ }
+
  const weld=new Int32Array(position.count),representatives:number[]=[],vertices=new Map<string,number>();
  for(let i=0;i<position.count;i++){
-  const key=`${Math.round(position.getX(i)*1e5)},${Math.round(position.getY(i)*1e5)},${Math.round(position.getZ(i)*1e5)}`;
+  // Tiny conduit seams must not be merged with nearby, distinct tissue.
+  const scale=openPorts?1e9:1e5;
+  const key=`${Math.round(position.getX(i)*scale)},${Math.round(position.getY(i)*scale)},${Math.round(position.getZ(i)*scale)}`;
   let id=vertices.get(key);if(id===undefined){id=representatives.length;vertices.set(key,id);representatives.push(i);}weld[i]=id;
  }
  const directed=new Map<string,number>();
@@ -19,12 +30,13 @@ export function stencilShell(source:T.BufferGeometry,inset=0):T.BufferGeometry{
  for(const [key,count] of directed){const [a,b]=key.split(',').map(Number),surplus=count-(directed.get(directedKey(b,a))??0);
   if(surplus<=0)continue;const ends=outgoing.get(a)??[];for(let i=0;i<surplus;i++)ends.push(b);outgoing.set(a,ends);
  }
- const extra:number[]=[];
+ const extra:number[]=[],loops:number[][]=[];
  for(const start of outgoing.keys()){
   const starts=outgoing.get(start)!;
   while(starts.length){const path=[start];let next=starts.pop(),guard=0;
    while(next!==undefined&&next!==start&&guard++<directed.size){path.push(next);next=outgoing.get(next)?.pop();}
    if(next!==start||path.length<3)continue;
+   loops.push(path.map(id=>representatives[id]));
    const pivot=representatives[path[0]];
    for(let j=1;j<path.length-1;j++)extra.push(pivot,representatives[path[j+1]],representatives[path[j]]);
   }
@@ -32,20 +44,53 @@ export function stencilShell(source:T.BufferGeometry,inset=0):T.BufferGeometry{
  const indices=new (position.count>65535?Uint32Array:Uint16Array)(index.count+extra.length);
  for(let i=0;i<index.count;i++)indices[i]=index.getX(i);
  indices.set(extra,index.count);
+ if(openPorts&&inset>0&&loops.length){
+  // Open conduits have annular mouths, never end disks. Build a private paired
+  // counting wall directly. Fan triangles are used only for orientation; they
+  // contribute no normals and are absent from the returned shell.
+  const displacement=safeInset(position,indices,weld,representatives.length,index.count,inset,true);
+  const values=new Float32Array(position.count*6),faces:number[]=[];
+  for(let i=0;i<position.count;i++)for(let axis=0;axis<3;axis++){
+   const value=position.getComponent(i,axis);values[i*3+axis]=value;
+   values[(i+position.count)*3+axis]=value-displacement[i*3+axis];
+  }
+  for(let i=0;i<index.count;i+=3){const a=index.getX(i),b=index.getX(i+1),c=index.getX(i+2);
+   faces.push(a,b,c,c+position.count,b+position.count,a+position.count);
+  }
+  for(const loop of loops)for(let i=0;i<loop.length;i++){
+   const a=loop[i],b=loop[(i+1)%loop.length],ai=a+position.count,bi=b+position.count;
+   faces.push(b,a,ai,b,ai,bi);
+  }
+  const wall=new T.BufferGeometry();wall.setAttribute('position',new T.Float32BufferAttribute(values,3));wall.setIndex(faces);
+  wall.computeBoundingBox();wall.computeBoundingSphere();wall.userData.openPortWall=true;
+  wall.userData.originalTriangles=index.count/3;wall.userData.portRimTriangles=loops.reduce((sum,loop)=>sum+loop.length*2,0);
+  wall.userData.repairTriangles=0;return wall;
+ }
  const geometry=new T.BufferGeometry();geometry.setAttribute('position',position);geometry.setIndex(new T.BufferAttribute(indices,1));
+ geometry.userData.borrowedStencilPosition=true;
  geometry.boundingBox=source.boundingBox?.clone()??null;geometry.boundingSphere=source.boundingSphere?.clone()??null;
  geometry.userData.originalTriangles=index.count/3;geometry.userData.repairTriangles=extra.length/3;
  if(inset>0)geometry.setAttribute('capInset',new T.Float32BufferAttribute(safeInset(position,indices,weld,representatives.length,index.count,inset),3));
  return geometry;
 }
 
-function safeInset(position:T.BufferAttribute|T.InterleavedBufferAttribute,indices:Uint16Array|Uint32Array,weld:Int32Array,weldCount:number,originalIndexCount:number,requested:number){
+/** Three.js releases every attached GPU attribute on geometry disposal. Detach
+ * the source's borrowed arrays first, while releasing private counters/VAOs.
+ * A copy of the CPU array does not solve ownership of a shared BufferAttribute.
+ */
+export function disposeStencilShell(geometry:T.BufferGeometry){
+ if(geometry.userData.borrowedStencilPosition)geometry.deleteAttribute('position');
+ if(geometry.userData.borrowedStencilIndex)geometry.setIndex(null);
+ geometry.dispose();
+}
+
+function safeInset(position:T.BufferAttribute|T.InterleavedBufferAttribute,indices:Uint16Array|Uint32Array,weld:Int32Array,weldCount:number,originalIndexCount:number,requested:number,sourceNormalsOnly=false){
  const normal=new Float32Array(weldCount*3),a=new T.Vector3(),b=new T.Vector3(),c=new T.Vector3(),ab=new T.Vector3(),ac=new T.Vector3(),face=new T.Vector3();
  let volume=0;
  for(let i=0;i<indices.length;i+=3){const ia=indices[i],ib=indices[i+1],ic=indices[i+2];
   a.fromBufferAttribute(position,ia);b.fromBufferAttribute(position,ib);c.fromBufferAttribute(position,ic);
   face.crossVectors(ab.subVectors(b,a),ac.subVectors(c,a));volume+=a.x*(b.y*c.z-b.z*c.y)+a.y*(b.z*c.x-b.x*c.z)+a.z*(b.x*c.y-b.y*c.x);
-  for(const j of [ia,ib,ic]){const k=weld[j]*3;normal[k]+=face.x;normal[k+1]+=face.y;normal[k+2]+=face.z;}
+  if(!sourceNormalsOnly||i<originalIndexCount)for(const j of [ia,ib,ic]){const k=weld[j]*3;normal[k]+=face.x;normal[k+1]+=face.y;normal[k+2]+=face.z;}
  }
  const sign=volume<0?-1:1;
  for(let i=0;i<weldCount;i++){const k=i*3,length=Math.hypot(normal[k],normal[k+1],normal[k+2])||1;normal[k]=normal[k]/length*sign;normal[k+1]=normal[k+1]/length*sign;normal[k+2]=normal[k+2]/length*sign;}

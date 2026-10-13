@@ -95,8 +95,8 @@ h1 .edition{font-family:inherit;font-weight:500;font-size:10px;letter-spacing:.0
 .skin-control label{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;color:var(--foreground)}
 .skin-control output{font-variant-numeric:tabular-nums;color:var(--muted-foreground)}
 .skin-control [data-slot=slider]{padding-block:8px}
-/* Atlas uses the dark studio theme by default so recordings and embeds stay consistent. */
-@media all{
+/* Follow system appearance; light styles above remain the default. */
+@media(prefers-color-scheme:dark){
  :root{color-scheme:dark;color:#e4ebf1;background:#141b23;--background:#141b23;--foreground:#e4ebf1;--card:#202b37;--card-foreground:#e4ebf1;--popover:#202b37;--popover-foreground:#e4ebf1;--primary:#a5d5df;--primary-foreground:#16262d;--secondary:#2d3b49;--secondary-foreground:#e4ebf1;--muted:#293745;--muted-foreground:#a9b8c7;--accent:#344858;--accent-foreground:#f0f6fa;--border:#a9c6db26;--input:#a9c6db40;--ring:#a5d5df}
  .glass,.detail-sheet,.about-sheet,.loading{background:#202b37ed!important;color:var(--foreground);border-color:var(--border);box-shadow:0 16px 48px #0003}
  .vignette{background:radial-gradient(ellipse at 51% 43%,transparent 35%,#0003 100%)}
@@ -128,7 +128,7 @@ h1 .edition{font-family:inherit;font-weight:500;font-size:10px;letter-spacing:.0
 .selection-list{max-height:170px;overflow:auto;font-size:11px}.selection-list>div{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);padding:5px 0}.selection-list button{min-height:32px;min-width:32px}
 .layers-panel.study-hidden{display:none}.share-view{position:fixed;z-index:100;top:100px;right:30px;width:min(430px,calc(100% - 30px));border-radius:14px;padding:18px;display:grid;gap:12px}.share-view label{font-size:13px}.share-view input{display:block;width:100%;margin-top:10px;background:var(--card);color:var(--foreground);border:1px solid var(--border);border-radius:6px;padding:8px}
 .anatomy-labels{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden}.anatomy-labels line{stroke:#3a7680;stroke-width:1.2}.anatomy-labels circle{fill:#4a969e;stroke:var(--background);stroke-width:1.5}.anatomy-labels text{font:11px 'Helvetica Neue',Arial,sans-serif;fill:var(--foreground);stroke:var(--background);stroke-width:4px;paint-order:stroke;stroke-linejoin:round}
-@media all{.anatomy-labels line{stroke:#acd9df}.study-panel,.share-view{background:#202b37f5}}
+@media(prefers-color-scheme:dark){.anatomy-labels line{stroke:#acd9df}.study-panel,.share-view{background:#202b37f5}}
 @media(max-width:767px){.study-panel{top:158px;left:12px;right:12px;width:auto;bottom:140px}.study-panel select{font-size:16px;min-height:44px}.study-panel button{min-height:40px}.study-panel [data-slot=slider]{padding-block:10px}.share-view{top:158px;right:12px}.top-actions{gap:4px}.top-actions button{min-width:40px;width:40px}.anatomy-labels text{font-size:10px}}
 @media(max-width:767px){.study-panel{top:auto;max-height:43dvh;bottom:140px}.study-panel .panel-heading{flex-shrink:0}}
 
@@ -323,6 +323,12 @@ button.tree-check[data-state=mixed]{opacity:.7}
 .anatomy-labels .selected-anatomy-label rect{fill:var(--card);stroke:var(--border);stroke-width:1;opacity:.96}
 .anatomy-labels .selected-anatomy-label text{font:500 12px Arial,sans-serif;fill:var(--foreground);stroke:none}
 .anatomy-labels .selected-anatomy-label circle{fill:var(--primary);stroke:var(--card)}
+.anatomy-labels .anatomy-label-item,.anatomy-labels .explosion-group-label[role=button]{pointer-events:all;cursor:pointer}
+.anatomy-labels .anatomy-label-item:hover rect,.anatomy-labels .anatomy-label-item:focus rect{fill:var(--accent);stroke:var(--primary)}
+.anatomy-labels .anatomy-label-components{pointer-events:all;cursor:pointer}
+.anatomy-labels .anatomy-label-components rect{fill:transparent;stroke:none}
+.anatomy-labels .anatomy-label-components path{stroke:var(--foreground);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.anatomy-labels .anatomy-label-components:hover rect,.anatomy-labels .anatomy-label-components:focus rect{fill:var(--accent);stroke:var(--primary)}
 @media(min-width:768px) and (min-height:601px){
  .layers-panel.is-hidden{display:none}
  .studio:not(.embedded) .anatomy-choice{width:var(--viewer-sidebar-width)}
@@ -576,3 +582,31 @@ body:has(.studio.embedded) > .share-view{top:66px;right:12px;bottom:100px;left:a
 .guest-biology-controls{position:sticky;top:0;z-index:2;background:var(--card);padding:6px 4px;display:grid;gap:6px}.guest-biology-controls input{width:100%;min-width:0;padding:7px 8px;border:1px solid var(--border);border-radius:6px;background:var(--background);color:var(--foreground);font-size:12px}.guest-biology-controls>span{font-size:11px;color:var(--muted-foreground)}.guest-view-tabs{display:flex;gap:4px}.guest-view-tabs button{flex:1;padding:5px 8px;border-radius:6px;font-size:12px;color:var(--muted-foreground)}.guest-view-tabs button.active{background:var(--accent);color:var(--foreground)}.guest-node-info{padding:3px 8px 6px calc(10px + min(var(--tree-depth),8)*12px);font-size:11px;color:var(--muted-foreground);line-height:1.4}.guest-biology-links{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.guest-biology-links button{font-size:11px;color:var(--primary);padding:3px 5px;border:1px solid var(--border);border-radius:4px;max-width:100%;text-align:left}.guest-more{margin:4px 8px;padding:5px 8px;font-size:11px;color:var(--primary);text-decoration:underline}.guest-anatomy-leaf .tree-name{font-style:italic}
 
 .guest-biology .tree-row{padding-left:calc(11px * min(var(--tree-depth),8))}
+
+.visit-panel label{display:block;margin:16px 0;color:var(--foreground)}
+.visit-panel select{display:block;width:100%;margin-top:8px;padding:10px;border-radius:8px;background:var(--card);color:var(--foreground);border:1px solid var(--border)}
+.visit-panel input[type=range]{display:block;width:100%;margin-top:10px}
+.visit-panel output{float:right}
+.visit-play{display:flex;gap:8px;flex-wrap:wrap}
+.visit-panel{position:fixed;display:flex;flex-direction:column;z-index:70;overflow:hidden!important}
+.visit-panel .panel-heading,.visit-panel .visit-play,.visit-panel .visit-restart{flex-shrink:0}
+.visit-panel .visit-footer{margin-top:auto;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.visit-panel .check-label{display:flex;align-items:center;gap:8px}
+.visit-panel .check-label input{margin:0;flex-shrink:0}
+.visit-panel select option{background:var(--card);color:var(--foreground)}
+.studio[data-front-panel=visit] .visit-panel{z-index:70!important}
+.visit-panel label{flex-shrink:0;margin:10px 0;font-size:13px}
+.visit-panel .visit-position{appearance:none;height:10px;border-radius:5px;padding:0;border:1px solid var(--border)}
+.visit-position::-webkit-slider-thumb{appearance:none;width:16px;height:22px;border-radius:5px;background:var(--foreground);border:2px solid var(--background);box-shadow:0 0 0 1px var(--foreground)}
+.visit-position::-moz-range-thumb{width:12px;height:18px;border-radius:5px;background:var(--foreground);border:2px solid var(--background)}
+.visit-organs{list-style:none;padding:0;margin:6px 0 12px;flex:1 1 0;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.visit-organs button{display:flex;align-items:center;gap:10px;width:100%;padding:7px 4px;text-align:left;font-size:13px;border-radius:5px}
+.visit-organs button[aria-current=step]{background:var(--accent);color:var(--accent-foreground)}
+.visit-bullet{display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+.visit-panel .visit-path{margin:0 0 8px}
+.visit-panel .visit-path select{margin-top:0}
+.visit-preview{min-height:100px;margin:0 0 10px}
+.visit-preview canvas{touch-action:none;cursor:grab}
+.visit-preview canvas:active{cursor:grabbing}
+@media(max-height:650px){.visit-preview{flex-basis:110px;min-height:80px}.visit-panel label{margin:6px 0}}

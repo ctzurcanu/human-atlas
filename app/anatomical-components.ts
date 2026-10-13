@@ -3,6 +3,7 @@ import {nativePartFrame,ta98ModeledComponentIds} from './ta98-modeled-parent';
 import type {Concept,Part} from './anatomy';
 import type {HierarchyChoice} from './hierarchy-choice';
 import type {ResolvedRelation} from './anatomical-relations';
+import {vascularWallComponentIds} from './vascular-wall';
 
 /** Explicit catalogue assemblies must actually contain every selected piece. */
 export function storedAssemblyParent(choice:HierarchyChoice,concepts:Concept[],parts:Map<string,Part>):HierarchyChoice|undefined{
@@ -25,6 +26,7 @@ export function hasExpandableAnatomicalRelations(relations:ResolvedRelation[],pa
  * not another component, and must be excluded from the component view.
  */
 export function anatomicalComponentIds(choice:HierarchyChoice,relations:ResolvedRelation[],parts:Map<string,Part>,concepts:Concept[]=[]):string[]{
+ const vascular=vascularWallComponentIds(choice,parts);if(vascular)return vascular;
  const ta98=choice.id.startsWith('hierarchy:guest:ta98:');
  const children=(choice.children??[]).filter(child=>!ta98||/^hierarchy:guest:ta98:A\d{2}\.\d\.\d{2}\.\d{3}$/.test(child.id));
  const members=choice.elements.map(id=>parts.get(id)).filter((part):part is Part=>!!part&&!part.suppressed);
@@ -45,7 +47,10 @@ export function anatomicalComponentIds(choice:HierarchyChoice,relations:Resolved
 export function anatomicalComponentRelations(choice:HierarchyChoice,relations:ResolvedRelation[],parts:Map<string,Part>,concepts:Concept[]):ResolvedRelation[]{
  if(choice.children||choice.id==='selection-set')return relations;
  const ids=anatomicalComponentIds(choice,relations,parts,concepts),allowed=new Set(ids);
- const result=relations.filter(relation=>relation.kind!=='contains'||allowed.has(relation.target.id));
+ const selected=new Set(choice.elements);
+ // Internal joins describe constituent tissues. For a stored assembly they
+ // belong to its components, rather than its external continuity list.
+ const result=relations.filter(relation=>(relation.kind!=='contains'||allowed.has(relation.target.id))&&(!['continuous','adjacent'].includes(relation.kind)||!selected.has(relation.target.id)));
  const present=new Set(result.filter(relation=>relation.kind==='contains').map(relation=>relation.target.id));
  for(const id of ids){if(present.has(id))continue;const target=parts.get(id);if(target){result.push({kind:'contains',target});present.add(id);}}
  return result;

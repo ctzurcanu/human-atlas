@@ -10,6 +10,8 @@ Two kidneys by Lissie Cowley retain CC BY-NC 4.0. Two cochleae and two vestibule
 
 Adaptation by Human Atlas: original Blender objects, collection membership, materials, and world transforms are read directly; coordinates are converted to Y-up; material-defined surfaces are packed without triangle reduction; source material colors are retained alongside display colors. Reference lettering and diagrams are excluded. The original archive has no anatomical image texture files. This source contributes 3,817 selectable surfaces and 3,213 concepts to the detailed male build.
 
+Local surface correction by Human Atlas: the native long-head biceps tendons receive a bounded 0.030 mm repair at source self-crossing patches. Existing topology, material assignment and UVs are preserved; local artist normals are transported. The original source archive is unchanged, and the derived anatomical geometry retains its applicable source license. See [the repair record](TA98-BICEPS-BRACHII-REPAIR.md).
+
 ## Detailed male supplement: Open 3D Model upper limb
 
 Source: [Open 3D Model publisher source files](https://anatomytool.org/open3dmodel-create), from Leiden UMC and its [credited project partners](https://anatomytool.org/open3dmodel-credit), CC BY-SA 4.0. The original [upper-limb GLB archive](https://caskanatomy.info/open3dmodelfiles/upper-limb/upper-limb-glb.zip) has SHA-256 `5af0190a6d7bf47393447ac30021e4f3ba619721c7f3a620c39a895947078432`; its GLB has SHA-256 `e440c84c794239d1850e62b4ede0195d81bcff4f0078c7945528c388ab72fdb4`.
@@ -1215,3 +1217,7 @@ The publication candidate retains all 166 CS23 source meshes, all 1,072,606 sour
 Placental context: Kristen Browne and Heidi Schlehlein / HuBMAP, [Human Reference Atlas united-female](https://purl.humanatlas.io/ref-organ/united-female/v1.10), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Changes to the HRA context include independent placement, cord-end fitting, display colors, volume fitting and placental flattening. These changes do not alter the CS23 source meshes. These datasets retain separate licenses; the application code license does not replace either dataset license.
 
 “Embryo 3month” is the requested display name, not a revised source-stage claim. The placental source represents a different developmental stage. Open reference surfaces, contact/overlap at the separate cord interface, inherited defects and wall/lumen continuity remain provisional. This candidate does not establish complete or anatomically accepted assembly geometry.
+
+## Local rectal donor and wall construction — October 2026
+
+The locally supplied native female rectum is the carrier for the corrected female rectal wall and the resized, fitted male donor. Source-face ancestry and shared sigmoid interfaces are recorded in the rectal donor construction and installation reports. Human Atlas generates finite wall fields, procedural coat appearance and tissue-only caps from that carrier. The local source's redistribution rights have not been established; these derived assets remain in `.local-models` and are excluded from public delivery. This does not attribute the donor to the separate BodyParts3D rectum or to the independently registered HRA rectum, both of which are replaced as active rectal alternatives in the corresponding local views.

@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {createHash} from 'node:crypto';
+const atlas=JSON.parse(readFileSync('.local-models/ta98-runtime.json'));const report=JSON.parse(readFileSync('reports/ta98-male/slim-brows.json'));const sha=b=>createHash('sha256').update(b).digest('hex');
+test('active male pubic-hair sources are excluded and brow correction preserves original faces/UVs',()=>{
+ assert.ok(!atlas.parts.some(p=>/pubic hairs?/i.test(p.name)));assert.equal(report.installed,true);
+ for(const row of report.rows){const p=atlas.parts.find(p=>p.id===row.id);assert.ok(p);assert.deepEqual(atlas.materials[p.material].color,[96,73,53]);const raw=readFileSync('.local-models/'+atlas.chunks[p.chunk].url.replace('/local-models/',''));assert.equal(sha(raw.subarray(p.indices,p.indices+p.indexCount*4)),row.sourceIndicesSha256);assert.equal(sha(raw.subarray(p.uvs,p.uvs+p.vertexCount*8)),row.sourceUVSha256);let lo=Infinity,hi=-Infinity;for(let i=0;i<p.vertexCount;i++){const y=raw.readFloatLE(p.positions+i*12+4);lo=Math.min(lo,y);hi=Math.max(hi,y);}assert.ok(Math.abs((hi-lo)*1000-row.originalHeightMm*.6)<.0002);assert.equal(row.selfCrossingsBefore,row.selfCrossingsAfter);}
+});

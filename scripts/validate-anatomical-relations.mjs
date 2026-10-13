@@ -19,7 +19,10 @@ assert.deepEqual(link(related(detailed,'Ascending colon'),'before','Jejunum')?.v
 assert.deepEqual(link(related(detailed,'Ascending colon'),'after','Transverse colon')?.via,['Hepatic flexure of colon']);
 assert.deepEqual(link(related(detailed,'Transverse colon'),'after','Descending colon')?.via,['Splenic flexure of colon']);
 assert.ok(has(related(detailed,'Kidney (left)'),'after','Renal pelvis (left)'));
-assert.deepEqual(link(related(detailed,'Kidney (left)'),'after','Ureter (left)')?.via,['Renal pelvis']);
+// Native urine follows the modeled renal pelvis; do not restore the old
+// generic kidney-to-ureter shortcut around that existing intermediate.
+assert.ok(!has(related(detailed,'Kidney (left)'),'after','Ureter (left)'));
+assert.ok(has(related(detailed,'Renal pelvis (left)'),'after','Ureter (left)'));
 assert.ok(!has(related(detailed,'Kidney (left)'),'after','Ureter (right)'));
 assert.ok(has(related(detailed,'Testis (left)'),'after','Epididymis (left)'));
 assert.deepEqual(link(related(detailed,'Testis (left)'),'after','Ductus deferens (left)')?.via,['Epididymis']);
@@ -48,8 +51,16 @@ assert.ok(!femoral.some(relation=>relation.kind!=='counterpart'&&relation.target
 assert.ok(has(related(detailed,'Ileal branch of ileocolic artery'),'before','Ileocolic artery'));
 assert.ok(has(related(detailed,'Left renal artery'),'after','Anterior branch of renal artery (left)'));
 const median=related(detailed,'Median nerve (left)');
-assert.ok(has(median,'before','Lateral root of median nerve (left)'));
-assert.ok(has(median,'before','Medial root of median nerve (left)'));
+// The O3M roots and ZA trunk are independently sourced. Read-only packed
+// geometry evidence (median-root-source-interfaces.json) finds intersections
+// at the lateral root and no shared coordinates at either root. Their named
+// identity does not establish an accepted cross-source branching assembly.
+for(const rootName of ['Lateral root of median nerve (left)','Medial root of median nerve (left)']){
+ const root=detailed.find(part=>part.name===rootName);
+ assert.ok(root?.id.startsWith('O3M:'),'Keep the existing source root representation');
+ assert.ok(!has(median,'before',rootName),'Do not borrow an unregistered source root');
+ assert.ok(!related(detailed,rootName).some(r=>r.kind==='after'&&r.target.id==='ZA:Median nerve.l'),'Exclude the reciprocal unregistered branch');
+}
 assert.ok(has(median,'after','Palmar branch of median nerve (left)'));
 assert.ok(has(median,'innervates','Abductor pollicis brevis (left) · Abductor'));
 assert.ok(!median.some(relation=>relation.kind==='innervates'&&/· Tendon$/i.test(relation.target.name)));

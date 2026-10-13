@@ -1,19 +1,20 @@
-import type {Atlas,SceneState} from './anatomy';
+import type {Atlas,SceneState,Part} from './anatomy';
 import {sectionPartVisible} from './viewer-state';
 import type {Bounds3,Point3} from './section-plane';
 
-export function sectionSetBounds(atlas:Atlas,state:SceneState):Bounds3{
+export function sectionSetBounds(atlas:Atlas,state:SceneState,displayBounds?:(part:Part,index:number)=>Bounds3):Bounds3{
  const min:Point3=[Infinity,Infinity,Infinity],max:Point3=[-Infinity,-Infinity,-Infinity];
  let found=false;
- for(const part of atlas.parts){
+ for(const [index,part] of atlas.parts.entries()){
   if(!sectionPartVisible(part,state))continue;
+  const bounds=displayBounds?.(part,index)??{min:part.bounds[0],max:part.bounds[1]};
   found=true;
   for(let axis=0;axis<3;axis++){
-   min[axis]=Math.min(min[axis],part.bounds[0][axis]);
-   max[axis]=Math.max(max[axis],part.bounds[1][axis]);
+   min[axis]=Math.min(min[axis],bounds.min[axis]);
+   max[axis]=Math.max(max[axis],bounds.max[axis]);
   }
  }
- if(found&&atlas.version==='Anatomy Atlas adapted GLB local import'&&state.region==='torso'){
+ if(found&&!displayBounds&&atlas.version==='Anatomy Atlas adapted GLB local import'&&state.region==='torso'){
   // The publisher's torso section extent is anatomical. A few long vessels
   // and nerves continue below it and must not pull a 38% chest cut into the
   // abdomen when the checked structure set changes.

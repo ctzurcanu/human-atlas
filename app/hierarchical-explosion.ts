@@ -8,7 +8,7 @@ export type ExplodeHierarchy='systems'|'regions'|'depth'|'guest';
 type Bounds={cx:number;cy:number;cz:number;width:number;height:number};
 type Node={parts:Part[];children:Node[];bounds:Bounds;name?:string};
 type Measured={node:Node;width:number;height:number;children:{measured:Measured;x:number;y:number}[]|null};
-export type ExplosionGroup={id:string;name:string;depth:number;x:number;y:number;z:number;height:number;count:number};
+export type ExplosionGroup={id:string;name:string;depth:number;x:number;y:number;z:number;height:number;count:number;members?:Part[];childGroups?:{name:string;members:Part[]}[]};
 export type ExplosionStage={positions:Float32Array;width:number;height:number;groups:ExplosionGroup[];clusterIds:Int32Array;clusters:number[][]};
 export type HierarchicalExplosionLayout={stages:ExplosionStage[];steps:number};
 
@@ -43,6 +43,7 @@ function nodeBounds(parts:Part[]):Bounds{
  return {cx:(low[0]+high[0])/2,cy:(low[1]+high[1])/2,cz:(low[2]+high[2])/2,width:high[0]-low[0],height:high[1]-low[1]};
 }
 const node=(parts:Part[],children:Node[]=[],name?:string):Node=>({parts,children,name,bounds:nodeBounds(parts)});
+const labelMembership=(node:Node)=>({members:node.parts,childGroups:node.children.map(child=>({name:child.name??child.parts[0]?.name??'Components',members:child.parts}))});
 function entryNode(entry:AnatomyEntry):Node{
  return node(entry.parts,entry.parts.map(part=>node([part])));
 }
@@ -133,11 +134,11 @@ export function createHierarchicalExplosionLayout(atlas:Atlas,entries:AnatomyEnt
   const recordClusters=(item:Measured)=>{if(item.children){item.children.forEach(child=>recordClusters(child.measured));return;}const members=item.node.parts.map(part=>index.get(part.id)!);const cluster=clusters.length;clusters.push(members);for(const member of members)clusterIds[member]=cluster;};
   recordClusters(measured);
   const recordCollapsed=(current:Node,x:number,y:number,z:number,depth:number,id:string)=>{
-   if(current.name&&current.children.length)groups.push({id,name:current.name,depth,x,y,z,height:current.bounds.height,count:current.parts.length});
+   if(current.name&&current.children.length)groups.push({id,name:current.name,depth,x,y,z,height:current.bounds.height,count:current.parts.length,...labelMembership(current)});
    current.children.forEach((child,index)=>recordCollapsed(child,x+child.bounds.cx-current.bounds.cx,y+child.bounds.cy-current.bounds.cy,z+child.bounds.cz-current.bounds.cz,depth+1,`${id}/${index}`));
   };
   const place=(item:Measured,x:number,y:number,z:number,depth:number,id:string)=>{
-   if(item.node.name&&item.node.children.length)groups.push({id,name:item.node.name,depth,x,y,z,height:item.height,count:item.node.parts.length});
+   if(item.node.name&&item.node.children.length)groups.push({id,name:item.node.name,depth,x,y,z,height:item.height,count:item.node.parts.length,...labelMembership(item.node)});
    if(item.children){for(let index=0;index<item.children.length;index++){
     const child=item.children[index];
     place(child.measured,x+child.x,y+child.y,0,depth+1,`${id}/${index}`);
@@ -151,7 +152,7 @@ export function createHierarchicalExplosionLayout(atlas:Atlas,entries:AnatomyEnt
  };
  const initialGroups:ExplosionGroup[]=[];
  const recordInitial=(current:Node,depth:number,id:string)=>{
-  if(current.name&&current.children.length)initialGroups.push({id,name:current.name,depth,x:current.bounds.cx,y:current.bounds.cy,z:current.bounds.cz,height:current.bounds.height,count:current.parts.length});
+  if(current.name&&current.children.length)initialGroups.push({id,name:current.name,depth,x:current.bounds.cx,y:current.bounds.cy,z:current.bounds.cz,height:current.bounds.height,count:current.parts.length,...labelMembership(current)});
   current.children.forEach((child,index)=>recordInitial(child,depth+1,`${id}/${index}`));
  };
  recordInitial(root,0,'root');

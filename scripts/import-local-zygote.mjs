@@ -35,6 +35,10 @@ function categories(metadata){
 function systemFor(raw,category){
  const {layer,route}=category??{};
  if(layer===7){
+  // This named arterial source shares its three branch rims with the native
+  // hepatic, splenic and left gastric arteries; a broad venous route in the
+  // source DAG must not reclassify it on the next import.
+  if(raw==='celiac_trunk')return 'arterial';
   const context=route?.join(' ')??raw;
   if(/heart|cardiac/i.test(context))return 'cardiac';
   return /vein|venous/i.test(context)?'venous':'arterial';
@@ -42,7 +46,7 @@ function systemFor(raw,category){
  if(layer===6){
   if(raw.toLowerCase()==='mouth')return 'digestive';
   // Explicit intestinal leaves override broad inherited reproductive routes.
-  if(/^(?:_?large_intestine_(?:cecum|descending_colon|anus|rectum)|small_intestine_(?:ileum|illium|jejunum)|intestine_duodenum|(?:sigmoid|transverse|ascending)_colon)$/i.test(raw))return 'digestive';
+  if(/^(?:_?large_intestine_(?:cecum|ascending_colon|transverse_colon|descending_colon|sigmoid_colon|anus|rectum)|small_intestine_(?:ileum|illium|jejunum)|intestine_duodenum|(?:sigmoid|transverse|ascending)_colon)$/i.test(raw))return 'digestive';
   const context=route?.join(' ')??raw;
   if(/heart|cardiac/i.test(context))return 'cardiac';
   if(/brain|spinal|nerve|gangli/i.test(context))return 'nervous';

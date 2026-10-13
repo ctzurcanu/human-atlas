@@ -1,0 +1,34 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {build} from 'esbuild';
+const compiled=await build({stdin:{contents:"export * from './app/guest-hierarchy';export * from './app/anatomical-components';export * from './app/anatomical-relations';export * from './app/local-ta98-layer-catalogue';export * from './app/digestive-duct-relations';export * from './app/section-tissue';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',write:false});
+const api=await import('data:text/javascript;base64,'+Buffer.from(compiled.outputFiles[0].contents).toString('base64'));
+const read=p=>JSON.parse(fs.readFileSync(p));
+for(const sex of ['male','female'])test(`${sex} cystic folds are distinct physical tissue with TA98 selection and component controls`,()=>{
+ const installed=read(`.local-models/ta98-review/bowel-wall-local-atlas/${sex}/atlas.json`);
+ const a=installed.cysticFoldIntegration?installed:read(`.local-models/ta98-review/cystic-folds/${sex}/atlas.json`);
+ const marker=a.cysticFoldIntegration,fold=a.parts.find(p=>p.id===marker.foldPartId),duct=a.parts.find(p=>p.id===marker.ductPartId);
+ const parent=a.concepts.find(c=>c.id===duct.conceptId),feature=a.concepts.find(c=>c.id===fold.conceptId);
+ assert.deepEqual(new Set(parent.elements),new Set([duct.id,fold.id]));
+ assert.equal(feature.ta98Term,'A05.8.02.012');assert.deepEqual(feature.elements,[fold.id]);assert.equal(feature.partOf,parent.id);
+ assert.ok(fold.pairedTissue&&fold.sectionSolid&&!fold.suppressed);assert.equal(fold.chunk,duct.chunk);assert.equal(fold.positions,duct.positions);
+ assert.equal(api.sectionTissue(fold),'mucosa');
+ assert.ok(fold.tissueDrawGroups.some(g=>g.neighbor===duct.id));assert.ok(duct.tissueDrawGroups.some(g=>g.neighbor===fold.id));assert.equal(fold.uvs,undefined);
+ const tree=api.resolveGuestHierarchy(a,api.parseGuestHierarchy(read('public/assets/ta98.json'))),nodes=new Map();
+ const walk=n=>{nodes.set(n.id,n);n.children.forEach(walk);};tree.forEach(walk);
+ assert.deepEqual(new Set(nodes.get('A05.8.02.012').directParts.map(p=>p.id)),new Set([fold.id]));
+ const relations=api.anatomicalRelations(parent,a.parts.filter(p=>parent.elements.includes(p.id)),a.parts);
+ const choice={id:parent.id,name:parent.name,elements:parent.elements};
+ assert.deepEqual(new Set(api.anatomicalComponentIds(choice,relations,new Map(a.parts.map(p=>[p.id,p])),a.concepts)),new Set([fold.id]));
+ assert.match(api.digestiveDuctDescription(duct).text,/Three raised crescentic/);
+ const proof=read(`reports/ta98-${sex}/cystic-folds-packed-validation.json`),audit=read(`reports/ta98-${sex}/cystic-folds-audit.json`);
+ assert.equal(proof.catalogueSha256,audit.catalogueSha256);assert.ok(proof.continuousMacroLumen);
+ assert.equal(audit.cells.find(p=>p.id===fold.id).components,3);assert.equal(audit.primaryFoldNeighborFacePairs,0);assert.ok(audit.oldCoordinatesAndNormalsExact&&audit.originalMouthControlsExact);
+});
+test('fold staging is restricted to local TA98 development models',()=>{
+ const q=new URLSearchParams('biliary=folds');
+ assert.equal(api.localTa98LayerCatalogue('male',q,true),undefined);
+ assert.equal(api.localTa98LayerCatalogue('local-ta98',q,false),undefined);
+ assert.equal(api.localTa98LayerCatalogue('local-ta98',q,true),'/local-models/ta98-review/cystic-folds/male/atlas.json');
+});

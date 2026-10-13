@@ -53,6 +53,9 @@ export function compactViewUrl(input:string){
  for(const key of ['model','tree','embed','ui','connect','connectJoin','relay']){
   const value=params.get(key);if(value!==null&&value.length<=512)url.searchParams.set(key,value);
  }
+ // A local review catalogue must remain addressable when the view state is
+ // compressed; its loader is independently restricted to development mode.
+ if(params.get('model')==='local-ta98'&&params.get('venous')==='portal-wall')url.searchParams.set('venous','portal-wall');
  const compact=url.href;
  if(compact.length>=input.length&&input.length<=REQUEST_LIMIT)return input;
  return compact;

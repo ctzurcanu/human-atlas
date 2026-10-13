@@ -12,6 +12,6 @@ type ChoiceSummary={id:string;name:string;elements:string[];group:boolean;termin
 export type ConnectSnapshot={
  version:1;model:string;hierarchy:string;guestSources:string[];state:SceneState;
  choice:(ChoiceSummary&{children?:ChoiceSummary[]})|null;
- ui:{panel:'search'|'advanced'|'sections'|null;frontPanel:'layers'|'search'|'advanced'|'sections'|'details';details:boolean;layersVisible:boolean;mobileLayersOpen:boolean;addSelection:boolean;query:string;expanded:ExpandedControl[]};
+ ui:{panel:'search'|'advanced'|'sections'|'visit'|null;frontPanel:'layers'|'search'|'advanced'|'sections'|'visit'|'details';details:boolean;layersVisible:boolean;mobileLayersOpen:boolean;addSelection:boolean;query:string;expanded:ExpandedControl[]};
  covering:string[];relationshipExpansion:RelationshipExpansion|null;pose:ScenePose|null;advanced:AdvancedPresentation|null;
 };

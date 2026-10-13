@@ -24,7 +24,7 @@
     "test:sections": "node scripts/validate-section.mjs",
     "test:section-visuals": "node scripts/compare-section-screenshots.mjs",
     "mcp": "node mcp/server.mjs",
-    "test:mcp": "node --test mcp/server.test.mjs",
+    "test:mcp": "node --test mcp/server.test.mjs mcp/ui-bridge.test.mjs",
     "test:mcp-live": "node scripts/validate-mcp-live.mjs",
     "import:local-models": "node scripts/import-local-zygote.mjs && node scripts/audit-meshes.mjs local-male local-female",
     "import:reference-glb": "node scripts/import-reference-glb.mjs && node scripts/audit-meshes.mjs local-reference",
@@ -165,6 +165,9 @@
     "test:retinal-relations": "node scripts/validate-retinal-relations.mjs",
     "test:dermatome-ink": "node scripts/validate-dermatome-ink.mjs",
     "test:explosion-viewport": "node --test tests/explosion-viewport.test.mjs",
+    "build:alimentary-visits": "python3 scripts/build-alimentary-visits.py",
+    "test:model-visit": "node --test server/model-visit.test.mjs server/visit-map.test.mjs",
+    "test:tube-geometry": "python3 -B server/tube_geometry_test.py",
     "test:camera-intent": "node --test tests/camera-intent.test.mjs",
     "test:explosion-plane": "node --test tests/explosion-plane.test.mjs",
     "prepare:embryo-pages": "node server/prepare-embryo-pages.mjs",
@@ -174,7 +177,9 @@
     "test:cardiac-relations": "node --test tests/cardiac-relations.test.mjs",
     "test:fibular-supply": "node --test tests/fibular-supply.test.mjs",
     "test:urinary-paths": "node --test tests/urinary-native-paths.test.mjs",
-    "test:coronary-paths": "node --test tests/coronary-native-paths.test.mjs"
+    "test:coronary-paths": "node --test tests/coronary-native-paths.test.mjs",
+    "build:small-intestine-walls": "node server/build-small-intestine-walls.mjs",
+    "build:mcp-ui": "node mcp/build-ui.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

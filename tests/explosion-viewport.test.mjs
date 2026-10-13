@@ -21,7 +21,7 @@ test('Fitting never zooms or recenters an arrangement that already fits the curr
   assert.deepEqual(captureExplosionView(camera,target),initial);
  }
 });
-const catalogs=['public/models/atlas-male-complete.json','public/models/atlas.json','public/models/atlas-hra-female.json','public/models/atlas-embryo.json','public/models/atlas-cell.json','public/models/embryo-3month/atlas.json',...['ta98-male','ta98-female-runtime','reference','male','female'].map(name=>`.local-models/${name}.json`).filter(existsSync)];
+const catalogs=['public/models/atlas-male-complete.json','public/models/atlas.json','public/models/atlas-hra-female.json','public/models/atlas-embryo.json','public/models/atlas-cell.json','public/models/embryo-3month/atlas.json',...['ta98-male','ta98-female-runtime','reference','male','female'].map(name=>`.local-models/${name}.json`).filter(existsSync),...['male','female'].map(sex=>`.local-models/ta98-review/bowel-wall-local-atlas/${sex}/atlas.json`).filter(existsSync)];
 for(const model of catalogs)test(`${model}: explode and implode remain inside the usable viewport`,async()=>{
  const atlas=JSON.parse(await readFile(model)),ids=new Set(atlas.parts.filter(p=>!p.suppressed).map(p=>p.id));
  for(const aspect of [1.78,.6]){

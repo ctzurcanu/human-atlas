@@ -16,7 +16,8 @@ import {depthLayerOpacity,depthPosition} from './depth-control';
 import type {SceneCapture} from './export-tools';
 
 /** A separate native reference frame: never substitutes this surface for atlas tissue. */
-export default function DermatomeSurface({sex,state,selection,onTerritory,onCapture,onProgress,onError,sectionTool,onSectionPosition,onBounds}:{sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onBounds?:(bounds:Bounds3)=>void;sex:AnatomySex;state:SceneState;selection?:string;onTerritory:(id:string,toggle?:boolean)=>void;onCapture:(capture:SceneCapture|null)=>void;onProgress:(n:number)=>void;onError:(message:string)=>void}){
+export default function DermatomeSurface({sex,state,selection,onSelectLabel,onTerritory,onCapture,onProgress,onError,sectionTool,onSectionPosition,onBounds}:{onSelectLabel?:(key:string)=>void;sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onBounds?:(bounds:Bounds3)=>void;sex:AnatomySex;state:SceneState;selection?:string;onTerritory:(id:string,toggle?:boolean)=>void;onCapture:(capture:SceneCapture|null)=>void;onProgress:(n:number)=>void;onError:(message:string)=>void}){
+ const labelSelect=useRef(onSelectLabel);labelSelect.current=onSelectLabel;
  const host=useRef<HTMLDivElement>(null),latest=useRef(state),selected=useRef(selection),pickCallback=useRef(onTerritory),sectionToolRef=useRef(sectionTool),sectionPositionRef=useRef(onSectionPosition);sectionToolRef.current=sectionTool;sectionPositionRef.current=onSectionPosition;latest.current=state;selected.current=selection;pickCallback.current=onTerritory;
  useEffect(()=>{
   const el=host.current!;let disposed=false,frame=0,model:T.Group|undefined,lastView='',lastReset=-1,dirty=true,lastSelection='',lastTheme='',lastHidden='uninitialized',lastDepth='',lastDermSelection='uninitialized';
@@ -53,7 +54,7 @@ export default function DermatomeSurface({sex,state,selection,onTerritory,onCapt
   const tip=document.createElement('div');tip.className='dermatome-hover-tip';tip.setAttribute('role','tooltip');tip.hidden=true;
   Object.assign(tip.style,{position:'absolute',pointerEvents:'none',zIndex:'8',maxWidth:'260px',padding:'8px 12px',borderRadius:'8px',background:'#202a35',color:'#f5f6f7',border:'1px solid #52616f',fontSize:'13px',whiteSpace:'pre-line'});el.appendChild(tip);
   const anchors=new Map<string,{object:T.Object3D;local:T.Vector3}>();
-  const labelLayer=document.createElementNS('http://www.w3.org/2000/svg','svg');labelLayer.classList.add('anatomy-labels');labelLayer.setAttribute('aria-hidden','true');el.appendChild(labelLayer);
+  const labelLayer=document.createElementNS('http://www.w3.org/2000/svg','svg');labelLayer.classList.add('anatomy-labels');labelLayer.setAttribute('aria-label','Anatomy labels');el.appendChild(labelLayer);
   const labelMeasure=document.createElement('canvas');let lastLabelArea='',lastLayoutRead=0;
   let labelArea=labelAreaForPanels(el.clientWidth,el.clientHeight,[]);
   const readLabelArea=()=>{const viewport=el.getBoundingClientRect(),panels:LabelPanel[]=[];
@@ -75,7 +76,8 @@ export default function DermatomeSurface({sex,state,selection,onTerritory,onCapt
     }
    });if(result)anchors.set(key,result);return result;
   };
-  const drawLabels=(s:SceneState)=>{labelLayer.replaceChildren();if(s.labels===false||skinAlpha.value<=0)return;
+  let drawnLabelFrame='';
+  const drawLabels=(s:SceneState)=>{if(s.labels===false||skinAlpha.value<=0){if(labelLayer.childElementCount)labelLayer.replaceChildren();drawnLabelFrame='';return;}
    const w=el.clientWidth,h=el.clientHeight;labelLayer.setAttribute('viewBox',`0 0 ${w} ${h}`);const projected:LabelAnchor[]=[];
    for(const key of s.dermatomeSelected??[]){
     const anchor=anchors.get(key)??findSurfaceAnchor(key);if(!anchor)continue;const world=anchor.object.localToWorld(anchor.local.clone());if(!kept(world))continue;const point=world.project(camera);
@@ -84,7 +86,8 @@ export default function DermatomeSurface({sex,state,selection,onTerritory,onCapt
     projected.push({id:key,x:(point.x+1)*w/2,y:(1-point.y)*h/2,text:display.label,fullText:name,laterality:display.side});
    }
    const measure=(text:string)=>{const context=labelMeasure.getContext('2d');if(!context)return text.length*6.8;context.font='12px Arial';return context.measureText(text).width;};
-   appendAnatomyLabelCallouts(labelLayer,layoutAnatomyLabels(projected,labelArea,measure));
+   const labelFrame=JSON.stringify([w,h,labelArea,projected]);if(labelFrame===drawnLabelFrame)return;drawnLabelFrame=labelFrame;labelLayer.replaceChildren();
+   appendAnatomyLabelCallouts(labelLayer,layoutAnatomyLabels(projected,labelArea,measure),undefined,id=>labelSelect.current?.(id));
   };
   const hideTip=()=>{tip.hidden=true;renderer.domElement.style.cursor='';};
   const territoryAt=(e:PointerEvent)=>{

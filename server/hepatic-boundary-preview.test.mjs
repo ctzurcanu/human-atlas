@@ -1,0 +1,41 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {existsSync,readFileSync} from 'node:fs';
+import {gunzipSync} from 'node:zlib';
+import {build} from 'esbuild';
+const compiled=await build({stdin:{contents:"export * from './app/local-ta98-layer-catalogue';export * from './app/guest-hierarchy';export * from './app/hepatic-relations';export * from './app/digestive-duct-relations';export * from './app/viewer-state';export * from './app/view-part-codes';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',write:false});
+const api=await import('data:text/javascript;base64,'+Buffer.from(compiled.outputFiles[0].contents).toString('base64'));
+const read=p=>JSON.parse(readFileSync(p));
+test('a hepatic preview never replaces male, public, source, prototype or delivery catalogues',()=>{
+ const q=new URLSearchParams('hepatic=repair');
+ assert.equal(api.localTa98LayerCatalogue('local-female-ta98',q,true),'/local-models/ta98-review/hepatic-boundary-preview/female/atlas.json');
+ assert.equal(api.localTa98LayerCatalogue('local-ta98',q,true),'/local-models/ta98-review/bowel-wall-local-atlas/male/atlas.json');
+ for(const model of ['male','female','embryo','local-female-ta98'])assert.equal(api.localTa98LayerCatalogue(model,q,false),undefined);
+ for(const extra of ['bowel=source','delivery=0'])assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('hepatic=repair&'+extra),true),undefined);
+ assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('hepatic=repair&bowel=prototype'),true),'/local-models/ta98-review/bowel-wall-main-prototype/female/atlas.json');
+ assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams(),true),'/local-models/ta98-review/bowel-wall-local-atlas/female/atlas.json');
+});
+test('the actual packed preview keeps the liver identity, TA98 controls, vascular and biliary relations and saved camera',{skip:!existsSync('reports/ta98-female/hepatic-boundary-preview-validation.json')},()=>{
+ const proof=read('reports/ta98-female/hepatic-boundary-preview-validation.json');assert.equal(proof.previewDeliveryGatePass,true);
+ const pack=read('reports/ta98-female/hepatic-boundary-preview-pack.json');
+ const base=pack.baselineCatalogue?JSON.parse(gunzipSync(readFileSync(pack.baselineCatalogue))):read('.local-models/ta98-review/bowel-wall-local-atlas/female/atlas.json'),preview=read('.local-models/ta98-review/hepatic-boundary-preview/female/atlas.json');
+ const id='LOCAL:female:liver:1032';assert.equal(preview.parts.filter(p=>p.id===id&&!p.suppressed).length,1);
+ assert.deepEqual(preview.concepts,base.concepts);assert.deepEqual(preview.defaultHidden,base.defaultHidden);assert.deepEqual(preview.materials,base.materials);
+ assert.deepEqual(preview.parts.filter(p=>p.id!==id),base.parts.filter(p=>p.id!==id));
+ const authority=api.parseGuestHierarchy(read('public/assets/ta98.json'));
+ const flatten=nodes=>nodes.flatMap(n=>[{id:n.id,parts:n.parts.map(p=>p.id),directParts:n.directParts.map(p=>p.id)},...flatten(n.children)]);
+ assert.deepEqual(flatten(api.resolveGuestHierarchy(preview,authority)),flatten(api.resolveGuestHierarchy(base,authority)));
+ const links=graph=>[...graph].map(([id,rows])=>[id,rows.map(r=>({kind:r.kind,target:r.target.id,note:r.note,via:r.via}))]);
+ assert.deepEqual(links(api.hepaticRelations(preview.parts)),links(api.hepaticRelations(base.parts)));
+ assert.deepEqual(links(api.digestiveDuctRelations(preview.parts)),links(api.digestiveDuctRelations(base.parts)));
+ assert.ok(api.hepaticRelations(preview.parts).get(id).some(r=>r.target.id==='LOCAL:female:portal_vein:1795'));
+ const frame=[.4,.5,.9,.5,.5,.5,.5,.45,.3,.5,1,.5],q=new URLSearchParams({select:id,frame:frame.join(','),cut:'coronal',slice:'.62',hepatic:'repair'});
+ const restored=api.readViewUrl(q.toString(),preview,{selected:[],visible:[],view:'three-quarter'});
+ assert.deepEqual(restored.selected,[id]);assert.deepEqual(restored.camera,frame);assert.equal(restored.section.position,.62);
+ assert.equal(api.partFingerprint(preview),api.partFingerprint(base));
+ const shared=api.viewUrl('http://localhost:3016/?hepatic=repair','local-female-ta98',restored,frame,preview);
+ assert.equal(new URL(shared).searchParams.get('hepatic'),'repair');
+ assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URL(shared).searchParams,true),'/local-models/ta98-review/hepatic-boundary-preview/female/atlas.json');
+ for(const [model,atlas] of [['local-female-ta98',base],['local-ta98',preview]])
+  assert.equal(new URL(api.viewUrl(shared,model,restored,frame,atlas)).searchParams.has('hepatic'),false);
+});

@@ -1,3 +1,4 @@
+import {viewerHref} from './viewer-location';
 import {useCallback,useEffect,useRef,useState} from 'react';
 import {assetUrl} from './asset-url';
 import {fetchAsset} from './asset-cache';
@@ -6,7 +7,7 @@ import {parseGuestHierarchy,type GuestHierarchy} from './guest-hierarchy';
 export const BUILT_IN_GUESTS=['ta98','genes','cell-types','physiology','dermatomes-myotomes','drugs','physical-exercise','chakras'] as const;
 const names=['TA98','Genes','Cell Types','Physiology','Dermatomes and Myotomes','Drugs','Physical Exercise','Chakras'];
 const builtIns=BUILT_IN_GUESTS.map(id=>assetUrl(`/assets/${id}.json`));
-const canonical=(input:string)=>{const url=new URL(input,location.href);if(!['http:','https:'].includes(url.protocol))throw new Error('Use an HTTP or HTTPS hierarchy URL.');return url.href;};
+const canonical=(input:string)=>{const url=new URL(input,viewerHref());if(!['http:','https:'].includes(url.protocol))throw new Error('Use an HTTP or HTTPS hierarchy URL.');return url.href;};
 export function useGuestHierarchies(){
  const [loaded,setLoaded]=useState<{url:string;hierarchy:GuestHierarchy}[]>([]),[sources,setSources]=useState<string[]>([]),[error,setError]=useState('');
  const loadedRef=useRef(loaded);loadedRef.current=loaded;
@@ -46,7 +47,7 @@ export function useGuestHierarchies(){
  },[]);
  const ensure=useCallback(async(id:string)=>{const index=(BUILT_IN_GUESTS as readonly string[]).indexOf(id);if(index<0)return;try{return await load(builtIns[index]);}catch(cause){setError(cause instanceof Error?cause.message:'Could not load hierarchy.');throw cause;}},[load]);
  useEffect(()=>{
-  const params=viewParameters(location.href),id=params.get('tree')?.replace(/^guest:/,'');
+  const params=viewParameters(viewerHref()),id=params.get('tree')?.replace(/^guest:/,'');
   const inputs=[builtIns[BUILT_IN_GUESTS.indexOf('chakras')],...(id&&(BUILT_IN_GUESTS as readonly string[]).includes(id)?[builtIns[(BUILT_IN_GUESTS as readonly string[]).indexOf(id)]]:[]),...params.getAll('guest')];
   void Promise.allSettled(inputs.map(input=>load(input).catch(cause=>{setError(cause instanceof Error?cause.message:'Could not load a guest hierarchy.');throw cause;})));
  },[load]);

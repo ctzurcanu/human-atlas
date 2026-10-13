@@ -7,5 +7,9 @@
         api_host: 'https://us.i.posthog.com',
         defaults: '2026-05-30',
         person_profiles: 'identified_only',
+        // The atlas updates its query string for camera and selection state.
+        // Count page loads, rather than each saved viewer-state change.
+        capture_pageview: true,
+        capture_pageleave: true,
     });
 })();

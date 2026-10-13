@@ -5,6 +5,7 @@ Usage: python3 scripts/build-ta98-metadata.py [path/to/ta98.sqlite]
 The default downloads mhalle/ta98-sqlite's extract of the IFAA TA98 pages.
 Unmatched or ambiguous atlas concepts deliberately receive no TA/THA code.
 """
+import argparse
 import collections
 import json
 import pathlib
@@ -23,6 +24,15 @@ CATALOGS = [
  '.local-models/male.json', '.local-models/female.json',
  'public/models/atlas-z-anatomy.json',
 ]
+# The ordinary local models can be installed below a review directory. Read
+# their current catalogue before older source snapshots with the same IDs.
+# Do not recursively collect diagnostic or rejected candidate catalogues.
+for installed in reversed([
+ '.local-models/ta98-review/bowel-wall-local-atlas/male/atlas.json',
+ '.local-models/ta98-review/bowel-wall-local-atlas/female/atlas.json',
+]):
+ if (ROOT / installed).exists():
+  CATALOGS.insert(0, installed)
 for folder in ('public/models', '.local-models'):
  for path in sorted((ROOT / folder).glob('*.json')):
   relative = str(path.relative_to(ROOT))
@@ -92,7 +102,12 @@ def orthographic(name):
  name = re.sub(r'(?<=\w)[-‐‑](?=\w)', '', name)
  return re.sub(r'\s+', ' ', name).strip(" *'.")
 
-db_file = pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else pathlib.Path('/tmp/human-atlas-ta98.sqlite')
+local_authority = ROOT / '.local-models/ta98-authority.sqlite'
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('database', nargs='?', type=pathlib.Path)
+parser.add_argument('--output', type=pathlib.Path, default=ROOT / 'app/data/ta98-metadata.json')
+args = parser.parse_args()
+db_file = args.database or (local_authority if local_authority.exists() else pathlib.Path('/tmp/human-atlas-ta98.sqlite'))
 if not db_file.exists():
  urllib.request.urlretrieve(SOURCE, db_file)
 db = sqlite3.connect(db_file)
@@ -154,7 +169,21 @@ def record(term):
          'fma': f"FMA:{term['fma_id']}" if term['fma_id'] else None,
          'latin': term['name_la']}
 
-def resolve(name, concept_id=None, system=None):
+def declared_identity(concept_id, catalogue_identity, known_terms):
+ """Keep authored identity/scope; a planned code alone is broader placement."""
+ identity = catalogue_identity or {}
+ term = identity.get('ta98Term')
+ if term:
+  kind = identity.get('ta98Kind') or 'parent'
+  if term not in known_terms or kind not in ('exact', 'parent'):
+   raise ValueError(f'Invalid authored TA98 identity for {concept_id}: {term} ({kind})')
+  return term, kind, 'catalogue-tag'
+ encoded = re.fullmatch(r'TA98[A-Z0-9_-]*:.*?(A\d{2}\.\d{1,2}\.\d{2}\.\d{3}(?:[FM])?)', concept_id or '')
+ if encoded and encoded[1] in known_terms:
+  return encoded[1], 'parent', 'declared-id'
+ return None
+
+def resolve(name, concept_id=None, system=None, catalogue_identity=None):
  if system == 'attachments' or (system or '').startswith('cell-'):
   # Source attachment annotations and cell organelles are not TA98 leaves.
   return {'ta98':None, 'tha':None, 'fma':None, 'latin':None}
@@ -163,8 +192,14 @@ def resolve(name, concept_id=None, system=None):
  side = re.search(r'\s*\((left|right)\)$', cleaned(name))
  if side:
   keys.add(f'{side[1]} {base}')
+ declared = declared_identity(concept_id, catalogue_identity, terms)
  for rule in reviewed:
+  if declared and 'conceptIds' not in rule:
+   # A generic label such as "head" cannot supersede an authored bone region.
+   continue
   if system not in rule['systems']:
+   continue
+  if 'conceptIds' in rule and concept_id not in rule['conceptIds']:
    continue
   if keys.intersection(rule.get('names', [])) or ('pattern' in rule and re.fullmatch(rule['pattern'], base)):
    value = matched(rule['term'], rule['kind'], 'reviewed')
@@ -172,6 +207,9 @@ def resolve(name, concept_id=None, system=None):
    if source_fma:
     value['fma'] = f'FMA:{source_fma[1]}'
    return value
+ if declared:
+  term, kind, method = declared
+  return matched(term, kind, method)
  fma_id = re.fullmatch(r'FMA:?([0-9]+)', concept_id or '')
  if fma_id and len(by_fma[fma_id[1]]) == 1:
   return matched(next(iter(by_fma[fma_id[1]])), method='fma')
@@ -213,7 +251,8 @@ for catalog in CATALOGS:
  if not path.exists():
   continue
  atlas = json.loads(path.read_text())
- names = {concept['id']: concept['name'] for concept in atlas.get('concepts', [])}
+ catalogue_concepts = {concept['id']: concept for concept in atlas.get('concepts', [])}
+ names = {cid: concept['name'] for cid, concept in catalogue_concepts.items()}
  for part in atlas['parts']:
   source_groups.update(group for group in part.get('groups', []) if not re.match(r'^\d+:\s', group))
   if part.get('suppressed') or part['conceptId'] in seen:
@@ -222,12 +261,12 @@ for catalog in CATALOGS:
   seen.add(cid)
   name = names.get(cid) or part['name']
   system = 'regions' if any(re.match(r'^9: regions of human body$', group, re.I) for group in part.get('groups', [])) else part['system']
-  match = resolve(name, cid, system)
+  match = resolve(name, cid, system, catalogue_concepts.get(cid))
   source_ontology = re.search(r'Original GLB node \d+; ((?:FMA|UBERON):\d+);', part.get('provenance', {}).get('detail', ''))
   if source_ontology and system != 'attachments':
    source_id = source_ontology[1]
    if source_id.startswith('FMA:'):
-    if len(by_fma[source_id.removeprefix('FMA:')]) == 1 and match.get('_method') != 'reviewed':
+    if len(by_fma[source_id.removeprefix('FMA:')]) == 1 and match.get('_method') not in ('reviewed', 'catalogue-tag', 'declared-id'):
      match = matched(next(iter(by_fma[source_id.removeprefix('FMA:')])), method='source-fma')
     # The HRA node can be side-specific while TA98's FMA cross reference is
     # generic or points to the opposite side. Keep the node's own exact ID.
@@ -299,7 +338,7 @@ for group,ta98 in {
 # them among several chapters. Keep the Latin descriptor but no invented ID.
 group_records['Exocrine system']['latin'] = 'glandulae exocrinae'
 
-output = ROOT / 'app/data/ta98-metadata.json'
+output = args.output
 output.parent.mkdir(parents=True, exist_ok=True)
 parent_codes = {code for path in concept_paths.values() for code in path}
 code_records = {code: {'name': terms[code]['name_en'], **record(terms[code])} for code in sorted(terms)}
@@ -307,6 +346,13 @@ value={'source': SOURCE, 'byConcept':concepts,
                               'byConceptPath':concept_paths, 'byCode':code_records,
                               'byConceptMatch':concept_matches,
                               'byGroup':group_records}
+# Tiny source-scoped runtime overrides: never ship the full review-rule file
+# (including anatomical notes), or let generic name rules overwrite tags.
+value['reviewedCatalogueIdentities']={
+ cid:{'term':rule['term'],'kind':rule['kind']}
+ for rule in reviewed for cid in rule.get('conceptIds',[])
+ if concept_matches.get(cid)=={'term':rule['term'],'kind':rule['kind'],'method':'reviewed'}
+}
 eye_source=ROOT/'.local-models/ta98-female.json'
 if eye_source.exists():
  import importlib.util

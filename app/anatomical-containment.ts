@@ -16,6 +16,12 @@ export function isAorticBranchGrouping(child:string|undefined,parent:string|unde
  if(p==='dorsal metatarsal arteries'&&['dorsal digital arteries','dorsal digital arteries of foot'].includes(c))return true;
  if(['azygos vein','hemi-azygos vein','hemiazygos vein'].includes(p)&&c==='ascending lumbar vein')return true;
  if(['inferior vena cava','ascending lumbar vein'].includes(p)&&['lumbar veins','ascending lumbar vein'].includes(c)&&c!==p)return true;
+ // NBK459241: foregut arterial branches adjoin their supplying trunks.
+ // Keep their authority ancestry, without making them tissue contained in
+ // the trunk. Actual vessel wall layers and named trunk regions are distinct.
+ if(p==='abdominal aorta'&&['coeliac trunk','celiac trunk'].includes(c))return true;
+ if(['coeliac trunk','celiac trunk'].includes(p)&&['gastric artery','common hepatic artery','splenic artery'].includes(c))return true;
+ if(p==='common hepatic artery'&&['proper hepatic artery','gastroduodenal artery'].includes(c))return true;
  // Source chapters place the entire downstream vascular tree under the
  // common carotid. Those distant branches are not contained in its tissue.
  // Preserve named tissue subdivisions, such as the carotid sinus or wall.

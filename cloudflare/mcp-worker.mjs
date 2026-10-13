@@ -2,15 +2,15 @@ import {WebStandardStreamableHTTPServerTransport} from '@modelcontextprotocol/sd
 import {configureAtlasData} from '../mcp/atlas-core.mjs';
 import {createServer} from '../mcp/server-core.mjs';
 import data from './generated/mcp-data.json';
-import uiHtml from '../mcp/view.html';
+import uiHtml from './generated/mcp-view.html';
 
 configureAtlasData((_model,file)=>{const atlas=data.catalogues[file];if(!atlas)throw new Error('Model is not publicly available.');return atlas;},data.terminology);
 export async function handleMcp(request,env){
  const origin=request.headers.get('Origin');
- const allowed=new Set([new URL(request.url).origin,'https://chatgpt.com','https://chat.openai.com',...(env.ALLOWED_VIEWER_ORIGINS??'').split(',')]);
+ const allowed=new Set([new URL(request.url).origin,'https://chatgpt.com','https://chat.openai.com','https://claude.ai',...(env.ALLOWED_VIEWER_ORIGINS??'').split(',').map(value=>value.trim())]);
  if(origin&&!allowed.has(origin))return new Response('Forbidden',{status:403});
  const headers=origin?{'Access-Control-Allow-Origin':origin,'Vary':'Origin'}:{};
- if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Methods':'POST, GET, DELETE, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Accept, MCP-Protocol-Version, MCP-Session-Id'}});
+ if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Methods':'POST, GET, DELETE, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Accept, MCP-Protocol-Version, MCP-Session-Id','Access-Control-Expose-Headers':'MCP-Session-Id, MCP-Protocol-Version'}});
  if(Number(request.headers.get('Content-Length')??0)>65536)return new Response('Request too large',{status:413});
  const server=createServer({uiHtml,publicOnly:true});
  const transport=new WebStandardStreamableHTTPServerTransport({enableJsonResponse:true});
@@ -24,6 +24,7 @@ export async function handleMcp(request,env){
   }
   const result=await transport.handleRequest(request,{parsedBody});
   const response=new Response(result.body,result);
+  response.headers.set('Access-Control-Expose-Headers','MCP-Session-Id, MCP-Protocol-Version');
   for(const [key,value]of Object.entries(headers))response.headers.set(key,value);
   return response;
  }finally{await server.close();}

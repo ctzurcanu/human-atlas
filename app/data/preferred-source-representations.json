@@ -1,0 +1,359 @@
+{
+  "male": [
+    {
+      "id": "LOCAL:male:l_orbicularis_oculi:542",
+      "name": "Orbicularis oculi (left)",
+      "conceptId": "LOCAL:male:l_orbicularis_oculi",
+      "basis": "headMuscleSelections",
+      "term": "A04.1.03.013",
+      "parts": [
+        "ZA:Orbital part of orbicularis oculi.l",
+        "ZA:Palpebral part of orbicularis oculi.l"
+      ]
+    },
+    {
+      "id": "LOCAL:male:r_orbicularis_oculi:575",
+      "name": "Orbicularis oculi (right)",
+      "conceptId": "LOCAL:male:r_orbicularis_oculi",
+      "basis": "headMuscleSelections",
+      "term": "A04.1.03.013",
+      "parts": [
+        "ZA:Orbital part of orbicularis oculi.r",
+        "ZA:Palpebral part of orbicularis oculi.r"
+      ]
+    },
+    {
+      "id": "LOCAL:male:l_external_pterygoideus:548",
+      "name": "External pterygoideus (left)",
+      "conceptId": "LOCAL:male:l_external_pterygoideus",
+      "basis": "headMuscleSelections",
+      "term": "A04.1.04.006",
+      "parts": [
+        "ZA:Superior head of lateral pterygoid muscle.l",
+        "ZA:Inferior head of lateral pterygoid muscle.l"
+      ]
+    },
+    {
+      "id": "LOCAL:male:r_external_pterygoideus:581",
+      "name": "External pterygoideus (right)",
+      "conceptId": "LOCAL:male:r_external_pterygoideus",
+      "basis": "headMuscleSelections",
+      "term": "A04.1.04.006",
+      "parts": [
+        "ZA:Superior head of lateral pterygoid muscle.r",
+        "ZA:Inferior head of lateral pterygoid muscle.r"
+      ]
+    },
+    {
+      "id": "FJ1555",
+      "name": "Left digastric",
+      "conceptId": "FMA46293",
+      "basis": "axialMuscleSelections",
+      "term": "A04.2.03.002",
+      "parts": [
+        "ZA:Anterior belly of digastric muscle.l",
+        "ZA:Posterior belly of digastric muscle.l",
+        "ZA:Intermediate tendon of digastric muscle.l"
+      ]
+    },
+    {
+      "id": "FJ1556",
+      "name": "Right digastric",
+      "conceptId": "FMA46292",
+      "basis": "axialMuscleSelections",
+      "term": "A04.2.03.002",
+      "parts": [
+        "ZA:Anterior belly of digastric muscle.r",
+        "ZA:Posterior belly of digastric muscle.r",
+        "ZA:Intermediate tendon of digastric muscle.r"
+      ]
+    },
+    {
+      "id": "FJ1560",
+      "name": "Left digastric",
+      "conceptId": "FMA46293",
+      "basis": "axialMuscleSelections",
+      "term": "A04.2.03.002",
+      "parts": [
+        "ZA:Anterior belly of digastric muscle.l",
+        "ZA:Posterior belly of digastric muscle.l",
+        "ZA:Intermediate tendon of digastric muscle.l"
+      ]
+    },
+    {
+      "id": "FJ1578",
+      "name": "Left digastric",
+      "conceptId": "FMA46293",
+      "basis": "axialMuscleSelections",
+      "term": "A04.2.03.002",
+      "parts": [
+        "ZA:Anterior belly of digastric muscle.l",
+        "ZA:Posterior belly of digastric muscle.l",
+        "ZA:Intermediate tendon of digastric muscle.l"
+      ]
+    },
+    {
+      "id": "FJ1579",
+      "name": "Right digastric",
+      "conceptId": "FMA46292",
+      "basis": "axialMuscleSelections",
+      "term": "A04.2.03.002",
+      "parts": [
+        "ZA:Anterior belly of digastric muscle.r",
+        "ZA:Posterior belly of digastric muscle.r",
+        "ZA:Intermediate tendon of digastric muscle.r"
+      ]
+    },
+    {
+      "id": "LOCAL:male:r_multifidus:992",
+      "name": "Multifidus (right)",
+      "conceptId": "LOCAL:male:r_multifidus",
+      "basis": "axialMuscleSelections",
+      "term": "A04.3.02.202",
+      "parts": [
+        "ZA:Multifidus colli muscle.r",
+        "ZA:Multifidus lumborum muscle.r",
+        "ZA:Multifidus thoracis muscle.r"
+      ]
+    },
+    {
+      "id": "LOCAL:male:l_multifidus:1041",
+      "name": "Multifidus (left)",
+      "conceptId": "LOCAL:male:l_multifidus",
+      "basis": "axialMuscleSelections",
+      "term": "A04.3.02.202",
+      "parts": [
+        "ZA:Multifidus colli muscle.l",
+        "ZA:Multifidus lumborum muscle.l",
+        "ZA:Multifidus thoracis muscle.l"
+      ]
+    },
+    {
+      "id": "LOCAL:male:l_pronator_teres:4",
+      "name": "Pronator teres (left)",
+      "conceptId": "LOCAL:male:l_pronator_teres",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.025",
+      "parts": [
+        "ZA:Superficial head of pronator teres.l:Internal rotator",
+        "ZA:Superficial head of pronator teres.l:Tendon",
+        "ZA:Deep head of pronator teres.l:Internal rotator",
+        "ZA:Deep head of pronator teres.l:Tendon"
+      ]
+    },
+    {
+      "id": "LOCAL:male:r_pronator_teres:34",
+      "name": "Pronator teres (right)",
+      "conceptId": "LOCAL:male:r_pronator_teres",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.025",
+      "parts": [
+        "ZA:Superficial head of pronator teres.r:Internal rotator",
+        "ZA:Superficial head of pronator teres.r:Tendon",
+        "ZA:Deep head of pronator teres.r:Internal rotator",
+        "ZA:Deep head of pronator teres.r:Tendon"
+      ]
+    },
+    {
+      "id": "LOCAL:male:l_flexor_carpi_ulnaris:80",
+      "name": "Flexor carpi ulnaris (left)",
+      "conceptId": "LOCAL:male:l_flexor_carpi_ulnaris",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.030",
+      "parts": [
+        "ZA:Humeral head of flexor carpi ulnaris.l:Flexion hand/foot",
+        "ZA:Humeral head of flexor carpi ulnaris.l:Tendon",
+        "ZA:Ulnar head of flexor carpi ulnaris.l:Flexion hand/foot",
+        "ZA:Ulnar head of flexor carpi ulnaris.l:Tendon"
+      ]
+    },
+    {
+      "id": "LOCAL:male:r_flexor_carpi_ulnaris:107",
+      "name": "Flexor carpi ulnaris (right)",
+      "conceptId": "LOCAL:male:r_flexor_carpi_ulnaris",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.030",
+      "parts": [
+        "ZA:Humeral head of flexor carpi ulnaris.r:Flexion hand/foot",
+        "ZA:Humeral head of flexor carpi ulnaris.r:Tendon",
+        "ZA:Ulnar head of flexor carpi ulnaris.r:Flexion hand/foot",
+        "ZA:Ulnar head of flexor carpi ulnaris.r:Tendon"
+      ]
+    },
+    {
+      "id": "FJ1475",
+      "name": "Right flexor digitorum superficialis",
+      "conceptId": "FMA38470",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.033",
+      "parts": [
+        "ZA:Humero-ulnar head of flexor digitorum superficialis.r:Flexion fingers",
+        "ZA:Humero-ulnar head of flexor digitorum superficialis.r:Tendon",
+        "ZA:Radial head of flexor digitorum superficialis.r:Flexion fingers",
+        "ZA:Radial head of flexor digitorum superficialis.r:Tendon"
+      ]
+    },
+    {
+      "id": "FJ1475M",
+      "name": "Left flexor digitorum superficialis",
+      "conceptId": "FMA38471",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.033",
+      "parts": [
+        "ZA:Humero-ulnar head of flexor digitorum superficialis.l:Flexion fingers",
+        "ZA:Humero-ulnar head of flexor digitorum superficialis.l:Tendon",
+        "ZA:Radial head of flexor digitorum superficialis.l:Flexion fingers",
+        "ZA:Radial head of flexor digitorum superficialis.l:Tendon"
+      ]
+    },
+    {
+      "id": "FJ1499",
+      "name": "Right flexor digitorum superficialis",
+      "conceptId": "FMA38470",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.033",
+      "parts": [
+        "ZA:Humero-ulnar head of flexor digitorum superficialis.r:Flexion fingers",
+        "ZA:Humero-ulnar head of flexor digitorum superficialis.r:Tendon",
+        "ZA:Radial head of flexor digitorum superficialis.r:Flexion fingers",
+        "ZA:Radial head of flexor digitorum superficialis.r:Tendon"
+      ]
+    },
+    {
+      "id": "FJ1499M",
+      "name": "Left flexor digitorum superficialis",
+      "conceptId": "FMA38471",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.033",
+      "parts": [
+        "ZA:Humero-ulnar head of flexor digitorum superficialis.l:Flexion fingers",
+        "ZA:Humero-ulnar head of flexor digitorum superficialis.l:Tendon",
+        "ZA:Radial head of flexor digitorum superficialis.l:Flexion fingers",
+        "ZA:Radial head of flexor digitorum superficialis.l:Tendon"
+      ]
+    },
+    {
+      "id": "FJ1472",
+      "name": "Right extensor carpi ulnaris",
+      "conceptId": "FMA38507",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.045",
+      "parts": [
+        "ZA:Humeral head of extensor carpi ulnaris.r:Extension hand/foot",
+        "ZA:Humeral head of extensor carpi ulnaris.r:Tendon",
+        "ZA:Ulnar head of extensor carpi ulnaris.r:Tendon",
+        "ZA:Ulnar head of extensor carpi ulnaris.r:Trapezius"
+      ]
+    },
+    {
+      "id": "FJ1472M",
+      "name": "Left extensor carpi ulnaris",
+      "conceptId": "FMA38508",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.045",
+      "parts": [
+        "ZA:Humeral head of extensor carpi ulnaris.l:Extension hand/foot",
+        "ZA:Humeral head of extensor carpi ulnaris.l:Tendon",
+        "ZA:Ulnar head of extensor carpi ulnaris.l:Tendon",
+        "ZA:Ulnar head of extensor carpi ulnaris.l:Trapezius"
+      ]
+    },
+    {
+      "id": "FJ1517",
+      "name": "Right extensor carpi ulnaris",
+      "conceptId": "FMA38507",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.045",
+      "parts": [
+        "ZA:Humeral head of extensor carpi ulnaris.r:Extension hand/foot",
+        "ZA:Humeral head of extensor carpi ulnaris.r:Tendon",
+        "ZA:Ulnar head of extensor carpi ulnaris.r:Tendon",
+        "ZA:Ulnar head of extensor carpi ulnaris.r:Trapezius"
+      ]
+    },
+    {
+      "id": "FJ1517M",
+      "name": "Left extensor carpi ulnaris",
+      "conceptId": "FMA38508",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.045",
+      "parts": [
+        "ZA:Humeral head of extensor carpi ulnaris.l:Extension hand/foot",
+        "ZA:Humeral head of extensor carpi ulnaris.l:Tendon",
+        "ZA:Ulnar head of extensor carpi ulnaris.l:Tendon",
+        "ZA:Ulnar head of extensor carpi ulnaris.l:Trapezius"
+      ]
+    },
+    {
+      "id": "FJ1469",
+      "name": "Left flexor pollicis brevis",
+      "conceptId": "FMA37389",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.055",
+      "parts": [
+        "ZA:Superficial head of flexor pollicis brevis.l:Flexion fingers",
+        "ZA:Superficial head of flexor pollicis brevis.l:Tendon",
+        "ZA:Deep head of flexor pollicis brevis.l:Flexion fingers",
+        "ZA:Deep head of flexor pollicis brevis.l:Tendon"
+      ]
+    },
+    {
+      "id": "FJ1469M",
+      "name": "Right flexor pollicis brevis",
+      "conceptId": "FMA37388",
+      "basis": "limbMuscleSelections",
+      "term": "A04.6.02.055",
+      "parts": [
+        "ZA:Superficial head of flexor pollicis brevis.r:Flexion fingers",
+        "ZA:Superficial head of flexor pollicis brevis.r:Tendon",
+        "ZA:Deep head of flexor pollicis brevis.r:Flexion fingers",
+        "ZA:Deep head of flexor pollicis brevis.r:Tendon"
+      ]
+    },
+    {
+      "id": "LOCAL:male:l_flexor_hallucis_brevis:739",
+      "name": "Flexor hallucis brevis (left)",
+      "conceptId": "LOCAL:male:l_flexor_hallucis_brevis",
+      "basis": "limbMuscleSelections",
+      "term": "A04.7.02.057",
+      "parts": [
+        "ZA:Medial head of flexor hallucis brevis.l",
+        "ZA:Lateral head of flexor hallucis brevis.l"
+      ]
+    },
+    {
+      "id": "LOCAL:male:r_flexor_hallucis_brevis:795",
+      "name": "Flexor hallucis brevis (right)",
+      "conceptId": "LOCAL:male:r_flexor_hallucis_brevis",
+      "basis": "limbMuscleSelections",
+      "term": "A04.7.02.057",
+      "parts": [
+        "ZA:Medial head of flexor hallucis brevis.r",
+        "ZA:Lateral head of flexor hallucis brevis.r"
+      ]
+    },
+    {
+      "id": "LOCAL:male:l_adductor_hallucis:732",
+      "name": "Adductor hallucis (left)",
+      "conceptId": "LOCAL:male:l_adductor_hallucis",
+      "basis": "limbMuscleSelections",
+      "term": "A04.7.02.060",
+      "parts": [
+        "ZA:Oblique head of adductor hallucis.l",
+        "ZA:Transverse head of adductor hallucis.l"
+      ]
+    },
+    {
+      "id": "LOCAL:male:r_adductor_hallucis:786",
+      "name": "Adductor hallucis (right)",
+      "conceptId": "LOCAL:male:r_adductor_hallucis",
+      "basis": "limbMuscleSelections",
+      "term": "A04.7.02.060",
+      "parts": [
+        "ZA:Oblique head of adductor hallucis.r",
+        "ZA:Transverse head of adductor hallucis.r"
+      ]
+    }
+  ],
+  "female": []
+}

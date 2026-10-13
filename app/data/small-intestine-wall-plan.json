@@ -1,0 +1,170 @@
+{
+  "schema": "human-atlas-small-intestine-wall-plan/v1",
+  "source": "User-specified structural hierarchy; canonical TA98 identifiers from the local authority extract.",
+  "innerToOuter": [
+    "mucosa",
+    "submucosa",
+    "muscularis",
+    "subserosa",
+    "serosa"
+  ],
+  "terms": {
+    "mucosa": {
+      "latin": "Tunica mucosa",
+      "name": "mucosa",
+      "kind": "wall union",
+      "ta98": "A05.6.01.009",
+      "children": [
+        "epithelium",
+        "lamina-propria",
+        "muscularis-mucosae",
+        "circular-folds",
+        "villi",
+        "intestinal-glands",
+        "solitary-nodules"
+      ]
+    },
+    "epithelium": {
+      "latin": "Epithelium mucosae",
+      "name": "mucosal epithelium",
+      "kind": "supplementary wall layer",
+      "children": []
+    },
+    "lamina-propria": {
+      "latin": "Lamina propria mucosae",
+      "name": "lamina propria",
+      "kind": "supplementary wall layer",
+      "children": []
+    },
+    "muscularis-mucosae": {
+      "latin": "Lamina muscularis mucosae",
+      "name": "muscularis mucosae",
+      "kind": "wall layer",
+      "ta98": "A05.6.01.010",
+      "children": []
+    },
+    "circular-folds": {
+      "latin": "Plicae circulares",
+      "name": "circular folds",
+      "kind": "mucosal and submucosal relief",
+      "ta98": "A05.6.01.007",
+      "children": []
+    },
+    "villi": {
+      "latin": "Villi intestinales",
+      "name": "intestinal villi",
+      "kind": "microscopic mucosal relief",
+      "ta98": "A05.6.01.011",
+      "children": []
+    },
+    "intestinal-glands": {
+      "latin": "Glandulae intestinales",
+      "name": "intestinal glands",
+      "kind": "microscopic glands",
+      "ta98": "A05.6.01.012",
+      "children": []
+    },
+    "solitary-nodules": {
+      "latin": "Noduli lymphoidei solitarii",
+      "name": "solitary lymphoid nodules",
+      "kind": "localized lymphoid tissue",
+      "ta98": "A05.6.01.013",
+      "children": []
+    },
+    "aggregated-nodules": {
+      "latin": "Noduli lymphoidei aggregati",
+      "name": "aggregated lymphoid nodules",
+      "kind": "localized lymphoid tissue",
+      "ta98": "A05.6.01.014",
+      "children": []
+    },
+    "submucosa": {
+      "latin": "Tela submucosa",
+      "name": "submucosa",
+      "kind": "wall layer",
+      "ta98": "A05.6.01.008",
+      "children": []
+    },
+    "duodenal-glands": {
+      "latin": "Glandulae duodenales",
+      "name": "duodenal glands",
+      "kind": "localized submucosal glands",
+      "ta98": "A05.6.02.017",
+      "children": []
+    },
+    "muscularis": {
+      "latin": "Tunica muscularis",
+      "name": "muscular coat",
+      "kind": "wall union",
+      "ta98": "A05.6.01.004",
+      "children": [
+        "circular-muscle",
+        "longitudinal-muscle"
+      ]
+    },
+    "circular-muscle": {
+      "latin": "Stratum circulare",
+      "name": "inner circular muscle layer",
+      "kind": "wall layer",
+      "ta98": "A05.6.01.006",
+      "children": []
+    },
+    "longitudinal-muscle": {
+      "latin": "Stratum longitudinale",
+      "name": "outer longitudinal muscle layer",
+      "kind": "wall layer",
+      "ta98": "A05.6.01.005",
+      "children": []
+    },
+    "subserosa": {
+      "latin": "Tela subserosa",
+      "name": "subserosa",
+      "kind": "peritoneal wall layer",
+      "ta98": "A05.6.01.003",
+      "children": []
+    },
+    "serosa": {
+      "latin": "Tunica serosa",
+      "name": "serosa",
+      "kind": "peritoneal outer covering",
+      "ta98": "A05.6.01.002",
+      "children": []
+    },
+    "adventitia": {
+      "latin": "Tunica adventitia",
+      "name": "adventitia",
+      "kind": "supplementary non-peritoneal outer covering",
+      "children": []
+    }
+  },
+  "organs": [
+    {
+      "id": "duodenum",
+      "ta98": "A05.6.02.001",
+      "extraChildren": {
+        "submucosa": [
+          "duodenal-glands"
+        ]
+      },
+      "outerAlternatives": [
+        "adventitia"
+      ]
+    },
+    {
+      "id": "jejunum",
+      "ta98": "A05.6.03.001"
+    },
+    {
+      "id": "ileum",
+      "ta98": "A05.6.04.001",
+      "extraChildren": {
+        "mucosa": [
+          "aggregated-nodules"
+        ]
+      },
+      "terminal": "A05.6.04.002"
+    }
+  ],
+  "representation": "One repaired corresponding outer/inner carrier with ordered interface fields and regional peritoneal masks. Aggregates reuse tissue cells; relief, glands and lymphoid tissue do not become additional full-wall coats.",
+  "status": "Separate local male/female first-version wall review catalogues exist; default anatomy catalogues retain their original bowel. Full source repair, organ lumen joins, peritoneal coverage, regional microstructure distribution and anatomical acceptance remain incomplete."
+}

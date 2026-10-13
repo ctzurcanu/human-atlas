@@ -11,20 +11,20 @@ export default function SectionTools({atlas,state,setState,close,referenceBounds
  const sections=sectionStack(state),active=Math.min(state.activeSection??0,sections.length-1),section=sections[active];
  const atlasBounds=useMemo(()=>sectionSetBounds(atlas,state),[atlas,state]),bounds=referenceBounds??atlasBounds;
  const angles=sectionAngles(section);
- const setStack=(next:SectionState[],index:number)=>setState(current=>({...current,sections:next,activeSection:index,section:next[index],camera:undefined}));
+ const setStack=(next:SectionState[],index:number)=>setState(current=>({...current,sections:next,activeSection:index,section:next[index]}));
  const update=(change:Partial<SectionState>)=>setState(current=>{
   const stack=sectionStack(current),index=Math.min(current.activeSection??0,stack.length-1),previous=stack[index],next={...previous,...change};stack[index]=next;
-  return {...current,sections:stack,activeSection:index,section:next,...(change.enabled===true&&!previous.enabled?{camera:undefined}:{})};
+  return {...current,sections:stack,activeSection:index,section:next};
  });
  const chooseAxis=(axis:SectionAxis)=>setState(current=>{
   const stack=sectionStack(current),index=Math.min(current.activeSection??0,stack.length-1),previous=stack[index],anchor=sectionPoint(bounds,previous),presetAngles=axis==='oblique'&&previous.axis!=='oblique'?sectionAngles(previous):{};
   const next={...previous,...presetAngles,axis,enabled:true,flip:previous.enabled?previous.flip:true};next.position=sectionFraction(bounds,next,anchor);stack[index]=next;
-  return {...current,sections:stack,activeSection:index,section:next,camera:undefined};
+  return {...current,sections:stack,activeSection:index,section:next};
  });
  const changeAngle=(key:'azimuth'|'elevation',value:number)=>setState(current=>{
   const stack=sectionStack(current),index=Math.min(current.activeSection??0,stack.length-1),previous=stack[index],anchor=sectionPoint(bounds,previous);
   const next={...previous,...sectionAngles(previous),axis:'oblique' as const,[key]:value,enabled:true};next.position=sectionFraction(bounds,next,anchor);stack[index]=next;
-  return {...current,sections:stack,activeSection:index,section:next,camera:undefined};
+  return {...current,sections:stack,activeSection:index,section:next};
  });
  const add=()=>{if(sections.length===2)return;const next=[...sections,{...section,enabled:true,position:Math.min(.95,section.position+.12)}];setStack(next,1);};
  const remove=()=>{if(sections.length===1)return;const next=sections.filter((_,index)=>index!==active);setStack(next,0);};
@@ -39,8 +39,8 @@ export default function SectionTools({atlas,state,setState,close,referenceBounds
   </div>
   <div className="section-scroll" role="tabpanel" id="section-settings" aria-labelledby={'section-tab-'+active}>
    <fieldset className="section-presets"><legend>Plane</legend>{(['axial','sagittal','coronal'] as const).map(axis=><button type="button" key={axis} aria-pressed={section.axis===axis} onClick={()=>chooseAxis(axis)}><strong>{axis[0].toUpperCase()+axis.slice(1)}</strong><span>{axis==='axial'?'Across':axis==='sagittal'?'Side to side':'Front to back'}</span></button>)}<button type="button" aria-pressed={section.axis==='oblique'} onClick={()=>chooseAxis('oblique')}><strong>Oblique</strong><span>Any angle</span></button></fieldset>
-   {section.axis==='oblique'&&<div className="section-angle-controls"><label>Turn <output>{Math.round(angles.azimuth)}°</output><input type="range" min="-180" max="180" step="1" value={angles.azimuth} onChange={event=>changeAngle('azimuth',Number(event.target.value))}/></label><label>Tilt <output>{Math.round(angles.elevation)}°</output><input type="range" min="-90" max="90" step="1" value={angles.elevation} onChange={event=>changeAngle('elevation',Number(event.target.value))}/></label></div>}
-   <div className="section-position"><label htmlFor="section-position">Position <output>{Math.round(section.position*100)}%</output></label><input id="section-position" type="range" min="0" max="1000" step="1" value={Math.round(section.position*1000)} onChange={event=>update({enabled:true,position:Number(event.target.value)/1000})}/><div><span>{positionLabel[0]}</span><span>{positionLabel[1]}</span></div></div>
+   {section.axis==='oblique'&&<div className="section-angle-controls"><label>Turn <output>{Math.round(angles.azimuth)}°</output><input type="range" min="-180" max="180" step="1" value={angles.azimuth} onInput={event=>changeAngle('azimuth',Number(event.currentTarget.value))}/></label><label>Tilt <output>{Math.round(angles.elevation)}°</output><input type="range" min="-90" max="90" step="1" value={angles.elevation} onInput={event=>changeAngle('elevation',Number(event.currentTarget.value))}/></label></div>}
+   <div className="section-position"><label htmlFor="section-position">Position <output>{Math.round(section.position*100)}%</output></label><input id="section-position" type="range" min="0" max="1000" step="1" value={Math.round(section.position*1000)} onPointerDown={event=>{event.currentTarget.dataset.sectionDragging="true";}} onPointerUp={event=>{delete event.currentTarget.dataset.sectionDragging;}} onPointerCancel={event=>{delete event.currentTarget.dataset.sectionDragging;}} onInput={event=>update({enabled:true,position:Number(event.currentTarget.value)/1000})}/><div><span>{positionLabel[0]}</span><span>{positionLabel[1]}</span></div></div>
    <label className="check-label"><input type="checkbox" checked={section.flip} onChange={event=>update({flip:event.target.checked})}/>Keep opposite side</label>
    <button type="button" className="section-toggle" onClick={()=>update({enabled:!section.enabled})}>{section.enabled?'Close section':'Open section'}</button>
   </div>

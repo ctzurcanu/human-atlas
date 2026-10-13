@@ -54,8 +54,22 @@ export function ta98ModeledParent(choice:HierarchyChoice,concepts:Concept[],part
 
 /** Known native catalogue frames only. HRA donors are independently registered
  * reference organs, so a shared HRA prefix does not establish a common frame. */
+const nativeFrames=new WeakMap<Part,string|undefined>();
 export function nativePartFrame(part:Part):string|undefined{
- return /^LOCAL:(?:male|female):/.exec(part.id)?.[0]??(part.id.startsWith('ZA:')?'ZA:':undefined);
+ if(nativeFrames.has(part))return nativeFrames.get(part);
+ let frame=/^LOCAL:(?:male|female):/.exec(part.id)?.[0]??(part.id.startsWith('ZA:')?'ZA:':undefined);
+ // Native source partitions retain their baked body coordinates. Require
+ // matching source identity and provenance, rather than accepting any donor
+ // with a TA98 term or a similar anatomical name. Regional source IDs append
+ // their local region after a colon; that suffix does not create a new frame.
+ const source=part.sourceId?.split(':')[0];
+ if(!frame&&/^VEINWALL:male:portal:(externa|media|intima)$/.test(part.id)&&part.system==='venous'
+  &&source==='Hepatic portal vein'&&part.tissueWallAssembly==='portal:male:native-trunk'&&part.pairedTissue&&part.sectionSolid&&!part.sourceOffset
+  &&part.provenance?.url==='https://github.com/Z-Anatomy/Models-of-human-anatomy'&&part.license==='CC BY-SA 4.0')frame='ZA:';
+ if(!frame&&source&&part.id.startsWith(`TA98PART:ZA:${source}:`)
+  &&part.provenance?.url==='https://github.com/Z-Anatomy/Models-of-human-anatomy'
+  &&part.license==='CC BY-SA 4.0')frame='ZA:';
+ nativeFrames.set(part,frame);return frame;
 }
 const componentIndex=new WeakMap<Concept[],WeakMap<Map<string,Part>,Map<string,string[]>>>();
 /** Invert the exact direct-parent resolver. Shared terminology alone cannot

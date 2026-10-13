@@ -1,0 +1,50 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {Script} from 'node:vm';
+import {readFileSync} from 'node:fs';
+import {buildMcpUi} from './build-ui.mjs';
+import {connectUiHost,atlasResultUrl,APP_PROTOCOL} from './ui-bridge.mjs';
+
+const result = url => ({structuredContent: {url}});
+test('UI result accepts atlas views only, without leaking local reviews to the public origin', () => {
+ assert.equal(atlasResultUrl(result('https://ctzurcanu.github.io/human-atlas/?embed=1&model=male-detail')), 'https://ctzurcanu.github.io/human-atlas/?embed=1&model=male-detail');
+ assert.equal(atlasResultUrl(result('http://localhost:3016/?embed=1&model=local-female-ta98')), 'http://localhost:3016/?embed=1&model=local-female-ta98');
+ for (const url of ['https://evil.example/?embed=1', 'javascript:alert(1)', 'https://ctzurcanu.github.io/other/?embed=1', 'https://ctzurcanu.github.io/human-atlas/?embed=1&model=local-ta98', 'https://ctzurcanu.github.io/human-atlas/']) assert.equal(atlasResultUrl(result(url)), null);
+ assert.equal(atlasResultUrl({...result('https://ctzurcanu.github.io/human-atlas/?embed=1'),isError:true}),null);
+});
+test('Claude-style host handshake, themed result and teardown use standard MCP Apps messages', () => {
+ const messages=[],shown=[],errors=[],themes=[];let listener,ended=0;
+ const parent={postMessage:value=>messages.push(value)};
+ const win={parent,addEventListener:(_name,fn)=>listener=fn,removeEventListener:(_name,fn)=>{assert.equal(fn,listener);listener=null;}};
+ const stop=connectUiHost(win,{show:url=>shown.push(url),error:text=>errors.push(text),context:value=>themes.push(value),teardown:()=>ended++});
+ assert.equal(messages[0].method,'ui/initialize');
+ assert.equal(messages[0].params.protocolVersion,APP_PROTOCOL);
+ const receive=data=>listener({source:parent,data:{jsonrpc:'2.0',...data}});
+ listener({source:{},data:{jsonrpc:'2.0',method:'ui/notifications/tool-result',params:result('https://ctzurcanu.github.io/human-atlas/?embed=1')}});
+ assert.deepEqual(shown,[]);
+ receive({id:1,result:{hostInfo:{name:'Claude'},hostContext:{theme:'dark'}}});
+ receive({id:1,result:{hostContext:{theme:'light'}}});
+ assert.equal(messages.filter(item=>item.method==='ui/notifications/initialized').length,1);
+ assert.equal(messages[2].params.height,610);
+ receive({method:'ui/notifications/tool-result',params:result('https://ctzurcanu.github.io/human-atlas/?embed=1')});
+ assert.equal(shown.length,1);
+ receive({method:'ui/notifications/host-context-changed',params:{theme:'light'}});
+ assert.deepEqual(themes,[{theme:'dark'},{theme:'light'}]);
+ receive({method:'ui/notifications/tool-result',params:{isError:true,content:[{type:'text',text:'No structure found'}]}});
+ assert.deepEqual(errors,['No structure found']);
+ receive({id:44,method:'ui/resource-teardown',params:{}});
+ assert.equal(ended,1);assert.deepEqual(messages.at(-1),{jsonrpc:'2.0',id:44,result:{}});
+ stop();assert.equal(listener,null);
+});
+test('bundled UI has one intact inline script and renders the atlas without a nested iframe', async () => {
+ const html=await buildMcpUi();
+ const scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
+ assert.equal(scripts.length,1);
+ assert.ok(!/<iframe\b/i.test(html.replace(scripts[0][0],'')));
+ assert.ok(!/<script\b[^>]*\bsrc=/i.test(html));
+ assert.ok(!/ATLAS_(SCRIPT|STYLE)/.test(html));
+ new Script(scripts[0][1]);
+ assert.ok(html.includes('ui/notifications/tool-result'));
+ const source=readFileSync(new URL('./build-ui.mjs',import.meta.url),'utf8');
+ assert.ok(source.includes("logLevel: 'silent'"), 'stdio build must not write progress to the JSON-RPC stream');
+});

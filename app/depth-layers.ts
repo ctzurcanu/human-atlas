@@ -35,7 +35,7 @@ export function isSkinPart(part:Part){
  // retain their pregnancy classification and do not carry this Skin path.
  if(part.groups?.[0]==='Skin'&&['HRA:VH_F_amnion','HRA:VH_F_umbilical_cord'].includes(part.id))return true;
  const name=structureName(part.name).toLowerCase();
- return (part.groups??[]).some(group=>/^9: regions of human body$/i.test(group))||/^body surface\b/.test(name)||/\b(skin|hairs?|eyebrow|eyelash|nail|nipple|areola|areolar tubercle|lip)\b/.test(name);
+ return (part.groups??[]).some(group=>/^9: regions of human body$/i.test(group))||/^body surface\b/.test(name)||/\b(skin|hairs?|eyebrows?|eyelash(?:es)?|nail|nipple|areola|areolar tubercle|lip)\b/.test(name);
 }
 const depthCache=new WeakMap<Part,DepthLayerId>();
 export function depthLayerFor(part:Part):DepthLayerId{

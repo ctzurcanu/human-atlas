@@ -2,6 +2,9 @@ import {SYSTEMS,structureName,type Atlas,type Part,type SystemId} from './anatom
 import {taHierarchyForConcept} from './anatomical-terminology';
 import {anatomicalInnervationNames} from './anatomical-relations';
 import {createDepthOrder} from './depth-sort';
+import {gallbladderWholeSource} from './gallbladder-wall';
+import {biliaryJunctionInterface} from './biliary-junction';
+import {vascularWallIntegration,vascularCoatKeys,vascularCoatTerms} from './vascular-wall';
 
 export type GuestLink={hierarchy:string;id:string;name:string};
 export type GuestNode={id?:string;name:string;synonyms?:string[];description?:string;source?:string;extension?:string;links?:GuestLink[];childIds?:string[];matchFrom?:string;matches?:string[];partIds?:string[];matchBases?:string[];systems?:SystemId[];children?:GuestNode[];unmapped?:boolean};
@@ -44,22 +47,124 @@ export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy,view=
  const availableParts=atlas.parts.filter(part=>!part.suppressed);
  const byName=new Map<string,Part[]>(),byBase=new Map<string,Part[]>(),byId=new Map(availableParts.map(part=>[part.id,part]));
  const concepts=new Map(atlas.concepts.map(concept=>[concept.id,concept]));
+ const finiteTermParts=new Map<string,Part[]>();
+ const replacementTermParts=new Map<string,Part[]>();
+ const vascular=hierarchy.id==='ta98'?vascularWallIntegration(atlas):null;
+ if(vascular)for(let k=0;k<vascular.members.length;k++){const p=vascular.members[k],c=concepts.get(p.conceptId);if(c?.ta98Term===vascularCoatTerms[k]&&c.ta98Kind==='exact'&&c.partOf===vascular.source.conceptId&&c.elements.length===1&&c.elements[0]===p.id)finiteTermParts.set(vascularCoatTerms[k],[p]);}
+ if(hierarchy.id==='ta98'){
+  // A verified finite candidate replaces the old donor selector only in the
+  // catalogue that carries its literal communicating assembly.
+  const id='LOCAL:female:BILIARY:A05.8.01.061',c=concepts.get(id),part=byId.get(id);
+  const distal=byId.get('LOCAL:female:BILIARY:distal-assembly'),upper=byId.get('LOCAL:female:BILIARY:hepatic-tributaries');
+  if(c?.ta98Kind==='exact'&&c.ta98Term==='A05.8.01.061'&&c.elements.length===1&&c.elements[0]===id&&part&&distal&&upper&&biliaryJunctionInterface(part,distal)&&biliaryJunctionInterface(part,upper))replacementTermParts.set(c.ta98Term,[part]);
+ }
+ if(hierarchy.id==='ta98'&&atlas.bowelWallPrototype){
+  const allowed=new Set(atlas.bowelWallPrototype.partIds);
+  for(const c of atlas.concepts){
+   if(!c.ta98Term||c.ta98Kind!=='exact'||!c.elements.length||! /^(?:OESOPHWALL:|SIW:|CAECOWALL:|CW:|LOCAL:(?:female|male):BOWELWALL:)/.test(c.id))continue;
+   const pieces=c.elements.map(id=>byId.get(id));
+   if(pieces.some(p=>!p||!allowed.has(p.id)||!p.pairedTissue||!p.sectionSolid))continue;
+   finiteTermParts.set(c.ta98Term,[...(finiteTermParts.get(c.ta98Term)??[]),...pieces as Part[]]);
+  }
+ }
+ if(hierarchy.id==='ta98'&&atlas.gallbladderWallPreview){
+  const allowed=new Set(atlas.gallbladderWallPreview.partIds),members=[...allowed].map(id=>byId.get(id)).filter((p):p is Part=>!!p);
+  if(gallbladderWholeSource(members,atlas.parts))for(const c of atlas.concepts){
+   const key=c.id.replace(`GALLWALL:${atlas.gallbladderWallPreview.sex}:`,'');
+   const expected=c.id.startsWith(`GALLWALL:${atlas.gallbladderWallPreview.sex}:`)?({subserosa:'A05.8.02.007',muscular:'A05.8.02.008',mucosa:'A05.8.02.009',folds:'A05.8.02.010'} as Record<string,string>)[key]:undefined;
+   if(!expected||c.ta98Kind!=='exact'||c.ta98Term!==expected||!c.elements.length)continue;
+   const pieces=c.elements.map(id=>byId.get(id));if(pieces.some(p=>!p||!allowed.has(p.id)))continue;
+   finiteTermParts.set(expected,[...(finiteTermParts.get(expected)??[]),...pieces as Part[]]);
+  }
+ }
  for(const concept of atlas.concepts){const key=concept.name.toLocaleLowerCase();const members=concept.elements.map(id=>byId.get(id)).filter((part):part is Part=>!!part);byName.set(key,[...(byName.get(key)??[]),...members]);const base=guestAnatomyBase(concept.name);byBase.set(base,[...(byBase.get(base)??[]),...members]);}
  const graph=new Map(hierarchy.nodes.map(node=>[node.id,node])),memo=new Map<string,ResolvedGuestNode>(),directCache=new Map<GuestNode,Part[]>();
  const resolve=(node:GuestNode,path:string):ResolvedGuestNode=>{
   const cached=memo.get(path);if(cached)return cached;
   const children=hierarchy.schema==='human-atlas-hierarchy/v2'?(node.childIds??[]).map(id=>resolve(graph.get(id)!,id)):(node.children??[]).map((child,index)=>resolve(child,`${path}/${index}`));
+  if(hierarchy.id==='ta98'&&path==='A05.8.02.001'&&atlas.gallbladderWallPreview){
+   const members=atlas.gallbladderWallPreview.partIds.map(id=>byId.get(id)).filter((p):p is Part=>!!p);
+   if(gallbladderWholeSource(members,atlas.parts))children.push({id:`GALLWALL:${atlas.gallbladderWallPreview.sex}:wall-assembly`,name:'Wall layers',parts:members,directParts:members,
+    children:['covering','subserosa','muscular','mucosa'].map(key=>{const parts=members.filter(p=>p.tissueWallLayer===key),id=`GALLWALL:${atlas.gallbladderWallPreview!.sex}:${key}`;return {id,name:concepts.get(id)?.name??key,parts,directParts:parts,children:[],description:parts[0]?.coverageLimitation};}),description:members[0].coverageLimitation});
+  }
+  if(hierarchy.id==='ta98'&&path==='A05.4.01.001'&&atlas.bowelWallPrototype){
+   for(const sex of ['male','female']){
+    const prefix=`OESOPHWALL:${sex}:`,allowed=new Set(atlas.bowelWallPrototype.partIds);
+    const makeCoat=(key:string,childKeys:string[]=[]):ResolvedGuestNode|undefined=>{
+     const c=concepts.get(prefix+key);if(!c)return;
+     const parts=c.elements.map(id=>byId.get(id)).filter((p):p is Part=>!!p&&allowed.has(p.id)&&p.tissueWallAssembly===`oesophageal:${sex}`&&!!p.pairedTissue&&!!p.sectionSolid);
+     if(!parts.length||parts.length!==c.elements.length)return;
+     return {id:c.id,name:key==='wall-assembly'?'Wall layers':c.name,parts,directParts:parts,description:c.coverageLimitation,synonyms:c.ta98Term?[`TA98:${c.ta98Term}`]:[],children:childKeys.map(k=>makeCoat(k)).filter((n):n is ResolvedGuestNode=>!!n)};
+    };
+    const wall=makeCoat('wall-assembly');if(!wall)continue;
+    wall.children=[makeCoat('external-connective-coat'),makeCoat('muscularis',['longitudinal-muscle','circular-muscle']),makeCoat('submucosa'),makeCoat('mucosa',['muscularis-mucosae','lamina-propria','epithelium'])].filter((n):n is ResolvedGuestNode=>!!n);
+    children.push(wall);
+   }
+  }
+  // An organ's TA98 subtree can also contain regional donor representations or
+  // an adjoining connector. Keep them inspectable, but expose the stored wall
+  // as its own complete assembly so peeling never removes those other tissues.
+  const wallOrgan=hierarchy.id==='ta98'?({'A05.6.02.001':'duodenum','A05.6.03.001':'jejunum','A05.6.04.001':'ileum'} as Record<string,string>)[path]:undefined;
+  if(wallOrgan&&atlas.bowelWallPrototype){
+   const wallIds=new Set(atlas.bowelWallPrototype.partIds);
+   const wallParts=availableParts.filter(part=>wallIds.has(part.id)&&part.id.includes(`:BOWELWALL:${wallOrgan}:`));
+   if(wallParts.length){
+    const wallChildren=children.filter(child=>child.id.startsWith(`SIW:${wallOrgan}:`)&&child.parts.length);
+    children.push({id:`SIW:${wallOrgan}:wall-assembly`,name:'Wall layers',parts:wallParts,directParts:wallParts,children:wallChildren,description:'Stored finite wall assembly, separately selectable and peelable. Regional organ representations and adjoining connectors remain outside this assembly. Local prototype: thickness, morphology and anatomy remain under review.'+(wallOrgan==='duodenum'?' External covering intervals have no established serosa/adventitia distribution.':'')});
+   }
+  }
+  const caecocolicRegion=hierarchy.id==='ta98'?({'A05.7.02.001':'caecum','A05.7.02.007':'appendix','A05.7.03.002':'ascending','A05.7.03.004':'transverse','A05.7.03.006':'descending','A05.7.03.007':'sigmoid','A05.7.04.001':'rectum'} as Record<string,string>)[path]:undefined;
+  if(caecocolicRegion){
+   for(const sex of ['female','male']){
+    const prefix=`CAECOWALL:${sex}:${caecocolicRegion}:`;
+    const makeWallNode=(key:string,childKeys:string[]=[]):ResolvedGuestNode|undefined=>{
+     const concept=concepts.get(prefix+key);if(!concept)return;
+     if(!childKeys.length&&key==='longitudinal-muscle')childKeys=['longitudinal-muscle:interband','taeniae'];
+     if(!childKeys.length&&key==='taeniae')childKeys=['longitudinal-muscle:free-taenia','longitudinal-muscle:mesocolic-taenia','longitudinal-muscle:omental-taenia'];
+     const parts=concept.elements.map(id=>byId.get(id)).filter((p):p is Part=>!!p);
+     if(!parts.length)return;
+     return {id:concept.id,name:key==='wall-assembly'?'Wall layers':concept.name,parts,directParts:parts,
+      synonyms:concept.ta98Term?[`TA98:${concept.ta98Term}`]:[],description:concept.coverageLimitation,
+      children:childKeys.map(k=>makeWallNode(k)).filter((n):n is ResolvedGuestNode=>!!n)};
+    };
+    const wall=makeWallNode('wall-assembly');if(!wall)continue;
+    wall.children=[makeWallNode('mucosa',['epithelium','lamina-propria','muscularis-mucosae']),makeWallNode('submucosa'),makeWallNode('muscularis',['circular-muscle','longitudinal-muscle']),makeWallNode('subserosa'),makeWallNode('serosa')].filter((n):n is ResolvedGuestNode=>!!n);
+    children.push(wall);
+   }
+  }
+  const intestinalWallGroup=hierarchy.id==='ta98'?({'A05.6.01.001':'small-intestine','A05.7.01.001':'large-intestine'} as Record<string,string>)[path]:undefined;
+  if(intestinalWallGroup&&atlas.bowelWallPrototype){
+   const bank=intestinalWallGroup==='small-intestine'?':BOWELWALL:':':CAECOWALL:';
+   const allowed=new Set(atlas.bowelWallPrototype.partIds);
+   const parts=availableParts.filter(p=>allowed.has(p.id)&&p.id.includes(bank)&&p.pairedTissue&&p.sectionSolid);
+   if(parts.length){
+    const regionIds=intestinalWallGroup==='small-intestine'?['A05.6.02.001','A05.6.03.001','A05.6.04.001']:['A05.7.02.001','A05.7.03.001','A05.7.04.001'];
+    const findWalls=(node:ResolvedGuestNode):ResolvedGuestNode[]=>node.id.endsWith(':wall-assembly')?[node]:node.children.flatMap(findWalls);
+    const organWalls=children.filter(n=>regionIds.includes(n.id)).flatMap(findWalls).map(wall=>({...wall,name:wall.parts[0]?.name.split(' of ').at(-1)??wall.name}));
+    children.push({id:`ALIMENTARY:${intestinalWallGroup}:wall-assembly`,name:'Wall layers',parts,directParts:parts,children:organWalls,
+     description:'Select and peel the stored intestinal tissue layers together. This control covers only the currently modeled wall cells; absent rectal layers, microscopic features and unjoined lumens are not represented by this selection.'});
+   }
+  }
+  if(vascular&&path==='A12.3.12.001')children.push({id:'VEINWALL:male:portal:wall-assembly',name:'Wall layers',parts:vascular.members,directParts:vascular.members,children:vascular.members.map((p,k)=>({id:p.conceptId,name:`Tunica ${vascularCoatKeys[k]}`,parts:[p],directParts:[p],children:[],synonyms:[`TA98:${vascularCoatTerms[k]}`],description:p.coverageLimitation}))});
   const selectors=node.matchFrom?graph.get(node.matchFrom)!:node;
   let directParts=directCache.get(selectors);
   if(!directParts){
-   const matched=[...(selectors.partIds??[]).flatMap(id=>byId.has(id)?[byId.get(id)!]:[]),...(selectors.matchBases??[]).flatMap(term=>byBase.get(guestAnatomyBase(term))??[]),...(selectors.matches??[]).flatMap(term=>{
+   const matched=replacementTermParts.get(selectors.id??'')??[...(finiteTermParts.get(selectors.id??'')??[]),...(selectors.partIds??[]).flatMap(id=>byId.has(id)?[byId.get(id)!]:[]),...(selectors.matchBases??[]).flatMap(term=>byBase.get(guestAnatomyBase(term))??[]),...(selectors.matches??[]).flatMap(term=>{
     const concept=concepts.get(term);return concept?concept.elements.map(id=>byId.get(id)).filter((part):part is Part=>!!part):byId.has(term)?[byId.get(term)!]:byName.get(term.toLocaleLowerCase())??[];
    })];
    const systems=new Set(selectors.systems??[]);
    directParts=[...new Map([...matched,...(systems.size?availableParts.filter(part=>systems.has(part.system)):[])].map(part=>[part.id,part])).values()];directCache.set(selectors,directParts);
   }
   const parts=children.every(child=>child.parts===directParts)?directParts:[...new Map([...directParts,...children.flatMap(child=>child.parts)].map(part=>[part.id,part])).values()];
-  const result={id:path,name:node.name,synonyms:node.synonyms,description:node.description,source:node.source,extension:node.extension,links:node.links,parts,directParts,children};memo.set(path,result);return result;
+  const prototypeRepresented=!!atlas.bowelWallPrototype&&path.startsWith('SIW:')&&parts.some(p=>atlas.bowelWallPrototype!.partIds.includes(p.id));
+  const foldCore=prototypeRepresented&&path.endsWith(':mucosa')&&parts.some(p=>p.id.endsWith(':circular-folds:submucosa'));
+  const finiteColon=hierarchy.id==='ta98'&&path.startsWith('CW:colon:')&&parts.length>0&&parts.every(p=>p.caecocolicWallAssembly&&p.pairedTissue&&atlas.bowelWallPrototype?.partIds.includes(p.id));
+  const namedColonSource=hierarchy.id==='ta98'&&path.startsWith('CW:colon:')&&directParts.length>0&&/Named native source references:/.test(node.description??'');
+  const namedColonUnion=hierarchy.id==='ta98'&&path==='CW:colon:taeniae'&&['ZA:Free taenia','ZA:Mesocolic taenia','ZA:Omental taenia'].every(id=>parts.some(part=>part.id===id));
+  const description=finiteColon?(node.description??'').replace(/Missing separate representation[^\n]*\n/,'').replace(/Named native source references:[^\n]*\n?/,'')+'\nStored finite colonic tissue union with shared inner/outer interfaces. Clinical thickness, band widths and local thickening, terminal convergence and peritoneal coverage remain provisional; anatomy is not accepted.':namedColonUnion?(node.description??'').replace(/Missing separate representation[^\n]*\n/,'')+'\nAll three named native open band references are available. Their union remains unaccepted; finite muscle thickness and complete regional tissue attachment are unverified.':namedColonSource?(node.description??'').replace(/Missing separate representation[^\n]*\n/,'')+'\nNamed native source present in this model; this reference does not establish a closed wall interval or anatomical acceptance.':prototypeRepresented?(node.description??'').replace(/Missing separate representation[^\n]*\n/,'')+'\nLocal finite-wall prototype. Thickness, fold morphology, source geometry and organ junctions remain unverified; not anatomically accepted.'+(foldCore?' This feature subtree also includes the submucosal core of circular folds; the mucosal tissue coat itself comprises only its three mucosal intervals.':''):node.description;
+  const replacement=replacementTermParts.get(selectors.id??'');
+  const currentDescription=replacement?[(node.description??'').split('\n')[0],'This local review selects the communicating finite wall candidate instead of the older supplemental duct.',replacement[0].coverageLimitation,'Source entity type: material entity.'].filter(Boolean).join('\n'):description;
+  const result={id:path,name:node.name,synonyms:node.synonyms,description:currentDescription,source:node.source,extension:node.extension,links:node.links,parts,directParts,children};memo.set(path,result);return result;
  };
  if(hierarchy.schema==='human-atlas-hierarchy/v2'){
   const roots=hierarchy.views?.find(item=>item.id===view)?.roots??hierarchy.roots!;

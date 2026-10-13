@@ -1,5 +1,6 @@
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
 import {MODELS} from '../mcp/atlas-core.mjs';
+import {buildMcpUi} from '../mcp/build-ui.mjs';
 const catalogues={};
 const read=path=>JSON.parse(readFileSync(new URL(path,import.meta.url),'utf8'));
 for(const file of new Set(Object.entries(MODELS).filter(([id])=>!id.startsWith('local-')).map(([,file])=>file))){
@@ -20,3 +21,4 @@ const directory=new URL('../cloudflare/generated/',import.meta.url);
 mkdirSync(directory,{recursive:true});
 writeFileSync(new URL('mcp-data.json',directory),JSON.stringify(data));
 console.log(`Cloudflare MCP catalogue: ${Object.keys(catalogues).length} models, ${(JSON.stringify(data).length/1024/1024).toFixed(2)} MiB`);
+await buildMcpUi();
