@@ -3,7 +3,17 @@ import assert from 'node:assert/strict';
 import {Script} from 'node:vm';
 import {readFileSync} from 'node:fs';
 import {buildMcpUi,buildIframeUi,APP_FILE} from './build-ui.mjs';
-import {connectUiHost,atlasResultUrl,APP_PROTOCOL} from './ui-bridge.mjs';
+import {connectUiHost,atlasResultUrl,APP_PROTOCOL,openUiLink} from './ui-bridge.mjs';
+
+test('external links use the host bridge without opening a sandbox popup',()=>{
+ const messages=[],links=[],url='https://ctzurcanu.github.io/human-atlas/?model=male-detail';
+ openUiLink({parent:{postMessage:(message,target)=>messages.push({message,target})}},url);
+ assert.equal(messages[0].message.method,'ui/open-link');
+ assert.deepEqual(messages[0].message.params,{url});
+ assert.equal(messages[0].message.jsonrpc,'2.0');
+ openUiLink({openai:{openExternal:value=>links.push(value)},parent:{postMessage:()=>assert.fail('Legacy host uses openExternal')}},url);
+ assert.deepEqual(links,[{href:url}]);
+});
 
 const result = url => ({structuredContent: {url}});
 test('UI result accepts atlas views only, without leaking local reviews to the public origin', () => {

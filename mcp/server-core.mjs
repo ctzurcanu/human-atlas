@@ -3,10 +3,10 @@ import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 import {anatomyOptions, anatomyView, DEPTH_LAYERS, EMBED_CONTROLS, MODELS, REGIONS, searchAnatomy, SECTION_AXES, VIEWS} from './atlas-core.mjs';
 
-const UI_URI = 'ui://human-atlas/anatomy-view-v3';
+const UI_URI = 'ui://human-atlas/anatomy-view-v4';
 const UI_MIME = 'text/html;profile=mcp-app';
 
-export function createServer({uiHtml,iframeHtml=uiHtml,publicOnly=false}) {
+export function createServer({uiHtml,publicOnly=false}) {
   const modelSchema = z.enum(Object.keys(MODELS).filter(id=>!publicOnly||!id.startsWith('local-')));
   const structureSchema = z.object({
     id: z.string().describe('Exact atlas concept identifier.'),
@@ -28,7 +28,7 @@ export function createServer({uiHtml,iframeHtml=uiHtml,publicOnly=false}) {
       frame_domains:[],redirect_domains:['https://ctzurcanu.github.io'],
     },
   };
-  const server = new McpServer({name: 'human-atlas', version: '0.3.0'});
+  const server = new McpServer({name: 'human-atlas', version: '0.4.0'});
 
   server.registerTool('get_anatomy_options', {
     title: 'Get Atlas view options',
@@ -120,11 +120,10 @@ export function createServer({uiHtml,iframeHtml=uiHtml,publicOnly=false}) {
   },async()=>({contents:[{uri,mimeType:UI_MIME,text:html,_meta:meta}]}));
   resource('Atlas interactive anatomy view',UI_URI,uiHtml,uiMeta);
   // Installed clients can retain old tool descriptors after the server changes.
-  resource('Atlas direct viewer compatibility','ui://human-atlas/anatomy-view-v2',uiHtml,uiMeta);
-  const frames=['https://ctzurcanu.github.io',...(publicOnly?[]:['http://localhost:3016'])];
-  const iframeMeta={...uiMeta,ui:{...uiMeta.ui,csp:{...uiMeta.ui.csp,frameDomains:frames}},
-    'openai/widgetCSP':{...uiMeta['openai/widgetCSP'],frame_domains:frames}};
-  resource('Atlas original ChatGPT viewer','ui://human-atlas/anatomy-view',iframeHtml,iframeMeta);
+  // Claude can retain the original URI too. Every alias must render directly
+  // inside the host's sandbox; permitting a nested frame is not portable.
+  for (const suffix of ['-v3','-v2',''])
+    resource(`Atlas viewer compatibility${suffix}`,`ui://human-atlas/anatomy-view${suffix}`,uiHtml,uiMeta);
 
   return server;
 }

@@ -4,7 +4,7 @@ import {initializeAssetCache} from '../app/asset-cache';
 import {assetUrl} from '../app/asset-url';
 import {setAppViewerUrl} from '../app/viewer-location';
 import {followSystemTheme} from '../app/theme';
-import {connectUiHost} from './ui-bridge.mjs';
+import {connectUiHost,openUiLink} from './ui-bridge.mjs';
 import '../app/globals.css';
 import './theme.css';
 
@@ -14,6 +14,12 @@ const stopTheme = followSystemTheme(document, window.matchMedia('(prefers-color-
 let generation = 0;
 const ready = initializeAssetCache(assetUrl(''));
 const error = (text: string) => {status.textContent = text; status.hidden = false;};
+document.addEventListener('click', event => {
+ const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[target="_blank"]') : null;
+ if (!link) return;
+ event.preventDefault();
+ openUiLink(window, link.href);
+});
 connectUiHost(window, {
  async show(url: string) {
   const current = ++generation;

@@ -1,7 +1,7 @@
 // Local browser fixture: enforce Claude's no-nested-frame policy on the real app.
 import {createServer} from 'node:http';
 import {readFile} from 'node:fs/promises';
-import {APP_FILE,IFRAME_FILE} from './build-ui.mjs';
+import {APP_FILE} from './build-ui.mjs';
 import {anatomyView} from './atlas-data.mjs';
 
 const host = `<!doctype html><html><head><meta charset="utf-8"><title>Atlas MCP sandbox check</title>
@@ -27,7 +27,7 @@ const instrumentation=`<script>window.atlasViolations=[];window.atlasErrors=[];a
 createServer(async(req,res)=>{
  try {
   const url=new URL(req.url,'http://localhost:3018');
-  if(url.pathname==='/app') {const legacy=url.searchParams.has('legacy');res.setHeader('Content-Security-Policy',legacy?csp.replace("frame-src 'none'","frame-src https://ctzurcanu.github.io"):csp);res.setHeader('Content-Type','text/html');res.end((await readFile(legacy?IFRAME_FILE:APP_FILE,'utf8')).replace('<body>','<body>'+instrumentation));}
+  if(url.pathname==='/app') {res.setHeader('Content-Security-Policy',csp);res.setHeader('Content-Type','text/html');res.end((await readFile(APP_FILE,'utf8')).replace('<body>','<body>'+instrumentation));}
   else if(url.pathname==='/result') {const axis=url.searchParams.get('cut');res.setHeader('Content-Type','application/json');res.end(JSON.stringify({structuredContent:anatomyView({model:url.searchParams.get('model')??'cell',labels:false,...(['axial','sagittal','coronal'].includes(axis)?{section:{axis,position:.5,flip:false},view:'side',skinOpacity:.25}:{}),controls:['model','search','sections','systems','details','open']})}));}
   else if(url.pathname==='/') {res.setHeader('Content-Type','text/html');res.end(host);}
   else {res.statusCode=404;res.end();}

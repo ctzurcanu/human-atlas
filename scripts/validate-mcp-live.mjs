@@ -28,7 +28,8 @@ try{
  assert.ok(ui._meta.ui.csp.resourceDomains.includes(scriptUrl.origin));
  const script=await fetch(scriptUrl);assert.ok(script.ok);assert.ok((await script.text()).includes('ui/initialize'));
  const original=(await client.readResource({uri:'ui://human-atlas/anatomy-view'})).contents[0];
- assert.ok(/<iframe\b/.test(original.text));assert.ok(original._meta.ui.csp.frameDomains.includes('https://ctzurcanu.github.io'));
+ assert.equal(original.text,ui.text);assert.deepEqual(original._meta.ui.csp.frameDomains,[]);
+ const v3=(await client.readResource({uri:'ui://human-atlas/anatomy-view-v3'})).contents[0];assert.equal(v3.text,ui.text);
  const previous=(await client.readResource({uri:'ui://human-atlas/anatomy-view-v2'})).contents[0];assert.equal(previous.text,ui.text);
  console.log(`Public MCP verified: ${endpoint}`);
 }finally{await client.close();}

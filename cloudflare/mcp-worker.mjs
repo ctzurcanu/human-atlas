@@ -3,7 +3,6 @@ import {configureAtlasData} from '../mcp/atlas-core.mjs';
 import {createServer} from '../mcp/server-core.mjs';
 import data from './generated/mcp-data.json';
 import uiHtml from './generated/mcp-app.html';
-import iframeHtml from './generated/mcp-iframe-view.html';
 
 configureAtlasData((_model,file)=>{const atlas=data.catalogues[file];if(!atlas)throw new Error('Model is not publicly available.');return atlas;},data.terminology);
 export async function handleMcp(request,env){
@@ -13,7 +12,7 @@ export async function handleMcp(request,env){
  const headers=origin?{'Access-Control-Allow-Origin':origin,'Vary':'Origin'}:{};
  if(request.method==='OPTIONS')return new Response(null,{status:204,headers:{...headers,'Access-Control-Allow-Methods':'POST, GET, DELETE, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Accept, MCP-Protocol-Version, MCP-Session-Id','Access-Control-Expose-Headers':'MCP-Session-Id, MCP-Protocol-Version'}});
  if(Number(request.headers.get('Content-Length')??0)>65536)return new Response('Request too large',{status:413});
- const server=createServer({uiHtml,iframeHtml,publicOnly:true});
+ const server=createServer({uiHtml,publicOnly:true});
  const transport=new WebStandardStreamableHTTPServerTransport({enableJsonResponse:true});
  await server.connect(transport);
  try{

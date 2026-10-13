@@ -1,4 +1,13 @@
 export const APP_PROTOCOL = '2026-01-26';
+let linkRequestId = 100;
+/** Open external links through the host; sandboxed apps have no popup permission. */
+export function openUiLink(win, url) {
+ if (typeof win.openai?.openExternal === 'function') {
+  win.openai.openExternal({href: url});
+ } else {
+  win.parent.postMessage({jsonrpc: '2.0', id: ++linkRequestId, method: 'ui/open-link', params: {url}}, '*');
+ }
+}
 export function atlasResultUrl(result) {
  if (result?.isError || typeof result?.structuredContent?.url !== 'string') return null;
  try {
@@ -53,7 +62,7 @@ export function connectUiHost(win, {show, error, context = () => {}, teardown = 
  };
  win.addEventListener('message', receive);
  send({id: 1, method: 'ui/initialize', params: {
-  protocolVersion: APP_PROTOCOL, appInfo: {name: 'Atlas', version: '0.2.0'},
+  protocolVersion: APP_PROTOCOL, appInfo: {name: 'Atlas', version: '0.4.0'},
   appCapabilities: {availableDisplayModes: ['inline', 'fullscreen']},
  }});
  return () => {win.removeEventListener('message', receive); win.removeEventListener('openai:set_globals', openAiGlobals);};

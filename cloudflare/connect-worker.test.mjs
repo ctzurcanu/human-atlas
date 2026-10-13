@@ -79,8 +79,9 @@ test('public MCP initializes, discovers tools, searches and returns the GitHub P
  assert.ok(ui.contents[0]._meta.ui.csp.resourceDomains.includes(viewer));
  assert.ok(!/<iframe\b/i.test(ui.contents[0].text.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'')));
  const old=await rpc('resources/read',{uri:'ui://human-atlas/anatomy-view'});
- assert.ok(/<iframe\b/i.test(old.contents[0].text));
- assert.deepEqual(old.contents[0]._meta['openai/widgetCSP'].frame_domains,[viewer]);
+ assert.equal(old.contents[0].text,ui.contents[0].text);
+ assert.deepEqual(old.contents[0]._meta['openai/widgetCSP'].frame_domains,[]);
+ const v3=await rpc('resources/read',{uri:'ui://human-atlas/anatomy-view-v3'});assert.equal(v3.contents[0].text,ui.contents[0].text);
  const v2=await rpc('resources/read',{uri:'ui://human-atlas/anatomy-view-v2'});assert.equal(v2.contents[0].text,ui.contents[0].text);
  const forbidden=await mf.dispatchFetch(`${origin}/mcp`,{method:'POST',headers:{Origin:'https://untrusted.example'}});
  assert.equal(forbidden.status,403);

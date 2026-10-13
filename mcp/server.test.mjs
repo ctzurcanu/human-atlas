@@ -165,8 +165,8 @@ test('MCP discovery, tool call, and UI resource work together', async () => {
   try {
     const tools = (await client.listTools()).tools;
     assert.deepEqual(tools.map(tool => tool.name), ['get_anatomy_options','search_anatomy', 'show_anatomy']);
-    assert.equal(tools.find(tool => tool.name === 'show_anatomy')._meta.ui.resourceUri, 'ui://human-atlas/anatomy-view-v3');
-    assert.equal(tools.find(tool => tool.name === 'show_anatomy')._meta['openai/outputTemplate'], 'ui://human-atlas/anatomy-view-v3');
+    assert.equal(tools.find(tool => tool.name === 'show_anatomy')._meta.ui.resourceUri, 'ui://human-atlas/anatomy-view-v4');
+    assert.equal(tools.find(tool => tool.name === 'show_anatomy')._meta['openai/outputTemplate'], 'ui://human-atlas/anatomy-view-v4');
     const found = await client.callTool({name: 'search_anatomy', arguments: {query: 'stomach'}});
     assert.equal(found.structuredContent.matches[0].id, 'ZA:Stomach');
     const options = await client.callTool({name: 'get_anatomy_options', arguments: {model: 'female'}});
@@ -178,7 +178,7 @@ test('MCP discovery, tool call, and UI resource work together', async () => {
     assert.equal(new URL(customized.structuredContent.url).searchParams.get('ui'), 'systems,open');
     const missing = await client.callTool({name: 'show_anatomy', arguments: {structure: 'not a modeled structure'}});
     assert.equal(missing.isError, true);
-    const ui = (await client.readResource({uri: 'ui://human-atlas/anatomy-view-v3'})).contents[0];
+    const ui = (await client.readResource({uri: 'ui://human-atlas/anatomy-view-v4'})).contents[0];
     assert.equal(ui.mimeType, 'text/html;profile=mcp-app');
     assert.deepEqual(ui._meta.ui.csp.frameDomains, []);
     assert.ok(ui._meta.ui.csp.connectDomains.includes('https://ctzurcanu.github.io'));
@@ -188,8 +188,10 @@ test('MCP discovery, tool call, and UI resource work together', async () => {
     const previous = (await client.readResource({uri: 'ui://human-atlas/anatomy-view-v2'})).contents[0];
     assert.equal(previous.text,ui.text);
     const original = (await client.readResource({uri: 'ui://human-atlas/anatomy-view'})).contents[0];
-    assert.ok(/<iframe\b/i.test(original.text));
-    assert.ok(original._meta.ui.csp.frameDomains.includes('https://ctzurcanu.github.io'));
+    assert.equal(original.text,ui.text);
+    assert.deepEqual(original._meta.ui.csp.frameDomains,[]);
+    const v3 = (await client.readResource({uri: 'ui://human-atlas/anatomy-view-v3'})).contents[0];
+    assert.equal(v3.text,ui.text);
     assert.deepEqual(original._meta['openai/widgetCSP'].frame_domains,original._meta.ui.csp.frameDomains);
   } finally {
     await client.close();

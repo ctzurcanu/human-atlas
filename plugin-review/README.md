@@ -32,7 +32,7 @@ No portal submission, policy attestation, identity verification or public-direct
 
 ## Iframe justification
 
-The current MCP UI uses a small HTML resource and loads the existing Three.js renderer from the MCP Worker, with selection details, orbit/zoom, layers and sections. It fetches public models and textures from `https://ctzurcanu.github.io/human-atlas/`. Both origins are declared in the resource CSP. The current renderer requires no nested iframe; the original iframe resource remains registered for installed ChatGPT clients. Christian Tzurcanu controls the viewer repository, GitHub Pages deployment and Cloudflare MCP endpoint. Local review models remain local.
+The current MCP UI uses a small HTML resource and loads the existing Three.js renderer from the MCP Worker, with selection details, orbit/zoom, layers and sections. It fetches public models and textures from `https://ctzurcanu.github.io/human-atlas/`. Both origins are declared in the resource CSP. All resource aliases use the direct renderer with no nested iframe, including the original URI retained by installed clients. Christian Tzurcanu controls the viewer repository, GitHub Pages deployment and Cloudflare MCP endpoint. Local review models remain local.
 
 ## Rebuild and checks
 
