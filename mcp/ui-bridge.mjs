@@ -17,11 +17,27 @@ export function atlasResultUrl(result) {
 export function connectUiHost(win, {show, error, context = () => {}, teardown = () => {}}) {
  const send = message => win.parent.postMessage({jsonrpc: '2.0', ...message}, '*');
  let initialized = false;
+ let lastUrl;
+ const present = result => {
+  if (result?.isError) { lastUrl = undefined; error(result.content?.find(item => item.type === 'text')?.text ?? 'Unable to show this anatomy view.'); return; }
+  const url = atlasResultUrl(result);
+  if (url && url !== lastUrl) {lastUrl = url; show(url);}
+ };
+ // Existing ChatGPT apps may hydrate through window.openai instead of MCP Apps notifications.
+ const openAiGlobals = event => {
+  const globals = event?.detail?.globals ?? win.openai;
+  if (!globals) return;
+  if (globals.theme) context({theme: globals.theme});
+  const output = globals.toolOutput ?? win.openai?.toolOutput;
+  if (output) present({structuredContent: output});
+ };
+ win.addEventListener('openai:set_globals', openAiGlobals);
+ openAiGlobals();
  const receive = event => {
   if (event.source !== win.parent || event.data?.jsonrpc !== '2.0') return;
   const message = event.data;
   if (message.id === 1 && !message.method && !initialized) {
-   if (message.error) { error('The host could not initialize the anatomy view.'); return; }
+   if (message.error) { if (!win.openai) error('The host could not initialize the anatomy view.'); return; }
    if (!message.result) return;
    initialized = true;
    context(message.result.hostContext ?? {});
@@ -29,12 +45,8 @@ export function connectUiHost(win, {show, error, context = () => {}, teardown = 
    send({method: 'ui/notifications/size-changed', params: {height: 610}});
   }
   if (message.method === 'ui/notifications/host-context-changed') context(message.params ?? {});
-  if (message.method === 'ui/notifications/tool-result') {
-   if (message.params?.isError) { error(message.params.content?.find(item => item.type === 'text')?.text ?? 'Unable to show this anatomy view.'); return; }
-   const url = atlasResultUrl(message.params);
-   if (url) show(url);
-  }
-  if (message.method === 'ui/notifications/tool-cancelled') error('The anatomy view was cancelled.');
+  if (message.method === 'ui/notifications/tool-result') present(message.params);
+  if (message.method === 'ui/notifications/tool-cancelled') {lastUrl = undefined; error('The anatomy view was cancelled.');}
   if (message.method === 'ui/resource-teardown' && message.id !== undefined) {
    teardown(); send({id: message.id, result: {}});
   }
@@ -44,5 +56,5 @@ export function connectUiHost(win, {show, error, context = () => {}, teardown = 
   protocolVersion: APP_PROTOCOL, appInfo: {name: 'Atlas', version: '0.2.0'},
   appCapabilities: {availableDisplayModes: ['inline', 'fullscreen']},
  }});
- return () => win.removeEventListener('message', receive);
+ return () => {win.removeEventListener('message', receive); win.removeEventListener('openai:set_globals', openAiGlobals);};
 }

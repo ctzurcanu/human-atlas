@@ -22,6 +22,13 @@ try{
  assert.equal(stomach.structuredContent.structures[0].id,'ZA:Stomach');
  const bad=await client.callTool({name:'show_anatomy',arguments:{structure:'nonexistent-example-anatomy'}});assert.equal(bad.isError,true);
  const {resources}=await client.listResources();
- const ui=await client.readResource({uri:resources[0].uri});assert.ok(ui.contents[0].text.includes('ui/initialize'));
+ const ui=(await client.readResource({uri:resources[0].uri})).contents[0];
+ assert.equal(ui.mimeType,'text/html;profile=mcp-app');assert.ok(ui.text.length<4096);
+ const scriptUrl=new URL(ui.text.match(/<script src="([^"]+)"/)[1]);
+ assert.ok(ui._meta.ui.csp.resourceDomains.includes(scriptUrl.origin));
+ const script=await fetch(scriptUrl);assert.ok(script.ok);assert.ok((await script.text()).includes('ui/initialize'));
+ const original=(await client.readResource({uri:'ui://human-atlas/anatomy-view'})).contents[0];
+ assert.ok(/<iframe\b/.test(original.text));assert.ok(original._meta.ui.csp.frameDomains.includes('https://ctzurcanu.github.io'));
+ const previous=(await client.readResource({uri:'ui://human-atlas/anatomy-view-v2'})).contents[0];assert.equal(previous.text,ui.text);
  console.log(`Public MCP verified: ${endpoint}`);
 }finally{await client.close();}

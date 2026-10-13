@@ -3,10 +3,10 @@ import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 import {anatomyOptions, anatomyView, DEPTH_LAYERS, EMBED_CONTROLS, MODELS, REGIONS, searchAnatomy, SECTION_AXES, VIEWS} from './atlas-core.mjs';
 
-const UI_URI = 'ui://human-atlas/anatomy-view-v2';
+const UI_URI = 'ui://human-atlas/anatomy-view-v3';
 const UI_MIME = 'text/html;profile=mcp-app';
 
-export function createServer({uiHtml,publicOnly=false}) {
+export function createServer({uiHtml,iframeHtml=uiHtml,publicOnly=false}) {
   const modelSchema = z.enum(Object.keys(MODELS).filter(id=>!publicOnly||!id.startsWith('local-')));
   const structureSchema = z.object({
     id: z.string().describe('Exact atlas concept identifier.'),
@@ -16,10 +16,19 @@ export function createServer({uiHtml,publicOnly=false}) {
   });
   const uiMeta={ui:{csp:{
     connectDomains:['https://ctzurcanu.github.io','https://human-atlas-connect.ctzurcanu.workers.dev','wss://human-atlas-connect.ctzurcanu.workers.dev'],
-    resourceDomains:['https://ctzurcanu.github.io'],
+    resourceDomains:['https://ctzurcanu.github.io','https://human-atlas-connect.ctzurcanu.workers.dev'],
     frameDomains:[],
-  },prefersBorder:false}};
-  const server = new McpServer({name: 'human-atlas', version: '0.2.0'});
+  },prefersBorder:false},
+    'openai/widgetDescription':'Interactive Human Atlas with anatomy selection, orbit, zoom, layers and sections.',
+    'openai/widgetPrefersBorder':false,
+    'openai/ui':{availableDisplayModes:['inline','fullscreen']},
+    'openai/widgetCSP':{
+      connect_domains:['https://ctzurcanu.github.io','https://human-atlas-connect.ctzurcanu.workers.dev','wss://human-atlas-connect.ctzurcanu.workers.dev'],
+      resource_domains:['https://ctzurcanu.github.io','https://human-atlas-connect.ctzurcanu.workers.dev'],
+      frame_domains:[],redirect_domains:['https://ctzurcanu.github.io'],
+    },
+  };
+  const server = new McpServer({name: 'human-atlas', version: '0.3.0'});
 
   server.registerTool('get_anatomy_options', {
     title: 'Get Atlas view options',
@@ -83,7 +92,7 @@ export function createServer({uiHtml,publicOnly=false}) {
       focus: z.boolean().optional().describe('Fit the selected anatomy in view.'),
       controls: z.array(z.enum(EMBED_CONTROLS)).optional().describe('Controls visible in the iframe: model, search, sections, study, systems, camera, explode, details, open, download. Omit for defaults; [] shows only the 3D view.'),
     },
-    _meta: {ui: {resourceUri: UI_URI}},
+    _meta: {ui: {resourceUri: UI_URI},'openai/outputTemplate':UI_URI},
     outputSchema: {
       model: modelSchema,
       structures: z.array(structureSchema),
@@ -106,16 +115,16 @@ export function createServer({uiHtml,publicOnly=false}) {
     }
   });
 
-  server.registerResource('Atlas interactive anatomy view', UI_URI, {
-    description: 'Interactive Atlas view for show_anatomy results.',
-    mimeType: UI_MIME,
-    _meta: uiMeta,
-  }, async () => ({contents: [{
-    uri: UI_URI,
-    mimeType: UI_MIME,
-    text: uiHtml,
-    _meta: uiMeta,
-  }]}));
+  const resource=(name,uri,html,meta)=>server.registerResource(name,uri,{
+    description:'Interactive Atlas view for show_anatomy results.',mimeType:UI_MIME,_meta:meta,
+  },async()=>({contents:[{uri,mimeType:UI_MIME,text:html,_meta:meta}]}));
+  resource('Atlas interactive anatomy view',UI_URI,uiHtml,uiMeta);
+  // Installed clients can retain old tool descriptors after the server changes.
+  resource('Atlas direct viewer compatibility','ui://human-atlas/anatomy-view-v2',uiHtml,uiMeta);
+  const frames=['https://ctzurcanu.github.io',...(publicOnly?[]:['http://localhost:3016'])];
+  const iframeMeta={...uiMeta,ui:{...uiMeta.ui,csp:{...uiMeta.ui.csp,frameDomains:frames}},
+    'openai/widgetCSP':{...uiMeta['openai/widgetCSP'],frame_domains:frames}};
+  resource('Atlas original ChatGPT viewer','ui://human-atlas/anatomy-view',iframeHtml,iframeMeta);
 
   return server;
 }

@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {Script} from 'node:vm';
 import {readFileSync} from 'node:fs';
-import {buildMcpUi} from './build-ui.mjs';
+import {buildMcpUi,buildIframeUi,APP_FILE} from './build-ui.mjs';
 import {connectUiHost,atlasResultUrl,APP_PROTOCOL} from './ui-bridge.mjs';
 
 const result = url => ({structuredContent: {url}});
@@ -13,9 +13,9 @@ test('UI result accepts atlas views only, without leaking local reviews to the p
  assert.equal(atlasResultUrl({...result('https://ctzurcanu.github.io/human-atlas/?embed=1'),isError:true}),null);
 });
 test('Claude-style host handshake, themed result and teardown use standard MCP Apps messages', () => {
- const messages=[],shown=[],errors=[],themes=[];let listener,ended=0;
+ const messages=[],shown=[],errors=[],themes=[],listeners=new Map();let listener,ended=0;
  const parent={postMessage:value=>messages.push(value)};
- const win={parent,addEventListener:(_name,fn)=>listener=fn,removeEventListener:(_name,fn)=>{assert.equal(fn,listener);listener=null;}};
+ const win={parent,addEventListener:(name,fn)=>{listeners.set(name,fn);if(name==='message')listener=fn;},removeEventListener:(name,fn)=>{assert.equal(fn,listeners.get(name));listeners.delete(name);if(name==='message')listener=null;}};
  const stop=connectUiHost(win,{show:url=>shown.push(url),error:text=>errors.push(text),context:value=>themes.push(value),teardown:()=>ended++});
  assert.equal(messages[0].method,'ui/initialize');
  assert.equal(messages[0].params.protocolVersion,APP_PROTOCOL);
@@ -47,4 +47,25 @@ test('bundled UI has one intact inline script and renders the atlas without a ne
  assert.ok(html.includes('ui/notifications/tool-result'));
  const source=readFileSync(new URL('./build-ui.mjs',import.meta.url),'utf8');
  assert.ok(source.includes("logLevel: 'silent'"), 'stdio build must not write progress to the JSON-RPC stream');
+ const app=readFileSync(APP_FILE,'utf8');assert.ok(app.length<4096);assert.ok(!/<iframe\b/i.test(app));
+});
+test('ChatGPT globals hydrate an initial sagittal view and later tool results without duplicate navigation',()=>{
+ const listeners=new Map(),shown=[],errors=[],themes=[],parent={postMessage:()=>{}};
+ const url='https://ctzurcanu.github.io/human-atlas/?model=male-detail&view=side&cut=sagittal&slice=0.5&embed=1';
+ const win={parent,openai:{theme:'light',toolOutput:{url}},addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:(name,fn)=>{assert.equal(fn,listeners.get(name));listeners.delete(name);}};
+ const stop=connectUiHost(win,{show:url=>shown.push(url),error:text=>errors.push(text),context:value=>themes.push(value)});
+ assert.deepEqual(shown,[url]);
+ listeners.get('message')({source:parent,data:{jsonrpc:'2.0',id:1,error:{code:-32601,message:'Unsupported UI initialization'}}});
+ assert.deepEqual(errors,[],'Legacy ChatGPT hydration must survive an unavailable standard bridge');
+ listeners.get('message')({source:parent,data:{jsonrpc:'2.0',method:'ui/notifications/tool-result',params:result(url)}});
+ assert.equal(shown.length,1);
+ const next=url.replace('sagittal','coronal');
+ listeners.get('openai:set_globals')({detail:{globals:{toolOutput:{url:next},theme:'dark'}}});
+ assert.deepEqual(shown,[url,next]);assert.deepEqual(themes,[{theme:'light'},{theme:'dark'}]);
+ stop();assert.equal(listeners.size,0);
+});
+test('original ChatGPT iframe resource is compact and supports both host bridges',async()=>{
+ const html=await buildIframeUi();assert.ok(html.length<8192);assert.ok(/<iframe\b/.test(html));
+ assert.ok(html.includes('openai:set_globals'));assert.ok(html.includes('ui/notifications/tool-result'));
+ new Script(html.match(/<script>([\s\S]*?)<\/script>/)[1]);
 });

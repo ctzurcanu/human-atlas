@@ -3,8 +3,24 @@ import {fileURLToPath,pathToFileURL} from 'node:url';
 import {build} from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/postcss';
+import {build as buildScript} from 'esbuild';
+import {createHash} from 'node:crypto';
 export const UI_FILE = new URL('../cloudflare/generated/mcp-view.html', import.meta.url);
+export const IFRAME_FILE = new URL('../cloudflare/generated/mcp-iframe-view.html', import.meta.url);
+export const APP_FILE = new URL('../cloudflare/generated/mcp-app.html', import.meta.url);
+export const ASSETS_FILE = new URL('../cloudflare/generated/mcp-app-assets.mjs', import.meta.url);
 let building;
+let buildingIframe;
+export function buildIframeUi() {
+ return buildingIframe ??= (async () => {
+  const bundle = await buildScript({entryPoints: [fileURLToPath(new URL('./iframe-main.mjs', import.meta.url))],bundle: true,platform: 'browser',format: 'iife',minify: true,write: false});
+  const script = bundle.outputFiles[0].text.replace(/<\/script/gi, '<\\/script');
+  const html = (await readFile(new URL('./iframe-view.html', import.meta.url),'utf8')).replace('<!-- ATLAS_SCRIPT -->', () => `<script>${script}</script>`);
+  await mkdir(new URL('./', IFRAME_FILE), {recursive: true});
+  await writeFile(IFRAME_FILE, html);
+  return html;
+ })();
+}
 export function buildMcpUi() {
  return building ??= (async () => {
   const path = value => fileURLToPath(new URL(value, import.meta.url));
@@ -28,6 +44,15 @@ export function buildMcpUi() {
    .replace('<!-- ATLAS_SCRIPT -->', () => `<script>${script.replace(/<\/script/gi, '<\\/script')}</script>`);
   await mkdir(new URL('./', UI_FILE), {recursive: true});
   await writeFile(UI_FILE, html);
+  // Keep the MCP resource small; serve the unchanged renderer as normal web assets.
+  const origin='https://human-atlas-connect.ctzurcanu.workers.dev';
+  const hash=value=>createHash('sha256').update(value).digest('hex').slice(0,16);
+  const scriptPath=`/mcp-app/viewer-${hash(script)}.js`,stylePath=`/mcp-app/viewer-${hash(styles)}.css`;
+  const app=(await readFile(new URL('./view.html',import.meta.url),'utf8'))
+   .replace('<!-- ATLAS_STYLE -->',()=>`<link rel="stylesheet" href="${origin}${stylePath}">`)
+   .replace('<!-- ATLAS_SCRIPT -->',()=>`<script src="${origin}${scriptPath}" defer></script>`);
+  await writeFile(APP_FILE,app);
+  await writeFile(ASSETS_FILE,`export default ${JSON.stringify({[scriptPath]:{type:'application/javascript; charset=utf-8',body:script},[stylePath]:{type:'text/css; charset=utf-8',body:styles}})};\n`);
   return html;
  })();
 }

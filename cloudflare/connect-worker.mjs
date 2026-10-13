@@ -1,5 +1,6 @@
 import {DurableObject} from 'cloudflare:workers';
 import {handleMcp} from './mcp-worker.mjs';
+import appAssets from './generated/mcp-app-assets.mjs';
 import {CONNECT_PATH,MAX_MESSAGE_BYTES,validSnapshot,validPose} from '../shared/connect-protocol.mjs';
 
 const validCode=value=>typeof value==='string'&&/^[\w-]{32}$/.test(value);
@@ -18,6 +19,11 @@ const json=(data,headers={})=>Response.json(data,{headers:{'Cache-Control':'no-s
 export default {
  async fetch(request,env){
   const url=new URL(request.url);
+  const asset=Object.hasOwn(appAssets,url.pathname)?appAssets[url.pathname]:undefined;
+  if(asset){
+   if(!['GET','HEAD'].includes(request.method))return new Response('Use GET',{status:405});
+   return new Response(request.method==='HEAD'?null:asset.body,{headers:{'Content-Type':asset.type,'Cache-Control':'public, max-age=3600, immutable','Access-Control-Allow-Origin':'*','X-Content-Type-Options':'nosniff'}});
+  }
   if(url.pathname==='/.well-known/openai-apps-challenge'){
    if(!env.OPENAI_APPS_CHALLENGE)return new Response('Not configured',{status:404});
    if(!['GET','HEAD'].includes(request.method))return new Response('Use GET',{status:405});
