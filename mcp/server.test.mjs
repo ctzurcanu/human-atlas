@@ -165,8 +165,8 @@ test('MCP discovery, tool call, and UI resource work together', async () => {
   try {
     const tools = (await client.listTools()).tools;
     assert.deepEqual(tools.map(tool => tool.name), ['get_anatomy_options','search_anatomy', 'show_anatomy']);
-    assert.equal(tools.find(tool => tool.name === 'show_anatomy')._meta.ui.resourceUri, 'ui://human-atlas/anatomy-view-v5');
-    assert.equal(tools.find(tool => tool.name === 'show_anatomy')._meta['openai/outputTemplate'], 'ui://human-atlas/anatomy-view-v5');
+    assert.equal(tools.find(tool => tool.name === 'show_anatomy')._meta.ui.resourceUri, 'ui://human-atlas/anatomy-view-v6');
+    assert.equal(tools.find(tool => tool.name === 'show_anatomy')._meta['openai/outputTemplate'], 'ui://human-atlas/anatomy-view-v6');
     const found = await client.callTool({name: 'search_anatomy', arguments: {query: 'stomach'}});
     assert.equal(found.structuredContent.matches[0].id, 'ZA:Stomach');
     const options = await client.callTool({name: 'get_anatomy_options', arguments: {model: 'female'}});
@@ -178,7 +178,7 @@ test('MCP discovery, tool call, and UI resource work together', async () => {
     assert.equal(new URL(customized.structuredContent.url).searchParams.get('ui'), 'systems,open');
     const missing = await client.callTool({name: 'show_anatomy', arguments: {structure: 'not a modeled structure'}});
     assert.equal(missing.isError, true);
-    const ui = (await client.readResource({uri: 'ui://human-atlas/anatomy-view-v5'})).contents[0];
+    const ui = (await client.readResource({uri: 'ui://human-atlas/anatomy-view-v6'})).contents[0];
     assert.equal(ui.mimeType, 'text/html;profile=mcp-app');
     assert.deepEqual(ui._meta.ui.csp.frameDomains, []);
     assert.ok(ui._meta.ui.csp.connectDomains.includes('https://ctzurcanu.github.io'));
