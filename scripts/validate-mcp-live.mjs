@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {Client} from '@modelcontextprotocol/sdk/client/index.js';
 import {StreamableHTTPClientTransport} from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import {unpackRenderer} from '../mcp/packed-ui.mjs';
 const endpoint=new URL(process.argv[2]??'https://human-atlas-connect.ctzurcanu.workers.dev/mcp');
 const client=new Client({name:'human-atlas-live-check',version:'1.0.0'});
 await client.connect(new StreamableHTTPClientTransport(endpoint));
@@ -23,10 +24,10 @@ try{
  const bad=await client.callTool({name:'show_anatomy',arguments:{structure:'nonexistent-example-anatomy'}});assert.equal(bad.isError,true);
  const {resources}=await client.listResources();
  const ui=(await client.readResource({uri:resources[0].uri})).contents[0];
- assert.equal(ui.mimeType,'text/html;profile=mcp-app');assert.ok(ui.text.length<4096);
- const scriptUrl=new URL(ui.text.match(/<script src="([^"]+)"/)[1]);
- assert.ok(ui._meta.ui.csp.resourceDomains.includes(scriptUrl.origin));
- const script=await fetch(scriptUrl);assert.ok(script.ok);assert.ok((await script.text()).includes('ui/initialize'));
+ assert.equal(ui.mimeType,'text/html;profile=mcp-app');assert.ok(ui.text.length<3*1024*1024);
+ assert.ok(!/<script\b[^>]*\bsrc=/i.test(ui.text));assert.ok(!/<link\b/i.test(ui.text));
+ const payload=await unpackRenderer(ui.text.match(/<script id="atlas-renderer" type="application\/gzip">([^<]+)<\/script>/)[1]);
+ assert.ok(payload.script.includes('ui/initialize'));assert.ok(payload.styles.length>0);
  const original=(await client.readResource({uri:'ui://human-atlas/anatomy-view'})).contents[0];
  assert.equal(original.text,ui.text);assert.deepEqual(original._meta.ui.csp.frameDomains,[]);
  const v3=(await client.readResource({uri:'ui://human-atlas/anatomy-view-v3'})).contents[0];assert.equal(v3.text,ui.text);

@@ -2,7 +2,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {Script} from 'node:vm';
 import {readFileSync} from 'node:fs';
-import {buildMcpUi,buildIframeUi,APP_FILE} from './build-ui.mjs';
+import {buildMcpUi,buildIframeUi} from './build-ui.mjs';
+import {unpackRenderer} from './packed-ui.mjs';
 import {connectUiHost,atlasResultUrl,APP_PROTOCOL,openUiLink} from './ui-bridge.mjs';
 
 test('external links use the host bridge without opening a sandbox popup',()=>{
@@ -46,18 +47,30 @@ test('Claude-style host handshake, themed result and teardown use standard MCP A
  assert.equal(ended,1);assert.deepEqual(messages.at(-1),{jsonrpc:'2.0',id:44,result:{}});
  stop();assert.equal(listener,null);
 });
-test('bundled UI has one intact inline script and renders the atlas without a nested iframe', async () => {
- const html=await buildMcpUi();
- const scripts=[...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)];
- assert.equal(scripts.length,1);
- assert.ok(!/<iframe\b/i.test(html.replace(scripts[0][0],'')));
- assert.ok(!/<script\b[^>]*\bsrc=/i.test(html));
- assert.ok(!/ATLAS_(SCRIPT|STYLE)/.test(html));
- new Script(scripts[0][1]);
- assert.ok(html.includes('ui/notifications/tool-result'));
- const source=readFileSync(new URL('./build-ui.mjs',import.meta.url),'utf8');
- assert.ok(source.includes("logLevel: 'silent'"), 'stdio build must not write progress to the JSON-RPC stream');
- const app=readFileSync(APP_FILE,'utf8');assert.ok(app.length<4096);assert.ok(!/<iframe\b/i.test(app));
+test('packed UI delivers the exact renderer and styles with no external code or nested frames', async () => {
+ const app=await buildMcpUi();
+ const packed=app.match(/<script id="atlas-renderer" type="application\/gzip">([^<]+)<\/script>/)[1];
+ const payload=await unpackRenderer(packed);
+ assert.ok(payload.script.includes('ui/notifications/tool-result'));
+ assert.ok(payload.styles.length>10000);
+ assert.ok(app.length<(payload.script.length+payload.styles.length)/2,'Packed resource must substantially reduce delivery size');
+ assert.ok(app.length<3*1024*1024,'MCP resource budget');
+ assert.ok(!/<iframe\b/i.test(app));
+ assert.ok(!/<script\b[^>]*\bsrc=/i.test(app));
+ assert.ok(!/<link\b/i.test(app));
+ assert.ok(!/ATLAS_(SCRIPT|STYLE)/.test(app));
+ new Script(payload.script);
+ const bootstrap=app.match(/<script>([\s\S]*?)<\/script>/)[1];
+ new Script(bootstrap);
+ // Execute the actual bootstrap with browser-native streams and a DOM stub.
+ // No network or eval is available: both executable code and CSS must be restored inline.
+ const appended=[],status={hidden:false};
+ const document={getElementById:id=>id==='atlas-renderer'?{textContent:packed}:status,
+  createElement:tag=>({tag}),head:{append:node=>appended.push(node)},body:{append:node=>appended.push(node)}};
+ await new Script(bootstrap).runInNewContext({document,atob,Blob,Response,DecompressionStream,Uint8Array,console});
+ assert.deepEqual(appended.map(node=>node.tag),['style','script']);
+ assert.equal(appended[0].textContent,payload.styles);assert.equal(appended[1].textContent,payload.script);
+ assert.ok(readFileSync(new URL('./build-ui.mjs',import.meta.url),'utf8').includes("logLevel: 'silent'"));
 });
 test('ChatGPT globals hydrate an initial sagittal view and later tool results without duplicate navigation',()=>{
  const listeners=new Map(),shown=[],errors=[],themes=[],parent={postMessage:()=>{}};

@@ -3,7 +3,7 @@ import {McpServer} from '@modelcontextprotocol/sdk/server/mcp.js';
 import {z} from 'zod';
 import {anatomyOptions, anatomyView, DEPTH_LAYERS, EMBED_CONTROLS, MODELS, REGIONS, searchAnatomy, SECTION_AXES, VIEWS} from './atlas-core.mjs';
 
-const UI_URI = 'ui://human-atlas/anatomy-view-v4';
+const UI_URI = 'ui://human-atlas/anatomy-view-v5';
 const UI_MIME = 'text/html;profile=mcp-app';
 
 export function createServer({uiHtml,publicOnly=false}) {
@@ -28,7 +28,7 @@ export function createServer({uiHtml,publicOnly=false}) {
       frame_domains:[],redirect_domains:['https://ctzurcanu.github.io'],
     },
   };
-  const server = new McpServer({name: 'human-atlas', version: '0.4.0'});
+  const server = new McpServer({name: 'human-atlas', version: '0.5.0'});
 
   server.registerTool('get_anatomy_options', {
     title: 'Get Atlas view options',
@@ -122,7 +122,7 @@ export function createServer({uiHtml,publicOnly=false}) {
   // Installed clients can retain old tool descriptors after the server changes.
   // Claude can retain the original URI too. Every alias must render directly
   // inside the host's sandbox; permitting a nested frame is not portable.
-  for (const suffix of ['-v3','-v2',''])
+  for (const suffix of ['-v4','-v3','-v2',''])
     resource(`Atlas viewer compatibility${suffix}`,`ui://human-atlas/anatomy-view${suffix}`,uiHtml,uiMeta);
 
   return server;

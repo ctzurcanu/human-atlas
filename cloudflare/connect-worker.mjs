@@ -1,6 +1,8 @@
 import {DurableObject} from 'cloudflare:workers';
 import {handleMcp} from './mcp-worker.mjs';
 import appAssets from './generated/mcp-app-assets.mjs';
+import appHtml from './generated/mcp-app.html';
+import {unpackRenderer} from '../mcp/packed-ui.mjs';
 import {CONNECT_PATH,MAX_MESSAGE_BYTES,validSnapshot,validPose} from '../shared/connect-protocol.mjs';
 
 const validCode=value=>typeof value==='string'&&/^[\w-]{32}$/.test(value);
@@ -15,6 +17,8 @@ const allowedOrigin=(request,env)=>{
  }catch{return false;}
 };
 const json=(data,headers={})=>Response.json(data,{headers:{'Cache-Control':'no-store',...headers}});
+let unpackedRenderer;
+const renderer=()=>unpackedRenderer??=unpackRenderer(appHtml.match(/<script id="atlas-renderer" type="application\/gzip">([^<]+)<\/script>/)[1]);
 
 export default {
  async fetch(request,env){
@@ -22,7 +26,7 @@ export default {
   const asset=Object.hasOwn(appAssets,url.pathname)?appAssets[url.pathname]:undefined;
   if(asset){
    if(!['GET','HEAD'].includes(request.method))return new Response('Use GET',{status:405});
-   return new Response(request.method==='HEAD'?null:asset.body,{headers:{'Content-Type':asset.type,'Cache-Control':'public, max-age=3600, immutable','Access-Control-Allow-Origin':'*','X-Content-Type-Options':'nosniff'}});
+   return new Response(request.method==='HEAD'?null:(await renderer())[asset.field],{headers:{'Content-Type':asset.type,'Cache-Control':'public, max-age=3600, immutable','Access-Control-Allow-Origin':'*','X-Content-Type-Options':'nosniff'}});
   }
   if(url.pathname==='/.well-known/openai-apps-challenge'){
    if(!env.OPENAI_APPS_CHALLENGE)return new Response('Not configured',{status:404});

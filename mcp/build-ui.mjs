@@ -5,6 +5,8 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/postcss';
 import {build as buildScript} from 'esbuild';
 import {createHash} from 'node:crypto';
+import {gzipSync} from 'node:zlib';
+import {unpackRenderer} from './packed-ui.mjs';
 export const UI_FILE = new URL('../cloudflare/generated/mcp-view.html', import.meta.url);
 export const IFRAME_FILE = new URL('../cloudflare/generated/mcp-iframe-view.html', import.meta.url);
 export const APP_FILE = new URL('../cloudflare/generated/mcp-app.html', import.meta.url);
@@ -44,16 +46,30 @@ export function buildMcpUi() {
    .replace('<!-- ATLAS_SCRIPT -->', () => `<script>${script.replace(/<\/script/gi, '<\\/script')}</script>`);
   await mkdir(new URL('./', UI_FILE), {recursive: true});
   await writeFile(UI_FILE, html);
-  // Keep the MCP resource small; serve the unchanged renderer as normal web assets.
-  const origin='https://human-atlas-connect.ctzurcanu.workers.dev';
+  // Installed hosts can retain an older CSP which does not permit Worker scripts.
+  // Deliver code/styles inside the resource, compressed, with no external code load.
   const hash=value=>createHash('sha256').update(value).digest('hex').slice(0,16);
   const scriptPath=`/mcp-app/viewer-${hash(script)}.js`,stylePath=`/mcp-app/viewer-${hash(styles)}.css`;
+  const packed=gzipSync(JSON.stringify({script,styles}),{level:9}).toString('base64');
+  const bootstrap=`(${async function () {
+   try {
+    const payload=await unpackRenderer(document.getElementById('atlas-renderer').textContent);
+    const style=document.createElement('style');style.textContent=payload.styles;document.head.append(style);
+    const script=document.createElement('script');script.textContent=payload.script;document.body.append(script);
+   } catch (error) {
+    const status=document.getElementById('status');status.hidden=false;
+    status.textContent='Unable to start the anatomy viewer. Reload this view to retry.';
+    console.error('Atlas renderer could not start:',error);
+   }
+  }.toString()})();`;
   const app=(await readFile(new URL('./view.html',import.meta.url),'utf8'))
-   .replace('<!-- ATLAS_STYLE -->',()=>`<link rel="stylesheet" href="${origin}${stylePath}">`)
-   .replace('<!-- ATLAS_SCRIPT -->',()=>`<script src="${origin}${scriptPath}" defer></script>`);
+   .replace('<!-- ATLAS_STYLE -->','')
+   .replace('<!-- ATLAS_SCRIPT -->',()=>`<script id="atlas-renderer" type="application/gzip">${packed}</script><script>${unpackRenderer.toString()}\n${bootstrap}</script>`);
   await writeFile(APP_FILE,app);
-  await writeFile(ASSETS_FILE,`export default ${JSON.stringify({[scriptPath]:{type:'application/javascript; charset=utf-8',body:script},[stylePath]:{type:'text/css; charset=utf-8',body:styles}})};\n`);
-  return html;
+  // Existing thin resources may still request these assets. Share the packed
+  // payload rather than storing a second copy of the full renderer in the Worker.
+  await writeFile(ASSETS_FILE,`export default ${JSON.stringify({[scriptPath]:{type:'application/javascript; charset=utf-8',field:'script'},[stylePath]:{type:'text/css; charset=utf-8',field:'styles'}})};\n`);
+  return app;
  })();
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
