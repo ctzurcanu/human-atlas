@@ -183,14 +183,21 @@ export const rememberModelBundle=(urls:string[],buffers:ArrayBuffer[])=>active?.
 export const forgetAsset=(url:string)=>active?.remove(url)??Promise.resolve();
 export const isCachedAsset=(response:Response)=>cachedResponses.has(response);
 
+async function readAssetJson(response:Response,url:string){
+ if(!url.endsWith('.json.gz'))return response.json();
+ const bytes=new Uint8Array(await response.arrayBuffer());
+ // Hosts may already have decoded the HTTP content encoding.
+ const data=bytes[0]===0x1f&&bytes[1]===0x8b?(await import('fflate')).gunzipSync(bytes):bytes;
+ return JSON.parse(new TextDecoder().decode(data));
+}
 export async function fetchAssetJson<T>(url:string,init:RequestInit={},message='The anatomy catalogue could not be loaded.'):Promise<T>{
  const response=await fetchAsset(url,init);
  if(!response.ok)throw new Error(message);
- try{const value=await response.json() as T;abort(init.signal);return value;}
+ try{const value=await readAssetJson(response,url) as T;abort(init.signal);return value;}
  catch(error){
   if(init.signal?.aborted)throw error;
   await forgetAsset(url);if(!isCachedAsset(response))throw new Error(message);
   const fresh=await fetchAsset(url,{...init,cache:'reload'});if(!fresh.ok)throw new Error(message);
-  try{const value=await fresh.json() as T;abort(init.signal);return value;}catch(error){if(init.signal?.aborted)throw error;await forgetAsset(url);throw new Error(message);}
+  try{const value=await readAssetJson(fresh,url) as T;abort(init.signal);return value;}catch(error){if(init.signal?.aborted)throw error;await forgetAsset(url);throw new Error(message);}
  }
 }

@@ -1,7 +1,7 @@
 export const CONNECT_PATH = '/atlas-connect';
 import {validCamera} from './camera-frame.mjs';
 export const MAX_MESSAGE_BYTES = 1_048_576;
-export const MODELS = ['male-full','male-detail','male','female','embryo','cell','local-male','local-female','local-reference'];
+export const MODELS = ['male-full','male-detail','male','female','female-ta98','embryo','cell','local-male','local-female','local-reference'];
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
 const text = (value,max=2048) => typeof value === 'string' && value.length <= max;
 const strings = (value,max=10000) => Array.isArray(value) && value.length <= max && value.every(item=>text(item,256));

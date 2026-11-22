@@ -2,6 +2,17 @@
 
 The application code is distributed under [GNU GPLv3](LICENSE.txt). Original upstream application code is copyright © 2026 ashemag; its [MIT notice](MIT-upstream.txt) remains available. Anatomical datasets and other components retain their own licenses.
 
+<a id="reference-body-source"></a>
+## Reference-body inputs
+
+The local female review records Zygote source anatomy among its inputs.
+
+<a id="registered-collection-source"></a>
+## Registered-collection inputs
+
+The local female review records [BioDigital](https://human.biodigital.com/) source meshes among its inputs. The catalogue records redistribution rights for these local review inputs as unverified.
+
+<a id="open-anatomy-source"></a>
 ## Detailed male: Z-Anatomy
 
 Source: [Z-Anatomy original Blender archive](https://github.com/Z-Anatomy/Models-of-human-anatomy), CC BY-SA 4.0, with contributors identified in the [publisher license](https://github.com/Z-Anatomy/Models-of-human-anatomy/blob/master/License.txt). Source ZIP SHA-256: `e029688545627bd0214b269e1063143abb580aad72b2c2445d6d8a9a0d9da736`; `Startup.blend` SHA-256: `9f08a17ea0115fed80b2a73ecdf0a1bc2ab2f6956f37c593ce23d513ea35afcd`.
