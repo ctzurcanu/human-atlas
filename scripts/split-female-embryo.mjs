@@ -5,7 +5,7 @@ import {gzipSync} from 'node:zlib';
 import {fileURLToPath} from 'node:url';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const directory=path.resolve(process.argv[2]??path.join(root,'public/models'));
+const directory=path.resolve(process.argv[2]??path.join(root,'work/ta98-donors'));
 const femaleFile=path.join(directory,'atlas-hra-female.json');
 const embryoFile=path.join(directory,'atlas-embryo.json');
 const atlas=JSON.parse(await fs.readFile(femaleFile,'utf8'));

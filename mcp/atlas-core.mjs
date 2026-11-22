@@ -8,7 +8,7 @@ export const MODELS = {
   'male-detail': 'atlas-male-complete.json',
   'male-full': 'atlas-male-complete.json',
   male: 'atlas.json',
-  female: 'atlas-hra-female.json',
+  'female-ta98': 'female-ta98/atlas.json',
   embryo: 'atlas-embryo.json',
   cell: 'atlas-cell.json',
   'local-reference': 'reference.json',

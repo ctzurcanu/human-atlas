@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {readFile, stat} from 'node:fs/promises';
+import {readFile, readdir, stat} from 'node:fs/promises';
 import {test} from 'node:test';
 import {gunzipSync} from 'node:zlib';
 
@@ -37,4 +37,9 @@ test('female TA98 system banks and textures decode with their catalogue offsets'
  const textures=new Set(JSON.stringify(atlas).match(/\/models\/female-ta98\/textures\/[^"?]+/g));
  assert.ok(textures.size>0);
  for(const texture of textures)assert.ok((await stat('public'+texture)).isFile(),texture);
+});
+
+test('the retired partial female catalogue and banks are absent from the public package', async () => {
+ const files = await readdir('public/models');
+ assert.deepEqual(files.filter(name => /^(atlas-hra-female[.]|female-body-)/.test(name)), []);
 });

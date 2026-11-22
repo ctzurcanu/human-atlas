@@ -13,7 +13,7 @@ try{
   assert.ok(!search.isError);assert.ok(search.structuredContent.matches.length>0);
   console.log(`Search ${query}: ${search.structuredContent.matches.length} matches, ${Math.round(performance.now()-start)} ms round trip`);
  }
- for(const model of ['male-detail','male-full','male','female','embryo','cell']){
+ for(const model of ['male-detail','male-full','male','female-ta98','embryo','cell']){
   const options=await client.callTool({name:'get_anatomy_options',arguments:{model}});assert.ok(!options.isError);
   assert.ok(options.structuredContent.models.every(id=>!id.startsWith('local-')));
   const view=await client.callTool({name:'show_anatomy',arguments:{model}});assert.ok(!view.isError);

@@ -12,7 +12,7 @@ const {historyReducer}=await load('use-view-history.js');
 const {createDepthOrder}=await load('depth-sort.js');
 assert.ok(DEPTH_LAYERS.length>=20);
 
-for(const file of ['atlas-male-complete','atlas-hra-female','atlas']){
+for(const file of ['atlas-male-complete','female-ta98/atlas','atlas']){
  const atlas=JSON.parse(readFileSync(`public/models/${file}.json`));
  const counts=new Map(DEPTH_LAYERS.map(layer=>[layer.id,0]));
  for(const part of atlas.parts){const id=depthLayerFor(part);assert.ok(counts.has(id),`${part.name} has no depth group`);counts.set(id,counts.get(id)+1);}
@@ -33,7 +33,7 @@ const base={selected:[],visible:['integumentary','muscular','skeletal'],skinOpac
 const skin=atlas.parts.find(part=>depthLayerFor(part)==='skin');
 const muscle=find('muscular','trapezius muscle');
 assert.equal(partVisible(muscle,base),false,'Opaque skin conceals internal anatomy');
-for(const file of ['.local-models/embryo-cs23/atlas.json','public/models/atlas-hra-female.json','public/models/atlas-male-complete.json']){
+for(const file of ['.local-models/embryo-cs23/atlas.json','public/models/female-ta98/atlas.json','public/models/atlas-male-complete.json']){
  const body=JSON.parse(readFileSync(file));
  const skins=body.parts.filter(part=>/\bskin\b|^body surface\b/i.test(part.name)&&part.system==='integumentary');const outer=skins[0];
  assert.ok(outer,`Missing body skin in ${file}`);

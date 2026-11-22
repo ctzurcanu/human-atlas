@@ -6,7 +6,7 @@ import {MeshoptSimplifier} from 'meshoptimizer/simplifier';
 // Separate assets keep the original anatomy and desktop rendering untouched.
 await MeshoptSimplifier.ready;
 const files=process.argv.slice(2);
-if(!files.length)files.push(...['atlas-male-complete','atlas','atlas-hra-female','atlas-embryo','atlas-cell'].map(name=>`public/models/${name}.json`));
+if(!files.length)files.push(...['atlas-male-complete','atlas','atlas-embryo','atlas-cell'].map(name=>`public/models/${name}.json`));
 for(const filename of files){
  const atlas=JSON.parse(await readFile(filename,'utf8')),directory=path.dirname(filename),name=path.basename(filename,'.json');
  const sourceTriangles=atlas.parts.reduce((sum,part)=>sum+part.indexCount/3,0),budget=Math.min(350_000,sourceTriangles);

@@ -1,6 +1,6 @@
 # Human Atlas
 
-An interactive 3D anatomy explorer built with React, Three.js, and targeted publisher geometry: **5,209 selectable surfaces**, **4,669 named concepts**, and **10,391,079 triangles** in the default **Male · detailed** model. The standard BodyParts3D male and partial female references are also available. Confirmed duplicate imports are excluded for bowel, pancreatic duct, deferent ducts, dorsal penile veins, hand and wrist bones, and selected upper-body vessels.
+An interactive 3D anatomy explorer built with React, Three.js, and targeted publisher geometry: **5,209 selectable surfaces**, **4,669 named concepts**, and **10,391,079 triangles** in the default **Male · detailed** model. The standard BodyParts3D male and female TA98 references are also available. Confirmed duplicate imports are excluded for bowel, pancreatic duct, deferent ducts, dorsal penile veins, hand and wrist bones, and selected upper-body vessels.
 
 **[Explore the live demo](https://ctzurcanu.github.io/human-atlas/)**
 
@@ -71,7 +71,7 @@ The download and converted data stay in `.local-models/`, which is ignored by Gi
 ```sh
 npm run check
 node scripts/validate-atlas.mjs
-node scripts/validate-primary-female.mjs public/models/atlas-hra-female.json
+node --test server/female-ta98-package.test.mjs
 node scripts/validate-primary-atlas.mjs public/models/atlas-z-anatomy.json
 node scripts/validate-interactions.mjs
 npm run build
@@ -93,7 +93,7 @@ The original Z-Anatomy and Open 3D Model archives and source files are SHA-256 v
 
 The standard male option represents an adult male reference anatomy. It does not represent every human structure or variation. Individual meshes are distinct from named concepts, which may group multiple meshes. Descriptions distinguish general system context from individual organ explanations.
 
-The female option has 1,030 selectable meshes and 1,234 concepts. It combines the original Human Reference Atlas united-female v1.10 GLB, eight pelvic bone surfaces from official HRA v1.5, and 74 original University of Denver Visible Human Female lower-limb muscle STLs. The eight placenta-group meshes are in the separate Embryo model. The other two muscle STLs duplicate HRA's rectus femoris meshes and are omitted. Upper-body muscles and skeleton are still incomplete; this is not a complete counterpart to the male atlas. The separately sourced lower-limb muscles are fitted to the HRA bones, with measured alignment errors in the manifest.
+The Female · TA98 model loads its geometry in system-specific banks.
 
 Geometry is simplified for browser performance while retaining every source mesh. The packaged standard male model contains 2,288,268 triangles and downloads approximately 33 MB of compressed geometry.
 
@@ -117,8 +117,6 @@ Set `BLENDER` to the Blender executable if it is not on `PATH`. The script fetch
 
 Rebuild the standard male reference with `npm run import:primary-standard`. This fetches and verifies the official [BodyParts3D OBJ archive and four metadata tables](https://dbarchive.biosciencedbc.jp/en/bodyparts3d/download.html), joins the IS-A and PART-OF concepts, applies Human Atlas's separately maintained element-to-system mapping, converts and optimizes the meshes, and validates the output before installing it. The tested rebuild matches every shipped standard-male geometry chunk byte for byte.
 
-Rebuild the female reference from the [official HRA united-female v1.10 GLB](https://purl.humanatlas.io/ref-organ/united-female/v1.10) and [v1.5 GLB](https://purl.humanatlas.io/ref-organ/united-female/v1.5) with `npm run import:primary-female`. The importer verifies both GLB hashes, reads node names, hierarchy, transforms, ontology IDs, and material colors, then simplifies each mesh within a 0.2% relative error bound. Both GLBs contain no image textures. Put the [University of Denver original female STL ZIP](https://digitalcommons.du.edu/visiblehuman/1/) at `.local-models/source/Final 3D STL Models-stl-female.zip`, install NumPy for your Python interpreter, then run `npm run import:primary-female-muscles`. The second script verifies the ZIP hash, uses its original femur, tibia, and fibula STLs to fit each leg to HRA, and adds 74 nonduplicate original muscle meshes. The source ZIP stays outside `public` and the transform and bone-fit measurements are recorded in the manifest. No intermediary adaptation is used.
-
 ## Deploy
 
 GitHub Pages publishes this project at https://ctzurcanu.github.io/human-atlas/ using `.github/workflows/pages.yml`. Pushes to `main` run type checking, build the static site, and deploy `dist`. The workflow can also be run manually. Repository Settings → Pages → Source must be set to **GitHub Actions**.
@@ -139,10 +137,10 @@ The `dist` directory can also be served by another static host; set `VITE_BASE_P
 Open a view, choose the model and layers you want, then use **Share and save this view**. Select which controls should appear in the iframe and choose **Copy embed code**. The generated iframe opens the saved view with only those controls. For example, this one includes Systems and a link to the full viewer, but excludes Explode:
 
 ```html
-<iframe src="https://ctzurcanu.github.io/human-atlas/?model=female&amp;embed=1&amp;ui=systems%2Copen" title="Human Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:600px;border:0" allowfullscreen></iframe>
+<iframe src="https://ctzurcanu.github.io/human-atlas/?model=female-ta98&amp;embed=1&amp;ui=systems%2Copen" title="Human Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:600px;border:0" allowfullscreen></iframe>
 ```
 
-You can use `model=male-detail`, `male-full`, or `male` instead of `female`. Set a fixed or responsive height on the iframe; 600px gives the controls room, and the minimum supported height is 340px. The `ui` parameter is a comma-separated list of visible controls: `model`, `search`, `study`, `systems`, `camera`, `explode`, `details`, `open`, and `download`. Use `ui=` for a bare viewer. If `ui` is omitted, the default controls are model, search, systems, details, and open; Study, Camera controls, Explode, and PNG download are off by default. The Systems button works independently of Explode. Named views are stored only in the browser where they were saved; the generated URL and iframe code can be shared separately.
+You can use `model=male-detail`, `male-full`, or `male` instead of `female-ta98`. Set a fixed or responsive height on the iframe; 600px gives the controls room, and the minimum supported height is 340px. The `ui` parameter is a comma-separated list of visible controls: `model`, `search`, `study`, `systems`, `camera`, `explode`, `details`, `open`, and `download`. Use `ui=` for a bare viewer. If `ui` is omitted, the default controls are model, search, systems, details, and open; Study, Camera controls, Explode, and PNG download are off by default. The Systems button works independently of Explode. Named views are stored only in the browser where they were saved; the generated URL and iframe code can be shared separately.
 
 ## Use with an MCP client
 
@@ -174,8 +172,6 @@ Run `npm run test:mcp` to verify tool calls, URL selection, and the UI resource.
 The application code is distributed under the [GNU General Public License, version 3](LICENSE) (GPL-3.0-only).
 
 Issues and pull requests are welcome. Please include reproduction steps and browser/device details for interaction problems.
-
-The selected detailed male and female models use the direct-source importers above. The former intermediary-derived binaries, manifests, and import scripts have been removed from this checkout.
 
 ### Display and model quality
 

@@ -8,7 +8,7 @@ const {viewPlaneLayout}=await load('explosion-plane');
 const {createHierarchicalExplosionLayout}=await load('hierarchical-explosion');
 const {hierarchyEntries}=await load('anatomy-hierarchy');
 const {readFile}=await import('node:fs/promises');
-for(const name of ['atlas-male-complete','atlas-hra-female','atlas-embryo','atlas-cell','embryo-3month/atlas'])test(`${name}: every exploded cluster stays on one POV plane through orbit and roll`,async()=>{
+for(const name of ['atlas-male-complete','female-ta98/atlas','atlas-embryo','atlas-cell','embryo-3month/atlas'])test(`${name}: every exploded cluster stays on one POV plane through orbit and roll`,async()=>{
  const atlas=JSON.parse(await readFile(`public/models/${name}.json`));
  const layout=createHierarchicalExplosionLayout(atlas,hierarchyEntries(atlas),new Set(atlas.parts.map(p=>p.id)),'systems',1.7);
  for(const rotation of [[0,0,0],[.6,1.4,.9],[Math.PI,0,Math.PI/2],[-1.1,-2.2,2.5]]){

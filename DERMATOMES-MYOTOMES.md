@@ -57,7 +57,6 @@ Counts below are sides with a separately named root/segmental nerve; the skin co
 | Model | Named root / segmental nerve sides | Myotome sides with muscle anatomy | Segmented skin patches |
 | --- | ---: | ---: | ---: |
 | [embryo](http://localhost:3016/?model=embryo&tree=guest%3Adermatomes-myotomes&bio=ROOT%3AC5) (public/models/atlas-embryo.json) | 0 / 62 | 0 / 62 | 0 |
-| [female](http://localhost:3016/?model=female&tree=guest%3Adermatomes-myotomes&bio=ROOT%3AC5) (public/models/atlas-hra-female.json) | 0 / 62 | 6 / 62 | 0 |
 | [male-detail](http://localhost:3016/?model=male-detail&tree=guest%3Adermatomes-myotomes&bio=ROOT%3AC5) (public/models/atlas-male-complete.json) | 2 / 62 | 60 / 62 | 0 |
 | [male-detail](http://localhost:3016/?model=male-detail&tree=guest%3Adermatomes-myotomes&bio=ROOT%3AC5) (public/models/atlas-z-anatomy.json) | 2 / 62 | 60 / 62 | 0 |
 | [male](http://localhost:3016/?model=male&tree=guest%3Adermatomes-myotomes&bio=ROOT%3AC5) (public/models/atlas.json) | 0 / 62 | 20 / 62 | 0 |

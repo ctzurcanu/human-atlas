@@ -59,7 +59,7 @@
     "build:anatomical-attachments": "node scripts/build-anatomical-attachments.mjs",
     "import:cell": "node scripts/import-cell.mjs && node scripts/audit-meshes.mjs cell",
     "import:primary-male": "node scripts/import-primary-male.mjs && node scripts/audit-meshes.mjs male-detail",
-    "import:primary-female": "node scripts/import-primary-female.mjs && node scripts/audit-meshes.mjs female",
+    "import:primary-female": "node scripts/import-primary-female.mjs",
     "import:primary-female-muscles": "node scripts/run-female-muscles.mjs",
     "import:primary-standard": "node scripts/import-primary-standard.mjs && node scripts/audit-meshes.mjs male",
     "build:complete-male": "node scripts/build-complete-male.mjs && node scripts/audit-meshes.mjs male-full && node scripts/build-anatomical-attachments.mjs",

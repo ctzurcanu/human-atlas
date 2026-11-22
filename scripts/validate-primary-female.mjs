@@ -3,7 +3,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 import {gunzipSync} from 'node:zlib';
 
-const filename=path.resolve(process.argv[2]??'public/models/atlas-hra-female.json');
+const filename=path.resolve(process.argv[2]??'work/ta98-donors/atlas-hra-female.json');
 const atlas=JSON.parse(fs.readFileSync(filename,'utf8'));
 assert.equal(atlas.source,'Human Reference Atlas');
 assert.equal(atlas.sex,'female');

@@ -19,7 +19,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 SOURCE = 'https://raw.githubusercontent.com/mhalle/ta98-sqlite/master/db/ta98.sqlite'
 CATALOGS = [
  'public/models/atlas-male-complete.json', 'public/models/atlas.json',
- 'public/models/atlas-hra-female.json', 'public/models/atlas-embryo.json',
+ 'public/models/female-ta98/atlas.json', 'public/models/atlas-embryo.json',
  'public/models/atlas-cell.json', '.local-models/reference.json',
  '.local-models/male.json', '.local-models/female.json',
  'public/models/atlas-z-anatomy.json',
