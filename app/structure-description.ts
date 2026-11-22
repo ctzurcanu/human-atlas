@@ -1,3 +1,4 @@
+import {itemDescription} from '../shared/item-description.mjs';
 import {endocrineDescription} from './endocrine-relations';
 import {digestiveDuctDescription} from './digestive-duct-relations';
 import {cardiacValveDescription} from './cardiac-relations';
@@ -20,7 +21,8 @@ const clean=(name:string)=>structureName(name).replace(/\s*\((?:left|right)\)$/i
 const lowerFirst=(value:string)=>value[0]?.toLowerCase()+value.slice(1);
 
 export function localDescription(name:string,part:Part|undefined,path:AnatomyPathNode[]):StructureDescription{
- if(part?.description)return {text:part.description};
+ const description=itemDescription(part?.description);
+ if(description)return {text:description};
  const endocrine=part&&endocrineDescription(part);if(endocrine)return endocrine;
  const duct=part&&digestiveDuctDescription(part);if(duct)return duct;
  const cardiac=part&&cardiacValveDescription(part);if(cardiac)return cardiac;
