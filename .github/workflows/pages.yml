@@ -39,6 +39,7 @@ jobs:
           VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
           VITE_FEMALE_TA98_ASSETS: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/public/
           VITE_CONNECT_RELAY_URL: ${{ vars.VITE_CONNECT_RELAY_URL }}
+      - run: node --input-type=module -e "import {compactPagesGeometry} from './server/pages-geometry.mjs'; await compactPagesGeometry('dist')"
       - run: test "$(du -sb dist | cut -f1)" -lt 1000000000
       - uses: actions/upload-pages-artifact@v4
         with:

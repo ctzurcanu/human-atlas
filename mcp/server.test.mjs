@@ -5,6 +5,17 @@ import {InMemoryTransport} from '@modelcontextprotocol/sdk/inMemory.js';
 import {build} from 'esbuild';
 import {anatomyView, catalogue, DEPTH_LAYERS, resolveAnatomy,searchAnatomy} from './atlas-data.mjs';
 import {createServer} from './server.mjs';
+import {verifyMaleTa98Options} from './verify-model-options.mjs';
+
+test('a running server refreshes a replaced catalogue on the next request',async()=>{
+  const {configureAtlasData,catalogue}=await import('./atlas-core.mjs?catalogue-revision-test');
+  let revision=1,loads=0;
+  configureAtlasData(()=>({load:++loads}),{byConcept:{}},()=>revision);
+  const first=catalogue('male-ta98');
+  assert.equal(catalogue('male-ta98'),first);
+  revision++;
+  assert.equal(catalogue('male-ta98').load,2);
+});
 
 test('the requested structure becomes a selected, focused embed', () => {
   const result = anatomyView({structure: 'Stomach'});
@@ -57,9 +68,9 @@ test('served catalogues select publisher-source male and female assets', () => {
   assert.throws(() => catalogue('female'), /Unknown model/);
   assert.deepEqual(anatomyView({structure: 'TA98FEMALE:A09.1.03.001', model: 'female-ta98'}).systems, ['reproductive']);
   assert.equal(catalogue('female-ta98').parts.some(part=>part.name==='Amnion'),false);
-  assert.equal(catalogue('embryo').parts.length,8);
+  assert.equal(catalogue('embryo').parts.length,174);
   assert.equal(resolveAnatomy('Amnion', 'embryo').length,1);
-  assert.deepEqual(anatomyView({structure: 'Amnion', model: 'embryo'}).systems,['pregnancy']);
+  assert.deepEqual(anatomyView({structure: 'Amnion', model: 'embryo'}).systems,['integumentary']);
 });
 
 test('cell model exposes its original components through the viewer and MCP', () => {
@@ -174,6 +185,11 @@ test('MCP discovery, tool call, and UI resource work together', async () => {
     const shown = await client.callTool({name: 'show_anatomy', arguments: {structure: 'Stomach'}});
     assert.equal(shown.isError, undefined);
     assert.equal(new URL(shown.structuredContent.url).searchParams.get('select'), 'ZA:Stomach');
+    const maleOptions=await client.callTool({name:'get_anatomy_options',arguments:{model:'male-ta98'}});
+    await verifyMaleTa98Options(maleOptions.structuredContent);
+    const male=await client.callTool({name:'show_anatomy',arguments:{model:'male-ta98',structure:'TA98:A05.9.01.017'}});
+    assert.equal(male.structuredContent.structures[0].id,'ZA:Accessory pancreatic duct');
+    assert.equal(new URL(male.structuredContent.url).origin,'http://localhost:3016');
     const customized = await client.callTool({name: 'show_anatomy', arguments: {structure: 'Stomach', controls: ['systems', 'open']}});
     assert.equal(new URL(customized.structuredContent.url).searchParams.get('ui'), 'systems,open');
     const missing = await client.callTool({name: 'show_anatomy', arguments: {structure: 'not a modeled structure'}});

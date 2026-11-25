@@ -518,10 +518,11 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
   const cameraValues=()=>captureFrame(camera,controls.target,viewBounds,currentArea);
   controls.addEventListener('end',()=>cameraCallback.current?.(cameraValues()));
   let loaded=0,lastReportedProgress=0;
-  const chunkParts=Array.from({length:atlas.chunks.length},()=>[] as number[]);
-  atlas.parts.forEach((part,index)=>chunkParts[part.chunk].push(index));
-  const chunkUrls=atlas.chunks.map(chunk=>assetUrl(chunk.gzip??chunk.url));
-  const chunkSizes=atlas.chunks.map(chunk=>chunk.bytes),chunkOffsets:number[]=[];let chunkTotal=0;
+  const geometryChunks=atlas.systemGeometry?.chunks??atlas.chunks;
+  const chunkParts=Array.from({length:geometryChunks.length},()=>[] as number[]);
+  atlas.parts.forEach((part,index)=>chunkParts[atlas.systemGeometry?.parts.get(part.id)?.chunk??part.chunk].push(index));
+  const chunkUrls=geometryChunks.map(chunk=>assetUrl(chunk.gzip??chunk.url));
+  const chunkSizes=geometryChunks.map(chunk=>chunk.bytes),chunkOffsets:number[]=[];let chunkTotal=0;
   for(const size of chunkSizes){chunkOffsets.push(chunkTotal);chunkTotal+=size;}
   const onDemand=atlas.delivery?.mode==='on-demand';
   const demandMeshes:Array<{chunk:number;mesh:T.Mesh;ghost:T.Mesh;preview:T.Mesh;indices:number[]}>=[];
@@ -547,7 +548,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    return Number(selected(b))-Number(selected(a))||surface(b)-surface(a)||cutCounts[b]-cutCounts[a]||distal(b)-distal(a)||a-b;
   });
   const loadChunk=async(ci:number,signal=abort.signal)=>{
-   const chunk=atlas.chunks[ci],compressed=!!chunk.gzip;const buffer=bundleBuffer??await loadModelBuffer(chunkUrls[ci],chunk.bytes,compressed,signal);if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');
+   const chunk=geometryChunks[ci],compressed=!!chunk.gzip;const buffer=bundleBuffer??await loadModelBuffer(chunkUrls[ci],chunk.bytes,compressed,signal);if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');
    if(!bundleBuffer)cachedBuffers[ci]=buffer;
    const offset=bundleBuffer?chunkOffsets[ci]:0;
    const groups=new Map<string,T.BufferGeometry[]>(),sharedAttributes=new Map<string,T.BufferAttribute>();
@@ -556,16 +557,24 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    const hairBuffers=new Map<number,ArrayBuffer>();
    for(const i of chunkParts[ci]){const field=atlas.parts[i].hairField;if(!field)continue;const raw=await loadModelBuffer(assetUrl(field.url+'.gz'),field.bytes,true,signal);if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');hairBuffers.set(i,raw);metricHairPicking.set(i,new MetricHairPicking(field,raw));}
    chunkParts[ci].forEach(i=>{const p=atlas.parts[i];
-    const positions=new Float32Array(buffer,offset+p.positions,p.vertexCount*3);
-    const g=new T.BufferGeometry();g.setAttribute('position',p.sourceOffset?new T.BufferAttribute(positions.slice(),3):sharedAttribute(`position:${p.positions}:${p.vertexCount}`,()=>new T.BufferAttribute(positions,3)));
+    const layout=atlas.systemGeometry?.parts.get(p.id)??p;
+    const positions=new Float32Array(buffer,offset+layout.positions,p.vertexCount*3);
+    const g=new T.BufferGeometry();g.setAttribute('position',p.sourceOffset||p.geometryInstance||p.geometryScale!==undefined?new T.BufferAttribute(positions.slice(),3):sharedAttribute(`position:${layout.positions}:${p.vertexCount}`,()=>new T.BufferAttribute(positions,3)));
     // GPU normalized signed-short normals keep the complete atlas compact in memory.
-    g.setAttribute('normal',sharedAttribute(`normal:${p.normals}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int16Array(buffer,offset+p.normals,p.vertexCount*3),3,true)));
-    if(p.normalSigns!==undefined)g.setAttribute('normalSign',sharedAttribute(`normalSign:${p.normalSigns}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int8Array(buffer,offset+p.normalSigns!,p.vertexCount),1)));
-    if(p.tissueChart!==undefined)g.setAttribute('tissueChart',sharedAttribute(`tissueChart:${p.tissueChart}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int16Array(buffer,offset+p.tissueChart!,p.vertexCount*3),3,true)));
-    if(p.gastricLumen!==undefined)g.setAttribute('gastricLumen',new T.BufferAttribute(new Uint8Array(buffer,offset+p.gastricLumen,p.vertexCount),1,true));
-    if(p.uvs!==undefined)g.setAttribute('uv',new T.BufferAttribute(new Float32Array(buffer,offset+p.uvs,p.vertexCount*2),2));
-    if(p.colors!==undefined)g.setAttribute('color',new T.BufferAttribute(new Uint8Array(buffer,offset+p.colors,p.vertexCount*3),3,true));
-    g.setIndex(new T.BufferAttribute(new Uint32Array(buffer,offset+p.indices,p.indexCount),1));
+    g.setAttribute('normal',sharedAttribute(`normal:${layout.normals}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int16Array(buffer,offset+layout.normals,p.vertexCount*3),3,true)));
+    if(layout.normalSigns!==undefined)g.setAttribute('normalSign',sharedAttribute(`normalSign:${layout.normalSigns}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int8Array(buffer,offset+layout.normalSigns!,p.vertexCount),1)));
+    if(layout.tissueChart!==undefined)g.setAttribute('tissueChart',sharedAttribute(`tissueChart:${layout.tissueChart}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int16Array(buffer,offset+layout.tissueChart!,p.vertexCount*3),3,true)));
+    if(layout.gastricLumen!==undefined)g.setAttribute('gastricLumen',new T.BufferAttribute(new Uint8Array(buffer,offset+layout.gastricLumen,p.vertexCount),1,true));
+    if(layout.uvs!==undefined)g.setAttribute('uv',new T.BufferAttribute(new Float32Array(buffer,offset+layout.uvs,p.vertexCount*2),2));
+    if(layout.colors!==undefined)g.setAttribute('color',new T.BufferAttribute(new Uint8Array(buffer,offset+layout.colors,p.vertexCount*3),3,true));
+    g.setIndex(new T.BufferAttribute(new Uint32Array(buffer,offset+layout.indices,p.indexCount),1));
+    if(p.geometryInstance||p.geometryScale!==undefined)g.setAttribute('normal',g.getAttribute('normal').clone());
+    if(p.geometryScale!==undefined)g.scale(p.geometryScale,p.geometryScale,p.geometryScale);
+    if(p.geometryInstance){
+     const {rotation,scale}=p.geometryInstance;
+     g.applyQuaternion(new T.Quaternion(...rotation).normalize());
+     g.scale(scale,scale,scale);
+    }
     if(p.sourceOffset)g.translate(p.sourceOffset[0],p.sourceOffset[1],p.sourceOffset[2]);
     if(innerFaceFor(p)){
      const position=g.getAttribute('position'),normal=g.getAttribute('normal'),innerSide=new Uint8Array(p.vertexCount);
@@ -631,7 +640,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    });
    if(onDemand){const arrays=new Set<ArrayBufferLike>();for(const geometry of owned){for(const attribute of Object.values(geometry.attributes))arrays.add((attribute instanceof T.InterleavedBufferAttribute?attribute.data.array:attribute.array).buffer);if(geometry.index)arrays.add(geometry.index.array.buffer);}chunkArrayBytes.set(ci,[...arrays].reduce((sum,buffer)=>sum+buffer.byteLength,0));}
    if(skinChunks.has(ci)){loadedSkinChunks++;if(loadedSkinChunks===skinChunks.size){surfaceReady=true;lastState=null;}}
-   previewDirty=true;if(onDemand){lastState=null;dirty=true;return;}loaded++;const nextProgress=Math.round(loaded/atlas.chunks.length*100);if(nextProgress===100||nextProgress-lastReportedProgress>=10){lastReportedProgress=nextProgress;onProgress(nextProgress);}dirty=true;
+   previewDirty=true;if(onDemand){lastState=null;dirty=true;return;}loaded++;const nextProgress=Math.round(loaded/geometryChunks.length*100);if(nextProgress===100||nextProgress-lastReportedProgress>=10){lastReportedProgress=nextProgress;onProgress(nextProgress);}dirty=true;
   };
   let demandState:SceneState|undefined,demandPreview=false;
   const releaseChunk=(ci:number)=>{

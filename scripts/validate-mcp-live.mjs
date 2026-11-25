@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {Client} from '@modelcontextprotocol/sdk/client/index.js';
 import {StreamableHTTPClientTransport} from '@modelcontextprotocol/sdk/client/streamableHttp.js';
 import {unpackRenderer} from '../mcp/packed-ui.mjs';
+import {verifyMaleTa98Options} from '../mcp/verify-model-options.mjs';
 const endpoint=new URL(process.argv[2]??'https://human-atlas-connect.ctzurcanu.workers.dev/mcp');
 const client=new Client({name:'human-atlas-live-check',version:'1.0.0'});
 await client.connect(new StreamableHTTPClientTransport(endpoint));
@@ -13,12 +14,17 @@ try{
   assert.ok(!search.isError);assert.ok(search.structuredContent.matches.length>0);
   console.log(`Search ${query}: ${search.structuredContent.matches.length} matches, ${Math.round(performance.now()-start)} ms round trip`);
  }
- for(const model of ['male-detail','male-full','male','female-ta98','embryo','cell']){
-  const options=await client.callTool({name:'get_anatomy_options',arguments:{model}});assert.ok(!options.isError);
+ for(const model of ['male-detail','male-full','male','male-ta98','female-ta98','embryo','cell']){
+  const options=await client.callTool({name:'get_anatomy_options',arguments:{model}});assert.ok(!options.isError,model+' options: '+options.content[0].text);
   assert.ok(options.structuredContent.models.every(id=>!id.startsWith('local-')));
+  if(model==='male-ta98')await verifyMaleTa98Options(options.structuredContent);
   const view=await client.callTool({name:'show_anatomy',arguments:{model}});assert.ok(!view.isError);
   assert.equal(new URL(view.structuredContent.url).origin,'https://ctzurcanu.github.io');
  }
+ const duct=await client.callTool({name:'search_anatomy',arguments:{model:'male-ta98',query:'TA98:A05.9.01.017'}});
+ assert.ok(duct.structuredContent?.matches.some(c=>c.id==='ZA:Accessory pancreatic duct'));
+ const selected=await client.callTool({name:'show_anatomy',arguments:{model:'male-ta98',structure:'ZA:Accessory pancreatic duct'}});
+ assert.equal(new URL(selected.structuredContent.url).searchParams.get('model'),'male-ta98');
  const stomach=await client.callTool({name:'show_anatomy',arguments:{structure:'Stomach',isolate:true}});
  assert.equal(stomach.structuredContent.structures[0].id,'ZA:Stomach');
  const bad=await client.callTool({name:'show_anatomy',arguments:{structure:'nonexistent-example-anatomy'}});assert.equal(bad.isError,true);

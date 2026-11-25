@@ -6,7 +6,7 @@ import {anatomyView} from './atlas-data.mjs';
 
 const host = `<!doctype html><html><head><meta charset="utf-8"><title>Atlas MCP sandbox check</title>
 <style>body{font:15px system-ui;background:#eee;margin:12px}iframe{width:100%;height:610px;border:0}pre{white-space:pre-wrap}</style></head><body>
-<label>Model <select id="model"><option>cell</option><option>male-detail</option><option value="female-ta98">Female · TA98</option><option>embryo</option></select></label>
+<label>Model <select id="model"><option>cell</option><option>male-detail</option><option value="male-ta98">Male TA98</option><option value="female-ta98">Female · TA98</option><option>embryo</option></select></label>
 <button id="show">Show model</button><button id="theme">Change host theme</button>
 <iframe id="app" title="MCP Apps sandbox" sandbox="allow-scripts allow-same-origin allow-downloads"></iframe><pre id="checks"></pre>
 <script>

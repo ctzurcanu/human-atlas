@@ -35,6 +35,7 @@ export function withPreferredSourceRepresentations(atlas:Atlas):Atlas{
 export function withHiddenReviewAlternatives(atlas:Atlas,inspectAlternatives=false):Atlas{
  if(inspectAlternatives)return atlas;
  const hidden=new Set(atlas.defaultHidden??[]);
+ for(const id of atlas.selectableHidden??[])hidden.delete(id);
  if(!atlas.parts.some(p=>hidden.has(p.id)&&!p.suppressed))return atlas;
  const parts=atlas.parts.map(p=>hidden.has(p.id)&&!p.suppressed?{...p,suppressed:true}:p);
  const unavailable=new Set(parts.filter(p=>p.suppressed&&!p.replacementParts?.length).map(p=>p.id));

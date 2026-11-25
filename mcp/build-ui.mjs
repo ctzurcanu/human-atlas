@@ -1,6 +1,7 @@
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {build} from 'vite';
+import {publicModelCounts} from './read-catalogue.mjs';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/postcss';
 import {build as buildScript} from 'esbuild';
@@ -26,10 +27,16 @@ export function buildIframeUi() {
 export function buildMcpUi() {
  return building ??= (async () => {
   const path = value => fileURLToPath(new URL(value, import.meta.url));
+  // The Pages catalogue references the geometry from this female model release.
+  const femaleAssets=process.env.VITE_FEMALE_TA98_ASSETS??'https://raw.githubusercontent.com/ctzurcanu/human-atlas/07e242b964073c7b73212bf40173669795070891/public/';
   const bundle = await build({
    configFile: false, logLevel: 'silent', root: path('../'), publicDir: false,
    base: 'https://ctzurcanu.github.io/human-atlas/',
-   define: {'process.env.NODE_ENV': JSON.stringify('production')},
+   define: {
+    'import.meta.env.VITE_MODEL_ITEM_COUNTS':JSON.stringify(publicModelCounts()),
+    'import.meta.env.VITE_FEMALE_TA98_ASSETS':JSON.stringify(femaleAssets),
+    'process.env.NODE_ENV':JSON.stringify('production'),
+   },
    plugins: [react()], resolve: {alias: {'@': path('../')}},
    css: {postcss: {plugins: [tailwindcss()]}},
    build: {write: false, emptyOutDir: false, outDir: path('../cloudflare/generated/ui-build'), target: 'es2022', cssCodeSplit: false,
