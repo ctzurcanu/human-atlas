@@ -66,13 +66,14 @@ import {depthLayerOpacity,depthPosition,partLayerOpacity,setDepthPosition} from 
 import type {SceneCapture} from './export-tools';
 import type {CaptureSize,SceneFrameCapture} from './page-capture';
 import type {VrAnatomy} from './vr-anatomy';
+import {captureSceneWorldPose,restoreSceneWorldPose} from './scene-world-pose';
 import type {ScenePose} from './connect-state';
 import {applyFrame,captureCameraPose,captureFrame,cameraPoseForFrame,decodeFrame,frameDistance,immersiveArea,interpolateCameraPose,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea,type CameraPose,type ViewArea,type ViewRect} from './view-framing';
 import {validCamera} from '../shared/camera-frame.mjs';
 import {captureRawSceneCamera,restoreRawSceneCamera,rememberSceneCamera,resumeSceneCamera,sceneCameraIntent} from './scene-camera-persistence';
-interface Props {cameraNavigation?:number;labelChoice?:HierarchyChoice;onSelectLabel?:(choice:HierarchyChoice)=>void;componentsExpanded?:boolean;onShowLabelComponents?:(ids:string[],choice?:HierarchyChoice)=>void;visitProgressRef?:{current:number};visitPoints?:[number,number,number][];visitSegments?:AlimentaryVisit['segments'];visit?:VisitState;onVisitEnd?:()=>void;atlas:Atlas;vrModelUrl:string;state:SceneState;hierarchy:ExplodeHierarchy;guestHierarchy?:GuestHierarchy;remotePoseRef?:{current:ScenePose|null};remoteModel?:string;onPose?:(pose:Omit<ScenePose,'model'>)=>void;cameraTransition?:{id:number;from:number[]};sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onSelect:(id:string,toggle?:boolean)=>void;onHidePart:(id:string,peel?:boolean)=>void;onCamera?:(camera:number[])=>void;onCovering?:(ids:string[])=>void;onExplosionSteps?:(steps:number)=>void;onCapture?:(capture:SceneCapture|null)=>void;onFrameCapture?:(capture:SceneFrameCapture|null)=>void;onProgress:(n:number)=>void;onError:(s:string)=>void}
+interface Props {savedPoseRef?:{current:ScenePose|null};cameraNavigation?:number;labelChoice?:HierarchyChoice;onSelectLabel?:(choice:HierarchyChoice)=>void;componentsExpanded?:boolean;onShowLabelComponents?:(ids:string[],choice?:HierarchyChoice)=>void;visitProgressRef?:{current:number};visitPoints?:[number,number,number][];visitSegments?:AlimentaryVisit['segments'];visit?:VisitState;onVisitEnd?:()=>void;atlas:Atlas;vrModelUrl:string;state:SceneState;hierarchy:ExplodeHierarchy;guestHierarchy?:GuestHierarchy;remotePoseRef?:{current:ScenePose|null};remoteModel?:string;onPose?:(pose:Omit<ScenePose,'model'>)=>void;cameraTransition?:{id:number;from:number[]};sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onSelect:(id:string,toggle?:boolean)=>void;onHidePart:(id:string,peel?:boolean)=>void;onCamera?:(camera:number[])=>void;onCovering?:(ids:string[])=>void;onExplosionSteps?:(steps:number)=>void;onCapture?:(capture:SceneCapture|null)=>void;onFrameCapture?:(capture:SceneFrameCapture|null)=>void;onProgress:(n:number)=>void;onError:(s:string)=>void}
 type SceneMaterial={hepaticSurface?:boolean;nativeMaleEye?:boolean;skinLips?:boolean;fiberAppearance?:boolean;alphaDither?:boolean;alphaTest?:number;ocularSurface?:boolean;skinToneGain?:[number,number,number];skinToneNeckGain?:[number,number,number];skinEyes?:SkinEyeAppearance;skinDetail?:SkinDetail;polygonOffset?:boolean;polygonOffsetFactor?:number;polygonOffsetUnits?:number;gastricRelief?:{heightMap:string;scale:number};geometryOrigin?:[number,number,number];tissueAppearance?:TissueAppearance;appearance?:EmbryoSurface;color:number[];map?:string;surfaceMapping?:'object-triplanar';normalMap?:string;normalScale?:number;roughness?:number;metalness?:number;opacity?:number;vertexColors?:boolean};
-export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLabel,componentsExpanded=false,onShowLabelComponents,visitProgressRef,visitPoints,visitSegments,visit,onVisitEnd,atlas,vrModelUrl,state,hierarchy,guestHierarchy,remotePoseRef,remoteModel,onPose,cameraTransition,sectionTool=false,onSectionPosition,onSelect,onHidePart,onCamera,onCovering,onExplosionSteps,onCapture,onFrameCapture,onProgress,onError}:Props){
+export default function AnatomyScene({savedPoseRef,cameraNavigation=0,labelChoice,onSelectLabel,componentsExpanded=false,onShowLabelComponents,visitProgressRef,visitPoints,visitSegments,visit,onVisitEnd,atlas,vrModelUrl,state,hierarchy,guestHierarchy,remotePoseRef,remoteModel,onPose,cameraTransition,sectionTool=false,onSectionPosition,onSelect,onHidePart,onCamera,onCovering,onExplosionSteps,onCapture,onFrameCapture,onProgress,onError}:Props){
  const labelItems=useMemo(()=>selectedAnatomyLabels(atlas,state.selected,labelChoice,componentsExpanded||state.explode>0),[atlas,state.selected,labelChoice?.id,labelChoice?.name,labelChoice?.elements.join('|'),labelChoice?.children,componentsExpanded,state.explode>0]);
  const labelTargets=useMemo(()=>layerLabelTargets(labelItems,atlas.parts,atlas.concepts),[labelItems,atlas]);
  const labelTargetsRef=useRef(labelTargets);labelTargetsRef.current=labelTargets;
@@ -1104,12 +1105,22 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     if(!box.isEmpty()){const center=box.getCenter(new T.Vector3()),area=viewArea(),direction=directionFor(s.view).normalize();setFrameOffset(camera,area);const distance=Math.max(.006,frameDistance(box,direction,camera.up,camera.aspect,area,camera.fov)*1.35);controls.maxDistance=atlas.scope==='embryo'?Infinity:Math.max(.12,distance*1.6);controls.target.copy(center);camera.position.copy(center).addScaledVector(direction,distance);controls.update();dirty=true;}
    }
    const canOrbit=amount<=.04||s.isolate;controls.enableRotate=canOrbit;controls.mouseButtons.LEFT=canOrbit?T.MOUSE.ROTATE:T.MOUSE.PAN;controls.touches.ONE=canOrbit?T.TOUCH.ROTATE:T.TOUCH.PAN;controls.autoRotate=!visitRef.current?.playing&&!following&&!presenting&&s.rotate&&!s.isolate&&canOrbit&&!cameraTween;controls.autoRotateSpeed=.65;if(!presenting&&!visitRef.current?.playing&&(travel.phase!=='done'||controls.autoRotate))controls.update();if(controls.autoRotate)dirty=true;
+   const saved=savedPoseRef?.current;
+   const restoreSaved=!!(saved?.world&&saved.model===sceneModel&&s.camera&&s.camera!==lastCamera&&!following);
    if(!s.camera)lastCamera=undefined;
-   if(s.camera&&s.camera!==lastCamera){applyFrame(camera,controls.target,s.camera,viewBounds,viewArea());controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.05);controls.update();lastCamera=s.camera;dirty=true;}
+   if(s.camera&&s.camera!==lastCamera){
+    applyFrame(camera,controls.target,s.camera,viewBounds,viewArea());
+    if(restoreSaved&&saved?.world&&savedPoseRef){
+     // Keep responsive framing for a different canvas shape. On the original
+     // viewport the world pose also restores arbitrary pan and projection offsets.
+     if(!saved.world.aspect||Math.abs(saved.world.aspect-camera.aspect)<.001)restoreSceneWorldPose(camera,controls.target,saved.world);
+     selectedRotation.fromArray(saved.rotation).normalize();syncSelectedRotation();savedPoseRef.current=null;
+    }
+    controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.05);controls.update();lastCamera=s.camera;dirty=true;}
    // Section edits move only the clipping planes, never the view.
    if(startPose){
     let destination=captureCameraPose(camera,controls.target);
-    if(s.camera&&validCamera(s.camera)&&explosionLayout){
+    if(!restoreSaved&&s.camera&&validCamera(s.camera)&&explosionLayout){
      const finalParts=atlas.parts.filter(part=>enabledSections(requested).length?sectionPartVisible(part,requested):partVisible(part,requested,atlas.parts)),ids=new Set(requested.selected.length?requested.selected:finalParts.map(part=>part.id));
      const finalLayout=s===requested?explosionLayout:createHierarchicalExplosionLayout(atlas,anatomyEntries,new Set(finalParts.map(part=>part.id)),hierarchyRef.current,camera.aspect,guestNodesRef.current);
      const box=explosionBoundsAt(viewPlaneLayout(finalLayout,atlas.parts,camera.quaternion),atlas.parts,ids,requested.explode),finalBounds=new T.Box3(new T.Vector3().fromArray(box.min),new T.Vector3().fromArray(box.max));
@@ -1196,7 +1207,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     let values:number[],viewUp:number[];
     if(presenting){const tracked=renderer.xr.getCamera();tracked.matrixWorld.decompose(xrHeadCamera.position,xrHeadCamera.quaternion,xrHeadCamera.scale);xrHeadCamera.up.set(0,1,0).applyQuaternion(xrHeadCamera.quaternion);xrHeadCamera.fov=xrPresentationCamera.fov;xrHeadCamera.aspect=xrPresentationCamera.aspect;const target=xrHeadCamera.position.clone().addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(xrHeadCamera.quaternion),xrPresentationCamera.position.distanceTo(controls.target));values=captureFrame(xrHeadCamera,target,viewBounds,xrSession?.domOverlayState?viewArea():immersiveArea);viewUp=xrHeadCamera.up.toArray();}
     else{values=cameraValues();viewUp=camera.up.toArray();drawLabels(s);}
-    cameraCallback.current?.(values);if(!following)poseCallback.current?.({camera:values,up:viewUp,rotation:selectedRotation.toArray()});renderer.domElement.dataset.cameraFrame=JSON.stringify(values);renderer.domElement.dataset.cameraPose=JSON.stringify({position:camera.position.toArray(),target:controls.target.toArray(),up:camera.up.toArray(),quaternion:camera.quaternion.toArray(),view:camera.view});targets=[];
+    cameraCallback.current?.(values);if(!following)poseCallback.current?.({camera:values,up:viewUp,rotation:selectedRotation.toArray(),...(!presenting?{world:captureSceneWorldPose(camera,controls.target)}:{})});renderer.domElement.dataset.cameraFrame=JSON.stringify(values);renderer.domElement.dataset.cameraPose=JSON.stringify({position:camera.position.toArray(),target:controls.target.toArray(),up:camera.up.toArray(),quaternion:camera.quaternion.toArray(),view:camera.view});targets=[];
     if(!presenting&&amount>.45){
      const hasSolid=solidContext();
      atlas.parts.forEach((p,i)=>{

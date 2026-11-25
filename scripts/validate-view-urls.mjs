@@ -3,7 +3,7 @@ import {build} from 'esbuild';
 import {gzipSync,strToU8} from 'fflate';
 import {readFileSync} from 'node:fs';
 
-const bundle=await build({entryPoints:['app/view-url.ts','app/viewer-state.ts','app/embed.ts','app/model-defaults.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/view-url-validation'});
+const bundle=await build({entryPoints:['app/view-url.ts','app/viewer-location.ts','app/viewer-state.ts','app/embed.ts','app/model-defaults.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/view-url-validation'});
 const load=async file=>import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles.find(output=>output.path.endsWith(file)).text).toString('base64')}`);
 const {compactViewUrl,viewParameters}=await load('view-url.js');
 const {viewUrl,readViewUrl}=await load('viewer-state.js');
@@ -102,3 +102,35 @@ assert.equal(defaultModelCamera('local-female-ta98'),undefined);
 const resetFrame=defaultModelCamera('embryo');resetFrame[0]=0;
 assert.equal(defaultModelCamera('embryo')[0],.944333,'Each Reset receives a fresh camera array');
 console.log('User embryo default frame, saved-frame precedence and view/focus presets passed.');
+
+
+const {watchViewUrl}=await load('viewer-location.js');
+const pending=new Map(),writes=[];
+globalThis.window=new EventTarget();
+globalThis.document=new EventTarget();
+globalThis.location={href:base};
+globalThis.history={replaceState(_state,_title,url){writes.push(url);location.href=url;}};
+let nextTimer=0,nextUrl=base;
+window.setTimeout=callback=>{pending.set(++nextTimer,callback);return nextTimer;};
+window.clearTimeout=id=>pending.delete(id);
+const watcher=watchViewUrl(()=>nextUrl);
+for(let i=0;i<100;i++){nextUrl=base+'?frame='+i;watcher.schedule();}
+assert.equal(pending.size,1);
+[...pending.values()][0]();
+assert.deepEqual(writes,[base+'?frame=99']);
+nextUrl=compact;
+watcher.schedule();
+window.dispatchEvent(new Event('pointerup'));
+assert.equal(location.href,compact);
+assert.equal(pending.size,0);
+watcher.schedule();
+window.dispatchEvent(new Event('pagehide'));
+assert.equal(writes.length,2);
+nextUrl=null;
+watcher.schedule();
+window.dispatchEvent(new Event('keyup'));
+assert.equal(writes.length,2);
+watcher.schedule();
+watcher.dispose();
+assert.equal(pending.size,0);
+console.log('Live camera changes coalesce, settle into the current history entry and stop during model loading.');

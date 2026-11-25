@@ -34,6 +34,11 @@ export function setFrameOffset(camera:PerspectiveCamera,area:ViewArea,anchor:rea
  // Three's projection API wants pixels, but ratios are enough (height = 1).
  camera.setViewOffset(camera.aspect,1,(.5-x)*camera.aspect,.5-y,camera.aspect,1);
 }
+export function fitViewToAspect(camera:PerspectiveCamera){
+ const view=camera.view;
+ if(view?.enabled&&view.fullHeight>0){const k=camera.aspect*view.fullHeight/view.fullWidth;if(Math.abs(k-1)>1e-9){view.fullWidth*=k;view.width*=k;view.offsetX*=k;}}
+ camera.updateProjectionMatrix();
+}
 export function frameDistance(bounds:Box3,direction:Vector3,up:Vector3,aspect:number,area:ViewArea,fov:number){
  const size=bounds.getSize(new Vector3()),right=new Vector3().crossVectors(up,direction).normalize();
  if(right.lengthSq()<.001)right.set(1,0,0);

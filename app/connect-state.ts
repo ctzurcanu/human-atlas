@@ -6,7 +6,8 @@ import type {Terminology} from './anatomical-terminology';
 
 export type ConnectRole='host'|'guest';
 export type ConnectPeer={id:string;ip:string;name:string;online:boolean;inSession?:boolean};
-export type ScenePose={model:string;camera:number[];up:number[];rotation:number[]};
+export type SceneWorldPose={position:number[];target:number[];up:number[];quaternion:number[];fov:number;zoom:number;near:number;far:number;aspect?:number;filmGauge?:number;filmOffset?:number;view?:{enabled:boolean;fullWidth:number;fullHeight:number;offsetX:number;offsetY:number;width:number;height:number}|null};
+export type ScenePose={model:string;camera:number[];up:number[];rotation:number[];world?:SceneWorldPose};
 export type AdvancedPresentation={document:ToolDocument;slideIndex:number|null};
 type ChoiceSummary={id:string;name:string;elements:string[];group:boolean;terminology?:Terminology};
 export type ConnectSnapshot={
