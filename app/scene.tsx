@@ -452,7 +452,10 @@ export default function AnatomyScene({savedPoseRef,cameraNavigation=0,labelChoic
 
    const candidates=visibleCandidates.filter(({part,cutIndex})=>{if(s.explode>.001)return true;const plane=clipPlanes[cutIndex],range=sectionRange({min:part.bounds[0] as Point3,max:part.bounds[1] as Point3},plane.normal.toArray() as Point3);return range.min<=-plane.constant+.0002&&range.max>=-plane.constant-.0002;});
    const translucentAssemblies=new Set(visibleCandidates.filter(({part})=>part.sectionAssembly&&sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1)<.999).map(({part,cutIndex})=>`${cutIndex}:${part.sectionAssembly}`));
-   const assemblyCandidates=visibleCandidates.filter(({part,cutIndex})=>part.sectionAssembly&&!translucentAssemblies.has(`${cutIndex}:${part.sectionAssembly}`));
+   // Paired parts already have independent closed volumes and are counted below
+   // only when the section intersects them. Keep all pieces of intersected shared shells.
+   const intersectedAssemblies=new Set(candidates.filter(({part})=>part.sectionAssembly&&!part.pairedTissue).map(({part,cutIndex})=>`${cutIndex}:${part.sectionAssembly}`));
+   const assemblyCandidates=visibleCandidates.filter(({part,cutIndex})=>!part.pairedTissue&&part.sectionAssembly&&intersectedAssemblies.has(`${cutIndex}:${part.sectionAssembly}`)&&!translucentAssemblies.has(`${cutIndex}:${part.sectionAssembly}`));
    const assemblies=sectionAssemblies.collect(assemblyCandidates.map(({part,index,cutIndex})=>{const profile=sectionCapProfile(part);return {part,index,cutIndex,geometry:pickers[index]!.geometry,matrix:pickers[index]!.matrixWorld,mode:profile.hollowWall?'wall' as const:'solid' as const,wallWidth:profile.width};}));
    const gpuRoles=new Set(['integumentary','muscular','cardiac','skeletal','cartilage','adipose','lung','liver','spleen','cns','organ','gastric-wall','mucosa','submucosa','nervous','lymphatic','arterial','venous','tendon','connective']);
    const gpuCandidates=candidates.filter(({part})=>{
@@ -556,7 +559,17 @@ export default function AnatomyScene({savedPoseRef,cameraNavigation=0,labelChoic
    const sharedAttribute=(key:string,make:()=>T.BufferAttribute)=>{let attribute=sharedAttributes.get(key);if(!attribute){attribute=make();sharedAttributes.set(key,attribute);}return attribute;};
    const owned:T.BufferGeometry[]=[];if(onDemand)chunkGeometry.set(ci,owned);
    const hairBuffers=new Map<number,ArrayBuffer>();
-   for(const i of chunkParts[ci]){const field=atlas.parts[i].hairField;if(!field)continue;const raw=await loadModelBuffer(assetUrl(field.url+'.gz'),field.bytes,true,signal);if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');hairBuffers.set(i,raw);metricHairPicking.set(i,new MetricHairPicking(field,raw));}
+   for(const i of chunkParts[ci]){
+    const field=atlas.parts[i].hairField;if(!field)continue;
+    // Use the auxiliary bank named by the catalogue. Older deliveries can
+    // provide only its gzip variant.
+    const raw=await loadModelBuffer(assetUrl(field.url),field.bytes,true,signal).catch(error=>{
+     if(signal.aborted||field.url.endsWith('.gz'))throw error;
+     return loadModelBuffer(assetUrl(field.url+'.gz'),field.bytes,true,signal);
+    });
+    if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');
+    hairBuffers.set(i,raw);metricHairPicking.set(i,new MetricHairPicking(field,raw));
+   }
    chunkParts[ci].forEach(i=>{const p=atlas.parts[i];
     const layout=atlas.systemGeometry?.parts.get(p.id)??p;
     const positions=new Float32Array(buffer,offset+layout.positions,p.vertexCount*3);

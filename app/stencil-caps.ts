@@ -134,13 +134,31 @@ export function createStencilCaps(scene:T.Scene|T.Group,planes:[T.Plane,T.Plane]
    const width=(high[0]-low[0])*1.06+.0001,height=(high[1]-low[1])*1.06+.0001;
    for(const candidate of list.filter(item=>item.part.pairedTissue)){
     const key=`tissue:${cutIndex}:${candidate.index}`;let pair=quadMap.get(key);
-    if(!pair){const appearance=candidate.part.tissueAppearance;if(!appearance)throw new Error('Paired tissue requires a generated appearance');const tissue=tissueWallMaterial(appearance,candidate.matrix.clone().invert()),material=tissue.material;material.side=T.DoubleSide;material.clippingPlanes=[planes[1-cutIndex]];material.stencilWrite=true;material.stencilFunc=T.NotEqualStencilFunc;material.stencilRef=0;material.stencilFail=T.ReplaceStencilOp;material.stencilZFail=T.ReplaceStencilOp;material.stencilZPass=T.ReplaceStencilOp;material.polygonOffset=true;material.polygonOffsetFactor=-1;material.polygonOffsetUnits=-1;quadMaterials.push(material);const mesh=new T.Mesh(planeGeometry,material);mesh.userData.tissueFrame=tissue.tissueFrame;mesh.userData.cutIndex=cutIndex;mesh.frustumCulled=false;mesh.renderOrder=-100000+candidate.index*8+cutIndex*4+1;mesh.onAfterRender=renderer=>renderer.clearStencil();scene.add(mesh);quads.push(mesh);pair={fill:mesh};quadMap.set(key,pair);}
+    if(!pair){
+     const appearance=candidate.part.tissueAppearance;
+     const tissue=appearance?tissueWallMaterial(appearance,candidate.matrix.clone().invert()):undefined;
+     // A native surface material can lack a generated tissue pattern. Its
+     // closed mesh still defines the cut, with the normal tissue-role finish.
+     const material=tissue?.material??quadMaterial(sectionTissue(candidate.part),cutIndex);
+     if(tissue){
+      material.side=T.DoubleSide;material.clippingPlanes=[planes[1-cutIndex]];
+      material.stencilWrite=true;material.stencilFunc=T.NotEqualStencilFunc;material.stencilRef=0;
+      material.stencilFail=T.ReplaceStencilOp;material.stencilZFail=T.ReplaceStencilOp;material.stencilZPass=T.ReplaceStencilOp;
+      material.polygonOffset=true;material.polygonOffsetFactor=-1;material.polygonOffsetUnits=-1;
+      quadMaterials.push(material);
+     }
+     const mesh=new T.Mesh(planeGeometry,material);
+     if(tissue)mesh.userData.tissueFrame=tissue.tissueFrame;
+     mesh.userData.cutIndex=cutIndex;mesh.frustumCulled=false;mesh.renderOrder=-100000+candidate.index*8+cutIndex*4+1;
+     mesh.onAfterRender=renderer=>renderer.clearStencil();
+     scene.add(mesh);quads.push(mesh);pair={fill:mesh};quadMap.set(key,pair);
+    }
     const capMaterial=pair.fill.material as T.MeshStandardMaterial,opacity=Math.max(0,Math.min(1,candidate.opacity??1));
     // Count/fill/reset must stay in the opaque render queue even when the
     // anatomical context is translucent. Custom alpha blending preserves that
     // exact sequence; transparent sorting would mix unrelated tissue stencils.
     capMaterial.opacity=opacity;capMaterial.depthWrite=opacity>=.999;capMaterial.blending=opacity>=.999?T.NoBlending:T.CustomBlending;capMaterial.blendSrc=T.SrcAlphaFactor;capMaterial.blendDst=T.OneMinusSrcAlphaFactor;capMaterial.blendEquation=T.AddEquation;
-    pair.fill.userData.tissueFrame.value.copy(candidate.matrix).invert();pair.fill.visible=true;pair.fill.position.copy(center);pair.fill.quaternion.copy(rotation);pair.fill.scale.set(width,height,1);
+    pair.fill.userData.tissueFrame?.value.copy(candidate.matrix).invert();pair.fill.visible=true;pair.fill.position.copy(center);pair.fill.quaternion.copy(rotation);pair.fill.scale.set(width,height,1);
    }
    for(const key of new Set(list.filter(candidate=>!candidate.part.pairedTissue).map(candidate=>`${sectionTissue(candidate.part)}:${candidate.mode??'solid'}`))){
     const [role,mode]=key.split(':') as [SectionTissue,'wall'|'solid'];

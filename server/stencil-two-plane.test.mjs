@@ -75,3 +75,26 @@ test('Ordinary solid rim counts finish their inner fill before clearing the shar
  let clears=0;const renderer={clearStencil:()=>clears++};quads[0].onAfterRender(renderer);assert.equal(clears,0,'rim does not clear before inset coverage');quads[1].onAfterRender(renderer);assert.equal(clears,1);
  caps.dispose();geometry.dispose();
 });
+
+test('Paired items with native surface materials render alongside generated coats on both cuts',()=>{
+ const {wall,candidates}=fixture(),scene=new T.Scene();
+ const planes=[new T.Plane(new T.Vector3(0,1,0),-.7),new T.Plane(new T.Vector3(0,-1,0),.76)];
+ const caps=createStencilCaps(scene,planes,()=>new T.Texture());
+ delete candidates[0].part.tissueAppearance;
+ caps.update(cutCandidates(candidates));
+ scene.updateMatrixWorld(true);
+ const fills=scene.children.filter(mesh=>mesh.visible&&mesh.material.colorWrite);
+ assert.equal(fills.length,6);
+ const native=fills.filter(mesh=>!mesh.userData.tissueFrame);
+ assert.equal(native.length,2);
+ for(const fill of native){
+  const cut=fill.userData.cutIndex;
+  assert.equal(fill.material.clippingPlanes[0],planes[1-cut]);
+  assert.equal(fill.material.stencilFunc,T.NotEqualStencilFunc);
+  assert.equal(Math.abs(winding(counts(scene,fill),new T.Vector3(.945,fill.position.y,.02))),1);
+  assert.equal(winding(counts(scene,fill),new T.Vector3(0,fill.position.y,0)),0);
+ }
+ caps.update([]);caps.update(cutCandidates(candidates));
+ assert.equal(caps.activeCount(),6);
+ caps.dispose();wall.dispose();
+});
