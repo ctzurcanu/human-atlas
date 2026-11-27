@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tube and Junction Tools"
+  short_description: "Preserve tube sections and join open lumens"
+  default_prompt: "Use $atlas-tube-junction to work on the requested Human Atlas geometry with source-bound checks."

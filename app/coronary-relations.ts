@@ -30,6 +30,6 @@ export function coronaryRelations(parts:Part[]):Map<string,ResolvedRelation[]>{
  cache.set(parts,graph);return graph;
 }
 export function coronarySourceLimitation(p:Part):string|undefined{
- if(p.id==='ZA:Right inferolateral branch of right coronary artery')return 'Named right-coronary source branch. The inferolateral source label has not been established as the TA98 right posterolateral branch; placement under the right coronary artery is provisional. Extent, wall, lumen and perfusion territory remain unverified.';
+ if(p.id==='ZA:Right inferolateral branch of right coronary artery')return 'Native source for the TA98 right posterolateral branch, also named the right inferolateral branch. Extent, wall layers, parent-root join, lumen continuity, coronary dominance and perfusion territory remain unverified.';
  if(isCoronaryArtery(p)&&nativePartFrame(p))return 'Named native coronary arterial exterior. Separate wall layers, continuous lumens, ostia, coronary dominance and complete perfusion territories remain unverified.';
 }

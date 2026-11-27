@@ -12,6 +12,7 @@ for(const sex of ['female','male'])test(`${sex}: stored-cell spheres enclose eve
 });
 test('ordinary, incomplete, translated or malformed bounds keep the ordinary geometry path',async()=>{
  const a=JSON.parse(await fs.readFile('.local-models/ta98-review/bowel-wall-main-prototype/female/atlas.json')),part=a.parts.find(p=>p.bowelWallSource);
- for(const p of [{...part,bowelWallSource:undefined},{...part,pairedTissue:false},{...part,geometryOrigin:undefined},{...part,tissueDrawGroups:undefined},{...part,sourceOffset:[0,0,0]},{...part,bounds:[[NaN,0,0],[1,1,1]]},{...part,bounds:[[2,0,0],[1,1,1]]},{...part,bounds:[[0,0],[1,1,1]]}])assert.equal(bowelWallBoundingSphere(p),null);
- for(const p of a.parts.filter(p=>!p.bowelWallSource))assert.equal(bowelWallBoundingSphere(p),null);
+ assert.deepEqual(bowelWallBoundingSphere({...part,bowelWallSource:undefined}),bowelWallBoundingSphere(part),'Finite shared tissue banks use their stored bounds beyond bowel as well');
+ for(const p of [{...part,pairedTissue:false},{...part,geometryOrigin:undefined},{...part,tissueDrawGroups:undefined},{...part,sourceOffset:[0,0,0]},{...part,geometryInstance:{scale:1,rotation:[0,0,0,1]}},{...part,bounds:[[NaN,0,0],[1,1,1]]},{...part,bounds:[[2,0,0],[1,1,1]]},{...part,bounds:[[0,0],[1,1,1]]}])assert.equal(bowelWallBoundingSphere(p),null);
+ for(const p of a.parts.filter(p=>!p.pairedTissue||!p.tissueDrawGroups||!p.geometryOrigin||p.sourceOffset||p.geometryInstance))assert.equal(bowelWallBoundingSphere(p),null);
 });

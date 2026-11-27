@@ -45,28 +45,33 @@ function nodeBounds(parts:Part[]):Bounds{
 const node=(parts:Part[],children:Node[]=[],name?:string):Node=>({parts,children,name,bounds:nodeBounds(parts)});
 const labelMembership=(node:Node)=>({members:node.parts,childGroups:node.children.map(child=>({name:child.name??child.parts[0]?.name??'Components',members:child.parts}))});
 function entryNode(entry:AnatomyEntry):Node{
- return node(entry.parts,entry.parts.map(part=>node([part])));
+ return node(entry.parts,[],entry.name);
 }
 function anatomyNode(item:AnatomyNode):Node{
  return item.kind==='group'?node(item.parts,item.nodes.map(anatomyNode),item.name)
   :item.kind==='bilateral'?node(item.parts,item.entries.map(entryNode),item.name):entryNode(item.entry);
 }
 function hierarchyTree(atlas:Atlas,entries:AnatomyEntry[],visibleIds:Set<string>,mode:ExplodeHierarchy,guestNodes?:ResolvedGuestNode[]):Node|null{
- const visibleEntries=entries.flatMap(entry=>{const parts=entry.parts.filter(part=>visibleIds.has(part.id));return parts.length?[{...entry,parts}]:[]});
+ const visibleEntries=entries.flatMap(entry=>{if(entry.selectionOnly)return [];const parts=entry.parts.filter(part=>visibleIds.has(part.id));return parts.length?[{...entry,parts}]:[]});
  if(!visibleEntries.length)return null;
  if(mode==='guest'&&guestNodes){
   const remaining=new Set(visibleIds),visited=new Set<ResolvedGuestNode>();
+  const names=new Map(atlas.concepts.map(c=>[c.id,c.name]));
+  const namedNodes=(parts:Part[])=>{
+   const groups=new Map<string,Part[]>();for(const part of parts){const members=groups.get(part.conceptId)??[];members.push(part);groups.set(part.conceptId,members);}
+   return [...groups].map(([id,members])=>node(members,[],names.get(id)??members[0].name));
+  };
   const convert=(item:ResolvedGuestNode):Node|null=>{
    if(visited.has(item)||!item.parts.some(part=>remaining.has(part.id)))return null;visited.add(item);
    const children=item.children.map(convert).filter((child):child is Node=>!!child);
    const own=item.directParts.filter(part=>remaining.delete(part.id));
-   if(own.length)children.push(...own.map(part=>node([part])));
+   if(own.length)children.push(...namedNodes(own));
    const parts=[...new Map(children.flatMap(child=>child.parts).map(part=>[part.id,part])).values()];
    return parts.length?node(parts,children,item.name):null;
   };
   const categories=guestNodes.map(convert).filter((item):item is Node=>!!item);
   const other=atlas.parts.filter(part=>remaining.has(part.id));
-  if(other.length)categories.push(node(other,other.map(part=>node([part])),'Other anatomy'));
+  if(other.length)categories.push(node(other,namedNodes(other),'Other anatomy'));
   return node(visibleEntries.flatMap(entry=>entry.parts),categories);
  }
  if(mode==='systems'){

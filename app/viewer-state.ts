@@ -1,6 +1,7 @@
 import {dermatomeTerritories} from './dermatome-colors';
 import {isSurfaceSystem,type Atlas,type Part,type SceneState,type SystemId,type View} from './anatomy';
 import {compatiblePartAtlas,packPartIds,partFingerprint,unpackPartIds} from './view-part-codes';
+import {eyeSelectionForTerm,restoreEyeAssemblySelection} from './eye-membership';
 import {DEPTH_LAYERS,depthLayerFor,isSkinPart} from './depth-layers';
 import {completedDepthLayers,depthLayerOpacity,partLayerOpacity} from './depth-control';
 import type {SectionState} from './section-plane';
@@ -53,9 +54,17 @@ function opaqueBodySurfaceVisible(s:SceneState,parts?:readonly Part[]){
   inRegion(part,s.region)&&partLayerOpacity(part,s)>=.999);
  snapshots.set(parts,shown);return shown;
 }
+function liverAlternativeActive(p:Part,s:SceneState){
+ const ids=(p as Part&{liverAlternativeParts?:string[]}).liverAlternativeParts,sets=visibilitySets(s);
+ return p.id.startsWith('TA98PART:ZA:Liver:')&&!!ids?.length&&ids.every(id=>/^TA98LIVER:(?:male|female):segment:(?:I|II|III|IV|V|VI|VII|VIII)$/.test(id))
+  &&ids.some(id=>sets.selected.has(id)||!s.isolate&&!sets.hidden.has(id)&&sets.visible.has('digestive'));
+}
 export function partVisible(p:Part,s:SceneState,parts?:readonly Part[]){
  if(p.suppressed)return false;
+ if(liverAlternativeActive(p,s))return false;
  const sets=visibilitySets(s);
+ const spinalReference=(p as Part&{spinalBoundaryReference?:{ownerPartId:string}}).spinalBoundaryReference;
+ if(spinalReference&&(!sets.selected.has(p.id)||sets.selected.has(spinalReference.ownerPartId)))return false;
  // A wall assembly stays selected while peeling its constituent tissues.
  // Explicitly removed coats must disappear despite that retained selection.
  if((p.bowelWallSource||p.pairedTissue&&p.tissueWallAssembly&&p.tissueWallLayer)&&sets.hidden.has(p.id))return false;
@@ -71,7 +80,10 @@ export function partVisible(p:Part,s:SceneState,parts?:readonly Part[]){
 // lie entirely on either side of a cut. Selection alone must not add a piece.
 export function sectionPartVisible(p:Part,s:SceneState){
  const sets=visibilitySets(s);
+ const spinalReference=(p as Part&{spinalBoundaryReference?:{ownerPartId:string}}).spinalBoundaryReference;
+ if(spinalReference&&(!sets.selected.has(p.id)||sets.selected.has(spinalReference.ownerPartId)))return false;
  if(p.suppressed||s.depth!==undefined&&sets.depthHidden.has(depthLayerFor(p)))return false;
+ if(liverAlternativeActive(p,s))return false;
  if((p.bowelWallSource||p.pairedTissue&&p.tissueWallAssembly&&p.tissueWallLayer)&&sets.hidden.has(p.id))return false;
  if(s.isolate)return sets.selected.has(p.id);
  // A single whole-body skin mesh is still one checked item in a section.
@@ -90,18 +102,23 @@ function replacementIds(atlas:Atlas,ids:string[]){
 }
 export function resolveSelection(atlas:Atlas,terms:string[]){
  return replacementIds(atlas,terms.flatMap(term=>{
+  const eye=eyeSelectionForTerm(atlas,term);if(eye)return eye;
   const sourceName=term.startsWith('DETAIL:')?term.slice(7):term;
   const concept=atlas.concepts.find(c=>c.id===term||c.id==='DETAIL:'+term||c.id==='ZA:'+sourceName||c.name.toLowerCase()===sourceName.toLowerCase());
-  return concept?.elements??atlas.parts.filter(p=>p.id===term||p.sourceId===sourceName).map(p=>p.id);
+  if(concept?.elements.length)return concept.elements;
+  return atlas.parts.filter(p=>p.id===term||p.sourceId===sourceName||p.sourceGroups?.includes(term)).map(p=>p.id);
  }));
 }
 const number=(text:string|null,min:number,max:number,fallback:number)=>{if(text===null)return fallback;const n=Number(text);return Number.isFinite(n)?Math.min(max,Math.max(min,n)):fallback;};
 export function readViewUrl(search:string,atlas:Atlas,base:SceneState):SceneState{
  const q=viewParameters(search),view=q.get('view') as View,region=q.get('region')??'all',cam=(q.get('frame')??q.get('camera'))?.split(',').map(Number);
  const packedAtlas=compatiblePartAtlas(atlas,q.get('p'));
- const selected=q.has('select')?resolveSelection(atlas,q.getAll('select')):packedAtlas&&q.has('s')?replacementIds(atlas,unpackPartIds(q.get('s')!,packedAtlas,false)):[];
+ const selected=q.has('select')?resolveSelection(atlas,q.getAll('select')):packedAtlas&&q.has('s')?restoreEyeAssemblySelection(atlas,replacementIds(atlas,unpackPartIds(q.get('s')!,packedAtlas,false))):[];
  const appendedDefaults=packedAtlas&&packedAtlas.parts.length<atlas.parts.length?(atlas.defaultHidden??[]).filter(id=>atlas.parts.slice(packedAtlas.parts.length).some(p=>p.id===id)&&!selected.includes(id)):[];
- const hidden=replacementIds(atlas,q.has('hide')?resolveSelection(atlas,q.getAll('hide')):packedAtlas&&q.has('h')?[...unpackPartIds(q.get('h')!,packedAtlas,true),...appendedDefaults]:(atlas.defaultHidden??[]).filter(id=>!selected.includes(id)));
+ // A retired source is hidden by default so its replacement can be shown.
+ // Only an explicit saved/user hide follows replacement anatomy; expanding
+ // catalogue defaults would hide the newly installed tissues themselves.
+ const hidden=q.has('hide')?replacementIds(atlas,resolveSelection(atlas,q.getAll('hide'))):packedAtlas&&q.has('h')?[...new Set([...replacementIds(atlas,unpackPartIds(q.get('h')!,packedAtlas,true)),...appendedDefaults])]:(atlas.defaultHidden??[]).filter(id=>!selected.includes(id));
  const mask=q.get('l'),maskNumber=mask&&/^[0-9a-z]{1,7}$/.test(mask)?parseInt(mask,36):NaN;
  const visible=q.has('layers')?(q.get('layers')!.split(',').filter(id=>atlas.parts.some(p=>p.system===id)) as SystemId[]):Number.isSafeInteger(maskNumber)&&maskNumber>=0&&maskNumber<2**URL_SYSTEMS.length?URL_SYSTEMS.filter((_,index)=>(maskNumber&2**index)!==0):base.visible;
  const readSection=(suffix:string):SectionState=>{const axis=q.get('cut'+suffix);return {enabled:['axial','sagittal','coronal','oblique'].includes(axis??''),axis:axis==='sagittal'||axis==='coronal'||axis==='oblique'?axis:'axial',position:number(q.get('slice'+suffix),0,1,.38),flip:axis?q.get('flip'+suffix)==='1':true,...(axis==='oblique'?{azimuth:number(q.get('azimuth'+suffix),-180,180,35),elevation:number(q.get('elevation'+suffix),-90,90,30)}:{})};};
@@ -117,12 +134,16 @@ export function viewUrl(base:string,model:string,s:SceneState,camera?:number[],a
  const url=new URL(base);url.search='';url.hash='';const q=url.searchParams;q.set('model',model);if(s.view!=='three-quarter')q.set('view',s.view);if(s.guestView)q.set('bioView',s.guestView);if(s.guestExtensions?.length)q.set('bioExpand',s.guestExtensions.join(','));if(s.guestQuery)q.set('bio',s.guestQuery);if(s.dermatomeHidden?.length)q.set('dermHide',s.dermatomeHidden.join(','));if(s.dermatomeSelected?.length)q.set('dermSelect',s.dermatomeSelected.join(','));
  if((model==='local-ta98'||model==='local-female-ta98')&&(delivery==='0'||delivery==='1'))q.set('delivery',delivery);
  if(model==='local-female-ta98'&&atlas?.hepaticBoundaryPreview?.localReviewOnly&&!atlas.hepaticBoundaryPreview.ordinaryAtlasInstalled)q.set('hepatic',atlas.hepaticBoundaryPreview.variant??'repair');
+ // Suppressed source defaults cannot affect the rendered view. Persisting
+ // them as explicit hides would hide their replacements on the next load.
+ const suppressed=atlas?new Set(atlas.parts.filter(part=>part.suppressed).map(part=>part.id)):undefined;
+ const persistentHidden=(s.hidden??[]).filter(id=>!suppressed?.has(id));
  const packedSelection=atlas&&s.selected.length?packPartIds(s.selected,atlas,false):undefined;
- const packedHidden=atlas&&s.hidden?.length?packPartIds(s.hidden,atlas,true):undefined;
+ const packedHidden=atlas&&persistentHidden.length?packPartIds(persistentHidden,atlas,true):undefined;
  if(packedSelection||packedHidden)q.set('p',partFingerprint(atlas!));
  if(packedSelection)q.set('s',packedSelection);else s.selected.forEach(id=>q.append('select',id));
- if(packedHidden)q.set('h',packedHidden);else (s.hidden??[]).forEach(id=>q.append('hide',id));
- if(atlas?.defaultHidden?.length&&!s.hidden?.length){q.set('p',partFingerprint(atlas));q.set('h','');}
+ if(packedHidden)q.set('h',packedHidden);else persistentHidden.forEach(id=>q.append('hide',id));
+ if(atlas?.defaultHidden?.length&&!persistentHidden.length){q.set('p',partFingerprint(atlas));q.set('h','');}
  if(atlas&&s.visible.every(id=>URL_SYSTEMS.includes(id))){const mask=URL_SYSTEMS.reduce((value,id,index)=>s.visible.includes(id)?value+2**index:value,0);q.set('l',mask.toString(36));}else q.set('layers',s.visible.join(','));
  if((s.contextOpacity??1)!==1)q.set('context',String(s.contextOpacity));if((s.skinOpacity??.1)!==.1)q.set('skin',String(s.skinOpacity));if(s.region&&s.region!=='all')q.set('region',s.region);if(s.depth!==undefined){q.set('dp',String(Number(s.depth.toFixed(6))));const expected=new Set<string>(completedDepthLayers(s.depth)),hidden=new Set(s.depthHidden??[]);if(expected.size!==hidden.size||[...expected].some(id=>!hidden.has(id)))q.set('depth',[...hidden].join(','));}else if(s.depthHidden?.length)q.set('depth',s.depthHidden.join(','));if(s.isolate)q.set('isolate','1');if(s.explode)q.set('explode',String(s.explode));if(s.rotate)q.set('rotate','1');if(s.labels===false)q.set('labels','0');
  const sections=s.sections?.length?s.sections.slice(0,2):[s.section].filter((section):section is NonNullable<typeof section>=>!!section);

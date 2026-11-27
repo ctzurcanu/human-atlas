@@ -6,7 +6,9 @@ import type {Part} from './anatomy';
  * Ordinary/donor anatomy retains BufferGeometry's usual calculation.
  */
 export function bowelWallBoundingSphere(part:Part):Sphere|null{
- if(!part.bowelWallSource||!part.pairedTissue||!part.geometryOrigin||!part.tissueDrawGroups||part.sourceOffset)return null;
+ const boundary=(part as Part&{spinalBoundaryReference?:{kind:string;physicalOwnerRetained:boolean}}).spinalBoundaryReference;
+ const sharedCell=part.pairedTissue&&part.tissueDrawGroups;
+ if(!(sharedCell||boundary?.kind==='lumen-boundary'&&boundary.physicalOwnerRetained)||!part.geometryOrigin||part.sourceOffset||part.geometryInstance)return null;
  const [lo,hi]=part.bounds,origin=part.geometryOrigin;
  if(lo.length!==3||hi.length!==3||origin.length!==3||[...lo,...hi,...origin].some(v=>!Number.isFinite(v))||lo.some((v,d)=>v>hi[d]))return null;
  const box=new Box3(new Vector3(...lo).sub(new Vector3(...origin)),new Vector3(...hi).sub(new Vector3(...origin)));

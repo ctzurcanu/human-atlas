@@ -36,6 +36,7 @@ const palmarBranches:Record<string,string[]>={
   'deep palmar arch':['palmar metacarpal arteries'],
  };
 export function nonComponentRelationship(child:string|undefined,parent:string|undefined):string|undefined{
+ if(base(child)==='pancreatic veins'&&['splenic vein','superior mesenteric vein'].includes(base(parent)))return 'Pancreatic veins are adjoining tributary vessels, not tissue components of the recipient vein.';
  if(base(parent)==='gallbladder'&&['bile duct','cystic duct'].includes(base(child)))return 'The extrahepatic bile and cystic ducts communicate with the gallbladder; TA98 chapter ancestry does not make them tissue components contained within its wall. Source junctions remain unverified.';
  const coronaryChild=base(child),coronaryParent=base(parent);
  if((coronaryParent==='ascending aorta'&&['left coronary artery','right coronary artery'].includes(coronaryChild))||(['left coronary artery','right coronary artery','anterior interventricular artery','circumflex artery of heart','circumflex branch of left coronary artery'].includes(coronaryParent)&&coronaryChild!==coronaryParent&&!/^(?:wall|intima|media|adventitia)\b/.test(coronaryChild)&&/\b(?:artery|arteries|branch|branches)\b/.test(coronaryChild)))return 'Coronary branches are adjoining vessels, not tissue components contained within the supplying artery. Named vessel walls and ostia require separate representation.';

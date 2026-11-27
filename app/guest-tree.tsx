@@ -1,22 +1,28 @@
+import {meshCount,separateOrganModels} from './organ-models';
+import SeparateOrganModelLinks from './separate-organ-model-links';
+import HierarchyCount from './hierarchy-count';
+import {itemDescription} from '../shared/item-description.mjs';
 import {useEffect,useMemo,useState,type CSSProperties} from 'react';
 import {Check,ChevronDown,ChevronRight,Minus} from 'lucide-react';
-import {structureName,type Atlas,type Part,type SceneState} from './anatomy';
+import {type Atlas,type Part,type SceneState} from './anatomy';
 import {depthLayerFor} from './depth-layers';
 import {partLayerOpacity} from './depth-control';
 import {resolveGuestHierarchy,type GuestHierarchy,type GuestLink,type ResolvedGuestNode} from './guest-hierarchy';
-import {displayLaterality,lateralityClass} from './laterality';
+import {displayLaterality,lateralityClass,structureLabelName} from './laterality';
 import {guestDirectAnatomyParts,guestNodeChoice,guestVisibleChildren} from './guest-choice';
 import {hierarchyChoice,type HierarchyChoice} from './hierarchy-choice';
 import {terminologyForConcept,terminologyForGroup,terminologyTitle} from './anatomical-terminology';
 import {dermatomeColors,dermatomeSelection,dermatomeTerritoriesFor} from './dermatome-colors';
+import {anatomicalReferenceChoices as liverReferenceChoices,anatomicalReferenceActive as liverReferenceActive,toggleAnatomicalReferenceChoice as toggleLiverReferenceChoice} from './anatomical-reference-selection';
 
 type Update=SceneState|((state:SceneState)=>SceneState);
-type Props={dermatomeReference?:boolean;atlas:Atlas;hierarchy:GuestHierarchy;state:SceneState;setState:(update:Update)=>void;onChoose:(concept:HierarchyChoice,toggle?:boolean)=>void;onNavigate?:(link:GuestLink)=>void;onLoadExtension?:(id:string)=>Promise<void>};
+type Props={choice?:HierarchyChoice;dermatomeReference?:boolean;atlas:Atlas;hierarchy:GuestHierarchy;state:SceneState;setState:(update:Update)=>void;onChoose:(concept:HierarchyChoice,toggle?:boolean)=>void;onNavigate?:(link:GuestLink)=>void;onLoadExtension?:(id:string)=>Promise<void>};
 const style=(depth:number)=>({'--tree-depth':depth} as CSSProperties);
 const hierarchyNames:Record<string,string>={genes:'Genes','cell-types':'Cell Types',physiology:'Physiology','dermatomes-myotomes':'Dermatomes and Myotomes',drugs:'Drugs','physical-exercise':'Physical Exercise',chakras:'Chakras'};
 
-export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNavigate,onLoadExtension,dermatomeReference}:Props){
+export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNavigate,onLoadExtension,dermatomeReference,choice}:Props){
  const nodes=useMemo(()=>resolveGuestHierarchy(atlas,hierarchy),[atlas,hierarchy]);
+ const references=useMemo(()=>liverReferenceChoices(atlas),[atlas]);
  const anatomyNames=useMemo(()=>new Map(atlas.concepts.map(concept=>[concept.id,concept.name])),[atlas]);
  const all=useMemo(()=>[...new Map(nodes.flatMap(node=>node.parts).map(part=>[part.id,part])).values()],[nodes]);
  const [extensionBusy,setExtensionBusy]=useState<Set<string>>(()=>new Set()),[extensionError,setExtensionError]=useState('');
@@ -36,8 +42,10 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNav
   for(const id of ids)hiddenNow.delete(id);
   return {...current,visible:[...new Set([...current.visible,...parts.map(part=>part.system)])],hidden:[...hiddenNow],depthHidden:current.depthHidden?.filter(id=>!restoredDepth.has(id)),skinOpacity:parts.some(part=>depthLayerFor(part)==='skin')&&!(current.skinOpacity??1)?.1:current.skinOpacity,selected:current.isolate?[...new Set([...current.selected,...ids])]:current.selected};
  });
- const check=(name:string,parts:Part[])=>{
+ const check=(name:string,parts:Part[],item?:HierarchyChoice)=>{
   if(!parts.length)return null;
+  const reference=item&&references.get(item.ta98Term??item.terminology?.ta98??'');
+  if(reference){const active=liverReferenceActive(reference,choice);return <button type="button" className="tree-check" role="checkbox" aria-label={`Show ${name}`} aria-checked={active} data-state={String(active)} onClick={()=>onChoose(toggleLiverReferenceChoice(reference,choice))} title={`${active?'Hide':'Show'} ${name}`}>{active?<Check size={12}/>:null}</button>;}
   const enabled=parts.filter(isOn).length,status=enabled===0?'false':enabled===parts.length?'true':'mixed';
   return <button type="button" className="tree-check" role="checkbox" aria-label={`Show ${name}`} aria-checked={status} data-state={status} onClick={()=>toggleParts(parts)} title={enabled===parts.length?`Hide ${name}`:`Show ${name}`}>
    {status==='true'?<Check size={12}/>:status==='mixed'?<Minus size={12}/>:null}
@@ -70,13 +78,15 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNav
  },[index,query]);
  const anatomyLeaves=(node:ResolvedGuestNode)=>{
   const groups=new Map<string,Part[]>();for(const part of guestDirectAnatomyParts(hierarchy.id,node)){const parts=groups.get(part.conceptId)??[];parts.push(part);groups.set(part.conceptId,parts);}
-  return [...groups].map(([id,parts])=>({id,name:structureName(anatomyNames.get(id)??parts[0].name),parts}));
+  return [...groups].map(([id,parts])=>({id,name:structureLabelName(anatomyNames.get(id)??parts[0].name),parts}));
  };
  const renderedSearch=new Set<string>();
  const renderNode=(node:ResolvedGuestNode,depth:number,subtree=false)=>{
   if(search&&renderedSearch.has(node.id))return null;if(search)renderedSearch.add(node.id);
   const visibleChildren=guestVisibleChildren(hierarchy.id,node);
-  const open=search?(search.included.has(node.id)&&!searchClosed.has(node.id))||expanded.has(node.id):expanded.has(node.id),hasChildren=visibleChildren.length>0||!!node.extension||(hierarchy.schema==='human-atlas-hierarchy/v2'&&(!isCatalogueLeaf(node)&&node.directParts.length>0||!!node.links?.length||hierarchy.id==='ta98'&&!!node.description)),display=displayLaterality(node.name);
+  const description=itemDescription(node.description);
+  const hasSeparateModel=separateOrganModels(atlas,{id:node.id,name:node.name,term:node.synonyms?.find(s=>s.startsWith('TA98:'))?.slice(5)}).length>0;
+  const open=search?(search.included.has(node.id)&&!searchClosed.has(node.id))||expanded.has(node.id):expanded.has(node.id),hasChildren=hasSeparateModel||visibleChildren.length>0||!!node.extension||(hierarchy.schema==='human-atlas-hierarchy/v2'&&(!isCatalogueLeaf(node)&&guestDirectAnatomyParts(hierarchy.id,node).length>0||!!node.links?.length||hierarchy.id==='ta98'&&!!description)),display=displayLaterality(node.name);
   const chooseDirect=(toggle=false)=>onChoose(guestChoice(node),toggle);
   const includeSubtree=subtree||!!search?.matches.has(node.id)||(visibleChildren!==node.children&&node.children.some(child=>search?.matches.has(child.id))),showDetails=!search||includeSubtree;
   const leaves=open&&!isCatalogueLeaf(node)&&hierarchy.schema==='human-atlas-hierarchy/v2'&&showDetails?anatomyLeaves(node):[],leafLimit=limits[node.id+':anatomy']??150;
@@ -84,13 +94,14 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNav
   return <div key={node.id}>
    <div className={`tree-row ${hasChildren?'tree-region':'tree-leaf'} ${node.parts.length?'':'guest-unmodeled'}`} style={style(depth)}>
     {hasChildren&&<button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${node.name}`} data-connect-key={node.id} aria-expanded={open} onClick={()=>{if(!open&&node.extension)void loadExtension(node.id);toggleOpen(node.id);}}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>}
-    <button type="button" className="tree-label" title={hierarchy.id==='ta98'||hierarchy.id==='dermatomes-myotomes'?node.description??node.name:node.name} aria-label={node.name} onClick={event=>node.parts.length||hierarchy.id==='ta98'||hierarchy.id==='dermatomes-myotomes'?chooseDirect(event.ctrlKey||event.metaKey):hasChildren?toggleOpen(node.id):undefined} onContextMenu={event=>{if(event.ctrlKey&&node.parts.length){event.preventDefault();chooseDirect(true);}}}>
-     {hierarchy.id==='dermatomes-myotomes'&&dermatomeColors[dermatomeSelection(node.id).level??'']&&<span aria-hidden="true" style={{width:7,height:7,borderRadius:'50%',flexShrink:0,background:`rgb(${dermatomeColors[dermatomeSelection(node.id).level!].join(',')})`}}/>}<span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span>{(usesTerritories(node.id)?dermatomeTerritoriesFor(node.id).length:node.parts.length)>0&&<span className="tree-count">{(usesTerritories(node.id)?dermatomeTerritoriesFor(node.id).length:node.parts.length).toLocaleString()}</span>}
+    <button type="button" className="tree-label" title={hierarchy.id==='ta98'||hierarchy.id==='dermatomes-myotomes'?description||node.name:node.name} aria-label={node.name} onClick={event=>node.parts.length||hierarchy.id==='ta98'||hierarchy.id==='dermatomes-myotomes'?chooseDirect(event.ctrlKey||event.metaKey):hasChildren?toggleOpen(node.id):undefined} onContextMenu={event=>{if(event.ctrlKey&&node.parts.length){event.preventDefault();chooseDirect(true);}}}>
+     {hierarchy.id==='dermatomes-myotomes'&&dermatomeColors[dermatomeSelection(node.id).level??'']&&<span aria-hidden="true" style={{width:7,height:7,borderRadius:'50%',flexShrink:0,background:`rgb(${dermatomeColors[dermatomeSelection(node.id).level!].join(',')})`}}/>}<span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span><HierarchyCount parts={node.parts} itemCount={node.itemCount}/>
     </button>
-    {usesTerritories(node.id)?territoryCheck(node.name,node.id):check(node.name,node.parts)}
+    {usesTerritories(node.id)?territoryCheck(node.name,node.id):check(node.name,node.parts,guestChoice(node))}
    </div>
    {open&&<>
-    {hierarchy.id==='ta98'&&showDetails&&node.description&&<div className="guest-node-info" style={style(depth+1)}><p style={{whiteSpace:'pre-line'}}>{node.description}</p></div>}
+    <SeparateOrganModelLinks atlas={atlas} id={node.id} name={node.name} term={node.synonyms?.find(s=>s.startsWith('TA98:'))?.slice(5)} depth={depth+1}/>
+    {hierarchy.id==='ta98'&&showDetails&&description&&<div className="guest-node-info" style={style(depth+1)}><p style={{whiteSpace:'pre-line'}}>{description}</p></div>}
     {hierarchy.schema==='human-atlas-hierarchy/v2'&&showDetails&&(node.extension||!!node.links?.length)&&<div className="guest-node-info" style={style(depth+1)}>
      {node.extension&&<button type="button" className="guest-more" disabled={extensionBusy.has(node.id)} onClick={()=>void loadExtension(node.id)}>{extensionBusy.has(node.id)?'Loading transcripts…':'Load transcripts and protein isoforms'}</button>}
      {!!node.links?.length&&<div className="guest-biology-links" aria-label={hierarchy.id==='genes'?'Associated cell types':hierarchy.id==='cell-types'?'Marker genes':'Related hierarchies'}>{node.links.map(link=><button type="button" key={`${link.hierarchy}:${link.id}`} onClick={()=>onNavigate?.(link)} title={`Open ${link.name} in ${hierarchyNames[link.hierarchy]??link.hierarchy}`}>{link.name}</button>)}</div>}
@@ -98,7 +109,7 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNav
     {children.slice(0,limit).map(child=>renderNode(child,depth+1,includeSubtree))}
     {children.length>limit&&<button type="button" className="guest-more" onClick={()=>setLimits(current=>({...current,[node.id]:limit+150}))}>Show more ({(children.length-limit).toLocaleString()} remaining)</button>}
     {leaves.slice(0,leafLimit).map(leaf=><div className="tree-row tree-leaf guest-anatomy-leaf" style={style(depth+1)} key={`anatomy:${leaf.id}`}>
-     <button type="button" className="tree-label" onClick={event=>onChoose({id:leaf.id,name:leaf.name,elements:leaf.parts.map(part=>part.id),terminology:terminologyForConcept(leaf.id)},event.ctrlKey||event.metaKey)}><span className="tree-name">{leaf.name}</span><span className="tree-count">{leaf.parts.length}</span></button>{check(leaf.name,leaf.parts)}
+     <button type="button" className="tree-label" onClick={event=>onChoose({id:leaf.id,name:leaf.name,elements:leaf.parts.map(part=>part.id),terminology:terminologyForConcept(leaf.id)},event.ctrlKey||event.metaKey)}><span className="tree-name">{leaf.name}</span></button>{check(leaf.name,leaf.parts)}
     </div>)}
     {leaves.length>leafLimit&&<button type="button" className="guest-more" onClick={()=>setLimits(current=>({...current,[node.id+':anatomy']:leafLimit+150}))}>Show more anatomy ({(leaves.length-leafLimit).toLocaleString()} remaining)</button>}
    </>}
@@ -113,7 +124,7 @@ export default function GuestTree({atlas,hierarchy,state,setState,onChoose,onNav
   {import.meta.env.DEV&&hierarchy.id==='dermatomes-myotomes'&&<p className="search-note">Dermatome overlay · 80% · approximate territories</p>}
   <div className="tree-row tree-root" style={style(0)}>
    <button type="button" className="tree-expander" aria-label={`${expanded.has('all')?'Collapse':'Expand'} All`} data-connect-key="all" aria-expanded={expanded.has('all')} onClick={()=>toggleOpen('all')}>{expanded.has('all')?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
-   <button type="button" className="tree-label" onClick={()=>onChoose(hierarchyChoice(`guest:${hierarchy.id}:all`,'All',all,nodes.filter(node=>hierarchy.id==='ta98'||node.parts.length).map(guestChoice),terminologyForGroup('All')))} title={terminologyTitle('All',terminologyForGroup('All'),`hierarchy:guest:${hierarchy.id}:all`)}><span className="tree-name">All</span><span className="tree-count">{(dermatomeReference?dermatomeTerritoriesFor('all').length:all.length).toLocaleString()}</span></button>
+   <button type="button" className="tree-label" onClick={()=>onChoose(hierarchyChoice(`guest:${hierarchy.id}:all`,'All',all,nodes.filter(node=>hierarchy.id==='ta98'||node.parts.length).map(guestChoice),terminologyForGroup('All')))} title={terminologyTitle('All',terminologyForGroup('All'),`hierarchy:guest:${hierarchy.id}:all`)}><span className="tree-name">All</span><span className="tree-count">{meshCount(all).toLocaleString()}</span></button>
    {dermatomeReference?territoryCheck('all dermatomes','all'):check('all anatomy',all)}
   </div>
   {expanded.has('all')&&nodes.filter(node=>!search||search.included.has(node.id)).map(node=>renderNode(node,1))}

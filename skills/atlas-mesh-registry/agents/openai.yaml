@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mesh Registry"
+  short_description: "Index atlas identities and terminology sources"
+  default_prompt: "Use $atlas-mesh-registry to work on the requested Human Atlas geometry with source-bound checks."

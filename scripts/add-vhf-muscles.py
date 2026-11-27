@@ -103,7 +103,7 @@ def display_name(raw, side):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--zip', dest='source', default='.local-models/source/Final 3D STL Models-stl-female.zip')
-    parser.add_argument('--atlas', default='public/models/atlas-hra-female.json')
+    parser.add_argument('--atlas', default='work/ta98-donors/atlas-hra-female.json')
     args = parser.parse_args()
     source = Path(args.source)
     directory = Path(args.atlas).resolve().parent

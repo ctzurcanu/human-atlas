@@ -1,6 +1,8 @@
 import type {Part} from './anatomy';
 import type {ResolvedRelation} from './anatomical-relations';
 import {nativePartFrame} from './ta98-modeled-parent';
+import {renalWholeSource} from './renal-wall';
+import {urinaryWholeSource} from './urinary-wall';
 
 /** Only the stored ZA urinary partitions retain their original native frame. */
 export function urinaryPartFrame(p:Part):string|undefined{
@@ -32,6 +34,31 @@ const cached=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
 export function nativeUrinaryRelations(parts:Part[]):Map<string,ResolvedRelation[]>{
  const prior=cached.get(parts);if(prior)return prior;
  const graph=new Map<string,ResolvedRelation[]>(),available=parts.filter(hasNativeUrinaryRoute);
+ const replacements=new Map<string,Part[]>();
+ // Query the original whole's anatomical route only for its complete stored
+ // tissue replacement. These proxies never become rendered geometry, and a
+ // single mucosal/capsular leaf does not acquire a whole-organ urine route.
+ for(const source of parts.filter(p=>p.suppressed&&p.system==='urinary'&&p.replacementParts?.length)){
+  const ids=new Set(source.replacementParts),members=parts.filter(p=>ids.has(p.id));
+  if((renalWholeSource(members,parts)??urinaryWholeSource(members,parts))?.id!==source.id)continue;
+  const proxy={...source,suppressed:false};if(!hasNativeUrinaryRoute(proxy))continue;
+  available.push(proxy);replacements.set(proxy.id,members);
+ }
+ // Registered female collecting walls have no historical pelvis source part.
+ // Resolve only their complete reciprocal assembly, not arbitrary named donors.
+ const collecting=new Map<string,Part[]>();
+ for(const p of parts as (Part&{renalRepresentation?:string;renalRegion?:string})[]){
+  if(p.suppressed||!['renal-detail-v416','renal-layered-v1'].includes(p.renalRepresentation??'')||!['pelvis','upj'].includes(p.renalRegion??'')||!p.tissueWallAssembly)continue;
+  collecting.set(p.tissueWallAssembly,[...(collecting.get(p.tissueWallAssembly)??[]),p]);
+ }
+ for(const members of collecting.values()){
+  const source=renalWholeSource(members,parts);if(!source||available.some(p=>p.id===source.id))continue;
+  const proxy={...source,suppressed:false};if(!hasNativeUrinaryRoute(proxy))continue;
+  available.push(proxy);replacements.set(proxy.id,members);
+ }
+ const actualTarget=(link:ResolvedRelation):ResolvedRelation=>{
+  const members=replacements.get(link.target.id);return members?{...link,target:members[0],targetConcept:{id:link.target.conceptId,name:link.target.name,elements:members.map(p=>p.id)}}:link;
+ };
  const labels=['Kidney','Renal pelvis','Abdominal part of ureter','Pelvic part of ureter','Intramural part of ureter','Urinary bladder','Prostatic urethra','Intermediate part of urethra','Spongy urethra'];
  for(const source of available){
   const level=stage(source)!,frame=urinaryPartFrame(source),which=side(source),links:ResolvedRelation[]=[];
@@ -52,7 +79,7 @@ export function nativeUrinaryRelations(parts:Part[]):Map<string,ResolvedRelation
     missing.push(labels[next]);
    }
   }
-  graph.set(source.id,links);
+  graph.set(source.id,links.map(actualTarget));
  }
  cached.set(parts,graph);return graph;
 }

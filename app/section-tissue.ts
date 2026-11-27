@@ -4,6 +4,8 @@ import {isSkinPart} from './depth-layers';
 export type SectionTissue='integumentary'|'serosa'|'fascia'|'adipose'|'cartilage'|'tendon'|'lung'|'liver'|'spleen'|'cns'|'organ'|'gastric-wall'|'mucosa'|'submucosa'|'muscular'|'cardiac'|'skeletal'|'arterial'|'venous'|'nervous'|'lymphatic'|'connective'|'attachments';
 
 export function sectionTissue(part:Part):SectionTissue{
+ if(/^TA98CORD:(?:male|female):/.test(part.id)&&part.tissueWallAssembly?.startsWith('spinal-cord:')&&part.pairedTissue&&part.sectionSolid)return 'cns';
+ if(/^TA98LIVER:(?:male|female):segment:(?:I|II|III|IV|V|VI|VII|VIII)$/.test(part.id))return 'liver';
  const name=part.name.toLowerCase(),material=(part.material??'').toLowerCase();
  if(isSkinPart(part))return 'integumentary';
  if(part.tissueWallLayer==='mucosal-folds')return 'mucosa';

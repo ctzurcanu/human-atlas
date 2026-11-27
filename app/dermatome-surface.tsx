@@ -1,4 +1,5 @@
 import {appendAnatomyLabelCallouts} from './anatomy-label-renderer';
+import {selectedLabelsVisible} from './label-visibility';
 import {layoutAnatomyLabels,labelAreaForPanels,type LabelAnchor,type LabelPanel} from './label-layout';
 import {displayLaterality} from './laterality';
 import {useEffect,useRef} from 'react';
@@ -77,7 +78,7 @@ export default function DermatomeSurface({sex,state,selection,onSelectLabel,onTe
    });if(result)anchors.set(key,result);return result;
   };
   let drawnLabelFrame='';
-  const drawLabels=(s:SceneState)=>{if(s.labels===false||skinAlpha.value<=0){if(labelLayer.childElementCount)labelLayer.replaceChildren();drawnLabelFrame='';return;}
+  const drawLabels=(s:SceneState)=>{if(!selectedLabelsVisible(s)||skinAlpha.value<=0){if(labelLayer.childElementCount)labelLayer.replaceChildren();drawnLabelFrame='';return;}
    const w=el.clientWidth,h=el.clientHeight;labelLayer.setAttribute('viewBox',`0 0 ${w} ${h}`);const projected:LabelAnchor[]=[];
    for(const key of s.dermatomeSelected??[]){
     const anchor=anchors.get(key)??findSurfaceAnchor(key);if(!anchor)continue;const world=anchor.object.localToWorld(anchor.local.clone());if(!kept(world))continue;const point=world.project(camera);

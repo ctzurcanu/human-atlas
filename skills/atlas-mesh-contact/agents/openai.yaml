@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mesh Contact Analysis"
+  short_description: "Measure near-surface patches and contact witnesses"
+  default_prompt: "Use $atlas-mesh-contact to work on the requested Human Atlas geometry with source-bound checks."

@@ -1,6 +1,7 @@
 import {Color,MeshBasicMaterial,MeshStandardMaterial} from 'three';
 import type {Part} from './anatomy';
 import {isNativeWholeLiver} from './hepatic-relations';
+import {isInstalledLiverPart} from './liver-controls';
 
 // Authored gross tissue colors. Utah WebPath LIVER002/LIVER083 show a smooth
 // brown normal exterior and cut surface. These are illustrative appearance
@@ -8,7 +9,7 @@ import {isNativeWholeLiver} from './hepatic-relations';
 export const HEPATIC_EXTERIOR_COLOR=0x6b3d2b;
 export const HEPATIC_CUT_COLOR=0x824533;
 export function hepaticSurfaceFinish(part:Part){
- return isNativeWholeLiver(part)?{hepaticSurface:true as const}:undefined;
+ return isNativeWholeLiver(part)||isInstalledLiverPart(part)?{hepaticSurface:true as const}:undefined;
 }
 export function applyHepaticSurface(material:MeshStandardMaterial){
  const previous=material.onBeforeCompile,key=material.customProgramCacheKey();

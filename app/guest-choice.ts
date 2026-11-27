@@ -11,6 +11,7 @@ export function guestVisibleChildren(hierarchyId:string,node:ResolvedGuestNode):
 }
 /** A parent mesh already represented by a named child needs no second row. */
 export function guestDirectAnatomyParts(hierarchyId:string,node:ResolvedGuestNode):Part[]{
+ if(node.showAnatomyLeaves===false)return [];
  const inherited=new Set(guestVisibleChildren(hierarchyId,node).flatMap(child=>child.parts.map(part=>part.id)));
  return node.directParts.filter(part=>!inherited.has(part.id));
 }

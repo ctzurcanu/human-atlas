@@ -19,7 +19,8 @@ export function captureRawSceneCamera(camera:PerspectiveCamera,target:Vector3):R
  return {...captureExplosionView(camera,target),aspect:camera.aspect,near:camera.near,far:camera.far,filmGauge:camera.filmGauge,filmOffset:camera.filmOffset};
 }
 export function restoreRawSceneCamera(camera:PerspectiveCamera,target:Vector3,pose:RawSceneCamera):void{
- camera.aspect=pose.aspect;camera.near=pose.near;camera.far=pose.far;camera.filmGauge=pose.filmGauge;camera.filmOffset=pose.filmOffset;
+ // keep the canvas aspect: the saved one may come from another layout
+ camera.near=pose.near;camera.far=pose.far;camera.filmGauge=pose.filmGauge;camera.filmOffset=pose.filmOffset;
  restoreExplosionView(camera,target,pose);
 }
 export function rememberSceneCamera(owner:object,restart:SceneCameraRestart):void{checkpoints.set(owner,restart);}

@@ -1,19 +1,28 @@
 import {caecocolicWallRelations,caecocolicWallInterface} from './caecocolic-wall-relations';
-import {ileocaecalReferenceRelations} from './ileocaecal-reference-relations';
+import {ileocaecalReferenceRelations,ileocaecalWallInterface,ileocaecalWallRelations} from './ileocaecal-reference-relations';
 import {colonicTaeniaRelations} from './colonic-taenia';
 import {endocrineRelations} from './endocrine-relations';
+import {suprarenalWholeSource} from './suprarenal-wall';
+import {renalWholeSource,renalTissueRelations} from './renal-wall';
+import {urinaryWholeSource} from './urinary-wall';
+import {thyroidFunctionalRelations,thyroidWholeFunctionalRelations,isReviewedThyroidFunctionalRelation} from './thyroid-functional-relations';
 import {digestiveDuctRelations} from './digestive-duct-relations';
 import {biliaryJunctionInterface} from './biliary-junction';
-import {gallbladderRelations} from './gallbladder-relations';
+import {gallbladderRelations,isReviewedCysticBloodRelation} from './gallbladder-relations';
+import {lingualArterialRelations,lingualWholeFunctionalRelations,isReviewedLingualArterialRelation} from './lingual-arterial-relations';
 import { cysticFunctionalRelations } from './cystic-functional-relations';
-import {foregutArterialFrameCompatible,foregutArterialRelations} from './foregut-arterial-relations';
+import {ocularMouthRelations} from './ocular-mouth-relations';
+import {intercostalMouthRelations} from './intercostal-mouth-relations';
+import {pancreaticVenousRelations} from './pancreatic-venous-relations';
+import {foregutArterialFrameCompatible,foregutArterialRelations,foregutWholeFunctionalRelations} from './foregut-arterial-relations';
 import {smallBowelRelations,smallBowelFunctionalFrameCompatible,smallBowelRouteFrameCompatible} from './small-bowel-relations';
 import {hepaticRelations,isNativeWholeLiver} from './hepatic-relations';
 import {vascularWallWholeRelations,vascularWallRelations} from './vascular-wall';
 import {gastricVenousRelations,isReviewedGastricVenousRelation} from './gastric-venous-relations';
 import {cranialRelations} from './cranial-relations';
 import {cardiacRelations} from './cardiac-relations';
-import {pulmonaryRelations,isReviewedPulmonaryCovering} from './pulmonary-relations';
+import {spinalCordCoveringRelations} from './spinal-cord-controls';
+import {pulmonaryRelations,isReviewedPulmonaryCovering,pulmonaryVascularFrameCompatible} from './pulmonary-relations';
 import {laryngealRelations,isReviewedLaryngealRelation} from './laryngeal-relations';
 import {coronaryRelations,isCoronaryArtery} from './coronary-relations';
 import {containmentExceptions,isAorticBranchGrouping,nonComponentRelationship} from './anatomical-containment';
@@ -836,7 +845,7 @@ function skeletalNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
   }
  }
  // Preserve the few named tendons whose attachment is expressed in the name
- // rather than by a separate Z-Anatomy marker.
+ // rather than by a separate source marker.
  for(const [name,connections] of Object.entries(namedTendons))for(const tendon of tendons.filter(part=>baseName(part.name)===name)){
   const attachedBones=canonical(connections.flatMap(connection=>boneNamed(connection,partSide(tendon))));
   const attachedMuscles=canonical([
@@ -1041,7 +1050,19 @@ function reviewedPelvicConnection(source:Part,target:Part):boolean{
  return cervix(source)&&baseName(target.name)==='vagina'||cervix(target)&&baseName(source.name)==='vagina';
 }
 
+function reviewedAnteriorCommunication(source:Part,target:Part):boolean{
+ const bridge='TA98PART:ZA:Anterior communicating artery:communicating-course';
+ const region=(p:Part)=>/^TA98PART:ZA:Anterior cerebral artery\.[lr]:A12\.2\.07\.(023|033)$/.test(p.id);
+ if(!(source.id===bridge&&region(target)||target.id===bridge&&region(source)))return false;
+ if(source.suppressed||target.suppressed||source.system!=='arterial'||target.system!=='arterial')return false;
+ const assembly=(p:Part)=>(p as Part&{nativeACACommunicationAssembly?:{schema?:string;sourceCatalogueSha256?:string}}).nativeACACommunicationAssembly;
+ const a=assembly(source),b=assembly(target),frame=nativePartFrame(source);
+ return a?.schema==='ACA-ACom-five-piece/v1'&&b?.schema===a.schema&&/^[a-f0-9]{64}$/.test(a.sourceCatalogueSha256??'')&&a.sourceCatalogueSha256===b.sourceCatalogueSha256&&!!frame&&nativePartFrame(target)===frame;
+}
+
 function accepts(kind:RelationKind,source:Part,target:Part):boolean{
+ if(!pulmonaryVascularFrameCompatible(kind,source,target))return false;
+ if(isReviewedThyroidFunctionalRelation(source,target,kind))return true;
  if(isReviewedLaryngealRelation(source,target,kind))return true;
  if(isReviewedGastricVenousRelation(kind,source,target))return true;
  if(!foregutArterialFrameCompatible(kind,source,target))return false;
@@ -1102,7 +1123,7 @@ function accepts(kind:RelationKind,source:Part,target:Part):boolean{
  if(kind==='connects')return reviewedEpiglotticAttachment(source,target)||isBone(target)||target.system==='muscular'||source.system==='reproductive'&&baseName(source.name)==='ovarian ligament'&&target.system==='reproductive'&&['ovary','uterus'].includes(baseName(target.name));
  if(kind==='connectedBy')return reviewedEpiglotticAttachment(target,source)||target.system==='connective'||target.system==='muscular'&&/\btendon\b/i.test(target.name)||source.system==='reproductive'&&['ovary','uterus'].includes(baseName(source.name))&&target.system==='reproductive'&&baseName(target.name)==='ovarian ligament';
  if(kind==='joint')return isBone(source)?target.system==='connective':isBone(target);
- if(kind==='continuous')return biliaryJunctionInterface(source,target)||gallbladderWallInterface(source,target)||caecocolicWallInterface(source,target)||reviewedPelvicConnection(source,target)||reviewedCranialConnection(source,target)||isRetina(source)&&isOpticNerve(target)||isOpticNerve(source)&&isRetina(target)||target.system==='fascia'||target.system==='connective'||baseName(target.name)==='iliotibial tract';
+ if(kind==='continuous')return reviewedAnteriorCommunication(source,target)||ileocaecalWallInterface(source,target)||biliaryJunctionInterface(source,target)||gallbladderWallInterface(source,target)||caecocolicWallInterface(source,target)||reviewedPelvicConnection(source,target)||reviewedCranialConnection(source,target)||isRetina(source)&&isOpticNerve(target)||isOpticNerve(source)&&isRetina(target)||target.system==='fascia'||target.system==='connective'||baseName(target.name)==='iliotibial tract';
  if(kind==='covers')return isReviewedPulmonaryCovering(source,target)||target.system==='muscular';
  if(kind==='coveredBy')return isReviewedPulmonaryCovering(target,source)||target.system==='fascia';
  return true;
@@ -1118,20 +1139,44 @@ const aorticBranchNetworks=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
 const adrenalNetworks=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
 function adrenalNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
  const cached=adrenalNetworks.get(parts);if(cached)return cached;
- const graph=new Map<string,ResolvedRelation[]>(),kidneys=parts.filter(part=>!part.suppressed&&part.system==='urinary'&&baseName(part.name)==='kidney');
+ const graph=new Map<string,ResolvedRelation[]>(),kidneys=renalWholeTargets(parts);
  // PMID31501707 distinguishes normally separate adrenal/renal capsules;
  // PMID18246295 reviews their sectional regional anatomy. This is adjacency,
  // never a shared-tissue interface, containment or source packing acceptance.
  for(const gland of parts.filter(part=>!part.suppressed&&isAdrenal(part))){
   const frame=nativePartFrame(gland),side=partSide(gland);if(!frame||!side)continue;
-  for(const kidney of kidneys.filter(part=>nativePartFrame(part)===frame&&partSide(part)===side)){
+  for(const renal of kidneys.filter(item=>nativePartFrame(item.source)===frame&&partSide(item.source)===side)){
    const note='Distinct ipsilateral organs in the perinephric region. Their capsules are normally separate; this link does not imply renal containment, adrenal-renal fusion or verified source packing.';
-   for(const [from,to] of [[gland,kidney],[kidney,gland]]){
-    const list=graph.get(from.id)??[];list.push({kind:'adjacent',target:to,note});graph.set(from.id,list);
-   }
+   const forward=graph.get(gland.id)??[];forward.push({kind:'adjacent',target:renal.target,note,...(renal.concept?{targetConcept:renal.concept}:{})});graph.set(gland.id,forward);
+   const reverse=graph.get(renal.target.id)??[];reverse.push({kind:'adjacent',target:gland,note});graph.set(renal.target.id,reverse);
+  }
+ }
+ const sources=new Set(parts.flatMap(p=>{const id=(p as Part&{adrenalSourcePartId?:string}).adrenalSourcePartId;return id?[id]:[];}));
+ for(const id of sources){
+  const members=parts.filter(p=>(p as Part&{adrenalSourcePartId?:string}).adrenalSourcePartId===id),native=suprarenalWholeSource(members,parts);
+  if(!native)continue;
+  for(const relation of adrenalWholeRenalRelations({...native,suppressed:false},parts)){
+   const list=graph.get(relation.target.id)??[];
+   list.push({kind:'adjacent',target:members[0],note:relation.note,targetConcept:{id:native.conceptId,name:native.name,elements:members.map(p=>p.id)}});
+   graph.set(relation.target.id,list);
   }
  }
  adrenalNetworks.set(parts,graph);return graph;
+}
+function renalWholeTargets(parts:Part[]):{source:Part;target:Part;concept?:Concept}[]{
+ const result:{source:Part;target:Part;concept?:Concept}[]=parts.filter(p=>!p.suppressed&&p.system==='urinary'&&baseName(p.name)==='kidney').map(p=>({source:p,target:p}));
+ for(const source of parts.filter(p=>p.suppressed&&p.system==='urinary'&&baseName(p.name)==='kidney'&&p.replacementParts?.length)){
+  const ids=new Set(source.replacementParts),members=parts.filter(p=>ids.has(p.id));
+  if(renalWholeSource(members,parts)?.id!==source.id)continue;
+  result.push({source:{...source,suppressed:false},target:members[0],concept:{id:source.conceptId,name:source.name,elements:members.map(p=>p.id)}});
+ }
+ return result;
+}
+function adrenalWholeRenalRelations(source:Part,parts:Part[]):ResolvedRelation[]{
+ const frame=nativePartFrame(source),side=partSide(source);
+ if(!isAdrenal(source)||!frame||!side)return [];
+ return renalWholeTargets(parts).filter(p=>nativePartFrame(p.source)===frame&&partSide(p.source)===side)
+  .map(p=>({kind:'adjacent',target:p.target,...(p.concept?{targetConcept:p.concept}:{}),note:'Distinct ipsilateral organs with separate capsules. This association does not certify source packing or a shared tissue interface.'}));
 }
 function aorticBranchNetwork(parts:Part[]):Map<string,ResolvedRelation[]>{
  const cached=aorticBranchNetworks.get(parts);if(cached)return cached;
@@ -1224,6 +1269,46 @@ function reviewedNativeRoutes(parts:Part[]):Map<string,ResolvedRelation[]>{
  const named=(source:Part,names:string[],system:string,side?:'left'|'right'|null)=>available.filter(p=>p.system===system&&nativePartFrame(p)===nativePartFrame(source)&&names.includes(baseName(p.name))&&(!side||partSide(p)===side));
  for(const source of available){
   const name=baseName(source.name),side=partSide(source);if(!nativePartFrame(source))continue;
+  // The native M1-labelled mesh starts with a common terminal ICA stem.
+  // Its ACA takeoff lies on source ring12; the owned M1 region begins after
+  // that ostium at a provisional source ring17. This is source-bound anatomy,
+  // not an assertion that the old ICA seam or ACA ostium has been repaired.
+  if(source.system==='arterial'&&side){
+   const suffix=side==='left'?'l':'r',base=`TA98PART:ZA:Middle cerebral artery (M1-segment).${suffix}:`;
+   if(source.id===`${base}terminal-ICA`){
+    const parent=available.find(p=>p.id===`TA98PART:ZA:Internal carotid artery.${suffix}:A12.2.06.015`&&p.system==='arterial');
+    const m1=available.find(p=>p.id===`${base}A12.2.07.047`&&p.system==='arterial');
+    const aca=available.find(p=>p.id===`ZA:Anterior cerebral artery.${suffix}`&&p.system==='arterial');
+    if(parent)add(parent,source,'after','before','Intended cerebral ICA continuation into its terminal common stem. The original source mouth profiles differ by up to 0.193 mm and remain unjoined.');
+    if(m1)add(source,m1,'after','before','Native terminal ICA stem continues into the M1/sphenoid region through their literal shared open source profile. The source ownership boundary after the ACA takeoff is provisional; finite vessel walls remain unrepresented.');
+    if(aca)add(source,aca,'after','before','ACA takeoff from the terminal ICA stem. The source axes coincide at this bifurcation; overlapping source exteriors remain unjoined, so a completed ostium is not asserted.');
+   }
+  }
+  // TA98 A12.2.07.023/.033 meet at the anterior communicating artery.
+  // Resolve only the source-bound regional assembly; the communication is
+  // collateral and has no universal one-way flow direction (PMID 948013).
+  if(source.system==='arterial'&&side){
+   const suffix=side==='left'?'l':'r',base=`TA98PART:ZA:Anterior cerebral artery.${suffix}:`;
+   if(source.id===`${base}A12.2.07.023`){
+    const post=available.find(p=>p.id===`${base}A12.2.07.033`&&p.system==='arterial');
+    if(post)add(source,post,'after','before','Precommunicating and postcommunicating regions of the same anterior cerebral arterial course.');
+    const bridge=available.find(p=>p.id==='TA98PART:ZA:Anterior communicating artery:communicating-course'&&p.system==='arterial');
+    if(bridge){
+     add(source,bridge,'continuous','continuous','Anterior communicating collateral at the A1–postcommunicating junction; direction of blood flow depends on the pressure gradient.');
+     if(post)add(post,bridge,'continuous','continuous','Shared anterior communicating ostium at the regional boundary; no one-way collateral flow is asserted.');
+    }
+   }
+  }
+  // Source-bound local clavicular variant. Primary cadaver injection studies:
+  // DOI 10.15406/mojap.2020.07.00291 and PMID 16295736. The course is an
+  // illustrative branch to subclavius and the sternoclavicular capsule;
+  // these associations do not claim a complete distal perfusion network.
+  if(source.system==='arterial'&&side&&source.id===`TA98PART:ZA:Thoraco-acromial artery.${side==='left'?'l':'r'}:A12.2.09.008`){
+   const suffix=side==='left'?'l':'r';
+   const parent=available.find(p=>p.id===`ZA:Thoraco-acromial artery.${suffix}`&&p.system==='arterial');
+   if(parent)add(parent,source,'after','before','Clavicular branch arising from the native thoracoacromial course in this illustrative variant. Origin and distal branching vary between individuals.');
+   for(const recipient of available.filter(p=>[`ZA:Subclavius muscle.${suffix}`,`ZA:Articular capsule of sternoclavicular joint.${suffix}`].includes(p.id)))add(source,recipient,'supplies','arterial','Clavicular branch supply to subclavius and the sternoclavicular capsule. The modeled course ends in these recipient territories; terminal microcirculation and complete perfusion remain unrepresented.');
+  }
   // IARC cervical anatomy, NCBI Bookshelf NBK568392: the vaginal
   // portion of the cervix enters the vaginal vault, with the fornices around it.
   if(source.system==='reproductive'&&['cervix','uterine cervix','cervix uteri'].includes(name)){
@@ -1259,23 +1344,55 @@ function reviewedNativeRoutes(parts:Part[]):Map<string,ResolvedRelation[]>{
  }
  reviewedRouteCache.set(parts,graph);return graph;
 }
+const spinalRelationCatalogues=new WeakMap<Part[],Part[]>();
+function relationCatalogue(catalogue:Part[]):Part[]{
+ const cached=spinalRelationCatalogues.get(catalogue);if(cached)return cached;
+ const blood=(part:Part)=>part.system==='arterial'||part.system==='venous';
+ // A suppressed whole vessel can still select its active replacement wall or
+ // source regions. Reverse reachability preserves those proxies, including
+ // chains, without reviving retired sources or looping through cyclic data.
+ const vascular=new Map(catalogue.filter(blood).map(part=>[part.id,part]));
+ const parents=new Map<string,string[]>(),live=new Set<string>();
+ for(const part of vascular.values()){
+  if(!part.suppressed&&!part.referenceOnly&&!['point-reference','surface-reference','boundary-reference'].includes(part.representationClass??'')&&part.indexCount!==0)live.add(part.id);
+  for(const child of part.replacementParts??[]){if(vascular.get(child)?.system!==part.system)continue;const ids=parents.get(child)??[];ids.push(part.id);parents.set(child,ids);}
+ }
+ const queue=[...live];for(let i=0;i<queue.length;i++)for(const parent of parents.get(queue[i])??[])if(!live.has(parent)){live.add(parent);queue.push(parent);}
+ const parts=catalogue.filter(part=>(!part.suppressed||!part.id.startsWith('TA98CORD:'))&&(!part.suppressed||!blood(part)||live.has(part.id)));
+ spinalRelationCatalogues.set(catalogue,parts);spinalRelationCatalogues.set(parts,parts);return parts;
+}
 export function anatomicalRelations(source:Part,allParts:Iterable<Part>):ResolvedRelation[]{
- const parts=Array.isArray(allParts)?allParts:[...allParts];
+ const catalogue=Array.isArray(allParts)?allParts:[...allParts];
+ // Retired cord partitions have no live interface or semantic-source role.
+ // Retired blood guides cannot become selectable functional relationships.
+ // Other hidden organ sources and live replacement proxies remain available.
+ const parts=relationCatalogue(catalogue);
+ if(source.suppressed&&['arterial','venous'].includes(source.system)&&!parts.some(part=>part.id===source.id))return [];
  const lookup=explicitRelations(source);
  const namedMuscleNerve=source.system==='muscular'&&!isTendon(source)?[`Nerve to ${baseName(source.name).replace(/ muscle$/,'')} muscle`]:[];
  const mapped:Relations={...lookup,innervation:[...(lookup.innervation??[]),...muscleNerves(source),...namedMuscleNerve]};
- const route=routeRelations(source,parts,[digestiveStages(parts),airwayStages(parts),leftAirwayRoute,arterialRoute,legArterialRoute,legVenousRoute,armArterialRoute,armVenousRoute,portalVenousRoute,portalMesentericRoute,greatSaphenousRoute,smallSaphenousRoute,rightHeartRoute,inferiorCavaRoute,leftHeartRoute,urinaryRoute,spermRoute]);
+ const route=[...routeRelations(source,parts,[digestiveStages(parts),airwayStages(parts),leftAirwayRoute,arterialRoute,legArterialRoute,legVenousRoute,armArterialRoute,armVenousRoute,portalVenousRoute,portalMesentericRoute,greatSaphenousRoute,smallSaphenousRoute,rightHeartRoute,inferiorCavaRoute,leftHeartRoute,urinaryRoute,spermRoute]),...(renalTissueRelations(parts).get(source.id)??[])];
  const branches=branchRelations(source,parts,[...airwayBranches,...arterialBranches,...nerveBranches]);
  const namedVessels=namedVascularRelations(source,parts);
+ route.push(...(pancreaticVenousRelations(parts).get(source.id)??[]));
  const nerves=nerveRelations(source,parts);
  const physical=physicalRelations(source,parts);
  const reverse=reverseFunctionalRelations(source,parts);
  const result:ResolvedRelation[]=[];
  const seen=new Set<string>();
  const needsSkeletalNetwork=['skeletal','muscular','fascia','connective','arterial','venous','nervous'].includes(source.system);
- for(const relation of [...(vascularWallRelations(parts,anatomicalRelations).get(source.id)??[]),...(caecocolicWallRelations(parts).get(source.id)??[]),...(smallBowelRelations(parts).get(source.id)??[]),...(colonicTaeniaRelations(parts).get(source.id)??[]),...(ileocaecalReferenceRelations(parts).get(source.id)??[]),...(endocrineRelations(parts).get(source.id)??[]),...(digestiveDuctRelations(parts).get(source.id)??[]),...(gallbladderRelations(parts).get(source.id)??[]),...(cysticFunctionalRelations(parts).get(source.id)??[]),...(gallbladderWallRelations(parts).get(source.id)??[]),...(foregutArterialRelations(parts).get(source.id)??[]),...(hepaticRelations(parts).get(source.id)??[]),...(gastricVenousRelations(parts).get(source.id)??[]),...route,...branches,...downstreamShortcuts(source,parts),...(structuralNetwork(parts).get(source.id)??[]),...(needsSkeletalNetwork?skeletalNetwork(parts).get(source.id)??[]:[]),...reverse,...retinalRelations(source,parts),...(lymphaticNetwork(parts).get(source.id)??[]),...(renalVenousNetwork(parts).get(source.id)??[]),...(aorticBranchNetwork(parts).get(source.id)??[]),...(adrenalNetwork(parts).get(source.id)??[]),...(reviewedNativeRoutes(parts).get(source.id)??[]),...(cranialRelations(parts).get(source.id)??[]),...(cardiacRelations(parts).get(source.id)??[]),...(pulmonaryRelations(parts).get(source.id)??[]),...(laryngealRelations(parts).get(source.id)??[]),...(coronaryRelations(parts).get(source.id)??[]),...(fibularRelations(parts).get(source.id)??[]),...(handVascularRelations(parts).get(source.id)??[]),...(nativeUrinaryRelations(parts).get(source.id)??[]),...(analSphincterRelations(parts).get(source.id)??[]),...(rectalMuscleRelations(parts).get(source.id)??[])]){
-  if(!accepts(relation.kind,source,relation.target))continue;
+ for(const relation of [...(lingualArterialRelations(parts).get(source.id)??[]),...(vascularWallRelations(parts,anatomicalRelations).get(source.id)??[]),...(caecocolicWallRelations(parts).get(source.id)??[]),...(smallBowelRelations(parts).get(source.id)??[]),...(colonicTaeniaRelations(parts).get(source.id)??[]),...(ileocaecalReferenceRelations(parts).get(source.id)??[]),...(ileocaecalWallRelations(parts).get(source.id)??[]),...(endocrineRelations(parts).get(source.id)??[]),...(thyroidFunctionalRelations(parts).get(source.id)??[]),...(digestiveDuctRelations(parts).get(source.id)??[]),...(gallbladderRelations(parts).get(source.id)??[]),...(cysticFunctionalRelations(parts).get(source.id)??[]),...(gallbladderWallRelations(parts).get(source.id)??[]),...(foregutArterialRelations(parts).get(source.id)??[]),...(hepaticRelations(parts).get(source.id)??[]),...(gastricVenousRelations(parts).get(source.id)??[]),...route,...branches,...downstreamShortcuts(source,parts),...(structuralNetwork(parts).get(source.id)??[]),...(needsSkeletalNetwork?skeletalNetwork(parts).get(source.id)??[]:[]),...reverse,...retinalRelations(source,parts),...(lymphaticNetwork(parts).get(source.id)??[]),...(renalVenousNetwork(parts).get(source.id)??[]),...(aorticBranchNetwork(parts).get(source.id)??[]),...(adrenalNetwork(parts).get(source.id)??[]),...(reviewedNativeRoutes(parts).get(source.id)??[]),...(cranialRelations(parts).get(source.id)??[]),...(cardiacRelations(parts).get(source.id)??[]),...(spinalCordCoveringRelations(parts).get(source.id)??[]),...(pulmonaryRelations(parts).get(source.id)??[]),...(laryngealRelations(parts).get(source.id)??[]),...(coronaryRelations(parts).get(source.id)??[]),...(fibularRelations(parts).get(source.id)??[]),...(handVascularRelations(parts).get(source.id)??[]),...(nativeUrinaryRelations(parts).get(source.id)??[]),...(analSphincterRelations(parts).get(source.id)??[]),...(rectalMuscleRelations(parts).get(source.id)??[])]){
+  const reviewedCystic=isReviewedCysticBloodRelation(relation.kind,source,relation.target,parts);
+  const reviewedLingual=isReviewedLingualArterialRelation(relation.kind,source,relation.target,parts);
+  if(!reviewedCystic&&!reviewedLingual&&!accepts(relation.kind,source,relation.target))continue;
   const token=`${relation.kind}:${relation.target.id}`;
+  // The registered whole gallbladder uses its first active covering cell as
+  // a selectable carrier. Retain that complete target instead of its prior
+  // single-cell supply row for this validated cystic arterial pair only.
+  if(reviewedCystic&&(relation.kind==='supplies'||relation.kind==='drains')&&relation.targetConcept?.id==='ZA:Gallbladder'&&seen.has(token)){
+   const prior=result.findIndex(row=>row.kind===relation.kind&&row.target.id===relation.target.id);
+   if(prior>=0){result[prior]=relation;continue;}
+  }
   if(!seen.has(token)){seen.add(token);const note=relation.note??functionalNote(source,relation.kind,relation.target);result.push(note?{...relation,note}:relation);}
  }
  for(const kind of ['before','after','innervation','arterial','venous','innervates','supplies','drains','articulates','connects','connectedBy','joint','continuous','covers','coveredBy'] as const){
@@ -1286,6 +1403,10 @@ export function anatomicalRelations(source:Part,allParts:Iterable<Part>):Resolve
    }
   }
  }
+ for(const relation of [...ocularMouthRelations(source,parts),...intercostalMouthRelations(source,parts)]){
+  const token=`${relation.kind}:${relation.target.id}`;
+  if(!seen.has(token)){seen.add(token);result.push(relation);}
+ }
  return result;
 }
 
@@ -1294,31 +1415,38 @@ export function anatomicalRelations(source:Part,allParts:Iterable<Part>):Resolve
  * or an assertion that every region has the whole organ's vascular supply.
  */
 export function anatomicalConceptFunctionalRelations(concept:Concept,selected:Part[],parts:Part[]):ResolvedRelation[]{
+ parts=relationCatalogue(parts);
  if(selected.length<2||concept.id==='selection-set')return [];
  const elements=new Set(concept.elements),ids=new Set(selected.map(part=>part.id));
  if(elements.size!==ids.size||[...elements].some(id=>!ids.has(id)))return [];
+ const foregut=foregutWholeFunctionalRelations(concept,selected,parts);if(foregut)return foregut;
+ const lingual=lingualWholeFunctionalRelations(concept,selected,parts);if(lingual)return lingual;
  if(new Set(selected.map(part=>part.system)).size!==1)return [];
+ const thyroid=thyroidWholeFunctionalRelations(concept,selected,parts);if(thyroid)return thyroid;
  const vascular=vascularWallWholeRelations(concept,selected,parts,anatomicalRelations);if(vascular)return vascular;
  const gallbladder=gallbladderWholeRelations(concept,selected,parts);if(gallbladder)return gallbladder;
+ const adrenalWhole=suprarenalWholeSource(selected,parts);
+ const renalWhole=renalWholeSource(selected,parts)??urinaryWholeSource(selected,parts);
+ const renalRoutes=renalWhole?(nativeUrinaryRelations(parts).get(renalWhole.id)??[]):[];
  const largeBowelWhole=largeBowelWholeSource(selected,parts);
- if(!largeBowelWhole&&(concept.id.startsWith('hierarchy:')||concept.id.startsWith('guest:')))return [];
+ if(!largeBowelWhole&&!adrenalWhole&&!renalWhole&&(concept.id.startsWith('hierarchy:')||concept.id.startsWith('guest:')))return [];
  if(selected.some(part=>part.caecocolicRegion)&&!largeBowelWhole)return [];
  // The whole native fibula can be assembled from regional and surface leaves.
  // Its supply belongs to the stored complete assembly, not each named leaf.
  const fibularWhole=baseName(concept.name)==='fibula'&&/^(?:ZA:Fibula\.[lr]|LOCAL:(?:male|female):[lr]_fibula)$/.test(concept.id)
   &&selected.every(part=>part.system==='skeletal'&&part.sectionAssembly===concept.id&&!part.suppressed)
   &&parts.filter(part=>!part.suppressed&&part.sectionAssembly===concept.id).every(part=>ids.has(part.id));
- const lookup=largeBowelWhole?explicit[baseName(largeBowelWhole.name)]:explicit[withoutSide(concept.name)]??(fibularWhole?boneSupply.fibula:undefined);if(!lookup)return [];
+ const lookup=renalWhole?explicit[baseName(renalWhole.name)]:adrenalWhole?explicit[baseName(adrenalWhole.name)]:largeBowelWhole?explicit[baseName(largeBowelWhole.name)]:explicit[withoutSide(concept.name)]??(fibularWhole?boneSupply.fibula:undefined);if(!lookup)return renalRoutes;
  const pelvicWhole=Boolean(femalePelvicFunctional[withoutSide(concept.name)]);
  const pelvicFrame=pelvicWhole?nativePartFrame(selected[0]):undefined;
  if(pelvicWhole&&(selected.some(part=>part.suppressed)||selected.some(part=>nativePartFrame(part)!==pelvicFrame)))return [];
  const oesophagealWhole=concept.id==='ZA:Oesophagus'&&selected.every(p=>!p.suppressed&&p.pairedTissue&&p.sectionSolid&&p.tissueWallAssembly==='oesophageal:male')
   &&selected.length===14&&parts.filter(p=>!p.suppressed&&p.tissueWallAssembly==='oesophageal:male').every(p=>ids.has(p.id));
  const functionalFrame=oesophagealWhole?'ZA:':largeBowelWhole?nativePartFrame(selected[0]):pelvicFrame;
- const source={...selected[0],id:fibularWhole?concept.id:functionalFrame?`${functionalFrame}functional-query:${concept.id}`:`functional-query:${concept.id}`,conceptId:concept.id,name:largeBowelWhole?largeBowelWhole.name:concept.name};
+ const source=renalWhole?{...renalWhole,suppressed:false}:adrenalWhole?{...adrenalWhole,suppressed:false}:{...selected[0],id:fibularWhole?concept.id:functionalFrame?`${functionalFrame}functional-query:${concept.id}`:`functional-query:${concept.id}`,conceptId:concept.id,name:largeBowelWhole?largeBowelWhole.name:concept.name};
  if(femalePelvicFunctional[withoutSide(concept.name)]&&source.system!=='reproductive')return [];
  if(!canCarryFunctionalLinks(source))return [];
- const result:ResolvedRelation[]=source.system==='digestive'?routeRelations(source,parts,[digestiveStages(parts)]).filter(relation=>!ids.has(relation.target.id)):[];
+ const result:ResolvedRelation[]=[...renalRoutes,...(adrenalWhole?adrenalWholeRenalRelations(source,parts):source.system==='digestive'?routeRelations(source,parts,[digestiveStages(parts)]).filter(relation=>!ids.has(relation.target.id)):[])];
  if(oesophagealWhole)for(const target of parts){
   if(!target.suppressed&&target.id.startsWith('GASTRIC:male:')&&target.pairedTissue&&target.sectionSolid&&target.tissueDrawGroups?.some(group=>!!group.neighbor&&ids.has(group.neighbor)))
    result.push({kind:'after',target,note:'Stored oesophageal-to-cardial wall interface. This link selects the adjoining gastric tissue, not the entire stomach.'});

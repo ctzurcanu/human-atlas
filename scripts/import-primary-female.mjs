@@ -22,7 +22,7 @@ const ROOT=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const option=(key,defaultValue)=>{const index=process.argv.indexOf(key);return index<0?defaultValue:path.resolve(process.argv[index+1]);};
 const sourceFile=option('--source',path.join(os.tmpdir(),'human-atlas-primary-models','hra-united-female-v1.10.glb'));
 const supplementFile=option('--supplement',path.join(os.tmpdir(),'human-atlas-primary-models','hra-united-female-v1.5.glb'));
-const out=option('--out',path.join(ROOT,'public','models'));
+const out=option('--out',path.join(ROOT,'work','ta98-donors'));
 await fs.mkdir(out,{recursive:true});
 async function verifiedSource(filename,url,expected){
  await fs.mkdir(path.dirname(filename),{recursive:true});

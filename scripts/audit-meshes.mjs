@@ -2,11 +2,12 @@
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {gunzipSync} from 'node:zlib';
 import {build} from 'esbuild';
 import * as T from 'three';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const models={male:'public/models/atlas.json','male-detail':'public/models/atlas-z-anatomy.json','male-full':'public/models/atlas-male-complete.json',female:'public/models/atlas-hra-female.json',embryo:'public/models/atlas-embryo.json',cell:'public/models/atlas-cell.json','local-reference':'.local-models/reference.json','local-male':'.local-models/male.json','local-female':'.local-models/female.json'};
+const models={male:'public/models/atlas.json','male-detail':'public/models/atlas-z-anatomy.json','male-full':'public/models/atlas-male-complete.json','female-ta98':'public/models/female-ta98/atlas.json',embryo:'public/models/atlas-embryo.json',cell:'public/models/atlas-cell.json','local-reference':'.local-models/reference.json','local-male':'.local-models/male.json','local-female':'.local-models/female.json'};
 const bundle=await build({entryPoints:[path.join(root,'app/mesh-topology.ts')],bundle:true,platform:'node',format:'esm',write:false});
 const {analyzeMeshTopology}=await import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles[0].text).toString('base64')}`);
 const selected=process.argv.slice(2).filter(value=>!value.startsWith('--'));
@@ -22,7 +23,8 @@ for(const id of selected.length?selected:Object.keys(models)){
  for(const [chunkIndex,entries] of byChunk){
   const url=atlas.chunks[chunkIndex].url;
   const file=url.startsWith('/models/')?path.join(root,'public',url):url.startsWith('/local-models/')?path.join(root,'.local-models',url.slice('/local-models/'.length)):path.join(root,path.dirname(models[id]),path.basename(url));
-  const bytes=await readFile(file);
+  const packed=await readFile(file);
+  const bytes=url.endsWith('.gz')?gunzipSync(packed):packed;
   for(const {part,index} of entries){
    const geometry=new T.BufferGeometry();
    geometry.setAttribute('position',new T.BufferAttribute(new Float32Array(bytes.buffer,bytes.byteOffset+part.positions,part.vertexCount*3),3));

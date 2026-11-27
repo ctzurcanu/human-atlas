@@ -6,6 +6,11 @@ import {createDepthOrder} from './depth-sort';
 import {guestNodeChoice} from './guest-choice';
 import {resolveGuestHierarchy,type GuestHierarchy,type ResolvedGuestNode} from './guest-hierarchy';
 import {anatomyNodeChoice,hierarchyChoice,type HierarchyChoice} from './hierarchy-choice';
+import {withPulmonarySystem} from './pulmonary-system';
+import {withHeartSystem} from './heart-system';
+import {withLiverSystem} from './liver-system';
+import {withTongueSystem} from './tongue-system';
+import {withSpinalCordSystem} from './spinal-cord-system';
 
 export type NavigationMode='systems'|'regions'|'depth'|`guest:${string}`;
 
@@ -46,7 +51,8 @@ export function hierarchyNavigation(atlas:Atlas,mode:NavigationMode,guest?:Guest
   const members=entries.filter(entry=>mode==='systems'?(atlas.scope==='cell'?entry.system===category.id:majorSystemFor(entry)===category.id):entry.region===category.id);
   if(!members.length)return [];
   const path=(entry:typeof entries[number])=>mode==='systems'?systemPathFor(entry,atlas.scope):regionPathFor(entry);
-  const nodes=buildAnatomyNodes(members,path);
+  const built=buildAnatomyNodes(members,path);
+  const nodes=mode==='systems'&&category.id==='respiratory'?withPulmonarySystem(atlas,built):mode==='systems'&&category.id==='digestive'?withTongueSystem(atlas,withLiverSystem(atlas,built)):mode==='systems'&&category.id==='circulatory'?withHeartSystem(atlas,built):mode==='systems'&&category.id==='nervous'?withSpinalCordSystem(atlas,built):built;
   return [hierarchyChoice(`${mode}:${category.id}`,category.name,members.flatMap(entry=>entry.parts),nodes.map((node,index)=>anatomyNodeChoice(node,`${mode}:${category.id}:${index}`)),terminologyForGroup(category.name))];
  });
  return hierarchyChoice(`${mode}:all`,'All',available,branches,terminologyForGroup('All'));

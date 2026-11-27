@@ -7,9 +7,11 @@ const api=await import('data:text/javascript;base64,'+Buffer.from(result.outputF
 test('gross liver styling is confined to the qualified whole native liver in each actual TA98 model',()=>{
  for(const sex of ['male','female']){
   const atlas=JSON.parse(readFileSync(`.local-models/ta98-review/bowel-wall-local-atlas/${sex}/atlas.json`));
-  const chosen=atlas.parts.filter(p=>api.hepaticSurfaceFinish(p));assert.equal(chosen.length,1);
-  assert.equal(chosen[0].id,sex==='male'?'ZA:Liver:Organ':'LOCAL:female:liver:1032');
-  for(const part of atlas.parts.filter(p=>p.id!==chosen[0].id&&p.material===chosen[0].material))
+  const chosen=atlas.parts.filter(p=>api.hepaticSurfaceFinish(p));
+  const expected=sex==='male'&&atlas.liverIntegration?.schema==='male-liver-lobes-capsule/v1'
+   ?atlas.liverIntegration.partIds:[sex==='male'?'ZA:Liver:Organ':'LOCAL:female:liver:1032'];
+  assert.deepEqual(new Set(chosen.map(p=>p.id)),new Set(expected));
+  for(const part of atlas.parts.filter(p=>!expected.includes(p.id)&&p.material===chosen[0].material))
    assert.equal(api.hepaticSurfaceFinish(part),undefined,'shared gallbladder, duct and other organ materials are not restyled');
   assert.equal(api.hepaticSurfaceFinish({...chosen[0],suppressed:true}),undefined);
   assert.equal(api.hepaticSurfaceFinish({...chosen[0],sourceId:'unqualified-donor'}),undefined);

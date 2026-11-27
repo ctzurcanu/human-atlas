@@ -1,1 +1,1 @@
-"""Offline anatomical geometry tools. Coordinates and tolerances use metres."""
+"""Compatibility namespace. Use geometry_tools.algorithms for maintained code."""

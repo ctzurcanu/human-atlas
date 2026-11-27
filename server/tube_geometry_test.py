@@ -3,16 +3,16 @@ from pathlib import Path
 import sys, unittest, tempfile, subprocess, json
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from geometry.tube_sections import (TubeGeometryError,TubeTolerances,rotation_minimizing_frames,
+from geometry_tools.algorithms.tube_sections import (TubeGeometryError,TubeTolerances,rotation_minimizing_frames,
     filleted_path,centripetal_curve,arclength,section_metrics,sweep_sections,resample_path,
     redirect_local_sections)
-from geometry.tube_constraints import capped_translation_transition
-from geometry.tube_prism_constraints import StationPrismConstraints
-from geometry.tube_biarc import biarc_path
-from geometry.tube_continuity import (loft_faces,boundary_loops,join_mouths,continuity_audit,
+from geometry_tools.algorithms.tube_constraints import capped_translation_transition
+from geometry_tools.algorithms.tube_prism_constraints import StationPrismConstraints
+from geometry_tools.algorithms.tube_biarc import biarc_path
+from geometry_tools.algorithms.tube_continuity import (loft_faces,boundary_loops,join_mouths,continuity_audit,
     finite_wall_cells,annular_rim)
-from geometry.tube_tool import _full_mesh_checks
-from geometry.audit_alimentary_atlas import audit_catalogue
+from geometry_tools.algorithms.tube_tool import _full_mesh_checks
+from geometry_tools.algorithms.audit_alimentary_atlas import audit_catalogue
 
 
 def straight_sections(stations=81,controls=24,length=.2,radii=(.006,.004)):
@@ -298,7 +298,7 @@ class ContinuityTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as d:
             path=Path(d);bank=straight_sections(stations=5).reshape(9,-1,3);faces=loft_faces(5,24)
             np.savez(path/'broken.npz',fields=bank,faces=np.delete(faces,50,axis=0))
-            result=subprocess.run([sys.executable,'-B','-m','geometry.tube_tool','audit','--source',str(path/'broken.npz'),'--report',str(path/'report.json')],cwd=root,capture_output=True,text=True)
+            result=subprocess.run([sys.executable,'-B','-m','geometry_tools.algorithms.tube_tool','audit','--source',str(path/'broken.npz'),'--report',str(path/'report.json')],cwd=root,capture_output=True,text=True)
             self.assertEqual(result.returncode,2,result.stdout+result.stderr)
             report=json.loads((path/'report.json').read_text());self.assertFalse(report['construction_checks_pass']);self.assertFalse(report['atlas_modified'])
 
@@ -306,7 +306,7 @@ class ContinuityTests(unittest.TestCase):
         root=Path(__file__).resolve().parents[1]
         with tempfile.TemporaryDirectory() as d:
             path=Path(d)/'bank.npz';np.savez(path,fields=self.a,faces=self.f);original=path.read_bytes()
-            result=subprocess.run([sys.executable,'-B','-m','geometry.tube_tool','audit','--source',str(path),'--report',str(path)],cwd=root,capture_output=True,text=True)
+            result=subprocess.run([sys.executable,'-B','-m','geometry_tools.algorithms.tube_tool','audit','--source',str(path),'--report',str(path)],cwd=root,capture_output=True,text=True)
             self.assertEqual(result.returncode,2)
             self.assertEqual(path.read_bytes(),original)
 

@@ -1,5 +1,9 @@
-@import 'tailwindcss';
+@import 'tailwindcss' source(none);
 @import 'tw-animate-css';
+/* Only UI sources generate utilities or Vite directory dependencies. */
+@source './**/*.{ts,tsx,js,jsx,mjs,html}';
+@source '../components/**/*.{ts,tsx,js,jsx,mjs,html}';
+@source '../web/**/*.{ts,tsx,js,jsx,mjs,html}';
 @font-face{font-family:'Roboto Condensed';src:url('./fonts/RobotoCondensed-variable.woff2') format('woff2');font-style:normal;font-weight:100 900;font-display:swap}
 @font-face{font-family:'Roboto Condensed';src:url('./fonts/RobotoCondensed-italic-variable.woff2') format('woff2');font-style:italic;font-weight:100 900;font-display:swap}
 @custom-variant dark (&:is(.dark *));
@@ -574,6 +578,23 @@ body:has(.studio.embedded) > .share-view{top:66px;right:12px;bottom:100px;left:a
 .download-divider{height:1px;background:var(--border);margin-block:2px}
 .download-content p{margin:0;color:var(--muted-foreground);font-size:11px;line-height:1.5}
 .top-actions .is-recording{color:#d82432!important}.recording-outline{position:fixed;inset:0;z-index:10000;border:1px solid #e21d2b;pointer-events:none}body:has(.recording-outline) .top-actions{z-index:130}
+/* Comparison capsules keep the viewer's original five-pixel edges and gaps. */
+.studio[data-compare-side]{--comparison-detail-width:min(310px,calc(100% - 10px))}
+.studio[data-compare-side] .identity{top:5px;left:5px;right:auto;z-index:90;max-width:calc(100% - 10px);visibility:visible!important}
+.studio[data-compare-side] .anatomy-choice{width:100%;max-width:none;margin-top:0}
+.studio[data-compare-side] .anatomy-choice [data-slot=select-trigger]{max-width:none!important}
+.studio[data-compare-side] .view-controls{display:none!important}
+.studio[data-compare-side=left] .top-actions{display:none!important}
+.studio[data-compare-side=left]{--comparison-layer-width:var(--viewer-sidebar-width,254px)}
+.studio.embedded[data-compare-side=left]{--comparison-layer-width:min(280px,calc(100% - 10px))}
+.studio[data-compare-side=left] .identity{width:var(--comparison-layer-width)}
+.studio[data-compare-side=left] .layers-panel,.studio[data-compare-side=left] .layers-panel.mobile-open{top:54px;bottom:5px;left:5px;right:auto;width:var(--comparison-layer-width);max-width:calc(100% - 10px);max-height:none}
+.studio[data-compare-side=right] .top-actions{top:5px;right:5px;gap:5px;visibility:visible!important;z-index:80;max-width:calc(100% - 10px);flex-wrap:nowrap;justify-content:flex-end}
+.studio[data-compare-side=right] .identity{top:auto!important;bottom:5px;left:auto!important;right:5px!important;width:var(--comparison-detail-width);max-width:none}
+body .studio[data-compare-side=right] .detail-sheet{top:54px!important;bottom:54px!important;left:auto!important;right:5px!important;width:var(--comparison-detail-width)!important;max-width:none!important;height:auto!important}
+body .studio[data-compare-side=right] :is(.detail-sheet,.search-panel,.section-panel,.advanced-panel,.study-panel,.visit-panel,.download-panel){bottom:54px!important;max-height:calc(100dvh - 108px)!important}
+@media(max-width:767px){.studio:not(.embedded)[data-compare-side=left]{--comparison-layer-width:calc(100% - 10px)}}
+@media(max-height:600px) and (orientation:landscape){.studio:not(.embedded)[data-compare-side=left]{--comparison-layer-width:min(250px,calc(100% - 10px))}}
 .studio.embedded .download-panel{top:66px;right:12px;bottom:100px;width:min(310px,calc(100% - 24px));max-width:none}
 @media(min-width:768px) and (max-width:1000px) and (min-height:601px){.studio:not(.embedded) .download-panel{width:280px}}
 @media(max-width:767px) and (orientation:portrait){.studio:not(.embedded) .download-panel{top:auto;left:5px;right:5px;bottom:calc(100px + env(safe-area-inset-bottom));height:48dvh;width:auto;max-width:none}.studio:not(.embedded):has(.advanced-panel) .download-panel{bottom:calc(195px + env(safe-area-inset-bottom))}}

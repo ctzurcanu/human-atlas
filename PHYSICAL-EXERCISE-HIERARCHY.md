@@ -35,9 +35,8 @@ The classification is an original Human Atlas grouping by exercise type and move
 | Model catalogue | Exercises with anatomy | Total exercise records |
 | --- | ---: | ---: |
 | public/models/atlas-embryo.json | 0 | 960 |
-| public/models/atlas-hra-female.json | 351 | 960 |
 | public/models/atlas-male-complete.json | 858 | 960 |
-| public/models/atlas-z-anatomy.json | 858 | 960 |
+| public/models/atlas-open-anatomy.json | 858 | 960 |
 | public/models/atlas.json | 798 | 960 |
 | .local-models/female.json | 816 | 960 |
 | .local-models/male.json | 816 | 960 |

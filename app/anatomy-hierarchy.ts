@@ -1,11 +1,21 @@
 import {SYSTEMS,structureName,type Atlas,type Part,type SystemId} from './anatomy';
+import {structureLabelName} from './laterality';
 import {taChapterForConcept,taEntityForConcept,taHierarchyForConcept,terminologyForConcept,terminologyForGroup,type Terminology} from './anatomical-terminology';
 import {isSkinPart} from './depth-layers';
-import {vascularWallIntegration} from './vascular-wall';
+import {vascularWallIntegrations} from './vascular-wall';
+import {diaphragmControlRegistry} from './diaphragm-controls';
+import {liverControlRegistry} from './liver-controls';
+import {liverCompletionRegistry} from './liver-completion-controls';
+import {hepaticConnectionRegistry,hepaticConnectionRole} from './hepatic-connection-controls';
+import {spinalCordRegistry} from './spinal-cord-controls';
+import {tongueRegistry} from './tongue-controls';
+import {carotidSurfaceReferenceEntries} from './carotid-surface-features';
+import {catalogueTa98TermParts} from './ta98-term-bindings';
+import {reviewedPancreaticVenousPair} from './pancreatic-venous-relations';
 
-export type AnatomyEntry={id:string;name:string;system:SystemId;region:string;location:string[];ancestry:string[];ancestryTerms?:Record<string,Terminology>;taParentConcept?:string;ta98Term?:string;ta98Kind?:'exact'|'parent';parts:Part[];terminology:Terminology};
+export type AnatomyEntry={id:string;name:string;system:SystemId;region:string;location:string[];ancestry:string[];ancestryTerms?:Record<string,Terminology>;taParentConcept?:string;ta98Term?:string;ta98Kind?:'exact'|'parent';parts:Part[];terminology:Terminology;assemblySystemPath?:string[];assemblyMajorSystem?:MajorSystemId;selectionOnly?:true};
 export type AnatomyNode=
- | {kind:'group';id:string;name:string;nodes:AnatomyNode[];parts:Part[];terminology:Terminology}
+ | {kind:'group';id:string;name:string;nodes:AnatomyNode[];parts:Part[];terminology:Terminology;itemCount?:number}
  | {kind:'bilateral';id:string;name:string;entries:AnatomyEntry[];parts:Part[];terminology:Terminology}
  | {kind:'entry';id:string;name:string;entry:AnatomyEntry;parts:Part[]};
 export const REGION_ORDER=['Head & neck','Torso & pelvis','Upper limbs','Lower limbs','Whole body & spanning'];
@@ -32,7 +42,11 @@ function integumentaryBranch(entry:AnatomyEntry){
  const name=entry.name.toLowerCase();
  return /mammar|breast|lactifer/.test(name)?'Mammary gland':/lacrimal/.test(name)?'Lacrimal glands':/adipose/.test(name)?'Subcutaneous tissue':'';
 }
-export function majorSystemFor(entry:Pick<AnatomyEntry,'name'|'system'|'parts'>&Partial<Pick<AnatomyEntry,'terminology'|'ta98Term'>>):MajorSystemId{
+export function majorSystemFor(entry:Pick<AnatomyEntry,'name'|'system'|'parts'>&Partial<Pick<AnatomyEntry,'terminology'|'ta98Term'|'assemblyMajorSystem'>>):MajorSystemId{
+ if(entry.assemblyMajorSystem)return entry.assemblyMajorSystem;
+ // Organ chapters also name blood vessels. Their TA98 ancestry stays intact,
+ // while an explicitly typed artery or vein belongs to blood circulation.
+ if(entry.system==='arterial'||entry.system==='venous')return 'circulatory';
  const name=entry.name.toLowerCase();
  if(entry.parts.every(isSkinPart))return 'integumentary';
  if(/(?:salivary|parotid|submandibular|sublingual|lacrimal|sebaceous|sweat|ceruminous) gland|gland of (?:skin|eyelid)|mammary (?:gland|lobe)|lactiferous/.test(name))return 'exocrine';
@@ -44,11 +58,23 @@ export function majorSystemFor(entry:Pick<AnatomyEntry,'name'|'system'|'parts'>&
  // Systems follows tissue identity; the TA98 hierarchy retains oral ancestry.
  if(taCode==='A05.2.01.011')return 'lymphatic';
  const chapter=taCode?.slice(0,3)??taChapterForConcept(entry.parts[0]?.conceptId??'');
+ // TA98 files lymphatic trunks and ducts (A12.4) in its cardiovascular chapter, but they belong to the lymphatic system.
+ if(taCode?.startsWith('A12.4.'))return 'lymphatic';
  const taSystem:Record<string,MajorSystemId>={A02:'skeletal',A03:'skeletal',A04:'muscular',A05:'digestive',A06:'respiratory',A08:'urinary',A09:'reproductive',A11:'endocrine',A12:'circulatory',A13:'lymphatic',A14:'nervous',A15:'nervous',A16:'integumentary'};
  if(chapter&&taSystem[chapter]&&entry.system!=='attachments')return taSystem[chapter];
+ // Adipose tissue is hypodermis/fat pads (TA98 files subcutaneous tissue under the integument) and the meninges belong to the nervous system: neither is a skeletal structure.
+ // Epicardial/paracardial fat belongs to the heart, not the subcutaneous fat layer.
+ if(entry.system==='connective'&&/\b(?:epicardial|paracardial)\b/.test(name))return 'circulatory';
+ if(entry.system==='connective'&&/\b(?:fat|fatty|adipose)\b|subcutaneous tissue|hypodermis|membranous layer/.test(name))return 'integumentary';
+ if(entry.system==='connective'&&/\bpleura\b|\bpleural\b/.test(name))return 'respiratory';
+ if(entry.system==='connective'&&/peritone|omentum|mesenter|mesocolon|falciform|coronary ligament of liver|triangular ligament of liver/.test(name))return 'digestive';
+ if(entry.system==='connective'&&/pericardi/.test(name))return 'circulatory';
+ if(entry.system==='connective'&&/\b(?:dura|arachnoid|pia mater|meninges|meningeal)\b/.test(name))return 'nervous';
+ // Source fascia-category sheets (popliteal fossa, intermuscular septa, sheaths, aponeuroses) are muscular-system fascia even when the name lacks the word; a name alone must not file them under Bones.
+ if(entry.system==='connective'&&/^BDM:male:human_20_male_fascia-/.test(entry.parts[0]?.id??'')&&!/eyeball|(?:lateral|medial) rectus|superior oblique|\blens\b/.test(name))return 'muscular';
  if(entry.system==='connective')return /eyeball|(?:lateral|medial) rectus|superior oblique|\blens\b/.test(name)?'nervous':/\bfascia\b/.test(name)?'muscular':'skeletal';
  if(entry.system==='fascia'||entry.system==='attachments'||entry.system==='muscular')return 'muscular';
- if(entry.system==='arterial'||entry.system==='venous'||entry.system==='cardiac')return 'circulatory';
+ if(entry.system==='cardiac')return 'circulatory';
  if(entry.system==='sensory'||entry.system==='nervous'||entry.system==='schematic')return 'nervous';
  if(entry.system==='regions'||entry.system==='integumentary')return 'integumentary';
  if(entry.system==='pregnancy')return 'reproductive';
@@ -57,13 +83,9 @@ export function majorSystemFor(entry:Pick<AnatomyEntry,'name'|'system'|'parts'>&
 function systemBranchFor(entry:AnatomyEntry):string{
  const name=entry.name.toLowerCase(),system=majorSystemFor(entry);
  if(system==='integumentary')return isSkin(entry)?'Skin':integumentaryBranch(entry)||(/adipose|fat/.test(name)?'Subcutaneous tissue':/\bhair|nail\b/.test(name)?'Hair & nails':'');
- if(system==='skeletal')return /cartilage|labrum|meniscus|\bdisc\b|\bdisk\b/.test(name)?'Cartilage':/\btendon\b/.test(name)?'Tendons':/ligament|capsule|joint|suture/.test(name)?'Joints and ligaments':'Bones';
+ if(system==='skeletal')return /cartilage|labrum|meniscus|\bdisc\b|\bdisk\b/.test(name)?'Cartilage':/\btendon\b/.test(name)?'Tendons':/ligament|capsule|joint|suture|fat pad|interosseous membrane|syndesmosis/.test(name)?'Joints and ligaments':'Bones';
  if(system==='muscular')return entry.system==='attachments'?'Muscle attachments':entry.system==='fascia'||/\bfascia\b/.test(name)?'Fascia':'Muscles';
  if(system==='circulatory'){
-  // TA98 places A12.4 lymphatic vessels in its cardiovascular chapter.
-  // Preserve that chapter without assigning these vessels to the heart.
-  const code=entry.terminology.ta98??entry.ta98Term??taEntityForConcept(entry.id);
-  if(entry.system==='lymphatic'||code?.startsWith('A12.4.'))return 'Lymphatic trunks and ducts';
   return entry.system==='arterial'||/\b(?:artery|aorta|celiac trunk)\b/.test(name)?'Arteries':entry.system==='venous'||/\b(?:vein|venous)\b/.test(name)?'Veins':'Heart';
  }
  if(system==='nervous'){
@@ -73,10 +95,10 @@ function systemBranchFor(entry:AnatomyEntry):string{
   return entry.system==='sensory'||entry.system==='connective'||/\b(?:eye|eyeball|retina|sclera|cornea|choroid|pupil|lens|ear|cochlea|macula lutea|conjunctiva|vitreous|lacrimal)\b/.test(name)?'Sensory organs':/^(?:allen )|\b(?:brain|cerebr|cerebell|spinal cord|spinocerebellar|vestibulospinal|tectospinal|rubrospinal|gracile fasciculus|white matter|ventricle|interventricular foramen|thalam|medulla|caudate|putamen|pallid|insula|cortex|accumbens)\b/.test(name)?'Central nervous system':'Peripheral nervous system';
  }
  if(system==='exocrine')return /lacrimal/.test(name)?'Lacrimal glands':/mammary|lactiferous|breast/.test(name)?'Mammary gland':/sebaceous|sweat|ceruminous/.test(name)?'Skin glands':'Salivary glands';
- if(system==='digestive')return /liver|pancrea|gallbladder|biliar/.test(name)?'Accessory digestive organs':'Digestive tract';
+ if(system==='digestive')return /liver|hepatic|hepatis|pancrea|gallbladder|biliar|bile duct/.test(name)?'Accessory digestive organs':'Digestive tract';
  if(system==='respiratory')return /\blung|pulmonary|pleura/.test(name)?'Lungs':'Airways';
- if(system==='urinary')return /kidney|renal/.test(name)?'Kidneys':'Urinary tract';
- if(system==='lymphatic')return /\bnode|nodule\b/.test(name)?'Lymph nodes':'Lymphatic organs and vessels';
+ if(system==='urinary')return /kidney|renal|perinephric|paranephric|pararenal|perirenal/.test(name)?'Kidneys':'Urinary tract';
+ if(system==='lymphatic'){const code=entry.terminology?.ta98??entry.ta98Term??taEntityForConcept(entry.id);return /\bnode|nodule\b/.test(name)?'Lymph nodes':code?.startsWith('A12.4.')?'Lymphatic trunks and ducts':'Lymphatic organs and vessels';}
  if(system==='endocrine')return 'Endocrine glands';
  if(system==='reproductive'){
   if(entry.system==='pregnancy')return 'Placenta & pregnancy';
@@ -90,6 +112,7 @@ function systemBranchFor(entry:AnatomyEntry):string{
 export function systemPathFor(entry:AnatomyEntry,scope?:string):string[]{
  if(scope==='cell')return [];
  if(scope==='embryo')return entry.parts[0].groups??[];
+ if(entry.assemblySystemPath)return entry.assemblySystemPath;
  const branch=systemBranchFor(entry);
  if(branch==='Skin')return ['Skin',skinSourceRegions(entry)?'Named skin regions':'Body surface',entry.region,...entry.location,...entry.ancestry];
  return [...(branch?[branch]:[]),entry.region,...entry.location,...entry.ancestry];
@@ -115,10 +138,12 @@ function regionFor(parts:Part[],scope?:string){
  if(maxY-minY>1.05)return 'Whole body & spanning';
  const groups=groupsFor(parts);
  const name=normalized(parts);
+ if(parts.every(part=>part.system==='arterial')&&/\bintercostal\b/.test(name))return 'Torso & pelvis';
  if(parts.every(part=>part.system==='arterial')&&/^(?:(?:left|right) )?(?:brachiocephalic trunk|aortic arch|arch of aorta|proximal segment of subclavian artery)(?: \((?:left|right)\))?$/.test(name))return 'Torso & pelvis';
  if(parts.every(part=>part.system==='lymphatic')&&/\b(cubital|axillary|deltopectoral)\b/.test(name))return 'Upper limbs';
  if(parts.every(part=>part.system==='lymphatic')&&/\b(inguinal|popliteal)\b/.test(name))return 'Lower limbs';
  if(/\b(?:acromioclavicular|sternoclavicular|clavicle|scapula|shoulder|deltoid)\b/.test(name)||has(groups,/pectoral girdle/))return 'Upper limbs';
+ if(/\b(?:costotransverse|costovertebral|sternocostal|sternochondral|interchondral|costoxiphoid|intercostal|rib|thoracic|t\d+-t\d+ vertebrae)\b/.test(name))return 'Torso & pelvis';
  if(has(groups,/^(head|neck|brain|face|skull|cranium|cerebrum|cerebellum|left head|right head|head and neck)$/))return 'Head & neck';
  if(has(groups,/^(left |right )?(upper limb|arm|forearm|hand|wrist|shoulder)( region)?$/))return 'Upper limbs';
  if(has(groups,/^(left |right )?(lower limb|leg|thigh|foot|ankle|talocrural region)( region)?$/))return 'Lower limbs';
@@ -159,7 +184,8 @@ function locationFor(parts:Part[],region:string):string[]{
   if(parts.every(part=>part.system==='connective')&&/^(?:(?:anterior|posterior) atlanto-occipital membrane|tectorial membrane of atlanto-axial joint|alar ligaments)$/.test(name))return ['Neck'];
   if(parts.every(part=>part.system==='arterial')&&/^(?:(?:left|right) )?common carotid artery(?: \((?:left|right)\))?$/.test(name))return ['Neck'];
   if(/\b(neck|cervical|larynx|pharynx|thyroid|parathyroid|trachea)\b/.test(name)||has(groups,/^neck$/))return ['Neck'];
-  const area=/\b(brain|cerebr|cerebell|telencephal|ventric|thalam|hypothalam|pons|medulla|pineal|pituitary|caudate|putamen|pallid|insula|cortex|nucleus accumbens)\b/.test(name)||/^allen /.test(name)||has(groups,/^(brain|cerebrum|telencephalon)$/)?'Brain'
+  const cns=parts.every(part=>part.system==='nervous')&&/\b(gyr\w*|lobule|lobe|cuneus|precuneus|operculum|pole|planum|ventricle|colliculus|peduncle|amygdal\w*|hippocamp\w*|claustrum|pallidus|putamen|caudate|accumbens|zona incerta|substantia nigra|vermis|olive|pons|tegmentum|fornix|septal|hypothalam\w*|forebrain|myelencephalon|mesencephalon|subthalamic|pulvinar)\b/.test(name)&&!/\bnerve\b|\bbranch/.test(name);
+  const area=cns||/\b(brain|cerebr|cerebell|telencephal|ventric|thalam|hypothalam|pons|medulla|pineal|pituitary|caudate|putamen|pallid|insula|cortex|nucleus accumbens)\b/.test(name)||/^allen /.test(name)||has(groups,/^(brain|cerebrum|telencephalon)$/)?'Brain'
    :/\b(skull|crani|parietal|occipital|frontal bone|temporal bone|sphenoid|ethmoid|mandib|maxill|zygomat|vomer)\b/.test(name)||has(groups,/^cranium$/)?'Skull'
    :/\b(scalp|epicran|mastoid|temporal region|hairs of head)\b/.test(name)||has(groups,/^regions of epicranium$/)?'Scalp & epicranium'
    :/\b(eye|eyebrow|eyelash|auricul\w*|antihelix|antitragus|tragus|helix|concha|conchae|scapha|fossa antihelica|ear|nose|nasal|mouth|oral|labial|philtrum|mentolabial|mental region|parotideomasseteric|buccal|zygomatic region|frontal region|tongue|tooth|teeth|facial|face|orbit|cheek|lip|chin)\b/.test(name)||has(groups,/^(face|regions of face|auricular region|oral region|orbital region|frontal region|hairs)$/)?'Face & senses':'';
@@ -262,24 +288,95 @@ export function hierarchyEntries(atlas:Atlas):AnatomyEntry[]{
  const concepts=new Map(atlas.concepts.map(concept=>[concept.id,concept]));
  const byConcept=new Map<string,Part[]>();
  const groupCounts=new Map<string,number>();
- for(const part of atlas.parts){if(part.suppressed)continue;const parts=byConcept.get(part.conceptId)??[];parts.push(part);byConcept.set(part.conceptId,parts);for(const group of new Set(part.groups??[]))groupCounts.set(group,(groupCounts.get(group)??0)+1);}
+ for(const part of atlas.parts){if(part.suppressed||part.conceptId.startsWith('TA98COURSE:'))continue;const parts=byConcept.get(part.conceptId)??[];parts.push(part);byConcept.set(part.conceptId,parts);for(const group of new Set(part.groups??[]))groupCounts.set(group,(groupCounts.get(group)??0)+1);}
  const entries=[...byConcept].map(([id,parts])=>{
   const region=regionFor(parts,atlas.scope);
   const location=atlas.scope==='cell'?[]:locationFor(parts,region);
   if(parts.every(isSkinPart))location.push(...skinDetailFor(parts));
   const concept=concepts.get(id);
-  const entry={id,name:concept?.name??structureName(parts[0].name),system:parts[0].system,region,location,ancestry:[],parts,ta98Term:concept?.ta98Term,ta98Kind:concept?.ta98Kind,terminology:terminologyForConcept(id,concept?.ta98Term,concept?.ta98Kind)} as AnatomyEntry;
+  const entry={id,name:concept?.name??structureLabelName(parts[0].name),system:parts[0].system,region,location,ancestry:[],parts,ta98Term:concept?.ta98Term,ta98Kind:concept?.ta98Kind,terminology:terminologyForConcept(id,concept?.ta98Term,concept?.ta98Kind)} as AnatomyEntry;
   entry.ancestry=atlas.scope==='cell'||atlas.scope==='embryo'?[]:ancestryFor(entry,groupCounts);
   return entry;
  });
+ // Logical source collections and singular courses retain canonical physical ownership.
+ const entryIds=new Set(entries.map(entry=>entry.id));
+ for(const binding of atlas.ta98TermBindings??[]){
+  if(!['source-collection-identity','source-course-identity'].includes(binding?.representation??'')||entryIds.has(binding.conceptId))continue;
+  const parts=catalogueTa98TermParts({...atlas,ta98TermBindings:[binding]}).get(binding.term);
+  const concept=concepts.get(binding.conceptId);
+  if(!parts?.length||!concept)continue;
+  const region=regionFor(parts,atlas.scope),location=atlas.scope==='cell'?[]:locationFor(parts,region);
+  const entry:AnatomyEntry={id:concept.id,name:concept.name,system:parts[0].system,region,location,ancestry:[],parts,ta98Term:concept.ta98Term,ta98Kind:concept.ta98Kind,terminology:terminologyForConcept(concept.id,concept.ta98Term,concept.ta98Kind),selectionOnly:true};
+  if(binding.representation==='source-course-identity')entry.taParentConcept=concept.partOf;
+  if(binding.representation==='source-collection-identity'&&atlas.sourceCollectionIdentities?.some(manifest=>manifest.id===binding.sourceCollectionId&&manifest.taParentConceptId===concept.partOf))entry.taParentConcept=concept.partOf;
+  entry.ancestry=atlas.scope==='cell'||atlas.scope==='embryo'?[]:ancestryFor(entry,groupCounts);
+  entries.push(entry);entryIds.add(entry.id);
+ }
  const muscleKey=(name:string)=>name.toLowerCase().replace(/\s*\((?:left|right)\)\s*$/,'').replace(/^\((.*)\)$/,'$1').trim();
+ // Surface references keep the existing physical ICA carrier, but have their
+ // own TA98 ancestry and selectable Systems entry. They add no model mesh.
+ entries.push(...carotidSurfaceReferenceEntries(atlas,entries).map(entry=>({...entry,ancestry:ancestryFor(entry,groupCounts)})));
  const muscles=new Map<string,AnatomyEntry>();
  for(const entry of entries)if(entry.system==='muscular'){
   const side=/\((left|right)\)\s*$/i.exec(entry.name)?.[1].toLowerCase();
   if(side)muscles.set(`${muscleKey(entry.name)}:${side}`,entry);
  }
- const vascular=vascularWallIntegration(atlas);
- if(vascular)for(const entry of entries){if(!entry.parts.every(p=>vascular.ids.includes(p.id)))continue;entry.ancestry=[vascular.source.name];entry.ancestryTerms={[vascular.source.name]:terminologyForConcept(vascular.source.conceptId)};entry.taParentConcept=vascular.source.conceptId;}
+ const vascular=vascularWallIntegrations(atlas);
+ for(const r of vascular)for(const entry of entries){if(!entry.parts.every(p=>r.ids.includes(p.id)))continue;entry.ancestry=[r.source.name];entry.ancestryTerms={[r.source.name]:terminologyForConcept(r.source.conceptId)};entry.taParentConcept=r.source.conceptId;}
+  const diaphragm=diaphragmControlRegistry(atlas);
+  if(diaphragm){
+   const ids=new Set(diaphragm.marker.partIds),whole=diaphragm.marker.termGroups.find(g=>g.term==='A04.4.02.001')!;
+   const wholeName=structureLabelName(concepts.get(whole.conceptId)!.name).replace(/^./,letter=>letter.toUpperCase());
+   for(const entry of entries){
+    if(!entry.parts.every(p=>ids.has(p.id)))continue;
+    // Bounds/name heuristics put lumbar and sternal tissue into different
+    // body locations, and fascia into another branch. Those are parts of one
+    // explicitly stored organ, not three partial organs named Diaphragm.
+    const parent=entry.ancestry.findIndex(name=>name.toLowerCase()===wholeName.toLowerCase());
+    entry.assemblySystemPath=['Muscles','Torso & pelvis','Muscles of thorax',wholeName,...(parent<0?[]:entry.ancestry.slice(parent+1))];
+    entry.ancestryTerms={...entry.ancestryTerms,[wholeName]:terminologyForConcept(whole.conceptId,whole.term,'exact')};
+   }
+  }
+ const spinal=spinalCordRegistry(atlas);
+ if(spinal)for(const entry of entries){
+  if(!entry.parts.every(p=>spinal.parts.some(q=>q.id===p.id)))continue;
+  const root=entry.ancestry.findIndex(name=>name.toLowerCase()==='spinal cord');
+  entry.assemblySystemPath=['Central nervous system','Torso & pelvis','Spinal cord',...(root<0?[]:entry.ancestry.slice(root+1))];
+  entry.ancestryTerms={...entry.ancestryTerms,'Spinal cord':terminologyForConcept(spinal.marker.wholeConceptId,'A14.1.02.001','exact')};
+ }
+ for(const overview of (atlas as import('./organ-models').OrganModelCatalogue).organOverviews??[]){
+  const ids=new Set(overview.partIds);
+  for(const entry of entries)if(entry.parts.length&&entry.parts.every(p=>ids.has(p.id))){
+   entry.assemblySystemPath=[...overview.systemPath];
+   entry.ancestry=overview.systemPath.at(-1)==='Spinal cord'?['Spinal cord']:[];
+   entry.ancestryTerms={...entry.ancestryTerms,'Spinal cord':terminologyForConcept(overview.wholeConceptId,'A14.1.02.001','exact')};
+  }
+ }
+ const liver=liverControlRegistry(atlas);
+ const tongue=tongueRegistry(atlas);
+ if(tongue)for(const entry of entries){
+  if(!entry.parts.every(p=>tongue.marker.partIds.includes(p.id)))continue;
+  entry.assemblyMajorSystem='digestive';
+  entry.assemblySystemPath=['Digestive tract','Head & neck','Mouth','Tongue'];
+  entry.ancestryTerms={...entry.ancestryTerms,Tongue:terminologyForConcept(tongue.marker.wholeConceptId,'A05.1.04.001','exact')};
+  entry.taParentConcept=tongue.marker.wholeConceptId;
+ }
+ const liverCompletion=liverCompletionRegistry(atlas);
+ const liverAssemblyIds=new Set([...(liver?.marker.partIds??[]),...(liverCompletion?.partIds??[])]);
+ if(liver)for(const entry of entries){
+  if(!entry.parts.every(p=>liverAssemblyIds.has(p.id)))continue;
+  entry.assemblySystemPath=['Accessory digestive organs','Torso & pelvis','Liver'];
+  entry.ancestryTerms={...entry.ancestryTerms,Liver:terminologyForConcept(liver.marker.wholeConceptId,'A05.8.01.001','exact')};
+  entry.taParentConcept=liver.marker.wholeConceptId;
+ }
+ const hepatic=hepaticConnectionRegistry(atlas);
+ if(hepatic)for(const entry of entries){
+  if(!entry.parts.every(p=>hepatic.marker.wholePartIds.includes(p.id)||hepatic.marker.regionPartIds.includes(p.id)))continue;
+  const role=hepaticConnectionRole(entry.parts[0]),name=role==='artery'?'Hepatic arteries':role==='portal'?'Portal vein':role==='hepatic_vein'?'Hepatic veins and cava':'Hepatic ducts';
+  entry.assemblyMajorSystem='digestive';
+  entry.assemblySystemPath=['Accessory digestive organs','Torso & pelvis','Liver',name];
+  entry.ancestryTerms={...entry.ancestryTerms,Liver:terminologyForConcept('ZA:Liver','A05.8.01.001','exact')};
+ }
  for(const entry of entries)if(entry.system==='attachments'){
   const marker=/^(.+)\.[eo]\d*([lr])$/i.exec(entry.name);
   if(!marker)continue;
@@ -291,7 +388,52 @@ export function hierarchyEntries(atlas:Atlas):AnatomyEntry[]{
   entry.ancestry=[...parent.ancestry,parentName];
   entry.ancestryTerms={[parentName]:parent.terminology};
  }
+ // Put an explicitly recorded same-name carrier and its siblings under the
+ // side-specific assembly, retaining one physical entry per mesh.
+ const assemblyParents=new Set(atlas.concepts.flatMap(concept=>concept.partOf?[concept.partOf]:[]));
+ for(const parentId of assemblyParents){
+  const parent=concepts.get(parentId);if(!parent)continue;
+  const carrier=entries.find(entry=>entry.name===parent.name&&concepts.get(entry.id)?.partOf===parent.id);
+  if(!carrier||parent.elements.length<2)continue;
+  const members=entries.filter(entry=>concepts.get(entry.id)?.partOf===parent.id&&entry.parts.every(p=>parent.elements.includes(p.id)));
+  if(members.length<2||!members.includes(carrier))continue;
+  const path=[...systemPathFor(carrier,atlas.scope),parent.name];
+  for(const entry of members){entry.assemblySystemPath=path;entry.region=carrier.region;entry.location=[...carrier.location];entry.ancestryTerms={...entry.ancestryTerms,[parent.name]:carrier.terminology};}
+ }
+ const pancreatic=reviewedPancreaticVenousPair(atlas.parts);
+ if(pancreatic){
+  const [source,recipient]=pancreatic,child=entries.find(entry=>entry.id===source.conceptId),parent=entries.find(entry=>entry.id===recipient.conceptId);
+  if(child&&parent&&concepts.get(child.id)?.partOf===parent.id){
+   const parentName=entryLabel(parent),path=[...systemPathFor(parent,atlas.scope),parentName];
+   parent.assemblySystemPath=path;child.assemblySystemPath=[...path];
+   parent.ancestryTerms={...parent.ancestryTerms,[parentName]:parent.terminology};
+   child.region=parent.region;child.location=[...parent.location];child.taParentConcept=parent.id;
+   child.ancestry=[...parent.ancestry,parentName];
+   child.ancestryTerms={...parent.ancestryTerms,[parentName]:parent.terminology};
+  }
+ }
+ addSharedTermNodes(entries);
  return entries;
+}
+
+/** Several qualified entries on one exact TA98 term ("Orbital gyri, medial", "Orbital gyri, lateral") are
+ * grouped under a node named after that term, so the tree keeps the TA98 level between them and their parent. */
+function addSharedTermNodes(entries:AnatomyEntry[]){
+ const bare=(name:string)=>name.replace(/\s*\((?:left|right)\)\s*$/i,'').trim();
+ const byTerm=new Map<string,Set<string>>();
+ for(const entry of entries){
+  if(entry.ta98Kind!=='exact'||!entry.ta98Term||entry.assemblySystemPath)continue;
+  const names=byTerm.get(entry.ta98Term)??new Set<string>();names.add(bare(entry.name).toLowerCase());byTerm.set(entry.ta98Term,names);
+ }
+ for(const entry of entries){
+  if(entry.ta98Kind!=='exact'||!entry.ta98Term||entry.assemblySystemPath||(byTerm.get(entry.ta98Term)?.size??0)<2)continue;
+  const term=taHierarchyForConcept(entry.id,entry.ta98Term,'parent').at(-1)?.name;
+  if(!term)continue;
+  const node=term.replace(/^./,letter=>letter.toUpperCase());
+  if(bare(entry.name).toLowerCase()===node.toLowerCase()||entry.ancestry.at(-1)?.toLowerCase()===node.toLowerCase())continue;
+  entry.ancestry=[...entry.ancestry,node];
+  entry.ancestryTerms={...entry.ancestryTerms,[node]:entry.terminology};
+ }
 }
 
 export function entryLabel(entry:AnatomyEntry){

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mesh Spatial Index"
+  short_description: "Query 3D neighbours and persistent triangle trees"
+  default_prompt: "Use $atlas-mesh-spatial to work on the requested Human Atlas geometry with source-bound checks."

@@ -2,6 +2,14 @@ import type {Atlas,Part} from './anatomy';
 import type {HierarchyChoice} from './hierarchy-choice';
 import {gallbladderWallPeelSteps} from './gallbladder-wall';
 import {vascularWallPeelSteps} from './vascular-wall';
+import {thyroidWallPeelSteps} from './thyroid-wall';
+import {spleenTissuePeelSteps} from './spleen-wall';
+import {suprarenalTissuePeelSteps} from './suprarenal-wall';
+import {renalTissuePeelSteps} from './renal-wall';
+import {urinaryTissuePeelSteps} from './urinary-wall';
+import {liverTissuePeelSteps} from './liver-controls';
+import {cardiacWallPeelSteps} from './heart-wall';
+import {spinalCordPeelSteps} from './spinal-cord-controls';
 export type WallPeelStep={name:string;ids:string[]};
 const coatNames:Record<string,string>={serosa:'Tunica serosa',subserosa:'Tela subserosa','longitudinal-muscle':'Stratum longitudinale','circular-muscle':'Stratum circulare',submucosa:'Tela submucosa','muscularis-mucosae':'Lamina muscularis mucosae','lamina-propria':'Lamina propria mucosae',epithelium:'Epithelium mucosae'};
 const layers=['serosa','subserosa','longitudinal-muscle','circular-muscle','submucosa','muscularis-mucosae','lamina-propria','epithelium'];
@@ -14,6 +22,14 @@ function coatName(key:string,parts:Part[]):string{
 }
 /** Only complete, explicitly stored wall/feature assemblies get tissue peeling. */
 export function bowelWallPeelSteps(atlas:Atlas,choice:HierarchyChoice):WallPeelStep[]|null{
+ const spinal=spinalCordPeelSteps(atlas,choice);if(spinal)return spinal;
+ const cardiac=cardiacWallPeelSteps(atlas,choice);if(cardiac)return cardiac;
+ const liver=liverTissuePeelSteps(atlas,choice);if(liver)return liver;
+ const urinary=urinaryTissuePeelSteps(atlas,choice);if(urinary)return urinary;
+ const renal=renalTissuePeelSteps(atlas,choice);if(renal)return renal;
+ const suprarenal=suprarenalTissuePeelSteps(atlas,choice);if(suprarenal)return suprarenal;
+ const spleen=spleenTissuePeelSteps(atlas,choice);if(spleen)return spleen;
+ const thyroid=thyroidWallPeelSteps(atlas,choice);if(thyroid)return thyroid;
  const vascular=vascularWallPeelSteps(atlas,choice);if(vascular)return vascular;
  const gallbladder=gallbladderWallPeelSteps(atlas,choice);if(gallbladder)return gallbladder;
  if(!atlas.bowelWallPrototype||choice.id==='selection-set'||!choice.elements.length)return null;

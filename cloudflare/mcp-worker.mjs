@@ -4,7 +4,12 @@ import {createServer} from '../mcp/server-core.mjs';
 import data from './generated/mcp-data.json';
 import uiHtml from './generated/mcp-app.html';
 
-configureAtlasData((_model,file)=>{const atlas=data.catalogues[file];if(!atlas)throw new Error('Model is not publicly available.');return atlas;},data.terminology);
+configureAtlasData((_model,file)=>{
+ const atlas=data.catalogues[file];
+ if(!atlas)throw new Error('Model is not publicly available.');
+ const {parts,concepts}=atlas;
+ return {parts,concepts:concepts.map(concept=>({...concept,elements:concept.elements.map(index=>typeof index==='number'?parts[index].id:index)}))};
+},data.terminology);
 export async function handleMcp(request,env){
  const origin=request.headers.get('Origin');
  const allowed=new Set([new URL(request.url).origin,'https://chatgpt.com','https://chat.openai.com','https://claude.ai',...(env.ALLOWED_VIEWER_ORIGINS??'').split(',').map(value=>value.trim())]);

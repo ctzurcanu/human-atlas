@@ -14,11 +14,12 @@ async function collect(directory,prefix,files){
 }
 
 /** Deployment hashes stay stable across viewer-only builds; dev versions follow file edits. */
-export async function assetManifest(publicDirectory,localDirectory){
+export async function assetManifest(publicDirectory,localDirectory,stagedMaleDirectory){
  const files=[];
  await collect(join(publicDirectory,'models'),'models',files);
  await collect(join(publicDirectory,'assets'),'assets',files);
  if(localDirectory)await collect(localDirectory,'local-models',files);
+ if(stagedMaleDirectory && stagedMaleDirectory!==join(publicDirectory,'models','male-ta98'))await collect(stagedMaleDirectory,'models/male-ta98',files);
  const versions={};let cursor=0;
  await Promise.all(Array.from({length:6},async()=>{
   while(cursor<files.length){

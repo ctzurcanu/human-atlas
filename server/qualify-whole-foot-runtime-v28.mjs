@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync,existsSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {build} from 'esbuild';
+const base='.local-models/geometry-workbench/circulatory-completion/lower-limb-native-network-opportunities-v16';
+const source='.local-models/ta98-review/bowel-wall-local-atlas/male/atlas.json',body='.local-models/organ-models/spinal-cord/male-body.json';
+const sha=x=>createHash('sha256').update(x).digest('hex'),expected='d73c260cf6ed0752af5b3f420e97b11f4f180bea100aaf2f70f9082bf9a675de';
+assert.equal(sha(readFileSync(source)),expected);const a=JSON.parse(readFileSync(source)),b=JSON.parse(readFileSync(body));
+const buildResult=await build({stdin:{contents:`export {withReviewedCatalogueIdentities} from './app/reviewed-catalogue-identities.ts';export {withPreferredSourceRepresentations,withHiddenReviewAlternatives} from './app/preferred-source-representations.ts';`,resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent'});
+const api=await import('data:text/javascript;base64,'+Buffer.from(buildResult.outputFiles[0].contents).toString('base64'));
+const normal=api.withHiddenReviewAlternatives(api.withPreferredSourceRepresentations(api.withReviewedCatalogueIdentities(b)),false),parts=new Map(normal.parts.map(p=>[p.id,p]));
+const rows=a.parts.filter(p=>p.bounds&&p.bounds[0][1]<.14&&p.bounds[1][1]>.003&&['integumentary','nervous','fascia','venous'].includes(p.system)).map(p=>({id:p.id,retained:parts.has(p.id)&&!parts.get(p.id).suppressed,system:p.system,defaultHidden:a.defaultHidden?.includes(p.id)??false,rawSuppressed:!!p.suppressed,normalSuppressed:!!parts.get(p.id)?.suppressed}));
+const result={schema:'whole-foot-runtime-current-loader-qualification/v28',sourceCatalogueSha256:expected,ordinaryBodySha256:sha(readFileSync(body)),pipeline:['withReviewedCatalogueIdentities','withPreferredSourceRepresentations','withHiddenReviewAlternatives(false)'],rows,noSourceOrVisibilityChanges:true};
+const path=`${base}/whole-foot-runtime-qualification-v28.json`;assert.ok(!existsSync(path));writeFileSync(path,JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify({path,rows:rows.length,retained:rows.filter(r=>r.retained).length,retired:rows.filter(r=>!r.retained).length}));

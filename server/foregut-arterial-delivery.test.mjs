@@ -41,12 +41,13 @@ test('both native foregut trees have reciprocal branches without selecting indep
   const atlas=read(`.local-models/ta98-review/bowel-wall-local-atlas/${sex}/atlas.json`),p=atlas.parts.find(p=>p.id===(sex==='male'?'ZA:Coeliac trunk':'LOCAL:female:celiac_trunk:1756'));
   const links=api.anatomicalRelations(p,atlas.parts).filter(r=>r.kind==='after');
   for(const name of sex==='male'?['Left gastric artery','Common hepatic artery','Splenic artery']:['Gastric artery (left)','Common hepatic artery','Splenic artery']){
-   const native=atlas.parts.find(q=>q.name===name&&q.id.startsWith(sex==='male'?'ZA:':'LOCAL:female:'));
+   const source=atlas.parts.find(q=>q.name===name&&q.id.startsWith(sex==='male'?'ZA:':'LOCAL:female:'));
+   const native=source.suppressed&&source.replacementParts?.includes('TA98PART:ZA:Splenic artery:trunk')?atlas.parts.find(q=>q.id==='TA98PART:ZA:Splenic artery:trunk'):source;
    assert.ok(links.some(r=>r.target.id===native.id),name);
    const back=api.anatomicalRelations(native,atlas.parts).filter(r=>r.kind==='before');
    assert.ok(back.some(r=>r.target.id===p.id));assert.ok(back.every(r=>r.target.id.startsWith(sex==='male'?'ZA:':'LOCAL:female:')));
   }
-  assert.ok(links.every(r=>r.target.id.startsWith(sex==='male'?'ZA:':'LOCAL:female:')));
+  assert.ok(links.every(r=>r.target.id.startsWith(sex==='male'?'ZA:':'LOCAL:female:')||sex==='male'&&r.target.id==='TA98PART:ZA:Splenic artery:trunk'));
   const choice=atlas.concepts.find(c=>c.id===p.conceptId),parts=new Map(atlas.parts.map(p=>[p.id,p]));
   assert.equal(api.ta98ModeledParent(choice,atlas.concepts,parts),undefined,'aortic ancestry is not tissue containment');
   assert.deepEqual(api.anatomicalComponentIds(choice,api.anatomicalRelations(p,atlas.parts),parts,atlas.concepts),[],'branch arteries are related anatomy, not trunk wall components');

@@ -9,7 +9,7 @@ const {loadVrAnatomy}=await import(`data:text/javascript;base64,${Buffer.from(bu
 const originalFetch=globalThis.fetch;
 globalThis.fetch=async url=>new Response(await readFile(`public${url}`));
 try{
- for(const name of ['atlas-male-complete','atlas','atlas-hra-female','atlas-embryo','atlas-cell']){
+ for(const name of ['atlas-male-complete','atlas','atlas-embryo','atlas-cell']){
   const atlas=JSON.parse(await readFile(`public/models/${name}.json`,'utf8')),model=JSON.parse(await readFile(`public/models/${name}.vr.json`,'utf8'));
   assert.equal(model.parts.length,atlas.parts.length,'every anatomical part must remain available');
   assert.ok(model.triangles<=450_000,'standalone VR triangle budget');

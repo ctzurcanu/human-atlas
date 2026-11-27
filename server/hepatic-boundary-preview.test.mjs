@@ -9,11 +9,11 @@ const read=p=>JSON.parse(readFileSync(p));
 test('a hepatic preview never replaces male, public, source, prototype or delivery catalogues',()=>{
  const q=new URLSearchParams('hepatic=repair');
  assert.equal(api.localTa98LayerCatalogue('local-female-ta98',q,true),'/local-models/ta98-review/hepatic-boundary-preview/female/atlas.json');
- assert.equal(api.localTa98LayerCatalogue('local-ta98',q,true),'/local-models/ta98-review/bowel-wall-local-atlas/male/atlas.json');
+ assert.equal(api.localTa98LayerCatalogue('local-ta98',q,true),'/local-models/geometry-workbench/biodigital-male-circulation-v1/hand-current-palm-fit-v981/ordinary-atlas.json');
  for(const model of ['male','female','embryo','local-female-ta98'])assert.equal(api.localTa98LayerCatalogue(model,q,false),undefined);
  for(const extra of ['bowel=source','delivery=0'])assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('hepatic=repair&'+extra),true),undefined);
  assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('hepatic=repair&bowel=prototype'),true),'/local-models/ta98-review/bowel-wall-main-prototype/female/atlas.json');
- assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams(),true),'/local-models/ta98-review/bowel-wall-local-atlas/female/atlas.json');
+ assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams(),true),'/local-models/organ-models/spinal-cord/female-body.json');
 });
 test('the actual packed preview keeps the liver identity, TA98 controls, vascular and biliary relations and saved camera',{skip:!existsSync('reports/ta98-female/hepatic-boundary-preview-validation.json')},()=>{
  const proof=read('reports/ta98-female/hepatic-boundary-preview-validation.json');assert.equal(proof.previewDeliveryGatePass,true);

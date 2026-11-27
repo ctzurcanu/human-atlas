@@ -1,15 +1,18 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {build} from 'esbuild';
+import {build} from '../server/atlas-test-build.mjs';
 import {Quaternion,Euler,Vector3} from 'three';
+import {existsSync,readFileSync} from 'node:fs';
+const currentCirculationCatalogue='.'+readFileSync('app/local-ta98-layer-catalogue.ts','utf8').match(/query\.get\('blood'\)==='biodigital-review'\)return '([^']+)'/)[1].slice(1);
 const compiled=await build({entryPoints:['app/explosion-plane.ts','app/hierarchical-explosion.ts','app/anatomy-hierarchy.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/explosion-plane-test'});
 const load=async name=>import('data:text/javascript;base64,'+Buffer.from(compiled.outputFiles.find(f=>f.path.endsWith(name+'.js')).contents).toString('base64'));
 const {viewPlaneLayout}=await load('explosion-plane');
 const {createHierarchicalExplosionLayout}=await load('hierarchical-explosion');
 const {hierarchyEntries}=await load('anatomy-hierarchy');
 const {readFile}=await import('node:fs/promises');
-for(const name of ['atlas-male-complete','atlas-hra-female','atlas-embryo','atlas-cell','embryo-3month/atlas'])test(`${name}: every exploded cluster stays on one POV plane through orbit and roll`,async()=>{
- const atlas=JSON.parse(await readFile(`public/models/${name}.json`));
+const catalogues=[...['atlas-male-complete','atlas-embryo','atlas-cell','embryo-3month/atlas','female-ta98/atlas'].map(name=>({name,path:`public/models/${name}.json`})),...['.local-models/geometry-workbench/biodigital-male-circulation-v1/atlas-review-v9/atlas.json',currentCirculationCatalogue].filter(existsSync).map(path=>({name:path,path}))];
+for(const {name,path} of catalogues)test(`${name}: every exploded cluster stays on one POV plane through orbit and roll`,async()=>{
+ const atlas=JSON.parse(await readFile(path));
  const layout=createHierarchicalExplosionLayout(atlas,hierarchyEntries(atlas),new Set(atlas.parts.map(p=>p.id)),'systems',1.7);
  for(const rotation of [[0,0,0],[.6,1.4,.9],[Math.PI,0,Math.PI/2],[-1.1,-2.2,2.5]]){
   const q=new Quaternion().setFromEuler(new Euler(...rotation)),normal=new Vector3(0,0,1).applyQuaternion(q),right=new Vector3(1,0,0).applyQuaternion(q),up=new Vector3(0,1,0).applyQuaternion(q);

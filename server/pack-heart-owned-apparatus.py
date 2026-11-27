@@ -1,0 +1,13 @@
+"""Check the final common Float32 bank after complete apparatus ownership."""
+from pathlib import Path
+import argparse,json,sys,time
+import numpy as np
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from geometry_tools.common import atomic_json,atomic_npz,atomic_bytes,digest_file
+from geometry_tools.algorithms.finite_cell_bank import pack_finite_cells
+from geometry_tools.tissue import decode_packed,validate_cells
+ap=argparse.ArgumentParser();ap.add_argument('--input',required=True);ap.add_argument('--stage',required=True);args=ap.parse_args();h=ROOT/'.local-models/geometry-workbench/heart';src=h/args.input;meta=json.loads((src/'ownership.json').read_text());assert meta['passed'];out=h/args.stage;out.mkdir(exist_ok=False);z=np.load(src/'arrangement.npz');q=z['positions'];surfaces={r['id']:z[r['faces']]for r in meta['surfaces']};words={r['id']:z[r['normals']]for r in meta['surfaces']};uvs={r['id']:z[r['uvs']]for r in meta['surfaces']};proof=[];start=time.monotonic()
+for sid,fs in surfaces.items():
+ old=q[fs];new=q.astype('<f4')[fs].astype(float);before=np.cross(old[:,1]-old[:,0],old[:,2]-old[:,0]);after=np.cross(new[:,1]-new[:,0],new[:,2]-new[:,0]);orientation=np.einsum('ti,ti->t',before,after);normal=np.einsum('tki,ti->tk',words[sid].astype(float),after);bad=np.flatnonzero((orientation<=0)|np.any(normal<=0,axis=1));proof.append(dict(surface=sid,bad_faces=bad.tolist(),triangles=len(fs)))
+atomic_json(out/'storage-preflight.json',dict(passed=all(not row['bad_faces']for row in proof),surfaces=proof));assert all(not row['bad_faces']for row in proof),'Storage reversed or collapsed source fragments; no bank emitted'
+packed=pack_finite_cells(q,surfaces,words,meta['cells'],{pid:pid for pid in meta['cells']},corner_uvs=uvs);atomic_bytes(out/'cells.bin',packed.data);decoded=decode_packed(packed,'heart-native-local-metres',np.zeros(3));checks=validate_cells(decoded,max_pairs=1500000,max_tests=16000000,checkpoint_directory=out/'checkpoints');atomic_json(out/'checked-geometry.json',checks);result=dict(passed=checks['passed'],failures=checks['failures'],source_stage=args.input,source_ownership_sha256=digest_file(src/'ownership.json'),sources=meta['sources'],parts=packed.cells,bank_sha256=digest_file(out/'cells.bin'),bytes=len(packed.data),geometry_origin=[0.,1.375,.03125],maximum_control_rounding_m=float(np.linalg.norm(q-q.astype('<f4').astype(float),axis=1).max()),elapsed_seconds=time.monotonic()-start,installed=False);atomic_json(out/'emission.json',result);print(json.dumps({k:v for k,v in result.items()if k not in ['parts','sources']}),flush=True)

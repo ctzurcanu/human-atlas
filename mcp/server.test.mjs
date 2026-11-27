@@ -5,6 +5,17 @@ import {InMemoryTransport} from '@modelcontextprotocol/sdk/inMemory.js';
 import {build} from 'esbuild';
 import {anatomyView, catalogue, DEPTH_LAYERS, resolveAnatomy,searchAnatomy} from './atlas-data.mjs';
 import {createServer} from './server.mjs';
+import {verifyMaleTa98Options} from './verify-model-options.mjs';
+
+test('a running server refreshes a replaced catalogue on the next request',async()=>{
+  const {configureAtlasData,catalogue}=await import('./atlas-core.mjs?catalogue-revision-test');
+  let revision=1,loads=0;
+  configureAtlasData(()=>({load:++loads}),{byConcept:{}},()=>revision);
+  const first=catalogue('male-ta98');
+  assert.equal(catalogue('male-ta98'),first);
+  revision++;
+  assert.equal(catalogue('male-ta98').load,2);
+});
 
 test('the requested structure becomes a selected, focused embed', () => {
   const result = anatomyView({structure: 'Stomach'});
@@ -54,12 +65,12 @@ test('served catalogues select publisher-source male and female assets', () => {
   assert.ok(resolveAnatomy('Intestines').some(concept => concept.elements.length >= 8));
   assert.equal(resolveAnatomy('Ductus deferens')[0].elements.length, 2);
   assert.equal(resolveAnatomy('Blood vessels of the penis')[0].elements.length, 4);
-  assert.equal(catalogue('female').source, 'Human Reference Atlas');
-  assert.deepEqual(anatomyView({structure: 'Uterus', model: 'female'}).systems, ['reproductive']);
-  assert.equal(catalogue('female').parts.some(part=>part.name==='Amnion'),false);
-  assert.equal(catalogue('embryo').parts.length,8);
+  assert.throws(() => catalogue('female'), /Unknown model/);
+  assert.deepEqual(anatomyView({structure: 'TA98FEMALE:A09.1.03.001', model: 'female-ta98'}).systems, ['reproductive']);
+  assert.equal(catalogue('female-ta98').parts.some(part=>part.name==='Amnion'),false);
+  assert.equal(catalogue('embryo').parts.length,174);
   assert.equal(resolveAnatomy('Amnion', 'embryo').length,1);
-  assert.deepEqual(anatomyView({structure: 'Amnion', model: 'embryo'}).systems,['pregnancy']);
+  assert.deepEqual(anatomyView({structure: 'Amnion', model: 'embryo'}).systems,['integumentary']);
 });
 
 test('cell model exposes its original components through the viewer and MCP', () => {
@@ -104,7 +115,7 @@ test('exact IDs choose the requested side and bilateral names choose both', () =
 });
 
 test('MCP views cover the shareable viewer settings and whole models', () => {
-  const whole=new URL(anatomyView({model:'female',hierarchy:'depth',depthHidden:['skin'],explode:.5,region:'lower-left',view:'back',skinOpacity:.35,labels:false,section:{axis:'sagittal',position:.4,flip:true},camera:[1,2,3,0,1,0],controls:['systems','explode','study']}).url);
+  const whole=new URL(anatomyView({model:'female-ta98',hierarchy:'depth',depthHidden:['skin'],explode:.5,region:'lower-left',view:'back',skinOpacity:.35,labels:false,section:{axis:'sagittal',position:.4,flip:true},camera:[1,2,3,0,1,0],controls:['systems','explode','study']}).url);
   assert.deepEqual(whole.searchParams.getAll('select'),[]);
   for(const [key,value] of Object.entries({tree:'depth',depth:'skin',explode:'0.5',region:'lower-left',view:'back',skin:'0.35',labels:'0',cut:'sagittal',slice:'0.4',flip:'1',camera:'1,2,3,0,1,0',ui:'systems,explode,study'}))assert.equal(whole.searchParams.get(key),value,key);
   const oblique=new URL(anatomyView({section:{axis:'oblique',position:.31,flip:false,azimuth:-42,elevation:27},controls:['sections']}).url);
@@ -152,7 +163,7 @@ test('browser WebMCP exposes live view and saved view operations',async()=>{
   byName('set_anatomy_view').execute({hierarchy:'guest:chakras'});
   assert.deepEqual(calls[3],{hierarchy:'guest:chakras'});
   assert.throws(()=>byName('set_anatomy_view').execute({depthHidden:['missing']}),/depth layer/);
-  assert.throws(()=>byName('set_anatomy_view').execute({model:'female',explode:.2}),/separate call/);
+  assert.throws(()=>byName('set_anatomy_view').execute({model:'female-ta98',explode:.2}),/separate call/);
   byName('act_on_anatomy_view').execute({action:'reset'});
   assert.equal(calls[4],'reset');
 });
@@ -169,11 +180,16 @@ test('MCP discovery, tool call, and UI resource work together', async () => {
     assert.equal(tools.find(tool => tool.name === 'show_anatomy')._meta['openai/outputTemplate'], 'ui://human-atlas/anatomy-view-v6');
     const found = await client.callTool({name: 'search_anatomy', arguments: {query: 'stomach'}});
     assert.equal(found.structuredContent.matches[0].id, 'ZA:Stomach');
-    const options = await client.callTool({name: 'get_anatomy_options', arguments: {model: 'female'}});
+    const options = await client.callTool({name: 'get_anatomy_options', arguments: {model: 'female-ta98'}});
     assert.ok(options.structuredContent.depthLayers.includes('superficial-muscles'));
     const shown = await client.callTool({name: 'show_anatomy', arguments: {structure: 'Stomach'}});
     assert.equal(shown.isError, undefined);
     assert.equal(new URL(shown.structuredContent.url).searchParams.get('select'), 'ZA:Stomach');
+    const maleOptions=await client.callTool({name:'get_anatomy_options',arguments:{model:'male-ta98'}});
+    await verifyMaleTa98Options(maleOptions.structuredContent);
+    const male=await client.callTool({name:'show_anatomy',arguments:{model:'male-ta98',structure:'TA98:A05.9.01.017'}});
+    assert.equal(male.structuredContent.structures[0].id,'ZA:Accessory pancreatic duct');
+    assert.equal(new URL(male.structuredContent.url).origin,'http://localhost:3016');
     const customized = await client.callTool({name: 'show_anatomy', arguments: {structure: 'Stomach', controls: ['systems', 'open']}});
     assert.equal(new URL(customized.structuredContent.url).searchParams.get('ui'), 'systems,open');
     const missing = await client.callTool({name: 'show_anatomy', arguments: {structure: 'not a modeled structure'}});

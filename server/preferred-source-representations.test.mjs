@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {build} from 'esbuild';
-const compiled=await build({stdin:{contents:"export * from './app/preferred-source-representations'; export * from './app/viewer-state'; export * from './app/guest-hierarchy';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',write:false});
+const compiled=await build({stdin:{contents:"export * from './app/preferred-source-representations'; export * from './app/viewer-state'; export * from './app/guest-hierarchy'; export * from './app/spinal-cord-controls'; export * from './app/hepatic-connection-controls'; export * from './app/liver-completion-controls';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',write:false});
 const api=await import('data:text/javascript;base64,'+Buffer.from(compiled.outputFiles[0].contents).toString('base64'));
 const read=sex=>JSON.parse(readFileSync(`.local-models/ta98-review/bowel-wall-local-atlas/${sex}/atlas.json`));
 const decisions=JSON.parse(readFileSync('app/data/preferred-source-representations.json'));
@@ -46,7 +46,9 @@ test('ambiguous generic tissues, unresolved alternatives and distinct layers are
 test('both demo bodies keep every pending source hidden after Show All, saved empty visibility and parent selection',()=>{
  for(const sex of ['male','female']){
   const source=read(sex),preferred=api.withPreferredSourceRepresentations(source),a=api.withHiddenReviewAlternatives(preferred),byId=new Map(a.parts.map(p=>[p.id,p]));
-  const alternatives=preferred.defaultHidden.filter(id=>byId.has(id));
+  const references=api.spinalCordRegistry(preferred)?.referenceParts??[],referenceIds=new Set(references.map(p=>p.id));
+  const ownedViews=new Set([...referenceIds,...(api.hepaticConnectionRegistry(preferred)?.marker.regionPartIds??[]),...(api.liverCompletionRegistry(preferred)?.partIds??[])]);
+  const alternatives=preferred.defaultHidden.filter(id=>byId.has(id)&&!ownedViews.has(id));
   assert.ok(alternatives.length>700);
   assert.ok(alternatives.every(id=>byId.get(id).suppressed));
   const base={focus:0,contextOpacity:1,skinOpacity:1,region:'all',peel:0,depthHidden:[],hidden:[],labels:false,explode:0,visible:[...new Set(a.parts.map(p=>p.system))],selected:[],isolate:false,view:'right',rotate:false,reset:0};
@@ -58,6 +60,14 @@ test('both demo bodies keep every pending source hidden after Show All, saved em
   }
   const roots=api.resolveGuestHierarchy(a,tree);const ids=new Set();const walk=n=>{n.parts.forEach(p=>ids.add(p.id));n.children.forEach(walk);};roots.forEach(walk);
   assert.ok(alternatives.every(id=>!ids.has(id)));
+  for(const reference of references){
+   const p=byId.get(reference.id),owner=reference.spinalBoundaryReference.ownerPartId;
+   assert.ok(!p.suppressed&&ids.has(p.id),'Verified canal boundaries remain accessible in the hierarchy');
+   assert.equal(api.partVisible(p,restored,a.parts),false,'Show All does not show boundary views over their physical owners');
+   assert.equal(api.sectionPartVisible(p,restored),false);
+   assert.equal(api.partVisible(p,{...restored,selected:[p.id],isolate:true},a.parts),true,'Selecting only the named canal reveals its boundary');
+   assert.equal(api.partVisible(p,{...restored,selected:[p.id,owner],isolate:true},a.parts),false,'Selecting the whole cord cannot duplicate its canal faces');
+  }
   assert.equal(api.withHiddenReviewAlternatives(a),a);
   assert.equal(api.withHiddenReviewAlternatives(preferred,true),preferred,'unfinished sources remain accessible in an explicit repair view');
   assert.equal(a.chunks,source.chunks);assert.equal(a.parts.length,source.parts.length);

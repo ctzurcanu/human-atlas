@@ -13,17 +13,28 @@ export async function decodeModelResponse(response:Response,expectedBytes:number
  return buffer;
 }
 
-/** Discard a damaged cached chunk and retry it once from the source. */
+/** Retry a damaged cache entry or a transient fetch failure once, without resetting the view. */
 export async function loadModelBuffer(url:string,expectedBytes:number,compressed:boolean,signal:AbortSignal):Promise<ArrayBuffer>{
- const response=await fetchModelAsset(url,{signal});
- if(response instanceof ArrayBuffer){if(response.byteLength===expectedBytes)return response;await forgetAsset(url);const fresh=await fetchModelAsset(url,{signal,cache:'reload'});if(fresh instanceof ArrayBuffer)throw new Error('An anatomy file was incomplete. Please reload the viewer.');const buffer=await decodeModelResponse(fresh,expectedBytes,compressed);if(signal.aborted)throw signal.reason??new DOMException('Aborted','AbortError');await rememberDecodedModel(url,buffer);return buffer;}
- try{const buffer=await decodeModelResponse(response,expectedBytes,compressed);if(signal.aborted)throw signal.reason??new DOMException('Aborted','AbortError');if(response.headers.get('x-atlas-decoded')!=='1')await rememberDecodedModel(url,buffer);return buffer;}
- catch(error){
-  if(signal.aborted)throw error;
-  await forgetAsset(url);
-  if(!isCachedAsset(response))throw error;
-  const fresh=await fetchModelAsset(url,{signal,cache:'reload'});
-  if(fresh instanceof ArrayBuffer)throw new Error('An anatomy file could not be reloaded.');
-  try{const buffer=await decodeModelResponse(fresh,expectedBytes,compressed);if(signal.aborted)throw signal.reason??new DOMException('Aborted','AbortError');await rememberDecodedModel(url,buffer);return buffer;}catch(error){await forgetAsset(url);throw error;}
+ for(let attempt=0;attempt<2;attempt++){
+  let cached=false;
+  try{
+   if(signal.aborted)throw signal.reason??new DOMException('Aborted','AbortError');
+   const response=await fetchModelAsset(url,{signal,...(attempt?{cache:'reload' as const}:{})});
+   cached=response instanceof ArrayBuffer||isCachedAsset(response);
+   const buffer=response instanceof ArrayBuffer?response:await decodeModelResponse(response,expectedBytes,compressed);
+   if(buffer.byteLength!==expectedBytes)throw new Error('An anatomy file was incomplete. Please reload the viewer.');
+   if(signal.aborted)throw signal.reason??new DOMException('Aborted','AbortError');
+   if(!(response instanceof ArrayBuffer)&&response.headers.get('x-atlas-decoded')!=='1')await rememberDecodedModel(url,buffer);
+   return buffer;
+  }catch(error){
+   if(signal.aborted)throw error;
+   await forgetAsset(url);
+   // Fetch rejects with TypeError in Chromium/WebKit and NetworkError in Firefox.
+   // A body stream can fail after the headers, so decoding belongs in this retry too.
+   const network=error instanceof TypeError||error instanceof Error&&error.name==='NetworkError';
+   if(!attempt&&(cached||network))continue;
+   throw new Error(`Could not load anatomy geometry: ${url} (${error instanceof Error?error.message:String(error)})`,{cause:error});
+  }
  }
+ throw new Error(`Could not load anatomy geometry: ${url}`);
 }

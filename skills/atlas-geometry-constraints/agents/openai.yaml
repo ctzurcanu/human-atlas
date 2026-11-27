@@ -1,0 +1,4 @@
+interface:
+  display_name: "Geometry Constraints"
+  short_description: "Bind dependency groups and fixed interfaces"
+  default_prompt: "Use $atlas-geometry-constraints to work on the requested Human Atlas geometry with source-bound checks."

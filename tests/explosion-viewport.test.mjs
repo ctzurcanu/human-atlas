@@ -1,4 +1,5 @@
-import assert from 'node:assert/strict';import test from 'node:test';import {readFile} from 'node:fs/promises';import {existsSync} from 'node:fs';import {build} from 'esbuild';import {Box3,Vector3,PerspectiveCamera} from 'three';
+import assert from 'node:assert/strict';import test from 'node:test';import {readFile} from 'node:fs/promises';import {existsSync,readFileSync} from 'node:fs';import {build} from '../server/atlas-test-build.mjs';import {Box3,Vector3,PerspectiveCamera} from 'three';
+const currentCirculationCatalogue='.'+readFileSync('app/local-ta98-layer-catalogue.ts','utf8').match(/query\.get\('blood'\)==='biodigital-review'\)return '([^']+)'/)[1].slice(1);
 const bundle=await build({entryPoints:['app/explosion-plane.ts','app/hierarchical-explosion.ts','app/anatomy-hierarchy.ts','app/view-framing.ts','app/explosion-view.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/explosion-viewport-test'});
 const load=async name=>import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles.find(f=>f.path.endsWith(name+'.js')).contents).toString('base64'));
 const {viewPlaneLayout}=await load('explosion-plane'),{createHierarchicalExplosionLayout,explosionBoundsAt}=await load('hierarchical-explosion'),{hierarchyEntries}=await load('anatomy-hierarchy'),{setFrameOffset}=await load('view-framing'),{advanceExplosionMotion,captureExplosionView,fitExplosionView}=await load('explosion-view');
@@ -21,7 +22,7 @@ test('Fitting never zooms or recenters an arrangement that already fits the curr
   assert.deepEqual(captureExplosionView(camera,target),initial);
  }
 });
-const catalogs=['public/models/atlas-male-complete.json','public/models/atlas.json','public/models/atlas-hra-female.json','public/models/atlas-embryo.json','public/models/atlas-cell.json','public/models/embryo-3month/atlas.json',...['ta98-male','ta98-female-runtime','reference','male','female'].map(name=>`.local-models/${name}.json`).filter(existsSync),...['male','female'].map(sex=>`.local-models/ta98-review/bowel-wall-local-atlas/${sex}/atlas.json`).filter(existsSync)];
+const catalogs=['public/models/atlas-male-complete.json','public/models/atlas.json','public/models/atlas-embryo.json','public/models/atlas-cell.json','public/models/embryo-3month/atlas.json','public/models/female-ta98/atlas.json',...['ta98-male','ta98-female-runtime','reference','male','female'].map(name=>`.local-models/${name}.json`).filter(existsSync),...['male','female'].map(sex=>`.local-models/ta98-review/bowel-wall-local-atlas/${sex}/atlas.json`).filter(existsSync),...['.local-models/geometry-workbench/biodigital-male-circulation-v1/atlas-review-v9/atlas.json',currentCirculationCatalogue].filter(existsSync)];
 for(const model of catalogs)test(`${model}: explode and implode remain inside the usable viewport`,async()=>{
  const atlas=JSON.parse(await readFile(model)),ids=new Set(atlas.parts.filter(p=>!p.suppressed).map(p=>p.id));
  for(const aspect of [1.78,.6]){

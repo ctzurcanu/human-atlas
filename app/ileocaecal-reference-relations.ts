@@ -1,6 +1,37 @@
 import type {Part} from './anatomy';
 import type {ResolvedRelation} from './anatomical-relations';
 
+const nativeIdentity=/^LOCAL:(female|male):(CAECOWALL:caecum|BOWELWALL:ileum):(serosa|subserosa|longitudinal-muscle|circular-muscle|submucosa|muscularis-mucosae|lamina-propria|epithelium)$/;
+function nativeWall(p:Part){
+ const match=p.id.match(nativeIdentity);
+ const role=match?.[2]==='CAECOWALL:caecum'?'caecum':'ileum';
+ return match&&!p.suppressed&&p.system==='digestive'&&p.pairedTissue&&p.sectionSolid&&!p.sourceOffset&&
+  p.ileocaecalJunctionAssembly===`ileocaecal:${match[1]}:v138`&&p.ileocaecalJunctionRole===role&&p.ileocaecalJunctionLayer===match[3]&&
+  p.geometryOrigin?.length===3&&p.geometryOrigin.every(Number.isFinite)&&p.tissueDrawGroups?.length?match:null;
+}
+/** A stored tissue annulus around a real opening, never proximity or a plug. */
+export function ileocaecalWallInterface(source:Part,target:Part):boolean{
+ const a=nativeWall(source),b=nativeWall(target);
+ return !!a&&!!b&&a[1]===b[1]&&a[2]!==b[2]&&a[3]===b[3]&&source.chunk===target.chunk&&source.positions===target.positions&&source.normals===target.normals&&source.vertexCount===target.vertexCount&&
+  JSON.stringify(source.geometryOrigin)===JSON.stringify(target.geometryOrigin)&&source.tissueDrawGroups!.some(g=>g.neighbor===target.id&&g.count>0&&target.tissueDrawGroups!.some(h=>h.neighbor===source.id&&h.count===g.count));
+}
+const nativeCache=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
+export function ileocaecalWallRelations(parts:Part[]):Map<string,ResolvedRelation[]>{
+ const cached=nativeCache.get(parts);if(cached)return cached;
+ const graph=new Map<string,ResolvedRelation[]>(),byId=new Map(parts.map(p=>[p.id,p]));
+ for(const source of parts){
+  if(!nativeWall(source))continue;
+  const linked=new Set<string>();
+  for(const g of source.tissueDrawGroups!){
+   const target=g.neighbor?byId.get(g.neighbor):undefined;
+   if(!target||linked.has(target.id)||!ileocaecalWallInterface(source,target))continue;
+   linked.add(target.id);const relations=graph.get(source.id)??[];
+   relations.push({kind:'continuous',target,note:'Matching ileal and caecal wall coats meet around the open ileal orifice. The assembled annular interface stays hidden; separate coats retain their tissue rims.'});graph.set(source.id,relations);
+  }
+ }
+ nativeCache.set(parts,graph);return graph;
+}
+
 /** Original united-female reference identities; these are not native-body
  * attachments or an accepted finite valve assembly. */
 const identities:Record<string,[string,string]>={

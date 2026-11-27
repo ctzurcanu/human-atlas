@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mesh Shape Search"
+  short_description: "Retrieve local shapes with anatomical metadata filters"
+  default_prompt: "Use $atlas-shape-search to work on the requested Human Atlas geometry with source-bound checks."

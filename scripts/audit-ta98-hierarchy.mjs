@@ -8,7 +8,7 @@ import {createReportViewerLinks,markdownLabel,reportModel,reportViewUrl} from '.
 // legacy catalogues. Do not count a source folder or a spatial guess as a TA match.
 const catalogues=[
  ['male-detail / male-full','public/models/atlas-male-complete.json'],
- ['male','public/models/atlas.json'],['female','public/models/atlas-hra-female.json'],
+ ['male','public/models/atlas.json'],['female-ta98','public/models/female-ta98/atlas.json'],
  ['embryo','public/models/atlas-embryo.json'],['cell','public/models/atlas-cell.json'],
  ['local-reference','.local-models/reference.json'],
  ['local-male','.local-models/male.json'],['local-female','.local-models/female.json'],

@@ -1,0 +1,339 @@
+{
+  "version": "TA98 male combined review 1 \u2014 male skin height 183 cm \u00b7 male hepatic connections",
+  "sex": "male",
+  "parts": [
+    {
+      "bounds": [
+        [
+          -0.0005770901182416822,
+          1.2904268886276746,
+          -0.05292511044629973
+        ],
+        [
+          0.033214153496266455,
+          1.462117966096825,
+          -0.0011391143377678492
+        ]
+      ],
+      "chunk": 30,
+      "conceptId": "ZA:Thoracic aorta",
+      "defaultHidden": true,
+      "groups": [
+        "5: Cardiovascular system",
+        "Aorta",
+        "Systemic arteries",
+        "Trunk"
+      ],
+      "id": "ZA:Thoracic aorta",
+      "indexCount": 2592,
+      "indices": 1091208,
+      "license": "CC BY-SA 4.0",
+      "material": "ZA:arterial:Artery",
+      "name": "Thoracic aorta",
+      "normals": 1084992,
+      "positions": 1079664,
+      "provenance": {
+        "detail": "CC BY-SA 4.0; original object and material, world transform baked.",
+        "label": "Z-Anatomy original Blender model",
+        "url": "https://github.com/Z-Anatomy/Models-of-human-anatomy"
+      },
+      "replacementParts": [
+        "TA98WALL:male:thoracic-aorta:externa",
+        "TA98WALL:male:thoracic-aorta:media",
+        "TA98WALL:male:thoracic-aorta:intima"
+      ],
+      "sourceId": "Thoracic aorta",
+      "suppressed": true,
+      "system": "arterial",
+      "uvMethod": "principal-axis surface projection; illustrative finish, not anatomical coordinates",
+      "uvs": 1087656,
+      "vertexCount": 444
+    },
+    {
+      "anatomicalParentId": "ZA:Thoracic aorta",
+      "bounds": [
+        [
+          -0.0005770901334472001,
+          1.2904268503189087,
+          -0.05292510986328125
+        ],
+        [
+          0.03321415185928345,
+          1.4621179103851318,
+          -0.0011391143780201674
+        ]
+      ],
+      "chunk": 548,
+      "conceptId": "TA98WALL:male:thoracic-aorta:externa:concept",
+      "coverageLimitation": "Illustrative macroscopic wall coats; thickness is not patient measured. Branch mouths and adjoining vessel patency remain unverified.",
+      "geometryOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "groups": [
+        "5: Cardiovascular system",
+        "Aorta",
+        "Systemic arteries",
+        "Trunk"
+      ],
+      "id": "TA98WALL:male:thoracic-aorta:externa",
+      "indexCount": 5328,
+      "indices": 49920,
+      "license": "CC BY-SA 4.0",
+      "material": "TA98WALL:male:thoracic-aorta:externa:material",
+      "name": "Tunica externa of thoracic aorta",
+      "normalSigns": 115776,
+      "normals": 23040,
+      "pairedTissue": true,
+      "parentId": "ZA:Thoracic aorta",
+      "positions": 0,
+      "provenance": {
+        "detail": "Literal native outer surface; illustrative 1.2 mm total wall, no histology claim; source native ports are open blood frontiers, no branch patency established.",
+        "label": "Native Z-Anatomy thoracic aorta three-coat construction",
+        "url": "https://github.com/Z-Anatomy/Models-of-human-anatomy"
+      },
+      "sectionSolid": true,
+      "sourceId": "Thoracic aorta",
+      "system": "arterial",
+      "tissueDrawGroups": [
+        {
+          "count": 2592,
+          "start": 0
+        },
+        {
+          "count": 2592,
+          "neighbor": "TA98WALL:male:thoracic-aorta:media",
+          "start": 2592
+        },
+        {
+          "count": 72,
+          "start": 5184
+        },
+        {
+          "count": 72,
+          "start": 5256
+        }
+      ],
+      "tissueWallAssembly": "thoracic-aorta:male:native-trunk",
+      "tissueWallLayer": "externa",
+      "triangles": 1776,
+      "uvs": 34560,
+      "vertexCount": 1920
+    },
+    {
+      "anatomicalParentId": "ZA:Thoracic aorta",
+      "bounds": [
+        [
+          -0.00022790349612478167,
+          1.290527582168579,
+          -0.052575789391994476
+        ],
+        [
+          0.03286492079496384,
+          1.4619563817977905,
+          -0.0014736363664269447
+        ]
+      ],
+      "chunk": 548,
+      "conceptId": "TA98WALL:male:thoracic-aorta:media:concept",
+      "coverageLimitation": "Illustrative macroscopic wall coats; thickness is not patient measured. Branch mouths and adjoining vessel patency remain unverified.",
+      "geometryOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "groups": [
+        "5: Cardiovascular system",
+        "Aorta",
+        "Systemic arteries",
+        "Trunk"
+      ],
+      "id": "TA98WALL:male:thoracic-aorta:media",
+      "indexCount": 5328,
+      "indices": 71232,
+      "license": "CC BY-SA 4.0",
+      "material": "TA98WALL:male:thoracic-aorta:media:material",
+      "name": "Tunica media of thoracic aorta",
+      "normalSigns": 113856,
+      "normals": 23040,
+      "pairedTissue": true,
+      "parentId": "ZA:Thoracic aorta",
+      "positions": 0,
+      "provenance": {
+        "detail": "Literal native outer surface; illustrative 1.2 mm total wall, no histology claim; source native ports are open blood frontiers, no branch patency established.",
+        "label": "Native Z-Anatomy thoracic aorta three-coat construction",
+        "url": "https://github.com/Z-Anatomy/Models-of-human-anatomy"
+      },
+      "sectionSolid": true,
+      "sourceId": "Thoracic aorta",
+      "system": "arterial",
+      "tissueDrawGroups": [
+        {
+          "count": 2592,
+          "neighbor": "TA98WALL:male:thoracic-aorta:externa",
+          "start": 0
+        },
+        {
+          "count": 2592,
+          "neighbor": "TA98WALL:male:thoracic-aorta:intima",
+          "start": 2592
+        },
+        {
+          "count": 72,
+          "start": 5184
+        },
+        {
+          "count": 72,
+          "start": 5256
+        }
+      ],
+      "tissueWallAssembly": "thoracic-aorta:male:native-trunk",
+      "tissueWallLayer": "media",
+      "triangles": 1776,
+      "uvs": 34560,
+      "vertexCount": 1920
+    },
+    {
+      "anatomicalParentId": "ZA:Thoracic aorta",
+      "bounds": [
+        [
+          0.0005203536129556596,
+          1.2907434701919556,
+          -0.05182724818587303
+        ],
+        [
+          0.032116565853357315,
+          1.461610198020935,
+          -0.0021904690656811
+        ]
+      ],
+      "chunk": 548,
+      "conceptId": "TA98WALL:male:thoracic-aorta:intima:concept",
+      "coverageLimitation": "Illustrative macroscopic wall coats; thickness is not patient measured. Branch mouths and adjoining vessel patency remain unverified.",
+      "geometryOrigin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "groups": [
+        "5: Cardiovascular system",
+        "Aorta",
+        "Systemic arteries",
+        "Trunk"
+      ],
+      "id": "TA98WALL:male:thoracic-aorta:intima",
+      "indexCount": 5328,
+      "indices": 92544,
+      "license": "CC BY-SA 4.0",
+      "material": "TA98WALL:male:thoracic-aorta:intima:material",
+      "name": "Tunica intima of thoracic aorta",
+      "normalSigns": 115776,
+      "normals": 23040,
+      "pairedTissue": true,
+      "parentId": "ZA:Thoracic aorta",
+      "positions": 0,
+      "provenance": {
+        "detail": "Literal native outer surface; illustrative 1.2 mm total wall, no histology claim; source native ports are open blood frontiers, no branch patency established.",
+        "label": "Native Z-Anatomy thoracic aorta three-coat construction",
+        "url": "https://github.com/Z-Anatomy/Models-of-human-anatomy"
+      },
+      "sectionSolid": true,
+      "sourceId": "Thoracic aorta",
+      "system": "arterial",
+      "tissueDrawGroups": [
+        {
+          "count": 2592,
+          "neighbor": "TA98WALL:male:thoracic-aorta:media",
+          "start": 0
+        },
+        {
+          "count": 2592,
+          "start": 2592
+        },
+        {
+          "count": 72,
+          "start": 5184
+        },
+        {
+          "count": 72,
+          "start": 5256
+        }
+      ],
+      "tissueWallAssembly": "thoracic-aorta:male:native-trunk",
+      "tissueWallLayer": "intima",
+      "triangles": 1776,
+      "uvs": 34560,
+      "vertexCount": 1920
+    }
+  ],
+  "concepts": [
+    {
+      "componentElements": [
+        "TA98WALL:male:thoracic-aorta:externa",
+        "TA98WALL:male:thoracic-aorta:media",
+        "TA98WALL:male:thoracic-aorta:intima"
+      ],
+      "elements": [
+        "TA98WALL:male:thoracic-aorta:externa",
+        "TA98WALL:male:thoracic-aorta:media",
+        "TA98WALL:male:thoracic-aorta:intima"
+      ],
+      "id": "ZA:Thoracic aorta",
+      "name": "Thoracic aorta",
+      "ta98Kind": "exact",
+      "ta98Term": "A12.2.11.001"
+    },
+    {
+      "anatomicalParentId": "ZA:Thoracic aorta",
+      "elements": [
+        "TA98WALL:male:thoracic-aorta:externa"
+      ],
+      "id": "TA98WALL:male:thoracic-aorta:externa:concept",
+      "name": "Tunica externa of thoracic aorta",
+      "parentId": "ZA:Thoracic aorta",
+      "partOf": "ZA:Thoracic aorta",
+      "ta98Kind": "exact",
+      "ta98Term": "A12.0.00.017"
+    },
+    {
+      "anatomicalParentId": "ZA:Thoracic aorta",
+      "elements": [
+        "TA98WALL:male:thoracic-aorta:media"
+      ],
+      "id": "TA98WALL:male:thoracic-aorta:media:concept",
+      "name": "Tunica media of thoracic aorta",
+      "parentId": "ZA:Thoracic aorta",
+      "partOf": "ZA:Thoracic aorta",
+      "ta98Kind": "exact",
+      "ta98Term": "A12.0.00.019"
+    },
+    {
+      "anatomicalParentId": "ZA:Thoracic aorta",
+      "elements": [
+        "TA98WALL:male:thoracic-aorta:intima"
+      ],
+      "id": "TA98WALL:male:thoracic-aorta:intima:concept",
+      "name": "Tunica intima of thoracic aorta",
+      "parentId": "ZA:Thoracic aorta",
+      "partOf": "ZA:Thoracic aorta",
+      "ta98Kind": "exact",
+      "ta98Term": "A12.0.00.018"
+    }
+  ],
+  "vascularWallIntegration": [
+    {
+      "assemblyId": "thoracic-aorta:male:native-trunk",
+      "partIds": [
+        "TA98WALL:male:thoracic-aorta:externa",
+        "TA98WALL:male:thoracic-aorta:media",
+        "TA98WALL:male:thoracic-aorta:intima"
+      ],
+      "sex": "male",
+      "sourcePartId": "ZA:Thoracic aorta",
+      "wholeConceptId": "ZA:Thoracic aorta"
+    }
+  ],
+  "chunks": [],
+  "triangles": 0
+}

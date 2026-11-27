@@ -1,4 +1,10 @@
+import {structureName} from './anatomy';
+
 export type Laterality='left'|'right'|null;
+const sidedComponent=/(\s*·\s*)(left|right)\s+/i;
+
+/** A sided region is part of the named label, rather than a material suffix. */
+export const structureLabelName=(name:string)=>sidedComponent.test(name)?name.trim():structureName(name);
 
 // Display-only formatting. Atlas names and IDs remain intact for lookup,
 // search, accessibility labels, links, and the selected structure heading.
@@ -9,7 +15,11 @@ export function displayLaterality(name:string):{label:string;side:Laterality}{
  if(prefix)return {label:name.slice(prefix[0].length),side:sideOf(prefix[1])};
  const embedded=/\bof (left|right)\s+/i.exec(name);
  if(embedded)return {label:name.replace(embedded[0],'of '),side:sideOf(embedded[1])};
- // Z-Anatomy attachment names encode origin/insertion site, ordinal, and side
+ // Stored component names also put the sided region after a middle dot.
+ // Reuse the same display-only side protocol as whole-body structure names.
+ const component=sidedComponent.exec(name);
+ if(component)return {label:name.replace(component[0],component[1]),side:sideOf(component[2])};
+ // Source attachment names encode origin/insertion site, ordinal, and side
  // together: .or/.ol, .e10r/.e10l, .o3r/.o3l. Keep the site number visible.
  const attachment=/\.([oe]\d*)([lr])(?=\s*(?:·|$))/i.exec(name);
  if(attachment)return {label:name.replace(attachment[0],`.${attachment[1]}`),side:sideOf(attachment[2])};

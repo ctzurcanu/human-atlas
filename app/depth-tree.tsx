@@ -1,3 +1,5 @@
+import {meshCount,separateOrganModels} from './organ-models';
+import SeparateOrganModelLinks from './separate-organ-model-links';
 import {useMemo,useState,type CSSProperties,type ReactNode} from 'react';
 import {Check,ChevronDown,ChevronRight,Minus} from 'lucide-react';
 import {type Atlas,type Concept,type Part,type SceneState} from './anatomy';
@@ -67,10 +69,10 @@ export default function DepthTree({atlas,state,setState,onChoose}:Props){
  const rowStyle=(depth:number)=>({'--tree-depth':depth} as CSSProperties);
  const entryRow=(entry:AnatomyEntry,depth:number,key:string)=>{
   const name=entryLabel(entry),display=displayLaterality(name);
-  return <div className="tree-row tree-leaf depth-leaf" style={rowStyle(depth)} key={`${key}:${entry.id}`}>
-   <button type="button" className="tree-label" title={terminologyTitle(name,entry.terminology,entry.id)} aria-label={name} onClick={event=>onChoose({id:entry.id,name,elements:entry.parts.map(part=>part.id)},event.ctrlKey||event.metaKey)} onContextMenu={event=>{if(event.ctrlKey){event.preventDefault();onChoose({id:entry.id,name,elements:entry.parts.map(part=>part.id)},true);}}}><span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span>{entry.parts.length>1&&<span className="tree-count">{entry.parts.length}</span>}</button>
+  return <div key={`${key}:${entry.id}`}><div className="tree-row tree-leaf depth-leaf" style={rowStyle(depth)}>
+   <button type="button" className="tree-label" title={terminologyTitle(name,entry.terminology,entry.id)} aria-label={name} onClick={event=>onChoose({id:entry.id,name,elements:entry.parts.map(part=>part.id)},event.ctrlKey||event.metaKey)} onContextMenu={event=>{if(event.ctrlKey){event.preventDefault();onChoose({id:entry.id,name,elements:entry.parts.map(part=>part.id)},true);}}}><span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span>{(meshCount(entry.parts)>1||separateOrganModels(atlas,{id:entry.id,name,term:entry.ta98Term??entry.terminology?.ta98??undefined}).length>0)&&<span className="tree-count">{meshCount(entry.parts)}</span>}</button>
    {check(name,entry.parts,()=>toggleParts(entry.parts))}
-  </div>;
+  </div><SeparateOrganModelLinks atlas={atlas} id={entry.id} name={name} term={entry.ta98Term??entry.terminology?.ta98??undefined} depth={depth+1}/></div>;
  };
  const renderNode=(node:AnatomyNode,depth:number,parentKey:string):ReactNode=>{
   const key=`${parentKey}:${node.id}`;
@@ -79,16 +81,16 @@ export default function DepthTree({atlas,state,setState,onChoose}:Props){
   return <div key={key}>
    <div className={`tree-row ${node.kind==='bilateral'?'tree-bilateral':'tree-region'}`} style={rowStyle(depth)}>
     <button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${node.name}`} data-connect-key={key} aria-expanded={open} onClick={()=>toggleOpen(key)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
-    <button type="button" className="tree-label" aria-label={node.name} onClick={event=>onChoose(anatomyNodeChoice(node,`depth:${key}`),event.ctrlKey||event.metaKey)} title={terminologyTitle(node.name,node.terminology,`hierarchy:depth:${key}`)}><span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span><span className="tree-count">{node.parts.length.toLocaleString()}</span></button>
+    <button type="button" className="tree-label" aria-label={node.name} onClick={event=>onChoose(anatomyNodeChoice(node,`depth:${key}`),event.ctrlKey||event.metaKey)} title={terminologyTitle(node.name,node.terminology,`hierarchy:depth:${key}`)}><span className={`tree-name ${lateralityClass(display.side)}`}>{display.label}</span><span className="tree-count">{meshCount(node.parts).toLocaleString()}</span></button>
     {check(node.name,node.parts,()=>toggleParts(node.parts))}
    </div>
-   {open&&(node.kind==='group'?node.nodes.map(child=>renderNode(child,depth+1,key)):node.entries.map(entry=>entryRow(entry,depth+1,key)))}
+   {open&&<><SeparateOrganModelLinks atlas={atlas} id={node.id} name={node.name} term={node.terminology?.ta98??undefined} depth={depth+1}/>{node.kind==='group'?node.nodes.map(child=>renderNode(child,depth+1,key)):node.entries.map(entry=>entryRow(entry,depth+1,key))}</>}
   </div>;
  };
  return <nav className="system-tree depth-tree" aria-label="Anatomical depth layers and structures">
   <div className="tree-row tree-root" style={{'--tree-depth':0} as CSSProperties}>
    <button type="button" className="tree-expander" aria-label={`${expanded.has('all')?'Collapse':'Expand'} All`} data-connect-key="all" aria-expanded={expanded.has('all')} onClick={()=>toggleOpen('all')}>{expanded.has('all')?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
-   <button type="button" className="tree-label" onClick={()=>onChoose(hierarchyChoice('depth:all','All',availableParts,groups.map(({layer,parts,nodes})=>hierarchyChoice(`depth:${layer.id}`,layer.name,parts,nodes.map((node,index)=>anatomyNodeChoice(node,`depth:${layer.id}:${index}`)),terminologyForGroup(layer.name))),terminologyForGroup('All')))} title={terminologyTitle('All · human body',terminologyForGroup('All'),'hierarchy:depth:all')}><span className="tree-name">All</span><span className="tree-count">{availableParts.length.toLocaleString()}</span></button>
+   <button type="button" className="tree-label" onClick={()=>onChoose(hierarchyChoice('depth:all','All',availableParts,groups.map(({layer,parts,nodes})=>hierarchyChoice(`depth:${layer.id}`,layer.name,parts,nodes.map((node,index)=>anatomyNodeChoice(node,`depth:${layer.id}:${index}`)),terminologyForGroup(layer.name))),terminologyForGroup('All')))} title={terminologyTitle('All · human body',terminologyForGroup('All'),'hierarchy:depth:all')}><span className="tree-name">All</span><span className="tree-count">{meshCount(availableParts).toLocaleString()}</span></button>
    {check('all anatomy',availableParts,toggleAll)}
   </div>
   {expanded.has('all')&&groups.map(({layer,index,parts,nodes})=>{
@@ -96,7 +98,7 @@ export default function DepthTree({atlas,state,setState,onChoose}:Props){
    return <div key={layer.id}>
     <div className="tree-row tree-system depth-row" style={{'--tree-depth':0} as CSSProperties}>
      <button type="button" className="tree-expander" aria-label={`${open?'Collapse':'Expand'} ${layer.name}`} data-connect-key={layer.id} aria-expanded={open} onClick={()=>toggleOpen(layer.id)}>{open?<ChevronDown size={13}/>:<ChevronRight size={13}/>}</button>
-     <button type="button" className="tree-label" onClick={event=>onChoose(hierarchyChoice(`depth:${layer.id}`,layer.name,parts,nodes.map((node,nodeIndex)=>anatomyNodeChoice(node,`depth:${layer.id}:${nodeIndex}`)),terminologyForGroup(layer.name)),event.ctrlKey||event.metaKey)} title={terminologyTitle(layer.name,terminologyForGroup(layer.name),`hierarchy:depth:${layer.id}`)}><span className="depth-index">{String(index+1).padStart(2,'0')}</span><span className="tree-name">{layer.name}</span><span className="tree-count">{parts.length.toLocaleString()}</span></button>
+     <button type="button" className="tree-label" onClick={event=>onChoose(hierarchyChoice(`depth:${layer.id}`,layer.name,parts,nodes.map((node,nodeIndex)=>anatomyNodeChoice(node,`depth:${layer.id}:${nodeIndex}`)),terminologyForGroup(layer.name)),event.ctrlKey||event.metaKey)} title={terminologyTitle(layer.name,terminologyForGroup(layer.name),`hierarchy:depth:${layer.id}`)}><span className="depth-index">{String(index+1).padStart(2,'0')}</span><span className="tree-name">{layer.name}</span><span className="tree-count">{meshCount(parts).toLocaleString()}</span></button>
      {check(layer.name,parts,()=>toggleLayer(layer.id,parts))}
     </div>
     {open&&nodes.map(node=>renderNode(node,2,layer.id))}

@@ -191,3 +191,22 @@
 - `pull_to_contacts` bloat guard: if the pull moves any vertex > 1.5 section radii, keep the plain tube (looser 0.8 mm contact limit) - otherwise thin tubes turn into sheets/cups.
 - Ring sizes differ between ends (6 vs 8 sides): never `reshape(ends, -1, 3)`; use `ringSizes`. Report exceptions from the fused path instead of swallowing them - a silent `except` hid this for a build.
 - Killing :3016 does not restart it: call preview_stop then preview_start.
+
+- Female TA98 labels: many unlabelled female meshes carry their TA98 code inside the source concept id (BONE:...:A02.3.02.002); when the code's term name is contained in the part name that is an exact identity (793 skeletal parts at once). Remaining names resolve by unique bracket-stripped TA98 name match plus a curated MAP (apply-ta98-reviewed-female-skeletal.py / -nervous.py). Dry-print each MAP code's TA98 name and prune mismatches before running: several guesses (habenular trigone, medial plantar nerve for a generic 'plantar nerve', amygdalopiriform area for a gyrus ambiens) were wrong.
+
+## Female connective labelling (ordered regex rules)
+- For hundreds of repetitive names (costal cartilages, joint capsules per digit) use an ordered regex RULES list in one script, print `kind code term <= name` per unique name and eyeball it; never trust token-overlap candidates (they put "buccal fat pad" under infrapatellar fat pad).
+- Check where a part is (bounds y) before choosing a limb joint: y≈0.44 is the knee, ≈1.07 the elbow.
+
+## Female vessel geometry audit/fix
+- Tube-fit deviation and end-ring pinch counts are useless on branching vessel trees (every twig tip is "pinched"); detect defects by topology (non-manifold edges, degenerate faces, tiny fragments), negative capped volume (inside-out) and mean dihedral roughness, then LOOK at renders.
+- Fix without touching UVs/materials where possible: drop bad faces and rewrite only indices in a new appended bank; rebuild (remesh_vessel, drops UVs) only crumpled low-poly vessels.
+- zsh: `"$SP:scripts"` is read as a `:s` modifier -> bad substitution; write `${SP}:scripts`. macOS `sed -i ''` with `#` delimiters kept failing; edit with python.
+
+## Female perforator arteries (fragment-only vessels)
+- When `remesh_vessel` returns None on every fragment, do not force a skeleton: rebuild each ≥12-face fragment as its own closed round tube (geodesic spine, binned+smoothed, median radius), join nothing. Script: `scripts/fix-female-perforator-arteries.py` (appends a bank; not safe to re-run).
+
+## The dev viewer does not read public/ for female-ta98
+- `app/model-catalogues.ts`: in dev, `female-ta98` loads `.local-models/female-ta98-pages-by-system-preview/atlas-local.json`; only production reads `public/models/female-ta98/atlas.json`. Edit and verify the file the viewer actually loads (check the network request), and LOOK at the rendered region before giving a link.
+- Equal vertex counts do not mean equal geometry: compare world positions against the committed (hosted) banks. 35 vessels in atlas-local had moved vertices (flat sheets between fingers, in the axilla) that were identical in count to the committed ones.
+- Restore from the committed commit (raw.githubusercontent.com at the published SHA) rather than re-deriving vessels.

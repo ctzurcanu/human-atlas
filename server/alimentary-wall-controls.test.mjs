@@ -8,7 +8,7 @@ const hierarchy=api.parseGuestHierarchy(JSON.parse(fs.readFileSync('public/asset
 for(const sex of ['female','male'])test(`${sex}: actual intestinal hierarchy groups peel every stored tissue and preserve source coverage`,()=>{
  const atlas=JSON.parse(fs.readFileSync(`.local-models/ta98-review/bowel-wall-local-atlas/${sex}/atlas.json`));
  const nodes=new Map();function walk(n){nodes.set(n.id,n);n.children.forEach(walk)}api.resolveGuestHierarchy(atlas,hierarchy).forEach(walk);
- for(const [organ,bank,count] of [['small-intestine','BOWELWALL',36],['large-intestine','CAECOWALL',60]]){
+ for(const [organ,bank,count] of [['small-intestine','BOWELWALL',36],['large-intestine','CAECOWALL',68]]){
   const node=nodes.get(`ALIMENTARY:${organ}:wall-assembly`);assert.ok(node);
   assert.equal(node.parts.length,count);assert.ok(node.parts.every(p=>p.id.includes(`:${bank}:`)&&p.sectionSolid&&p.pairedTissue&&!p.suppressed));
   const choice={id:`hierarchy:guest:ta98:${node.id}`,name:node.name,elements:node.parts.map(p=>p.id)};
@@ -17,17 +17,19 @@ for(const sex of ['female','male'])test(`${sex}: actual intestinal hierarchy gro
   for(let stage=0;stage<=8;stage++){const hidden=steps.slice(0,stage).flatMap(s=>s.ids);assert.equal(api.wallPeelDepth(steps,hidden),stage)}
   assert.equal(api.bowelWallPeelSteps(atlas,{...choice,elements:choice.elements.slice(1)}),null,'partial groups cannot masquerade as complete walls');
  }
- assert.ok(!nodes.get('ALIMENTARY:large-intestine:wall-assembly').parts.some(p=>/rectum|valve/i.test(p.name)),'missing rectal/valve layers are not fabricated');
+ const largeWall=nodes.get('ALIMENTARY:large-intestine:wall-assembly');
+ assert.equal(largeWall.parts.filter(p=>p.caecocolicRegion==='rectum').length,8,'installed rectal coats belong to the large-intestine assembly');
+ assert.ok(!largeWall.parts.some(p=>/valve/i.test(p.name)),'an unconstructed valve must not be inferred from a wall coat');
  for(const code of ['A05.6.01.002','A05.6.01.004','A05.6.01.005','A05.6.01.006','A05.6.01.008','A05.6.01.009','A05.6.01.010','A05.7.01.002','A05.7.01.004','A05.7.01.005','A05.7.01.006','A05.7.01.007','A05.7.03.012','A05.7.03.017']){
   assert.ok(nodes.get(code)?.directParts.length,`${code}: generated tissues must also be accessible on the canonical TA98 coat node`);
   assert.ok(nodes.get(code).directParts.every(p=>p.pairedTissue&&p.sectionSolid),'a source exterior must not be inferred as a finite coat');
  }
 });
-test('staged female rectum has one complete assembly and eight distinct peel stages in TA98',()=>{
- assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('bowel=rectal'),true),'/local-models/ta98-review/rectal-wall-main-atlas/female/atlas.json');
+test('ordinary female rectum has one complete assembly and eight distinct peel stages in TA98',()=>{
+ assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('bowel=rectal'),true),'/local-models/organ-models/spinal-cord/female-body.json');
  assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('bowel=rectal'),false),undefined);
- assert.equal(api.localTa98LayerCatalogue('local-ta98',new URLSearchParams('bowel=rectal'),true),'/local-models/ta98-review/bowel-wall-local-atlas/male/atlas.json');
- const atlas=JSON.parse(fs.readFileSync('.local-models/ta98-review/rectal-wall-main-atlas/female/atlas.json'));
+ assert.equal(api.localTa98LayerCatalogue('local-ta98',new URLSearchParams('bowel=rectal'),true),'/local-models/geometry-workbench/biodigital-male-circulation-v1/hand-current-palm-fit-v981/ordinary-atlas.json');
+ const atlas=JSON.parse(fs.readFileSync('.local-models/ta98-review/bowel-wall-local-atlas/female/atlas.json'));
  const nodes=new Map();function walk(n){nodes.set(n.id,n);n.children.forEach(walk)}api.resolveGuestHierarchy(atlas,hierarchy).forEach(walk);
  const wall=nodes.get('CAECOWALL:female:rectum:wall-assembly');assert.equal(wall?.parts.length,8);
  assert.ok(atlas.parts.find(p=>p.id==='LOCAL:female:large_intestine_rectum:80')?.suppressed);

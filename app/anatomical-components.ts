@@ -4,6 +4,8 @@ import type {Concept,Part} from './anatomy';
 import type {HierarchyChoice} from './hierarchy-choice';
 import type {ResolvedRelation} from './anatomical-relations';
 import {vascularWallComponentIds} from './vascular-wall';
+import {hepaticComponentIds} from './hepatic-connection-controls';
+import {eyeChoiceComponentIds} from './eye-membership';
 
 /** Explicit catalogue assemblies must actually contain every selected piece. */
 export function storedAssemblyParent(choice:HierarchyChoice,concepts:Concept[],parts:Map<string,Part>):HierarchyChoice|undefined{
@@ -26,18 +28,33 @@ export function hasExpandableAnatomicalRelations(relations:ResolvedRelation[],pa
  * not another component, and must be excluded from the component view.
  */
 export function anatomicalComponentIds(choice:HierarchyChoice,relations:ResolvedRelation[],parts:Map<string,Part>,concepts:Concept[]=[]):string[]{
+ const eye=eyeChoiceComponentIds(choice,parts,concepts);if(eye)return eye;
+ const hepatic=hepaticComponentIds(choice,parts,concepts);if(hepatic)return hepatic;
  const vascular=vascularWallComponentIds(choice,parts);if(vascular)return vascular;
  const ta98=choice.id.startsWith('hierarchy:guest:ta98:');
  const children=(choice.children??[]).filter(child=>!ta98||/^hierarchy:guest:ta98:A\d{2}\.\d\.\d{2}\.\d{3}$/.test(child.id));
  const members=choice.elements.map(id=>parts.get(id)).filter((part):part is Part=>!!part&&!part.suppressed);
+ // A repaired carrier can retain the original whole's identity on its
+ // remaining surface. Its explicit component declaration includes that
+ // surface; conceptId inequality alone would drop it during expansion.
+ const stored=!choice.children&&choice.id!=='selection-set'?concepts.find(c=>c.id===choice.id):undefined;
+ // A physical carrier may have the same label as its explicitly declared
+ // assembly. Its sibling pieces remain inspectable when the carrier is picked.
+ const parent=stored?.partOf&&concepts.find(c=>c.id===stored.partOf);
+ const carrierAssembly=parent&&parent.name===stored?.name&&choice.elements.length>0&&choice.elements.every(id=>stored.elements.includes(id)&&parent.elements.includes(id))
+  ?parent.elements.filter(id=>!choice.elements.includes(id)&&parts.has(id)&&!parts.get(id)!.suppressed):[];
+ const declared=stored?.componentElements;
+ const explicit=Array.isArray(declared)&&declared.length>1&&new Set(declared).size===declared.length&&
+  declared.every(id=>stored!.elements.includes(id)&&choice.elements.includes(id)&&parts.has(id)&&!parts.get(id)!.suppressed)
+  ?declared:[];
  // A stored, named multi-part assembly can be selected directly, outside its
  // hierarchy node. Distinct member concepts establish subdivisions; several
  // chunks of a single concept do not. Mixed ad-hoc selections have no parent.
  const assembly=!choice.children&&choice.id!=='selection-set'&&new Set(members.map(part=>part.conceptId)).size>1
   ?members.filter(part=>part.conceptId!==choice.id).map(part=>part.id):[];
  const frames=new Set(members.flatMap(part=>{const frame=nativePartFrame(part);return frame?[frame]:[];}));
- const contains=!choice.children?relations.filter(relation=>relation.kind==='contains'&&(!frames.size||members.some(part=>part.id===relation.target.id)||frames.has(nativePartFrame(relation.target)??''))).map(relation=>relation.target.id):[];
- const ids=[...ta98ModeledComponentIds(choice,concepts,parts),...children.flatMap(child=>child.elements),...contains,...assembly];
+ const contains=!choice.children?relations.filter(relation=>relation.kind==='contains'&&(!frames.size||members.some(part=>part.id===relation.target.id)||frames.has(nativePartFrame(relation.target)??''))).flatMap(relation=>relation.targetConcept?.elements??[relation.target.id]):[];
+ const ids=[...explicit,...carrierAssembly,...ta98ModeledComponentIds(choice,concepts,parts),...children.flatMap(child=>child.elements),...contains,...assembly];
  return [...new Set(ids)].filter(id=>{const part=parts.get(id);return part&&!part.suppressed&&!nonComponentRelationship(part.name,choice.name);});
 }
 
@@ -47,11 +64,14 @@ export function anatomicalComponentIds(choice:HierarchyChoice,relations:Resolved
 export function anatomicalComponentRelations(choice:HierarchyChoice,relations:ResolvedRelation[],parts:Map<string,Part>,concepts:Concept[]):ResolvedRelation[]{
  if(choice.children||choice.id==='selection-set')return relations;
  const ids=anatomicalComponentIds(choice,relations,parts,concepts),allowed=new Set(ids);
- const selected=new Set(choice.elements);
+ const selected=new Set(choice.elements),declared=new Set(concepts.find(c=>c.id===choice.id)?.componentElements??[]);
  // Internal joins describe constituent tissues. For a stored assembly they
  // belong to its components, rather than its external continuity list.
  const result=relations.filter(relation=>(relation.kind!=='contains'||allowed.has(relation.target.id))&&(!['continuous','adjacent'].includes(relation.kind)||!selected.has(relation.target.id)));
  const present=new Set(result.filter(relation=>relation.kind==='contains').map(relation=>relation.target.id));
- for(const id of ids){if(present.has(id))continue;const target=parts.get(id);if(target){result.push({kind:'contains',target});present.add(id);}}
+ for(const id of ids){if(present.has(id))continue;const target=parts.get(id);if(target){
+  // Declared subdivisions share their whole's concept; present each as its own item rather than merging them back into one.
+  const own=declared.has(id)&&target.conceptId===choice.id;
+  result.push({kind:'contains',target,...(own?{targetConcept:{id:target.id,name:target.name,elements:[target.id]}}:{})});present.add(id);}}
  return result;
 }

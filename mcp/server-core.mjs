@@ -8,6 +8,7 @@ const UI_MIME = 'text/html;profile=mcp-app';
 
 export function createServer({uiHtml,publicOnly=false}) {
   const modelSchema = z.enum(Object.keys(MODELS).filter(id=>!publicOnly||!id.startsWith('local-')));
+  const modelInput=z.union([modelSchema,z.literal('female')]).transform(id=>id==='female'?'female-ta98':id);
   const structureSchema = z.object({
     id: z.string().describe('Exact atlas concept identifier.'),
     name: z.string().describe('Anatomical structure name.'),
@@ -15,16 +16,16 @@ export function createServer({uiHtml,publicOnly=false}) {
     terminology: z.record(z.unknown()).nullable().describe('Available anatomical terminology metadata, or null.'),
   });
   const uiMeta={ui:{csp:{
-    connectDomains:['https://ctzurcanu.github.io','https://human-atlas-connect.ctzurcanu.workers.dev','wss://human-atlas-connect.ctzurcanu.workers.dev'],
-    resourceDomains:['https://ctzurcanu.github.io','https://human-atlas-connect.ctzurcanu.workers.dev'],
+    connectDomains:['https://ctzurcanu.github.io','https://raw.githubusercontent.com','https://human-atlas-connect.ctzurcanu.workers.dev','wss://human-atlas-connect.ctzurcanu.workers.dev'],
+    resourceDomains:['https://ctzurcanu.github.io','https://raw.githubusercontent.com','https://human-atlas-connect.ctzurcanu.workers.dev'],
     frameDomains:[],
   },prefersBorder:false},
     'openai/widgetDescription':'Interactive Human Atlas with anatomy selection, orbit, zoom, layers and sections.',
     'openai/widgetPrefersBorder':false,
     'openai/ui':{availableDisplayModes:['inline','fullscreen']},
     'openai/widgetCSP':{
-      connect_domains:['https://ctzurcanu.github.io','https://human-atlas-connect.ctzurcanu.workers.dev','wss://human-atlas-connect.ctzurcanu.workers.dev'],
-      resource_domains:['https://ctzurcanu.github.io','https://human-atlas-connect.ctzurcanu.workers.dev'],
+      connect_domains:['https://ctzurcanu.github.io','https://raw.githubusercontent.com','https://human-atlas-connect.ctzurcanu.workers.dev','wss://human-atlas-connect.ctzurcanu.workers.dev'],
+      resource_domains:['https://ctzurcanu.github.io','https://raw.githubusercontent.com','https://human-atlas-connect.ctzurcanu.workers.dev'],
       frame_domains:[],redirect_domains:['https://ctzurcanu.github.io'],
     },
   };
@@ -33,7 +34,7 @@ export function createServer({uiHtml,publicOnly=false}) {
   server.registerTool('get_anatomy_options', {
     title: 'Get Atlas view options',
     description: 'List model, system, hierarchy, region, depth layer, camera view and embed control IDs accepted by show_anatomy.',
-    inputSchema: {model: modelSchema.default('male-detail')},
+    inputSchema: {model: modelInput.default('male-detail')},
     outputSchema: {
       model: modelSchema,
       models: z.array(modelSchema),
@@ -56,7 +57,7 @@ export function createServer({uiHtml,publicOnly=false}) {
     description: 'Find exact names and IDs of structures modeled in Atlas. Search before showing a view when a request is ambiguous.',
     inputSchema: {
       query: z.string().min(1).describe('Anatomical name or atlas ID, such as stomach or sternocostal head.'),
-      model: modelSchema.default('male-detail').describe('Atlas model. The detailed male model is the default.'),
+      model: modelInput.default('male-detail').describe('Atlas model. The detailed male model is the default.'),
     },
     outputSchema: {model:modelSchema,matches:z.array(structureSchema).describe('Matching structures, ordered by relevance; empty when none match.')},
     annotations: {title:'Search Atlas anatomy',readOnlyHint: true,destructiveHint:false,openWorldHint:false},
@@ -71,7 +72,7 @@ export function createServer({uiHtml,publicOnly=false}) {
     inputSchema: {
       structure: z.string().min(1).optional().describe('Exact structure name, atlas concept ID, or piece ID.'),
       structures: z.array(z.string().min(1)).optional().describe('Additional structures to select together.'),
-      model: modelSchema.default('male-detail'),
+      model: modelInput.default('male-detail'),
       view: z.enum(VIEWS).default('three-quarter').describe('Camera direction. Defaults to three-quarter.'),
       context: z.number().min(0).max(1).default(0.18).describe('Opacity of surrounding anatomy, 0 to 1.'),
       hierarchy: z.string().default('systems').describe('Active hierarchy: systems, regions, depth, guest:chakras, or guest:<id> for a supplied guest URL. Depth is unavailable for the cell model.'),
@@ -105,7 +106,8 @@ export function createServer({uiHtml,publicOnly=false}) {
     annotations: {title:'Show Atlas 3D anatomy',readOnlyHint: true,destructiveHint:false,openWorldHint:true},
   }, async args => {
     try {
-      const result = anatomyView(args);
+      const viewerUrl=!publicOnly&&args.model==='male-ta98'?'http://localhost:3016/':undefined;
+      const result = anatomyView(args,viewerUrl);
       return {
         content: [{type: 'text', text: `${result.structures.map(s => s.name).join(' and ') || 'Whole model'} (${result.model})\nView: ${result.url}\nEmbed HTML: ${result.iframe}`}],
         structuredContent: result,

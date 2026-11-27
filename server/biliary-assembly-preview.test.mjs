@@ -3,7 +3,7 @@ const built=await build({stdin:{contents:"export * from './app/local-ta98-layer-
 const api=await import('data:text/javascript;base64,'+Buffer.from(built.outputFiles[0].contents).toString('base64'));const read=p=>JSON.parse(readFileSync(p));
 test('paired biliary preview stays opt-in and never changes public, male, source or prototype routing',()=>{
  assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('hepatic=assembly'),true),'/local-models/ta98-review/hepatic-biliary-preview/female/atlas.json');
- assert.equal(api.localTa98LayerCatalogue('local-ta98',new URLSearchParams('hepatic=assembly'),true),'/local-models/ta98-review/bowel-wall-local-atlas/male/atlas.json');
+ assert.equal(api.localTa98LayerCatalogue('local-ta98',new URLSearchParams('hepatic=assembly'),true),'/local-models/geometry-workbench/biodigital-male-circulation-v1/hand-current-palm-fit-v981/ordinary-atlas.json');
  for(const q of ['hepatic=assembly&bowel=source','hepatic=assembly&delivery=0'])assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams(q),true),undefined);
  assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('hepatic=assembly&bowel=prototype'),true),'/local-models/ta98-review/bowel-wall-main-prototype/female/atlas.json');
  assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('hepatic=assembly'),false),undefined);

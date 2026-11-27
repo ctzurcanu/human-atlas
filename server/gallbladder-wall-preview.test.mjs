@@ -5,14 +5,14 @@ const read=p=>JSON.parse(fs.readFileSync(p));
 test('gallbladder coat route remains local, opt-in and female only',()=>{
  assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('hepatic=coats'),true),'/local-models/ta98-review/gallbladder-coats-preview/female/atlas.json');
  assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('hepatic=coats'),false),undefined);
- assert.equal(api.localTa98LayerCatalogue('local-ta98',new URLSearchParams('hepatic=coats'),true),'/local-models/ta98-review/bowel-wall-local-atlas/male/atlas.json');
+ assert.equal(api.localTa98LayerCatalogue('local-ta98',new URLSearchParams('hepatic=coats'),true),'/local-models/geometry-workbench/biodigital-male-circulation-v1/hand-current-palm-fit-v981/ordinary-atlas.json');
  for(const q of ['hepatic=coats&bowel=source','hepatic=coats&delivery=1'])assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams(q),true),undefined);
  assert.equal(api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams('hepatic=coats&bowel=prototype'),true),'/local-models/ta98-review/bowel-wall-main-prototype/female/atlas.json');
 });
 test('ordinary female TA98 delivery exposes installed coats without a preview flag',{skip:!fs.existsSync('reports/ta98-female/gallbladder-current-coats-install.json')},()=>{
  const install=read('reports/ta98-female/gallbladder-current-coats-install.json'),atlas=read(install.targetCatalogue);
  assert.ok(read('reports/ta98-female/gallbladder-current-coats-installed-validation.json').ordinaryDeliveryGatePass);
- const model=api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams(),true);assert.equal(model,'/local-models/ta98-review/bowel-wall-local-atlas/female/atlas.json');
+ const model=api.localTa98LayerCatalogue('local-female-ta98',new URLSearchParams(),true);assert.equal(model,'/local-models/organ-models/spinal-cord/female-body.json');
  const ids=api.resolveSelection(atlas,[atlas.gallbladderWallPreview.sourcePartId]);assert.deepEqual(ids,atlas.gallbladderWallPreview.partIds);
  const choice=api.requestedSelectionChoice(atlas,[atlas.gallbladderWallPreview.sourcePartId],ids);assert.equal(api.bowelWallPeelSteps(atlas,choice).length,4);
  const frame=[.4,.5,.9,.5,.5,.5,.5,.45,.3,.5,1,.5],state=api.readViewUrl(new URLSearchParams({select:choice.id,frame:frame.join(',')}).toString(),atlas,{selected:[],visible:[],view:'three-quarter'});

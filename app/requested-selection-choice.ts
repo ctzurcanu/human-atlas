@@ -1,4 +1,5 @@
 import type {Atlas,Concept} from './anatomy';
+import {eyeSelectionForTerm,restoredEyeAssemblyChoice} from './eye-membership';
 
 /** Preserve an explicitly requested concept only for its complete mesh set.
  * A partial region, mixed selection or ambiguous name must keep its own identity.
@@ -7,6 +8,7 @@ export function requestedSelectionChoice(atlas:Atlas,terms:string[],selected:str
  const requested=[...new Set(terms)];
  if(requested.length!==1||!selected.length)return null;
  const term=requested[0];
+ if(eyeSelectionForTerm(atlas,term)){const eye=restoredEyeAssemblyChoice(atlas,selected);if(eye)return eye;}
  const exact=atlas.concepts.filter(concept=>concept.id===term);
  const retired=atlas.parts.find(part=>part.id===term&&part.suppressed&&part.replacementParts?.length);
  const replacementConcept=retired?atlas.concepts.filter(concept=>concept.id===retired.conceptId):[];

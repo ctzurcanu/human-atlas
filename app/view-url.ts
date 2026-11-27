@@ -50,7 +50,7 @@ export function compactViewUrl(input:string){
  url.search='';
  // Keep routing controls readable to existing integrations. The full state is
  // self-contained in the fragment; it never reaches a static hosting server.
- for(const key of ['model','tree','embed','ui','connect','connectJoin','relay']){
+ for(const key of ['model','tree','embed','ui','connect','connectJoin','relay','atlasSource']){
   const value=params.get(key);if(value!==null&&value.length<=512)url.searchParams.set(key,value);
  }
  // A local review catalogue must remain addressable when the view state is

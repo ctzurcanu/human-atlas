@@ -1,5 +1,5 @@
 import {Box3,PerspectiveCamera,Vector3} from 'three';
-import {zoomOutToFit,type ViewArea} from './view-framing';
+import {fitViewToAspect,zoomOutToFit,type ViewArea} from './view-framing';
 import {dampMotion} from './transition-motion';
 
 /** The command frame is the existing arrangement, including mid-motion reversals. */
@@ -16,7 +16,7 @@ export function captureExplosionView(camera:PerspectiveCamera,target:Vector3){
 }
 export type ExplosionView=ReturnType<typeof captureExplosionView>;
 export function restoreExplosionView(camera:PerspectiveCamera,target:Vector3,view:ExplosionView){
- camera.position.copy(view.position);target.copy(view.target);camera.up.copy(view.up);camera.quaternion.copy(view.quaternion);camera.zoom=view.zoom;camera.fov=view.fov;camera.view=view.view?{...view.view}:null;camera.updateProjectionMatrix();camera.updateMatrixWorld(true);
+ camera.position.copy(view.position);target.copy(view.target);camera.up.copy(view.up);camera.quaternion.copy(view.quaternion);camera.zoom=view.zoom;camera.fov=view.fov;camera.view=view.view?{...view.view}:null;fitViewToAspect(camera);camera.updateMatrixWorld(true);
 }
 /** Fit only the current moving extent, starting from the original user view.
  * The assembled endpoint always restores that view, even if it was cropped. */

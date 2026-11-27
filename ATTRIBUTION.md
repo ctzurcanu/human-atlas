@@ -2,6 +2,8 @@
 
 The application code is distributed under [GNU GPLv3](LICENSE). Original upstream application code is copyright © 2026 ashemag; its [MIT notice](LICENSES/MIT-upstream.txt) remains available. Anatomical datasets and other components retain their own licenses.
 
+
+<a id="open-anatomy-source"></a>
 ## Detailed male: Z-Anatomy
 
 Source: [Z-Anatomy original Blender archive](https://github.com/Z-Anatomy/Models-of-human-anatomy), CC BY-SA 4.0, with contributors identified in the [publisher license](https://github.com/Z-Anatomy/Models-of-human-anatomy/blob/master/License.txt). Source ZIP SHA-256: `e029688545627bd0214b269e1063143abb580aad72b2c2445d6d8a9a0d9da736`; `Startup.blend` SHA-256: `9f08a17ea0115fed80b2a73ecdf0a1bc2ab2f6956f37c593ce23d513ea35afcd`.
@@ -11,6 +13,8 @@ Two kidneys by Lissie Cowley retain CC BY-NC 4.0. Two cochleae and two vestibule
 Adaptation by Human Atlas: original Blender objects, collection membership, materials, and world transforms are read directly; coordinates are converted to Y-up; material-defined surfaces are packed without triangle reduction; source material colors are retained alongside display colors. Reference lettering and diagrams are excluded. The original archive has no anatomical image texture files. This source contributes 3,817 selectable surfaces and 3,213 concepts to the detailed male build.
 
 Local surface correction by Human Atlas: the native long-head biceps tendons receive a bounded 0.030 mm repair at source self-crossing patches. Existing topology, material assignment and UVs are preserved; local artist normals are transported. The original source archive is unchanged, and the derived anatomical geometry retains its applicable source license. See [the repair record](TA98-BICEPS-BRACHII-REPAIR.md).
+
+Local tongue reconstruction by Human Atlas: muscle-region proposals derive from the Z-Anatomy tongue boundary, and styloglossus proposals retain native styloid contact facets. These derived geometry assets retain CC BY-SA 4.0. Materials and fibre illustrations are procedural. Anatomical arrangement is informed by [Sanders and Mu, *A 3-Dimensional Atlas of Human Tongue Muscles* (2013)](https://pmc.ncbi.nlm.nih.gov/articles/PMC3687025/). Separate locally supplied models were consulted as shape references; their mesh and texture arrays are not included in these reconstructed assets.
 
 ## Detailed male supplement: Open 3D Model upper limb
 
@@ -23,6 +27,8 @@ Adaptation by Human Atlas: Blender decodes the original GLB directly. Meshes wit
 Source: [Human Reference Atlas united-female v1.10](https://purl.humanatlas.io/ref-organ/united-female/v1.10), by Kristen Browne and Heidi Schlehlein / HuBMAP, CC BY 4.0. Original GLB SHA-256: `95f0c3d2f918582608692ca1139e8bdb18c147a16470e9ee9af8b276bd77c422`.
 
 Additional source: [Human Reference Atlas united-female v1.5](https://purl.humanatlas.io/ref-organ/united-female/v1.5), same authors and license. Original GLB SHA-256: `472567a56896b9b7890508da6501fbf858e56aaa30745365f7a71ade782b529c`. Eight pubis and ischium bone surfaces in v1.5 are absent from v1.10.
+
+The local male TA98 cystic artery and cystic vein derive their section profiles from the v1.10 HRA sources `VH_F_cystic_artery` and `VH_F_cystic_vein`. Human Atlas transports those profiles along fitted courses, constructs finite walls and joins the native hepatic arterial and portal venous parents. Wall thickness and microscopic drainage remain illustrative. These mixed-source review assemblies remain local and retain their separate parent-source credits.
 
 Additional source: [University of Denver Visible Human Female 3D STL models](https://digitalcommons.du.edu/visiblehuman/1/), CC BY 4.0. Original `Final 3D STL Models-stl.zip` SHA-256: `9886eda040f6087bbb65182530f8bd262be456f366b155025c12b3dc56da774e`. The source archive remains in the ignored local source folder and is not distributed with the site.
 
@@ -1221,3 +1227,50 @@ Placental context: Kristen Browne and Heidi Schlehlein / HuBMAP, [Human Referenc
 ## Local rectal donor and wall construction — October 2026
 
 The locally supplied native female rectum is the carrier for the corrected female rectal wall and the resized, fitted male donor. Source-face ancestry and shared sigmoid interfaces are recorded in the rectal donor construction and installation reports. Human Atlas generates finite wall fields, procedural coat appearance and tissue-only caps from that carrier. The local source's redistribution rights have not been established; these derived assets remain in `.local-models` and are excluded from public delivery. This does not attribute the donor to the separate BodyParts3D rectum or to the independently registered HRA rectum, both of which are replaced as active rectal alternatives in the corresponding local views.
+
+## Local TA98 heart reconstruction
+
+The finite cardiac wall and chamber/septal territories derive from the local
+Z-Anatomy chamber surfaces (CC BY-SA 4.0; source and contributors above). Native
+leaflets, papillary tissues and vessel roots retain their per-part source
+credits. BodyParts3D FJ2420/FJ2421 supply the registered anterior atrioventricular
+cusps, and FJ2418 supplies a partial anterolateral papillary head (CC BY 4.0;
+DBCLS attribution above). Human Atlas repairs/partitions the shared wall, adds
+finite procedural tissue coats, and places the same geometry bank in the female
+atlas through one uniform similarity. Regional boundaries and fine attachments
+remain provisional. The pulmonary-vein roots additionally use finite source-course
+walls with reciprocal atrial interfaces; their distal recipient joins remain
+provisional. These revisions and unverified local recipient references
+remain local; this work does not authorize their public redistribution.
+
+The five native atrioventricular source meshes already contain branching
+chordal strands. Human Atlas separates their leaflet and chordal ownership
+with reciprocal finite neck surfaces, preserves the original exterior and
+texture coordinates, and repairs thirteen nonoutward source normal corners.
+The same small attribute bank is instanced in both local models. No third-party
+illustration or proprietary Complete Anatomy geometry is copied for this split.
+
+The subsequent fifteen-part apparatus repair retains those native source
+courses and establishes reciprocal papillary insertions. Explicit ownership
+removes inherited overlaps while preserving the source union; new face-corner
+UV/normal fields interpolate the corresponding source faces. Leaflet
+coaptation is not fused. A separate five-face repair closes a small breach in
+the native right pulmonary cusp using existing controls. Both local atlases
+reuse the same repaired banks; no new proprietary source or image is added.
+
+The coupled attachment stage additionally resolves source overlap between the
+cardiac wall, native papillary bases and AV leaflets through reciprocal charts.
+Six exterior controls select existing source facets; they do not add copied
+images or duplicate tissue. The SVC finite wall derives from its Z-Anatomy
+source sections, with section centres/areas preserved and proper section
+rotations correcting the folded end. The same bank is reused in both local
+models. Wall dimensions, regional boundaries and fine fibrous histology remain
+provisional.
+
+The right and left annular supports are original finite partitions of that
+myocardial volume at measured peripheral leaflet attachments. They add no
+overlapping torus or filled orifice. The supplied local `Male_2024.glb` was
+consulted for named anatomical landmarks and shape only; its meshes and
+textures were not copied into these annular assets. Both recipients reuse one
+checked geometry bank through proper uniform placements. These constructions
+remain local, with provisional histological boundaries.

@@ -1,15 +1,32 @@
-import {SYSTEMS,structureName,type Atlas,type Part,type SystemId} from './anatomy';
+import {liverCompletionTermParts,liverWholePresentationParts} from './liver-completion-controls';
+import {eyePresentationParts} from './eye-membership';
+import {SYSTEMS,type Atlas,type Part,type SystemId} from './anatomy';
 import {taHierarchyForConcept} from './anatomical-terminology';
 import {anatomicalInnervationNames} from './anatomical-relations';
 import {createDepthOrder} from './depth-sort';
 import {gallbladderWholeSource} from './gallbladder-wall';
 import {biliaryJunctionInterface} from './biliary-junction';
-import {vascularWallIntegration,vascularCoatKeys,vascularCoatTerms} from './vascular-wall';
+import {vascularWallIntegrations,vascularCoatKeys,vascularCoatTerms} from './vascular-wall';
+import {cricoidPartitionTermParts} from './cricoid-partition';
+import {structureLabelName} from './laterality';
+import {catalogueTa98TermParts} from './ta98-term-bindings';
+import {suprarenalWallRegistry} from './suprarenal-wall';
+import {renalWallRegistry} from './renal-wall';
+import {urinaryTermParts} from './urinary-wall';
+import {diaphragmTermParts} from './diaphragm-controls';
+import {liverTermParts} from './liver-controls';
+import {cardiacLabeledTermParts} from './cardiac-label-sites';
+import {liverSurfaceTermParts} from './liver-surface-features';
+import {carotidSurfaceReferenceDescription,carotidSurfaceTermParts} from './carotid-surface-features';
+import {liverLandmarkTermParts} from './liver-landmark';
+import {hepaticConnectionTermParts} from './hepatic-connection-controls';
+import {spinalCordTermParts,spinalCordSegments} from './spinal-cord-controls';
+import {tongueTermParts} from './tongue-controls';
 
 export type GuestLink={hierarchy:string;id:string;name:string};
 export type GuestNode={id?:string;name:string;synonyms?:string[];description?:string;source?:string;extension?:string;links?:GuestLink[];childIds?:string[];matchFrom?:string;matches?:string[];partIds?:string[];matchBases?:string[];systems?:SystemId[];children?:GuestNode[];unmapped?:boolean};
 export type GuestHierarchy={schema:'human-atlas-hierarchy/v1'|'human-atlas-hierarchy/v2';id:string;name:string;source?:string;version?:string;revision?:number;roots?:string[];views?:{id:string;name:string;roots:string[]}[];nodes:GuestNode[]};
-export type ResolvedGuestNode={id:string;name:string;synonyms?:string[];description?:string;source?:string;extension?:string;links?:GuestLink[];parts:Part[];directParts:Part[];children:ResolvedGuestNode[]};
+export type ResolvedGuestNode={id:string;name:string;synonyms?:string[];description?:string;source?:string;extension?:string;links?:GuestLink[];parts:Part[];directParts:Part[];children:ResolvedGuestNode[];itemCount?:number;showAnatomyLeaves?:boolean};
 
 const object=(value:unknown):value is Record<string,unknown>=>!!value&&typeof value==='object'&&!Array.isArray(value);
 const strings=(value:unknown,max=100):value is string[]=>Array.isArray(value)&&value.length<=max&&value.every(item=>typeof item==='string'&&item.trim().length>0&&item.length<=200);
@@ -49,8 +66,35 @@ export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy,view=
  const concepts=new Map(atlas.concepts.map(concept=>[concept.id,concept]));
  const finiteTermParts=new Map<string,Part[]>();
  const replacementTermParts=new Map<string,Part[]>();
- const vascular=hierarchy.id==='ta98'?vascularWallIntegration(atlas):null;
- if(vascular)for(let k=0;k<vascular.members.length;k++){const p=vascular.members[k],c=concepts.get(p.conceptId);if(c?.ta98Term===vascularCoatTerms[k]&&c.ta98Kind==='exact'&&c.partOf===vascular.source.conceptId&&c.elements.length===1&&c.elements[0]===p.id)finiteTermParts.set(vascularCoatTerms[k],[p]);}
+ const catalogueBindings=hierarchy.id==='ta98'?catalogueTa98TermParts(atlas):new Map<string,Part[]>();
+ const urinaryTerms=hierarchy.id==='ta98'?urinaryTermParts(atlas):new Map<string,Part[]>();
+  const diaphragmTerms=hierarchy.id==='ta98'?diaphragmTermParts(atlas):new Map<string,Part[]>();
+ for(const [term,parts]of catalogueBindings)replacementTermParts.set(term,parts);
+ const spinalTerms=hierarchy.id==='ta98'?spinalCordTermParts(atlas):new Map<string,Part[]>();
+ for(const [term,parts]of spinalTerms)replacementTermParts.set(term,parts);
+ for(const [term,parts]of urinaryTerms)replacementTermParts.set(term,parts);
+  for(const [term,parts]of diaphragmTerms)replacementTermParts.set(term,parts);
+ for(const [term,parts]of hierarchy.id==='ta98'?liverTermParts(atlas):[])replacementTermParts.set(term,parts);
+ const cardiacTerms=hierarchy.id==='ta98'?cardiacLabeledTermParts(atlas):new Map<string,Part[]>();
+ for(const [term,parts]of cardiacTerms)replacementTermParts.set(term,parts);
+ for(const [term,parts]of hierarchy.id==='ta98'?tongueTermParts(atlas):[])replacementTermParts.set(term,parts);
+ for(const [term,parts]of hierarchy.id==='ta98'?liverSurfaceTermParts(atlas):[])replacementTermParts.set(term,parts);
+ const carotidSurfaceTerms=hierarchy.id==='ta98'?carotidSurfaceTermParts(atlas):new Map<string,Part[]>();
+ for(const [term,parts]of carotidSurfaceTerms)replacementTermParts.set(term,parts);
+ for(const [term,parts]of hierarchy.id==='ta98'?liverLandmarkTermParts(atlas):[])replacementTermParts.set(term,parts);
+ for(const [term,parts]of hierarchy.id==='ta98'?hepaticConnectionTermParts(atlas):[])replacementTermParts.set(term,parts);
+ for(const [term,parts]of hierarchy.id==='ta98'?liverCompletionTermParts(atlas):[])replacementTermParts.set(term,parts);
+ const cricoidTerms=hierarchy.id==='ta98'?cricoidPartitionTermParts(atlas):null;
+ if(cricoidTerms)for(const [term,parts] of cricoidTerms)replacementTermParts.set(term,parts);
+ const vascular=hierarchy.id==='ta98'?vascularWallIntegrations(atlas):[];
+ const suprarenal=hierarchy.id==='ta98'?suprarenalWallRegistry(atlas):null;
+ const renal=hierarchy.id==='ta98'?renalWallRegistry(atlas):null;
+ if(renal&&['renal-local-detail-v420','renal-local-layers-v1'].includes(renal.marker.schema)){
+  // These are actual disjoint medullary bulk/papillary cells. The collective
+  // control does not invent the still-missing outer/inner-zone subdivisions.
+  finiteTermParts.set('A08.1.01.020',renal.assemblies.flatMap(g=>g.parts.filter(p=>['pyramid','papilla'].includes(p.tissueWallLayer??''))));
+ }
+ for(const r of vascular)for(let k=0;k<r.members.length;k++){const p=r.members[k];finiteTermParts.set(vascularCoatTerms[k],[...(finiteTermParts.get(vascularCoatTerms[k])??[]),p]);}
  if(hierarchy.id==='ta98'){
   // A verified finite candidate replaces the old donor selector only in the
   // catalogue that carries its literal communicating assembly.
@@ -82,6 +126,11 @@ export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy,view=
  const resolve=(node:GuestNode,path:string):ResolvedGuestNode=>{
   const cached=memo.get(path);if(cached)return cached;
   const children=hierarchy.schema==='human-atlas-hierarchy/v2'?(node.childIds??[]).map(id=>resolve(graph.get(id)!,id)):(node.children??[]).map((child,index)=>resolve(child,`${path}/${index}`));
+  if(suprarenal&&path==='A11.5.00.001'){
+   const capsules=suprarenal.glands.map(g=>g.parts.find(p=>p.tissueWallLayer==='capsule')!);
+   children.unshift({id:`SUPRARENAL:${suprarenal.marker.sex}:capsule-assembly`,name:'Fibrous capsule',parts:capsules,directParts:capsules,
+    children:capsules.map(p=>({id:p.conceptId,name:structureLabelName(p.name),parts:[p],directParts:[p],children:[]}))});
+  }
   if(hierarchy.id==='ta98'&&path==='A05.8.02.001'&&atlas.gallbladderWallPreview){
    const members=atlas.gallbladderWallPreview.partIds.map(id=>byId.get(id)).filter((p):p is Part=>!!p);
    if(gallbladderWholeSource(members,atlas.parts))children.push({id:`GALLWALL:${atlas.gallbladderWallPreview.sex}:wall-assembly`,name:'Wall layers',parts:members,directParts:members,
@@ -145,7 +194,14 @@ export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy,view=
      description:'Select and peel the stored intestinal tissue layers together. This control covers only the currently modeled wall cells; absent rectal layers, microscopic features and unjoined lumens are not represented by this selection.'});
    }
   }
-  if(vascular&&path==='A12.3.12.001')children.push({id:'VEINWALL:male:portal:wall-assembly',name:'Wall layers',parts:vascular.members,directParts:vascular.members,children:vascular.members.map((p,k)=>({id:p.conceptId,name:`Tunica ${vascularCoatKeys[k]}`,parts:[p],directParts:[p],children:[],synonyms:[`TA98:${vascularCoatTerms[k]}`],description:p.coverageLimitation}))});
+  for(const r of vascular)if(path===r.configuration.wholeTerm)children.push({id:`${r.configuration.prefix}:wall-assembly`,name:'Wall layers',parts:r.members,directParts:r.members,children:r.members.map((p,k)=>({id:p.conceptId,name:`Tunica ${vascularCoatKeys[k]}`,parts:[p],directParts:[p],children:[],synonyms:[`TA98:${vascularCoatTerms[k]}`],description:p.coverageLimitation}))});
+  if(hierarchy.id==='ta98'&&/^A14\.1\.02\.01[4-8]$/.test(path)){
+   for(const segment of spinalCordSegments(atlas).filter(s=>s.parentTerm===path)){
+    const parts=segment.partIds.map(id=>byId.get(id)!);
+    children.push({id:segment.conceptId,name:`${segment.name} spinal cord segment`,parts,directParts:parts,children:[],
+     showAnatomyLeaves:false,itemCount:0,description:concepts.get(segment.conceptId)?.coverageLimitation});
+   }
+  }
   const selectors=node.matchFrom?graph.get(node.matchFrom)!:node;
   let directParts=directCache.get(selectors);
   if(!directParts){
@@ -155,7 +211,7 @@ export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy,view=
    const systems=new Set(selectors.systems??[]);
    directParts=[...new Map([...matched,...(systems.size?availableParts.filter(part=>systems.has(part.system)):[])].map(part=>[part.id,part])).values()];directCache.set(selectors,directParts);
   }
-  const parts=children.every(child=>child.parts===directParts)?directParts:[...new Map([...directParts,...children.flatMap(child=>child.parts)].map(part=>[part.id,part])).values()];
+  const parts=eyePresentationParts(atlas,liverWholePresentationParts(atlas,selectors.id??'',children.every(child=>child.parts===directParts)?directParts:[...new Map([...directParts,...children.flatMap(child=>child.parts)].map(part=>[part.id,part])).values()]),{id:selectors.id,name:node.name,term:hierarchy.id==='ta98'?selectors.id:undefined});
   const prototypeRepresented=!!atlas.bowelWallPrototype&&path.startsWith('SIW:')&&parts.some(p=>atlas.bowelWallPrototype!.partIds.includes(p.id));
   const foldCore=prototypeRepresented&&path.endsWith(':mucosa')&&parts.some(p=>p.id.endsWith(':circular-folds:submucosa'));
   const finiteColon=hierarchy.id==='ta98'&&path.startsWith('CW:colon:')&&parts.length>0&&parts.every(p=>p.caecocolicWallAssembly&&p.pairedTissue&&atlas.bowelWallPrototype?.partIds.includes(p.id));
@@ -163,15 +219,41 @@ export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy,view=
   const namedColonUnion=hierarchy.id==='ta98'&&path==='CW:colon:taeniae'&&['ZA:Free taenia','ZA:Mesocolic taenia','ZA:Omental taenia'].every(id=>parts.some(part=>part.id===id));
   const description=finiteColon?(node.description??'').replace(/Missing separate representation[^\n]*\n/,'').replace(/Named native source references:[^\n]*\n?/,'')+'\nStored finite colonic tissue union with shared inner/outer interfaces. Clinical thickness, band widths and local thickening, terminal convergence and peritoneal coverage remain provisional; anatomy is not accepted.':namedColonUnion?(node.description??'').replace(/Missing separate representation[^\n]*\n/,'')+'\nAll three named native open band references are available. Their union remains unaccepted; finite muscle thickness and complete regional tissue attachment are unverified.':namedColonSource?(node.description??'').replace(/Missing separate representation[^\n]*\n/,'')+'\nNamed native source present in this model; this reference does not establish a closed wall interval or anatomical acceptance.':prototypeRepresented?(node.description??'').replace(/Missing separate representation[^\n]*\n/,'')+'\nLocal finite-wall prototype. Thickness, fold morphology, source geometry and organ junctions remain unverified; not anatomically accepted.'+(foldCore?' This feature subtree also includes the submucosal core of circular folds; the mucosal tissue coat itself comprises only its three mucosal intervals.':''):node.description;
   const replacement=replacementTermParts.get(selectors.id??'');
-  const currentDescription=replacement?[(node.description??'').split('\n')[0],'This local review selects the communicating finite wall candidate instead of the older supplemental duct.',replacement[0].coverageLimitation,'Source entity type: material entity.'].filter(Boolean).join('\n'):description;
-  const result={id:path,name:node.name,synonyms:node.synonyms,description:currentDescription,source:node.source,extension:node.extension,links:node.links,parts,directParts,children};memo.set(path,result);return result;
+  const cricoidReplacement=cricoidTerms?.has(selectors.id??'');
+  const sourceCourseBinding=catalogueBindings.has(selectors.id??'')?atlas.ta98TermBindings?.find(b=>b.term===selectors.id&&b.representation==='source-course-identity'):undefined;
+  const sourceCourseConcept=sourceCourseBinding?concepts.get(sourceCourseBinding.conceptId):undefined;
+  const currentDescription=carotidSurfaceTerms.has(selectors.id??'')?[(node.description??'').split('\n')[0],carotidSurfaceReferenceDescription].filter(Boolean).join('\n')
+   :urinaryTerms.has(selectors.id??'')?[(node.description??'').split('\n')[0],...new Set(replacement!.map(p=>p.coverageLimitation))].filter(Boolean).join('\n')
+   :diaphragmTerms.has(selectors.id??'')?[(node.description??'').split('\n')[0],...new Set(replacement!.map(p=>p.coverageLimitation))].filter(Boolean).join('\n')
+   :sourceCourseConcept?[(node.description??'').split('\n')[0],sourceCourseConcept.coverageLimitation,'Reviewed source-course identity using its existing canonical mesh; no additional tissue geometry.'].filter(Boolean).join('\n')
+   :catalogueBindings.has(selectors.id??'')?[(node.description??'').split('\n')[0],...new Set(replacement!.map(p=>p.coverageLimitation)),atlas.ta98TermBindings?.some(b=>b.term===selectors.id&&b.representation==='source-parent-placement')?'Named source structures include supplementary subdivisions placed under this broader TA98 term. Their parent placement does not identify each subdivision as the whole term or establish its exact TA98 identity.':atlas.ta98TermBindings?.some(b=>b.term===selectors.id&&(b.representation==='source-identity'||b.representation==='source-collection-identity'))?'Named source anatomy; identity is established separately from body fit, vessel-wall completeness and lumen continuity.':atlas.ta98TermBindings?.some(b=>b.term===selectors.id&&b.representation==='source-surface-reference')?'Named original source-surface reference; vessel walls, lumen continuity and anatomical completion remain unverified.':selectors.id==='A12.0.00.009'?'Stored blood volume within the modeled vessel; adjoining flow continuity remains unverified.':'Stored finite tissue; anatomical acceptance is separate from this catalogue binding.'].filter(Boolean).join('\n')
+   :cricoidReplacement?[(node.description??'').split('\n')[0],'Native cricoid source partition; regional boundaries and joint apposition remain provisional.',replacement?.[0].coverageLimitation,
+   `Source entity type: ${['A06.2.03.004','A06.2.03.005'].includes(selectors.id??'')?'immaterial':'material'} entity.`].filter(Boolean).join('\n')
+   :replacement?[(node.description??'').split('\n')[0],'This local review selects the communicating finite wall candidate instead of the older supplemental duct.',replacement[0].coverageLimitation,'Source entity type: material entity.'].filter(Boolean).join('\n'):description;
+  const cardiacConcept=cardiacTerms.has(selectors.id??'')?atlas.concepts.find(c=>c.ta98Term===selectors.id&&/^TA98HEART:(male|female):label-site:/.test(c.id)):undefined;
+  const cardiacDescription=cardiacTerms.has(selectors.id??'')?[(node.description??'').split('\n')[0],cardiacConcept?.coverageLimitation??[...new Set(replacement?.map(p=>p.coverageLimitation).filter(Boolean))].join(' ')].filter(Boolean).join('\n'):currentDescription;
+  let itemCount:number|undefined;
+  if(path.startsWith('A12.1.')&&cardiacTerms.has(path)){
+   const terms=new Set<string>(),pending=[{id:path,children}];
+   while(pending.length){const row=pending.pop()!;if(cardiacTerms.has(row.id))terms.add(row.id);pending.push(...row.children);}
+   itemCount=terms.size;
+  }
+  if(spinalTerms.size&&/^A14\.1\.02\.\d{3}$/.test(path)){
+   const terms=new Set<string>(),pending=[{id:path,children}];
+   while(pending.length){const row=pending.pop()!;if(/^A14\.1\.02\.\d{3}$/.test(row.id))terms.add(row.id);pending.push(...row.children);}
+   itemCount=terms.size;
+  }
+  // The named TA98 choice already selects the complete tissue region. Its
+  // segment fragments are storage/sectioning pieces, not more anatomy rows.
+  const showAnatomyLeaves=spinalTerms.has(selectors.id??'')?false:undefined;
+  const result={id:path,name:node.name,synonyms:node.synonyms,description:cardiacDescription,source:node.source,extension:node.extension,links:node.links,parts,directParts,children,itemCount,showAnatomyLeaves};memo.set(path,result);return result;
  };
  if(hierarchy.schema==='human-atlas-hierarchy/v2'){
   const roots=hierarchy.views?.find(item=>item.id===view)?.roots??hierarchy.roots!;
   const result=roots.map(id=>resolve(graph.get(id)!,id));
   if(hierarchy.id==='dermatomes-myotomes'){
    const makeNode=(id:string,name:string,parts:Part[],children:ResolvedGuestNode[]=[],description?:string):ResolvedGuestNode=>({id,name,parts,directParts:children.length?[]:parts,children,description});
-   const conceptNodes=(prefix:string,parts:Part[])=>{const grouped=new Map<string,Part[]>();for(const part of parts){const members=grouped.get(part.conceptId)??[];members.push(part);grouped.set(part.conceptId,members);}return [...grouped].map(([id,members])=>makeNode(`${prefix}:${id}`,structureName(concepts.get(id)?.name??members[0].name),members)).sort((a,b)=>a.name.localeCompare(b.name));};
+   const conceptNodes=(prefix:string,parts:Part[])=>{const grouped=new Map<string,Part[]>();for(const part of parts){const members=grouped.get(part.conceptId)??[];members.push(part);grouped.set(part.conceptId,members);}return [...grouped].map(([id,members])=>makeNode(`${prefix}:${id}`,structureLabelName(concepts.get(id)?.name??members[0].name),members)).sort((a,b)=>a.name.localeCompare(b.name));};
    // Full catalogue access is distinct from a claim that every tissue has a known root assignment.
    const systems=SYSTEMS.flatMap(system=>{const parts=availableParts.filter(part=>part.system===system.id);return parts.length?[makeNode(`ANATOMY:${system.id}`,system.name,parts,conceptNodes(`ANATOMY:${system.id}`,parts))]:[];});
    result.push(makeNode('ANATOMY','All anatomy · by system',availableParts,systems,'Every available modeled structure. System membership does not assert a spinal root or innervation.'));
@@ -203,7 +285,8 @@ export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy,view=
   const children=SYSTEMS.flatMap(system=>{
    const members=parts.filter(part=>part.system===system.id).sort((a,b)=>compareDepth({name:a.name,parts:[a]},{name:b.name,parts:[b]}));
    if(!members.length)return [];
-   return [{id:`${index}/${system.id}`,name:system.name,parts:members,directParts:[],children:members.map((part,partIndex)=>({id:`${index}/${system.id}/${partIndex}`,name:structureName(part.name),parts:[part],directParts:[part],children:[]}))}];
+   const named=new Map<string,Part[]>();for(const part of members){const group=named.get(part.conceptId)??[];group.push(part);named.set(part.conceptId,group);}
+   return [{id:`${index}/${system.id}`,name:system.name,parts:members,directParts:[],children:[...named].map(([id,group])=>({id:`${index}/${system.id}/${id}`,name:atlas.concepts.find(c=>c.id===id)?.name??structureLabelName(group[0].name),parts:group,directParts:group,children:[]}))}];
   });
   return {id:String(index),name:node.name,parts,directParts:[],children};
  });

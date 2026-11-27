@@ -25,6 +25,20 @@ const segments:[string,string,string[]][]=[
  ['024','Lateral basal segmental bronchus of left lung (BIX)',['Lateral basal segmental artery of left lung']],
 ];
 const cache=new WeakMap<Part[],Map<string,ResolvedRelation[]>>();
+const installedPulmonaryBranches=[
+ {id:'TA98PART:ZA:Posterior segmental artery of right lung:A12.2.01.108',term:'A12.2.01.108',source:'Posterior segmental artery of right lung',assembly:'pulmonary-artery:male:right-posterior-ascending',territory:'posterior',rootNote:'Native interlobar origin; the finite parent-wall junction remains unverified.'},
+ {id:'TA98PART:ZA:Anterior segmental artery of right lung:A12.2.01.106',term:'A12.2.01.106',source:'Anterior segmental artery of right lung',assembly:'pulmonary-artery:male:right-anterior-descending',territory:'anterior',rootNote:'Anterior-trunk supply route; the proximal conduit to the current pulmonary parent is not constructed.'},
+] as const;
+/** A retired parent name must not route the replacement through a donor. */
+export function pulmonaryVascularFrameCompatible(kind:ResolvedRelation['kind'],source:Part,target:Part):boolean{
+ if(!['before','after'].includes(kind)||![source,target].some(p=>installedPulmonaryBranches.some(branch=>branch.id===p.id)))return true;
+ if(source.suppressed||target.suppressed||source.system!=='arterial'||target.system!=='arterial'
+  ||nativePartFrame(source)!=='ZA:'||nativePartFrame(target)!=='ZA:')return false;
+ // Only this source's verified origin is modeled. A similarly named hepatic
+ // posterior segmental artery is a different vessel even in the same body.
+ return kind==='before'&&installedPulmonaryBranches.some(branch=>branch.id===source.id)&&target.id==='ZA:Right pulmonary artery'
+  ||kind==='after'&&installedPulmonaryBranches.some(branch=>branch.id===target.id)&&source.id==='ZA:Right pulmonary artery';
+}
 /** Named covering association; never a certified mesh attachment or wall layer. */
 export function isReviewedPulmonaryCovering(covering:Part,lung:Part):boolean{
  if(covering.suppressed||lung.suppressed||covering.system!=='respiratory'||lung.system!=='respiratory')return false;
@@ -54,6 +68,20 @@ export function pulmonaryRelations(parts:Part[]):Map<string,ResolvedRelation[]>{
  const coverings=available.filter(p=>p.id==='ZA:Pleura'||/^LOCAL:female:[lr]_pleura$/.test(p.conceptId));
  for(const covering of coverings)for(const lung of available){
   if(isReviewedPulmonaryCovering(covering,lung))add(covering,lung,'covers','coveredBy','Pleural covering association for the named native lung source. Separate visceral/parietal layers, reflections, fissural coverage and physical tissue interfaces remain unverified; this is not a certified mesh junction.');
+ }
+ // This source-bound replacement retains the interlobar origin of Asc.A2.
+ // Its clinical name differs from the retired whole-source label, so retain
+ // the flow and territory associations explicitly rather than aliasing names.
+ for(const branch of installedPulmonaryBranches){
+  const source=available.find(p=>p.id===branch.id&&p.conceptId===p.id&&p.ta98Term===branch.term&&p.sourceId===branch.source
+   &&p.system==='arterial'&&p.pairedTissue&&p.sectionSolid&&p.tissueWallAssembly===branch.assembly&&nativePartFrame(p)==='ZA:');
+  if(!source)continue;
+  const parent=available.find(p=>p.id==='ZA:Right pulmonary artery'&&p.system==='arterial');
+  if(parent)add(source,parent,'before','after',branch.rootNote);
+  for(const territory of parts.filter(p=>!p.suppressed&&p.system==='respiratory'&&p.id===`TA98PULMONARY:male:right-superior:${branch.territory}`))
+   add(source,territory,'supplies','arterial',`Pulmonary supply to the ${branch.territory} upper-lobe territory; distal perfusion and segment-boundary fit remain unverified.`);
+  for(const bronchus of parts.filter(p=>!p.suppressed&&p.system==='respiratory'&&p.id===`LOCAL:male:pulmonary:bronchus:right_${branch.territory}_bronchus`))
+   add(source,bronchus,'adjacent','adjacent',`Accompanies the ${branch.territory} segmental bronchus; this association does not establish a tissue attachment.`);
  }
  const named=(source:Part,system:Part['system'],names:string[])=>available.filter(p=>p.system===system&&nativePartFrame(p)===nativePartFrame(source)&&names.some(n=>p.name.toLowerCase()===n.toLowerCase()));
  // Native female source names omit "main"; do not resolve them through

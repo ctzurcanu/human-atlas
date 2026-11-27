@@ -4,6 +4,7 @@ import {randomBytes} from 'node:crypto';
 import {build} from 'esbuild';
 import {Miniflare} from 'miniflare';
 import {fileURLToPath} from 'node:url';
+import {verifyMaleTa98Options} from '../mcp/verify-model-options.mjs';
 
 const code=()=>randomBytes(24).toString('base64url');
 const viewer='https://ctzurcanu.github.io',origin='https://relay.example';
@@ -63,6 +64,15 @@ test('public MCP initializes, discovers tools, searches and returns the GitHub P
  assert.equal(new URL(view.structuredContent.url).origin,viewer);
  const options=await rpc('tools/call',{name:'get_anatomy_options',arguments:{}});
  assert.ok(options.structuredContent.models.every(id=>!id.startsWith('local-')));
+ const legacy=(await rpc('tools/call',{name:'get_anatomy_options',arguments:{model:'female'}})).structuredContent;
+ assert.equal(legacy.model,'female-ta98');
+ const maleOptions=(await rpc('tools/call',{name:'get_anatomy_options',arguments:{model:'male-ta98'}})).structuredContent;
+ await verifyMaleTa98Options(maleOptions);
+ const maleSearch=(await rpc('tools/call',{name:'search_anatomy',arguments:{model:'male-ta98',query:'TA98:A05.9.01.017'}})).structuredContent;
+ assert.ok(maleSearch.matches.some(c=>c.id==='ZA:Accessory pancreatic duct'));
+ const maleView=(await rpc('tools/call',{name:'show_anatomy',arguments:{model:'male-ta98',structure:'ZA:Accessory pancreatic duct'}})).structuredContent;
+ assert.equal(new URL(maleView.url).searchParams.get('model'),'male-ta98');
+ assert.ok(maleView.selectedPieces.length>0);
  const resources=(await rpc('resources/list')).resources;
  const ui=await rpc('resources/read',{uri:resources[0].uri});
  assert.ok(ui.contents[0].text.length<3*1024*1024,'Compressed UI resource budget');

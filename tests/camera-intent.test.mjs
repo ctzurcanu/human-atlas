@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import {build} from 'esbuild';
+import {build} from '../server/atlas-test-build.mjs';
 const bundle=await build({entryPoints:['app/camera-intent.ts'],bundle:true,platform:'node',format:'esm',write:false});
 const {explicitCameraAction}=await import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles[0].contents).toString('base64'));
 test('Selection and display edits do not authorize camera movement; explicit camera actions do',()=>{

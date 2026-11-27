@@ -7,8 +7,9 @@ import {stencilShell,disposeStencilShell} from './stencil-section';
 import {sectionCapProfile} from './section-cap-profile';
 import {applyHepaticCut,HEPATIC_CUT_COLOR} from './hepatic-appearance';
 
-export type StencilCapCandidate={part:Part;index:number;cutIndex:number;geometry:T.BufferGeometry;matrix:T.Matrix4;mode?:'wall'|'solid';wallWidth?:number;closedWall?:boolean;opacity?:number};
-type Counter={outer:T.Mesh[];inner:T.Mesh[];geometry:T.BufferGeometry;source:T.BufferGeometry;assembly:boolean;innerPick?:T.BufferGeometry;role:SectionTissue;mode:'wall'|'solid'};
+export type StencilCapCandidate={part:Part;index:number;cutIndex:number;geometry:T.BufferGeometry;matrix:T.Matrix4;mode?:'wall'|'solid';wallWidth?:number;closedWall?:boolean;opacity?:number;exclusions?:T.BufferGeometry[]};
+type BooleanCut={meshes:T.Mesh[];planes:T.Mesh[];fillOrder:number};
+type Counter={outer:T.Mesh[];inner:T.Mesh[];geometry:T.BufferGeometry;source:T.BufferGeometry;assembly:boolean;innerPick?:T.BufferGeometry;role:SectionTissue;mode:'wall'|'solid';boolean?:BooleanCut[];exclusions?:T.BufferGeometry[]};
 type Style={fill:number;rim?:number;inset?:number;tile?:string};
 const styles:Partial<Record<SectionTissue,Style>>={
  'gastric-wall':{fill:0xA86A60},mucosa:{fill:0xC47782},submucosa:{fill:0xC99F8F},
@@ -91,6 +92,36 @@ export function createStencilCaps(scene:T.Scene|T.Group,planes:[T.Plane,T.Plane]
  const makeCounter=(candidate:StencilCapCandidate)=>{
   const {index,geometry,part}=candidate,role=sectionTissue(part),style=styles[role]??{fill:0x8B9099},mode=candidate.mode??'solid',shell=stencilShell(geometry,mode==='wall'?candidate.wallWidth??.002:candidate.part.pairedTissue?0:style.inset??0,!!candidate.closedWall,mode==='wall'&&!part.sectionAssembly&&!!sectionCapProfile(part).hollowWall);
   const entry:Counter={geometry:shell,source:geometry,assembly:!!part.sectionAssembly,role,mode,outer:[],inner:[]};
+  if(candidate.exclusions?.length){
+   // Resolve body winding into the high bit, then erase that bit wherever
+   // any closed conduit envelope winds. Low bits are cleared between holes.
+   // Subtracting winding counts directly would paint negative winding outside
+   // the liver when a conduit extends beyond the organ.
+   entry.exclusions=candidate.exclusions;entry.boolean=[];
+   for(const cutIndex of [0,1]){
+    const base=-2000000+index*128+cutIndex*64,cut:BooleanCut={meshes:[],planes:[],fillOrder:base+63};
+    let order=base;
+    const counter=(source:T.BufferGeometry,side:T.Side)=>{
+     const material=countMaterial(cutIndex,side,false);material.stencilWriteMask=127;
+     const mesh=new T.Mesh(source,material);mesh.frustumCulled=false;mesh.visible=false;mesh.matrixAutoUpdate=false;mesh.renderOrder=order++;scene.add(mesh);cut.meshes.push(mesh);
+    };
+    const operation=(func:T.StencilFunc,ref:number,readMask:number,writeMask:number)=>{
+     const material=new T.MeshBasicMaterial({side:T.DoubleSide,colorWrite:false,depthWrite:false,depthTest:false});
+     material.stencilWrite=true;material.stencilFunc=func;material.stencilRef=ref;material.stencilFuncMask=readMask;material.stencilWriteMask=writeMask;
+     material.stencilFail=T.KeepStencilOp;material.stencilZFail=T.ReplaceStencilOp;material.stencilZPass=T.ReplaceStencilOp;countMaterials.push(material);
+     const mesh=new T.Mesh(planeGeometry,material);mesh.frustumCulled=false;mesh.visible=false;mesh.renderOrder=order++;scene.add(mesh);cut.planes.push(mesh);
+    };
+    counter(shell,T.BackSide);counter(shell,T.FrontSide);
+    operation(T.NotEqualStencilFunc,128,127,128);operation(T.AlwaysStencilFunc,0,127,127);
+    for(const exclusion of candidate.exclusions){
+     counter(exclusion,T.BackSide);counter(exclusion,T.FrontSide);
+     operation(T.NotEqualStencilFunc,0,127,128);operation(T.AlwaysStencilFunc,0,127,127);
+    }
+    if(order>=cut.fillOrder)throw new Error('Too many section subtraction volumes.');
+    entry.boolean.push(cut);
+   }
+   counters.set(index,entry);return entry;
+  }
   if(mode==='wall'&&!shell.userData.openPortWall){
    const positions=shell.getAttribute('position'),insets=shell.getAttribute('capInset'),values=new Float32Array(positions.count*3);
    for(let i=0;i<positions.count;i++)for(let axis=0;axis<3;axis++)values[i*3+axis]=positions.getComponent(i,axis)-insets.getComponent(i,axis);
@@ -112,10 +143,11 @@ export function createStencilCaps(scene:T.Scene|T.Group,planes:[T.Plane,T.Plane]
   release([...counters].filter(([index,entry])=>entry.assembly&&!present.has(index)).map(([index])=>index));
   for(const candidate of candidates){const entry=counters.get(candidate.index);if(entry&&entry.source!==candidate.geometry)release([candidate.index]);}
   visibleCandidates=candidates;
-  active.clear();for(const entry of counters.values())for(const mesh of [...entry.outer,...entry.inner])mesh.visible=false;
+  active.clear();for(const entry of counters.values())for(const mesh of [...entry.outer,...entry.inner,...(entry.boolean??[]).flatMap(cut=>[...cut.meshes,...cut.planes])])mesh.visible=false;
   for(const mesh of quads)mesh.visible=false;
   const byCut:[StencilCapCandidate[],StencilCapCandidate[]]=[[],[]];
   for(const candidate of candidates){const entry=counters.get(candidate.index)??makeCounter(candidate),cut=candidate.cutIndex;
+   for(const mesh of entry.boolean?.[cut].meshes??[]){mesh.visible=true;transform(mesh,candidate.matrix);}
    for(const mesh of entry.outer.slice(cut*2,cut*2+2)){mesh.visible=true;transform(mesh,candidate.matrix);}
    for(const mesh of entry.inner.slice(cut*2,cut*2+2)){mesh.visible=true;transform(mesh,candidate.matrix);}
    active.add(`${cut}:${candidate.index}`);byCut[cut].push(candidate);
@@ -132,15 +164,27 @@ export function createStencilCaps(scene:T.Scene|T.Group,planes:[T.Plane,T.Plane]
    }}
    const center=origin.addScaledVector(u,(low[0]+high[0])*.5).addScaledVector(v,(low[1]+high[1])*.5);
    const width=(high[0]-low[0])*1.06+.0001,height=(high[1]-low[1])*1.06+.0001;
+   for(const candidate of list)for(const mesh of counters.get(candidate.index)?.boolean?.[cutIndex].planes??[]){mesh.visible=true;mesh.position.copy(center);mesh.quaternion.copy(rotation);mesh.scale.set(width,height,1);}
    for(const candidate of list.filter(item=>item.part.pairedTissue)){
     const key=`tissue:${cutIndex}:${candidate.index}`;let pair=quadMap.get(key);
-    if(!pair){const appearance=candidate.part.tissueAppearance;if(!appearance)throw new Error('Paired tissue requires a generated appearance');const tissue=tissueWallMaterial(appearance,candidate.matrix.clone().invert()),material=tissue.material;material.side=T.DoubleSide;material.clippingPlanes=[planes[1-cutIndex]];material.stencilWrite=true;material.stencilFunc=T.NotEqualStencilFunc;material.stencilRef=0;material.stencilFail=T.ReplaceStencilOp;material.stencilZFail=T.ReplaceStencilOp;material.stencilZPass=T.ReplaceStencilOp;material.polygonOffset=true;material.polygonOffsetFactor=-1;material.polygonOffsetUnits=-1;quadMaterials.push(material);const mesh=new T.Mesh(planeGeometry,material);mesh.userData.tissueFrame=tissue.tissueFrame;mesh.userData.cutIndex=cutIndex;mesh.frustumCulled=false;mesh.renderOrder=-100000+candidate.index*8+cutIndex*4+1;mesh.onAfterRender=renderer=>renderer.clearStencil();scene.add(mesh);quads.push(mesh);pair={fill:mesh};quadMap.set(key,pair);}
+    if(!pair){
+     const appearance=candidate.part.tissueAppearance,tissue=appearance&&!candidate.exclusions?.length?tissueWallMaterial(appearance,candidate.matrix.clone().invert(),false,candidate.part.geometryOrigin):undefined;
+     // Finite native tissues may retain their original surface material/UVs.
+     // Their closed geometry still gets its own count/fill/reset batch; a
+     // generated exterior appearance is not a condition for a valid cut face.
+     const material=tissue?.material??quadMaterial(sectionTissue(candidate.part),cutIndex);
+     material.side=T.DoubleSide;material.clippingPlanes=[planes[1-cutIndex]];material.stencilWrite=true;material.stencilFunc=T.NotEqualStencilFunc;material.stencilRef=0;material.stencilFail=T.ReplaceStencilOp;material.stencilZFail=T.ReplaceStencilOp;material.stencilZPass=T.ReplaceStencilOp;material.polygonOffset=true;material.polygonOffsetFactor=-1;material.polygonOffsetUnits=-1;
+     if(tissue)quadMaterials.push(material);
+     const boolean=counters.get(candidate.index)?.boolean?.[cutIndex];
+     if(boolean){material.stencilFunc=T.EqualStencilFunc;material.stencilRef=128;material.stencilFuncMask=128;}
+     const mesh=new T.Mesh(planeGeometry,material);if(tissue)mesh.userData.tissueFrame=tissue.tissueFrame;mesh.userData.finiteTissueCap=true;mesh.userData.cutIndex=cutIndex;mesh.frustumCulled=false;mesh.renderOrder=boolean?.fillOrder??-100000+candidate.index*8+cutIndex*4+1;mesh.onAfterRender=renderer=>renderer.clearStencil();scene.add(mesh);quads.push(mesh);pair={fill:mesh};quadMap.set(key,pair);
+    }
     const capMaterial=pair.fill.material as T.MeshStandardMaterial,opacity=Math.max(0,Math.min(1,candidate.opacity??1));
     // Count/fill/reset must stay in the opaque render queue even when the
     // anatomical context is translucent. Custom alpha blending preserves that
     // exact sequence; transparent sorting would mix unrelated tissue stencils.
     capMaterial.opacity=opacity;capMaterial.depthWrite=opacity>=.999;capMaterial.blending=opacity>=.999?T.NoBlending:T.CustomBlending;capMaterial.blendSrc=T.SrcAlphaFactor;capMaterial.blendDst=T.OneMinusSrcAlphaFactor;capMaterial.blendEquation=T.AddEquation;
-    pair.fill.userData.tissueFrame.value.copy(candidate.matrix).invert();pair.fill.visible=true;pair.fill.position.copy(center);pair.fill.quaternion.copy(rotation);pair.fill.scale.set(width,height,1);
+    pair.fill.userData.tissueFrame?.value.copy(candidate.matrix).invert();pair.fill.visible=true;pair.fill.position.copy(center);pair.fill.quaternion.copy(rotation);pair.fill.scale.set(width,height,1);
    }
    for(const key of new Set(list.filter(candidate=>!candidate.part.pairedTissue).map(candidate=>`${sectionTissue(candidate.part)}:${candidate.mode??'solid'}`))){
     const [role,mode]=key.split(':') as [SectionTissue,'wall'|'solid'];
@@ -163,16 +207,16 @@ export function createStencilCaps(scene:T.Scene|T.Group,planes:[T.Plane,T.Plane]
    pickOrigin.copy(pickPoint).addScaledVector(plane.normal,.00002);
    insideRay.set(pickOrigin,plane.normal);insideRay.near=0;insideRay.far=Infinity;
    const inside=(geometry:T.BufferGeometry)=>{pickMesh.geometry=geometry;const intersections=insideRay.intersectObject(pickMesh,false);let crossings=0,last=-Infinity;for(const hit of intersections){if(hit.distance-last<.00002)continue;crossings++;last=hit.distance;}return crossings%2===1;};
-   if(!inside(entry.geometry)||entry.innerPick&&inside(entry.innerPick))continue;
+   if(!inside(entry.geometry)||entry.innerPick&&inside(entry.innerPick)||entry.exclusions?.some(inside))continue;
    const order=orderFor(entry.role,candidate.cutIndex,entry.mode);
    if(!result||distance<result.distance-.00001||order>result.order)result={index:candidate.index,distance,order};
   }
   return result;
  };
- const dispose=()=>{for(const entry of counters.values()){for(const mesh of [...entry.outer,...entry.inner])scene.remove(mesh);disposeStencilShell(entry.geometry);if(entry.innerPick)disposeStencilShell(entry.innerPick);}for(const mesh of quads)scene.remove(mesh);for(const material of [...countMaterials,...quadMaterials,pickMaterial])material.dispose();planeGeometry.dispose();};
+ const dispose=()=>{for(const entry of counters.values()){for(const mesh of [...entry.outer,...entry.inner,...(entry.boolean??[]).flatMap(cut=>[...cut.meshes,...cut.planes])])scene.remove(mesh);disposeStencilShell(entry.geometry);if(entry.innerPick)disposeStencilShell(entry.innerPick);}for(const mesh of quads)scene.remove(mesh);for(const material of [...countMaterials,...quadMaterials,pickMaterial])material.dispose();planeGeometry.dispose();};
  const release=(indices:number[])=>{
   const removed=new Set(indices);visibleCandidates=visibleCandidates.filter(candidate=>!removed.has(candidate.index));
-  for(const index of indices){const entry=counters.get(index);if(!entry)continue;for(const mesh of [...entry.outer,...entry.inner])scene.remove(mesh);disposeStencilShell(entry.geometry);if(entry.innerPick)disposeStencilShell(entry.innerPick);counters.delete(index);for(const cut of [0,1])active.delete(`${cut}:${index}`);}
+  for(const index of indices){const entry=counters.get(index);if(!entry)continue;for(const mesh of [...entry.outer,...entry.inner,...(entry.boolean??[]).flatMap(cut=>[...cut.meshes,...cut.planes])])scene.remove(mesh);disposeStencilShell(entry.geometry);if(entry.innerPick)disposeStencilShell(entry.innerPick);counters.delete(index);for(const cut of [0,1])active.delete(`${cut}:${index}`);}
  };
  return {update,pick,dispose,release,planeError:()=>Math.max(0,...quads.filter(mesh=>mesh.visible).map(mesh=>Math.abs(planes[mesh.userData.cutIndex].distanceToPoint(mesh.position)))),activeCount:()=>active.size};
 }

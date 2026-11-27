@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync,existsSync}from'node:fs';
+import {createHash}from'node:crypto';
+import {build}from'esbuild';
+const base='.local-models/geometry-workbench/circulatory-completion/vertebral-native-regional-opportunity-v1';
+const cat='.local-models/ta98-review/bowel-wall-local-atlas/male/atlas.json',body='.local-models/organ-models/spinal-cord/male-body.json';
+const sha=x=>createHash('sha256').update(x).digest('hex'),expected='d73c260cf6ed0752af5b3f420e97b11f4f180bea100aaf2f70f9082bf9a675de';
+assert.equal(sha(readFileSync(cat)),expected);const source=JSON.parse(readFileSync(cat)),raw=JSON.parse(readFileSync(body));
+const code=await build({stdin:{contents:`export {withReviewedCatalogueIdentities} from './app/reviewed-catalogue-identities.ts';export {withPreferredSourceRepresentations,withHiddenReviewAlternatives} from './app/preferred-source-representations.ts';`,resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',write:false,logLevel:'silent'});
+const api=await import('data:text/javascript;base64,'+Buffer.from(code.outputFiles[0].contents).toString('base64'));
+const normal=api.withHiddenReviewAlternatives(api.withPreferredSourceRepresentations(api.withReviewedCatalogueIdentities(raw)),false),np=new Map(normal.parts.map(p=>[p.id,p]));
+const low=[-.057,1.509,-.044],high=[.057,1.702,.011];
+const rows=source.parts.filter(p=>p.bounds&&p.bounds[0].every((x,i)=>x<=high[i])&&p.bounds[1].every((x,i)=>x>=low[i])).map(p=>({id:p.id,name:p.name,system:p.system,bounds_m:p.bounds,recordSha256:sha(Buffer.from(JSON.stringify(p))),ordinaryBodyPresent:np.has(p.id),normalSuppressed:!!np.get(p.id)?.suppressed,normalAvailable:np.has(p.id)&&!np.get(p.id)?.suppressed,replacementParts:np.get(p.id)?.replacementParts??[]}));
+const explicit=source.parts.filter(p=>/dura|Vertebral artery|Basilar artery|Atlas \(C1\)|Axis \(C2\)|Vertebra C6|Occipital bone|atlanto_occipital_membrane/.test(p.id)).map(p=>({id:p.id,name:p.name,system:p.system,bounds_m:p.bounds,normalAvailable:np.has(p.id)&&!np.get(p.id)?.suppressed,replacementParts:np.get(p.id)?.replacementParts??[]}));
+const path=`${base}/actual-runtime-context-v2.json`;assert(!existsSync(path));writeFileSync(path,JSON.stringify({schema:'vertebral-regional-actual-runtime-context/v2',sourceCatalogueSha256:expected,ordinaryBodySha256:sha(readFileSync(body)),contextBox_m:[low,high],pipeline:['ordinary body','withReviewedCatalogueIdentities','withPreferredSourceRepresentations','withHiddenReviewAlternatives(false)'],codeBindings:Object.fromEntries(['app/reviewed-catalogue-identities.ts','app/preferred-source-representations.ts','app/data/preferred-source-representations.json'].map(p=>[p,sha(readFileSync(p))])),rows,explicit,noSourceOrVisibilityChanges:true},null,2)+'\n');
+console.log(JSON.stringify({path,contextRows:rows.length,normalAvailable:rows.filter(p=>p.normalAvailable).length,explicit}));

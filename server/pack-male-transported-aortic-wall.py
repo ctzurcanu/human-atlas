@@ -1,0 +1,23 @@
+"""Pack the passed local aortic transport, leaving coronary ostia unjoined."""
+from pathlib import Path
+import sys,json,time
+import numpy as np
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
+from geometry_tools.common import ROOT,atomic_json,digest_file
+from geometry_tools.model import Mesh
+from geometry_tools.tissue import layer_arrangement,normal_words,pack
+from geometry_tools.contact import pair_contacts
+
+T=time.monotonic();D=ROOT/'.local-models/geometry-workbench/heart/male-aortic-section-transport-v1';O=D/'finite-wall-v1';before=json.loads((D/'stage.json').read_text());assert before['passed'];m=Mesh.load(D/'candidate-outer.npz');source=Mesh.load(D/'source-outer.npz');z=np.load(D/'wall-fields.npz');fields=z['fields'];f=z['faces'];positions,surfaces,cells,construction=layer_arrangement(fields,f,['aortic-wall']);assert construction['finite_wall_cells_pass'];words=normal_words(positions.astype('<f4').astype(float),surfaces);transported=m.attributes['normals'][f].copy();tt=m.triangles;fn=np.cross(tt[:,1]-tt[:,0],tt[:,2]-tt[:,0]);bad=np.einsum('fki,fi->fk',transported,fn)<=0;station=np.empty(len(m.vertices),int)
+for i,r in enumerate(z['rings']):station[r]=i
+changed=station[f].min(1)<14;assert not np.any(bad[~changed]);fixed=~changed
+# Only already-contradictory transported corners inside the repair support are
+# reconciled to actual emitted face normals. Unchanged source faces stay literal.
+flat=np.rint(fn/np.linalg.norm(fn,axis=1)[:,None]*32767).astype('<i2');transported[bad]=np.broadcast_to(flat[:,None],transported.shape)[bad];assert np.all(np.einsum('fki,fi->fk',transported,fn)>0);words['interface:0']=transported
+uvs={key:m.attributes['uvs'][f]if key.startswith('interface:')else np.zeros((len(ff),3,2),dtype='<f4')for key,ff in surfaces.items()};result=pack(positions,surfaces,cells,{'aortic-wall':'TA98ARTERIAL:male:ascending-aorta:finite-wall'},m.frame,O,corner_words=words,corner_uvs=uvs,construction=construction,max_pairs=250000,max_tests=2000000);assert result['passed'];name='TA98ARTERIAL_male_ascending-aorta_finite-wall.npz';wall=Mesh.load(O/name)
+assert np.array_equal(words['interface:0'][fixed],source.attributes['normals'][f][fixed]);assert np.array_equal(uvs['interface:0'],source.attributes['uvs'][f]);context=ROOT/'.local-models/geometry-workbench/heart/male-native-aortic-source-defects-v2';meshes=[dict(mesh=str(O/name),name='Finite aortic wall: root and coronary joins still pending',color=[.75,.32,.29,1])];contacts=[]
+for vessel in ['Left-coronary-artery','Right-coronary-artery']:
+ path=context/(vessel+'.npz');q=Mesh.load(path);_,summary=pair_contacts(wall,q,0.,max_pairs=100000,max_tests=500000);contacts.append(dict(part=vessel,summary=summary,ostium_constructed=False));meshes.append(dict(mesh=str(path),name=vessel.replace('-',' ')+' fixed source',color=[.9,.03,.02,1]))
+center=fields[0,z['rings'][7]].mean(0);axis=fields[0,z['rings'][14]].mean(0)-fields[0,z['rings'][0]].mean(0);axis/=np.linalg.norm(axis)
+atomic_json(D/'finite-wall-review-spec.json',dict(frame=m.frame,meshes=meshes,resolution=[1100,900],time_limit_seconds=45,views=[dict(name='front: repaired native course, fixed coronary sources',direction=[0,0,1]),dict(name='right: fixed ends and curved course',direction=[-1,0,0]),dict(name='true axial open lumen',direction=axis.tolist(),section=dict(normal=axis.tolist(),point=center.tolist(),clear_outer=True)),dict(name='longitudinal wall thickness, no end disks',direction=[0,0,1],section=dict(normal=[0,0,1],point=center.tolist(),clear_outer=True))]))
+report=dict(schema='male-transported-aortic-finite-wall/v1',source_catalogue_sha256=before['source_catalogue_sha256'],outer_candidate_geometry_sha256=m.geometry_sha,finite_wall_geometry_sha256=wall.geometry_sha,bank_sha256=result['bank_sha256'],bank_bytes=result['total_bytes'],finite_wall_all_geometry_gates_passed=result['passed'],native_source_faces_and_all_uvs_literal=True,native_corner_normal_words_outside_repair_literal=True,contradictory_transported_corners_reconciled_in_support=int(bad.sum()),maximum_outer_move_m=before['maximum_move_m'],section_area_ratio_range=before['section_area_ratio_range'],illustrative_wall_thickness_m=.0009,annular_end_rims_only=True,filled_lumen_disks=0,coronary_source_contacts=contacts,coronary_ostia_constructed=False,heart_side_join_constructed=False,arch_side_join_constructed=False,all_heart_and_other_native_vessel_geometry_literal=True,installable=False,anatomical_acceptance=False,elapsed_seconds=time.monotonic()-T);atomic_json(D/'finite-wall-stage.json',report);print(json.dumps({k:v for k,v in report.items()if k!='coronary_source_contacts'}));print('coronary contacts',[(r['part'],r['summary']['crossing_face_pairs'])for r in contacts])

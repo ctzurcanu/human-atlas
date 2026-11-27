@@ -1,15 +1,26 @@
 let terminology={byConcept:{}};
 let loadCatalogue;
-export function configureAtlasData(loader, terms){loadCatalogue=loader;terminology=terms;catalogues.clear();}
-const terminologyOf=id=>terminology.byConcept[id]??(/^FMA:?\d+$/.test(id)?{ta98:null,tha:null,fma:`FMA:${id.replace(/^FMA:?/,'')}`,latin:null}:null);
+let catalogueRevision;
+export function configureAtlasData(loader, terms, revisionOf){loadCatalogue=loader;terminology=terms;catalogueRevision=revisionOf;catalogues.clear();}
+export function conceptTerminology(concept, terms=terminology){
+  if(concept.ta98Kind==='parent')return null;
+  const id=concept.id, indexed=terms.byConcept[id];
+  if(concept.ta98Term){
+    if(indexed?.ta98===concept.ta98Term)return indexed;
+    return terms.byCode?.[concept.ta98Term]??{ta98:concept.ta98Term};
+  }
+  return indexed??(/^FMA:?\d+$/.test(id)?{ta98:null,tha:null,fma:'FMA:'+id.replace(/^FMA:?/,''),latin:null}:null);
+}
+
 
 export const VIEWER_URL = 'https://ctzurcanu.github.io/human-atlas/';
 export const MODELS = {
+  'male-ta98': 'male-ta98/atlas.json',
   'male-detail': 'atlas-male-complete.json',
   'male-full': 'atlas-male-complete.json',
   male: 'atlas.json',
-  female: 'atlas-hra-female.json',
-  embryo: 'atlas-embryo.json',
+  'female-ta98': 'female-ta98/atlas.json',
+  embryo: 'embryo-3month/atlas.json',
   cell: 'atlas-cell.json',
   'local-reference': 'reference.json',
   'local-male': 'male.json',
@@ -30,10 +41,14 @@ const catalogues = new Map();
 export function catalogue(model = 'male-detail') {
   const filename = MODELS[model];
   if (!filename) throw new Error(`Unknown model: ${model}`);
-  if (!catalogues.has(model)) {
-    catalogues.set(model, loadCatalogue(model, filename));
+  const revision=catalogueRevision?.(model,filename);
+  const cached=catalogues.get(model);
+  if (!cached || cached.revision!==revision) {
+    const atlas=loadCatalogue(model,filename);
+    catalogues.set(model,{revision,atlas});
+    return atlas;
   }
-  return catalogues.get(model);
+  return cached.atlas;
 }
 export function anatomyOptions(model = 'male-detail') {
   const atlas = catalogue(model);
@@ -49,7 +64,7 @@ const termsFor = value => {
   const side = /^(left|right)\s+(.+)$/.exec(term);
   return side ? [term, `${side[2]} (${side[1]})`] : [term];
 };
-const terminologyValues = id => {const term=terminologyOf(id);return term?[term.ta98,term.ta98&&`TA98:${term.ta98}`,term.tha,term.fma,term.ontology,term.latin,term.latin&&`La:${term.latin}`].filter(Boolean):[];};
+export const terminologyValues = (concept,terms=terminology) => {const term=conceptTerminology(concept,terms);return term?[term.ta98,term.ta98&&`TA98:${term.ta98}`,term.tha,term.fma,term.ontology,term.latin,term.latin&&`La:${term.latin}`].filter(Boolean):[];};
 
 export function searchAnatomy(query, model = 'male-detail', limit = 20) {
   const terms = termsFor(query);
@@ -57,13 +72,13 @@ export function searchAnatomy(query, model = 'male-detail', limit = 20) {
   if (!term) throw new Error('Enter an anatomical structure or atlas ID.');
   const atlas = catalogue(model);
   return atlas.concepts
-    .filter(concept => concept.searchTerms?concept.searchTerms.some(value=>value.includes(term)):normalize(concept.name).includes(term) || normalize(concept.id).includes(term) || terminologyValues(concept.id).some(value=>normalize(value).includes(term)))
-    .map(concept=>({concept,score:(concept.normalizedId??normalize(concept.id))===term||(concept.normalizedName??normalize(concept.name))===term?0:(concept.plainName??plainName(concept.name))===term?1:(concept.normalizedName??normalize(concept.name)).startsWith(term)?2:3}))
+    .filter(concept => concept.searchText?concept.searchText.includes(term):normalize(concept.name).includes(term) || normalize(concept.id).includes(term) || terminologyValues(concept).some(value=>normalize(value).includes(term)))
+    .map(concept=>({concept,score:normalize(concept.id)===term||normalize(concept.name)===term?0:plainName(concept.name)===term?1:normalize(concept.name).startsWith(term)?2:3}))
     .sort((a, b) => {
       return a.score-b.score || a.concept.name.length-b.concept.name.length || a.concept.name.localeCompare(b.concept.name) || a.concept.id.localeCompare(b.concept.id);
     })
     .slice(0, limit)
-    .map(({concept}) => ({id: concept.id, name: concept.name, pieces: concept.elements.length, terminology:terminologyOf(concept.id)}));
+    .map(({concept}) => ({id: concept.id, name: concept.name, pieces: concept.elements.length, terminology:conceptTerminology(concept)}));
 }
 
 export function resolveAnatomy(structure, model = 'male-detail') {
@@ -77,7 +92,7 @@ export function resolveAnatomy(structure, model = 'male-detail') {
   if (exact.length > 1) throw new Error(`Several structures have that name. Use an exact atlas ID: ${exact.slice(0, 8).map(c => c.id).join(', ')}`);
   const bilateral = atlas.concepts.filter(concept => plainName(concept.name) === term);
   if (bilateral.length === 2 && bilateral.some(c => /\(left\)$/i.test(c.name)) && bilateral.some(c => /\(right\)$/i.test(c.name))) return bilateral;
-  const byTerminology = atlas.concepts.filter(concept=>terminologyValues(concept.id).some(value=>normalize(value)===term));
+  const byTerminology = atlas.concepts.filter(concept=>terminologyValues(concept).some(value=>normalize(value)===term));
   if(byTerminology.length===1)return byTerminology;
   if(byTerminology.length>1)throw new Error(`Several structures share that terminology ID or Latin name. Use an exact atlas ID: ${byTerminology.slice(0,8).map(c=>c.id).join(', ')}`);
   const suggestions = searchAnatomy(structure, model, 8);
@@ -96,7 +111,7 @@ function resolvePieces(terms, model) {
 function fraction(value, name) {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1) throw new Error(`${name} must be between 0 and 1.`);
 }
-export function anatomyView({structure, structures = [], model = 'male-detail', view = 'three-quarter', context = 0.18, controls, hierarchy = 'systems', guestUrls = [], systems, depthHidden = [], hidden = [], region = 'all', explode = 0, skinOpacity, labels = true, isolate = false, section, sections, activeSection = 0, camera, focus, rotate}) {
+export function anatomyView({structure, structures = [], model = 'male-detail', view = 'three-quarter', context = 0.18, controls, hierarchy = 'systems', guestUrls = [], systems, depthHidden = [], hidden = [], region = 'all', explode = 0, skinOpacity, labels = true, isolate = false, section, sections, activeSection = 0, camera, focus, rotate},viewerUrl=VIEWER_URL) {
   if (!VIEWS.includes(view)) throw new Error(`Unknown view: ${view}`);
   fraction(context, 'Context');
   fraction(explode, 'Explode');
@@ -120,23 +135,24 @@ export function anatomyView({structure, structures = [], model = 'male-detail', 
   const terms = [...(structure ? [structure] : []), ...structures];
   const matches = terms.flatMap(term => {
     const part = atlas.parts.find(part => part.id === term);
-    return part ? [{id: part.id, name: part.name, elements: [part.id]}] : resolveAnatomy(term, model);
+    const concept=atlas.concepts.find(item=>item.id===term);
+    return concept ? [concept] : part ? [{...part,elements:[part.id]}] : resolveAnatomy(term, model);
   });
   const selected = [...new Set(matches.flatMap(concept => concept.elements))];
   if (isolate && !selected.length) throw new Error('Isolation requires a selected structure.');
   const parts = new Map(atlas.parts.map(part => [part.id, part]));
   const availableSystems = new Set(atlas.parts.map(part => part.system));
-  const visibleSystems = systems ?? (model==='cell'||model==='embryo'?[...availableSystems]:model==='local-reference'?[...DEFAULT_LAYERS,'integumentary']:DEFAULT_LAYERS);
+  const visibleSystems = systems ?? (model==='cell'||model==='embryo'?[...availableSystems]:model==='male-ta98'||model==='local-reference'?[...DEFAULT_LAYERS,'integumentary']:DEFAULT_LAYERS);
   if (!Array.isArray(visibleSystems) || visibleSystems.some(id => !availableSystems.has(id))) throw new Error('Unknown system for this model.');
   const hiddenPieces = resolvePieces(hidden, model);
-  const url = new URL(model.startsWith('local-')?'http://localhost:3016/':VIEWER_URL);
+  const url = new URL(model.startsWith('local-')?'http://localhost:3016/':viewerUrl);
   const params = url.searchParams;
   params.set('model', model);
   params.set('view', view);
   matches.forEach(concept => params.append('select', concept.id));
   params.set('layers', [...new Set(visibleSystems)].join(','));
   params.set('context', String(context));
-  params.set('skin', String(skinOpacity ?? (model==='cell'?.18:model==='male-full'||model==='local-reference'?1:model.startsWith('local-')?0:.1)));
+  params.set('skin', String(skinOpacity ?? (model==='cell'?.18:model==='male-full'||model==='local-reference'?1:model==='male-ta98'||model.startsWith('local-')?0:.1)));
   params.set('region', region);
   if (hierarchy !== 'systems') params.set('tree', hierarchy);
   guestUrls.forEach(source=>params.append('guest',source));
@@ -155,7 +171,7 @@ export function anatomyView({structure, structures = [], model = 'male-detail', 
   const iframe = `<iframe src="${url.href.replaceAll('&', '&amp;').replaceAll('"', '&quot;')}" title="Atlas interactive anatomy viewer" loading="lazy" style="width:100%;height:600px;border:0" allowfullscreen></iframe>`;
   return {
     model,
-    structures: matches.map(concept => ({id: concept.id, name: concept.name, pieces: concept.elements.length, terminology:terminologyOf(concept.id)})),
+    structures: matches.map(concept => ({id: concept.id, name: concept.name, pieces: concept.elements.length, terminology:conceptTerminology(concept)})),
     systems: [...new Set(selected.map(id => parts.get(id)?.system).filter(Boolean))],
     selectedPieces: selected,
     hiddenPieces,

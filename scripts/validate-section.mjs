@@ -71,8 +71,8 @@ assert.equal(sectionCapOpacity(skin,{selected:[skin.id],contextOpacity:.2,skinOp
 const standard=JSON.parse(readFileSync('public/models/atlas.json','utf8'));
 const standardSkin=standard.parts.find(part=>part.id==='FJ2810');assert.ok(standardSkin);
 assert.equal(sectionPartVisible(standardSkin,{selected:[],visible:['integumentary'],hidden:[],depthHidden:[],region:'torso',skinOpacity:1,isolate:false}),true,'checked whole-body skin participates in a regional section');
-const female=JSON.parse(readFileSync('public/models/atlas-hra-female.json','utf8'));
-const femaleSkin=female.parts.find(part=>part.name==='Skin of body');assert.ok(femaleSkin);
+const female=JSON.parse(readFileSync('public/models/female-ta98/atlas.json','utf8'));
+const femaleSkin=female.parts.find(part=>part.name==='Skin'&&part.system==='integumentary');assert.ok(femaleSkin);
 assert.equal(sectionPartVisible(femaleSkin,{selected:[],visible:['integumentary'],hidden:[],depthHidden:[],region:'torso',skinOpacity:1,isolate:false}),true,'checked female whole-body skin participates in a regional section');
 const checked={selected:[sternum.id],visible:['skeletal'],hidden:[sternum.id],depthHidden:[],region:'all',skinOpacity:.1,isolate:false};
 assert.equal(sectionPartVisible(sternum,checked),false,'selection must not add an unchecked mesh to a section');

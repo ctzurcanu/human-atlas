@@ -1,0 +1,4 @@
+interface:
+  display_name: "Shared Tissue Construction"
+  short_description: "Build and validate shared finite tissue cells"
+  default_prompt: "Use $atlas-tissue-construction to work on the requested Human Atlas geometry with source-bound checks."

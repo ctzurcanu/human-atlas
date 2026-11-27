@@ -1,22 +1,28 @@
 import {readFileSync,mkdirSync,writeFileSync} from 'node:fs';
-import {MODELS} from '../mcp/atlas-core.mjs';
+import {readCatalogue} from '../mcp/read-catalogue.mjs';
+import {MODELS,terminologyValues} from '../mcp/atlas-core.mjs';
 import {buildMcpUi} from '../mcp/build-ui.mjs';
 const catalogues={};
 const read=path=>JSON.parse(readFileSync(new URL(path,import.meta.url),'utf8'));
-for(const file of new Set(Object.entries(MODELS).filter(([id])=>!id.startsWith('local-')).map(([,file])=>file))){
- const atlas=read(`../public/models/${file}`);
- catalogues[file]={parts:atlas.parts.map(({id,name,system})=>({id,name,system})),concepts:atlas.concepts.map(({id,name,elements})=>({id,name,elements}))};
+for(const [model,file] of Object.entries(MODELS)){
+ if(model.startsWith('local-')||catalogues[file])continue;
+ const atlas=readCatalogue(model,file);
+ catalogues[file]={parts:atlas.parts.map(({id,name,system})=>({id,name,system})),concepts:atlas.concepts.map(({id,name,elements,ta98Term,ta98Kind})=>({id,name,elements,ta98Term,ta98Kind}))};
 }
-const terms=read('../app/data/ta98-metadata.json').byConcept;
+const terms=read('../app/data/ta98-metadata.json');
 const normalize=value=>value.trim().toLocaleLowerCase().replace(/\s+/g,' ');
-for(const atlas of Object.values(catalogues))for(const concept of atlas.concepts){
- const t=terms[concept.id]??(/^FMA:?\d+$/.test(concept.id)?{fma:`FMA:${concept.id.replace(/^FMA:?/,'')}`} :{});
- concept.normalizedId=normalize(concept.id);concept.normalizedName=normalize(concept.name);
- concept.plainName=normalize(concept.name.replace(/\s*\((?:left|right)\)$/i,''));
- concept.searchTerms=[concept.normalizedName,concept.normalizedId,...[t.ta98,t.ta98&&`TA98:${t.ta98}`,t.tha,t.fma,t.ontology,t.latin,t.latin&&`La:${t.latin}`].filter(Boolean).map(normalize)];
+// A concept can share thousands of pieces with other concepts. Store their indices once
+// in the Worker bundle and keep one pre-normalized search string per concept.
+for(const atlas of Object.values(catalogues)){
+ const indices=new Map(atlas.parts.map((part,i)=>[part.id,i]));
+ for(const concept of atlas.concepts){
+  concept.elements=concept.elements.map(id=>indices.get(id)??id);
+  concept.searchText=[concept.name,concept.id,...terminologyValues(concept,terms)].map(normalize).join('\u0001');
+ }
 }
 const ids=new Set(Object.values(catalogues).flatMap(a=>a.concepts.map(c=>c.id)));
-const data={catalogues,terminology:{byConcept:Object.fromEntries(Object.entries(terms).filter(([id])=>ids.has(id)))}};
+const codes=new Set(Object.values(catalogues).flatMap(a=>a.concepts.map(c=>c.ta98Term).filter(Boolean)));
+const data={catalogues,terminology:{byConcept:Object.fromEntries(Object.entries(terms.byConcept).filter(([id])=>ids.has(id))),byCode:Object.fromEntries(Object.entries(terms.byCode).filter(([code])=>codes.has(code)))}};
 const directory=new URL('../cloudflare/generated/',import.meta.url);
 mkdirSync(directory,{recursive:true});
 writeFileSync(new URL('mcp-data.json',directory),JSON.stringify(data));

@@ -38,5 +38,5 @@ test('independent packed proof retains the macro lumen, all original controls an
  assert.equal(plan.newUVBytes,0);assert.equal(plan.newImageBytes,0);assert.ok(plan.incrementalGzipBytes<150000);
 });
 test('regional staging cannot replace public or male anatomy',()=>{
- const q=new URLSearchParams('biliary=regions');assert.equal(api.localTa98LayerCatalogue('female',q,true),undefined);assert.equal(api.localTa98LayerCatalogue('local-female-ta98',q,false),undefined);assert.equal(api.localTa98LayerCatalogue('local-ta98',q,true),'/local-models/ta98-review/bowel-wall-local-atlas/male/atlas.json');
+ const q=new URLSearchParams('biliary=regions');assert.equal(api.localTa98LayerCatalogue('female',q,true),undefined);assert.equal(api.localTa98LayerCatalogue('local-female-ta98',q,false),undefined);assert.equal(api.localTa98LayerCatalogue('local-ta98',q,true),'/local-models/geometry-workbench/biodigital-male-circulation-v1/hand-current-palm-fit-v981/ordinary-atlas.json');
 });

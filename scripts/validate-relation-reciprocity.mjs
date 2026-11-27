@@ -6,7 +6,7 @@ const models=process.argv.slice(2);
 const catalogs=models.length?models:[
  'public/models/atlas-male-complete.json',
  'public/models/atlas.json',
- 'public/models/atlas-hra-female.json',
+ 'public/models/female-ta98/atlas.json',
  'public/models/atlas-embryo.json',
  'public/models/atlas-cell.json',
  '.local-models/reference.json',

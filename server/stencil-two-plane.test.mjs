@@ -55,6 +55,22 @@ test('Two moving cuts keep live source membership, opposing masks and exact cap 
  caps.dispose();wall.dispose();assert.equal(scene.children.length,0);
 });
 
+test('Finite native materials cap live annuli without requiring a generated exterior appearance',()=>{
+ const {wall,candidates}=fixture(),scene=new T.Scene(),planes=[new T.Plane(new T.Vector3(0,1,0),-.7),new T.Plane(new T.Vector3(0,-1,0),.76)],caps=createStencilCaps(scene,planes,()=>new T.Texture());
+ for(const candidate of candidates)delete candidate.part.tissueAppearance;
+ caps.update(cutCandidates(candidates));scene.updateMatrixWorld(true);
+ const fills=scene.children.filter(m=>m.visible&&m.userData.finiteTissueCap);assert.equal(fills.length,6);assert.equal(caps.activeCount(),6);
+ for(let frame=0;frame<4;frame++){
+  planes[0].constant=-.4-frame*.2;caps.update(cutCandidates(candidates));scene.updateMatrixWorld(true);
+  for(const fill of fills){const counter=counts(scene,fill),coat=candidates.findIndex(c=>counter[0].geometry.index===c.geometry.index),r=(radii[coat]+radii[coat+1])/2;
+   assert.equal(counter.length,2);assert.equal(Math.abs(winding(counter,new T.Vector3(r*.96,fill.position.y,r*.28))),1,'finite wall is capped');
+   assert.equal(winding(counter,new T.Vector3(.2,fill.position.y,.03)),0,'lumen stays open');assert.equal(winding(counter,new T.Vector3(1.2,fill.position.y,.03)),0,'fill stays inside the outer wall');
+   assert.equal(fill.material.transparent,false);let clears=0;fill.onAfterRender({clearStencil:()=>clears++});assert.equal(clears,1);
+  }
+ }
+ caps.dispose();wall.dispose();assert.equal(scene.children.length,0);
+});
+
 test('Final fills clear discarded stencil coverage before another cut or coat; other-cut masks remain strict',()=>{
  const {wall,candidates}=fixture(),scene=new T.Scene(),planes=[new T.Plane(new T.Vector3(0,1,0),-.7),new T.Plane(new T.Vector3(1,0,0),0)],caps=createStencilCaps(scene,planes,()=>new T.Texture());
  caps.update(cutCandidates(candidates));scene.updateMatrixWorld(true);

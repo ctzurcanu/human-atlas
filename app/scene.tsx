@@ -1,4 +1,16 @@
-import {selectedAnatomyLabels,layerLabelTargets,chooseLayerLabelPoint,anatomyLabelChoice,type LabelSurfacePoint,type AnatomyLabelItem} from './anatomy-label-plan';
+import {surfaceCompanions,surfaceHidden} from './surface-companion';
+import {selectedLiverBoundary} from './liver-completion-controls';
+import {createLiverBoundaryOverlay} from './liver-boundary-overlay';
+import {hepaticRegionReplaces} from './hepatic-connection-controls';
+import {liverSectionGeometry} from './liver-section-volumes';
+import {selectedLiverSurfaceFeature} from './liver-surface-features';
+import {carotidBodySurfaceFinish,selectedCarotidSurfaceFeature} from './carotid-surface-features';
+import {selectedCardiacSurfaceFeature} from './cardiac-surface-features';
+import {createSurfaceFeatureOverlay,surfaceFeatureCarrier} from './surface-feature-overlay';
+import {selectedTongueSurfaceFeature,tongueFibreWeights} from './tongue-controls';
+import {selectedCardiacLabelSite} from './cardiac-label-sites';
+import {createCardiacReferenceOverlay} from './cardiac-reference-overlay';
+import {selectedAnatomyLabels,selectedLabelsVisible,layerLabelTargets,chooseLayerLabelPoint,anatomyLabelChoice,type LabelSurfacePoint,type AnatomyLabelItem} from './anatomy-label-plan';
 import type {HierarchyChoice} from './hierarchy-choice';
 import {VisitJourney,visitCurve,type VisitState} from './model-visit';
 import {visitRegions,visitMapSegments,type VisitRegion} from './visit-map';
@@ -8,13 +20,14 @@ import {applyMaleLipAppearance} from './male-lip-appearance';
 import {metricHairGeometry,applyMetricHairMaterial,MetricHairPicking} from './metric-hair-field';
 import {textureHitAlpha} from './texture-hit-visibility';
 import {applyOcularSurface} from './ocular-surface-material';
-import {tissueNeighborOccludes} from './tissue-interface-visibility';
+import {tissueNeighborOccludes,tissuePosesCoincide} from './tissue-interface-visibility';
 import {colonicTaeniaFinish} from './colonic-taenia';
 import {applyGastricRelief} from './gastric-relief-material';
 import {applySkinDetail,type SkinDetail} from './skin-detail-material';
 import {applySkinEyeAppearance,applySkinToneGain,skinEyeHoleAt,type SkinEyeAppearance} from './skin-eye-appearance';
-import {organOrigin,organBounds} from './organ-frame';
-import {tissueWallMaterial,type TissueAppearance} from './tissue-wall-material';
+import {organOrigin,organBounds,organOrientation,organInstanceScale,organAnatomicalPoint,organGeometryPoint} from './organ-frame';
+import {applyOrganRenderPose,organRenderPoseKey,type OrganRenderPose} from './organ-render-pose';
+import {tissueWallMaterial,applyPairedNormalSigns,type TissueAppearance} from './tissue-wall-material';
 import {applySafeSurfaceNormals} from './safe-surface-normals';
 import {gastricRegionRim} from './gastric-region-rim';
 import {advanceExplosionMotion,captureExplosionView,restoreExplosionView,fitExplosionView,type ExplosionView} from './explosion-view';
@@ -24,6 +37,7 @@ import {triplanarSurfaceTexture} from './surface-texture-mapping';
 import {embryoSurfaceShader,type EmbryoSurface} from './embryo-material';
 import {appendAnatomyLabelCallouts} from './anatomy-label-renderer';
 import {assetUrl} from './asset-url';
+import {createFingerSurfacePreview,type FingerSurfacePreview} from './finger-surface-preview';
 import {decodeTextureImage,type TextureImage} from './texture-image';
 import {fetchAsset,loadModelBundle,rememberModelBundle} from './asset-cache';
 import {inRegion,partVisible,sectionPartVisible} from './viewer-state';
@@ -41,13 +55,14 @@ import {hierarchyEntries} from './anatomy-hierarchy';
 import {resolveGuestHierarchy,type GuestHierarchy} from './guest-hierarchy';
 import {loadModelBuffer} from './model-download';
 import {OnDemandChunks} from './on-demand-chunks';
-import {partIndexBuffer} from './part-index-buffer';
+import {anatomyPartGeometry,anatomyGeometryView} from './shared-tissue-geometry';
+import {filterSectionClosureCandidates} from './section-closure';
 import {bowelWallBoundingSphere} from './bowel-wall-bounds';
 import {selectionCenter} from './camera-pivot';
 import {freeOrbitAroundPivot,panPinch,orbitAroundPointer} from './pointer-orbit';
 import {advanceControllerOrbit} from './xr-orbit';
 import {labelAreaForPanels,layoutAnatomyLabels,type LabelAnchor,type LabelArea,type LabelPanel} from './label-layout';
-import {displayLaterality,lateralityClass} from './laterality';
+import {displayLaterality,lateralityClass,structureLabelName} from './laterality';
 import {PointerTap} from './pointer-tap';
 import {sectionDot,sectionFraction,sectionNormal,sectionPlaneEquation,sectionPoint,sectionRange,type Bounds3,type Point3} from './section-plane';
 import {sectionCapGeometry} from './section-cap';
@@ -60,24 +75,29 @@ import {createSectionAssemblyCache} from './section-assembly';
 import {sectionCapOpacity} from './section-opacity';
 import {sectionSetBounds} from './section-set';
 import {enabledSections,sectionPlaneOnlyChange} from './section-stack';
-import {SYSTEMS,structureName,type Atlas,type SceneState,type SystemId} from './anatomy';
+import {SYSTEMS,type Atlas,type SceneState,type SystemId} from './anatomy';
 import {DEPTH_LAYERS,isSkinPart} from './depth-layers';
 import {depthLayerOpacity,depthPosition,partLayerOpacity,setDepthPosition} from './depth-control';
 import type {SceneCapture} from './export-tools';
 import type {CaptureSize,SceneFrameCapture} from './page-capture';
 import type {VrAnatomy} from './vr-anatomy';
 import type {ScenePose} from './connect-state';
-import {applyFrame,captureCameraPose,captureFrame,cameraPoseForFrame,decodeFrame,frameDistance,immersiveArea,interpolateCameraPose,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea,type CameraPose,type ViewArea,type ViewRect} from './view-framing';
+import {applyFrame,fitViewToAspect,captureCameraPose,captureFrame,cameraPoseForFrame,decodeFrame,frameDistance,immersiveArea,interpolateCameraPose,preferredAnchor,screenAnchor,setFrameOffset,usableViewArea,type CameraPose,type ViewArea,type ViewRect} from './view-framing';
 import {validCamera} from '../shared/camera-frame.mjs';
 import {captureRawSceneCamera,restoreRawSceneCamera,rememberSceneCamera,resumeSceneCamera,sceneCameraIntent} from './scene-camera-persistence';
-interface Props {cameraNavigation?:number;labelChoice?:HierarchyChoice;onSelectLabel?:(choice:HierarchyChoice)=>void;componentsExpanded?:boolean;onShowLabelComponents?:(ids:string[],choice?:HierarchyChoice)=>void;visitProgressRef?:{current:number};visitPoints?:[number,number,number][];visitSegments?:AlimentaryVisit['segments'];visit?:VisitState;onVisitEnd?:()=>void;atlas:Atlas;vrModelUrl:string;state:SceneState;hierarchy:ExplodeHierarchy;guestHierarchy?:GuestHierarchy;remotePoseRef?:{current:ScenePose|null};remoteModel?:string;onPose?:(pose:Omit<ScenePose,'model'>)=>void;cameraTransition?:{id:number;from:number[]};sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onSelect:(id:string,toggle?:boolean)=>void;onHidePart:(id:string,peel?:boolean)=>void;onCamera?:(camera:number[])=>void;onCovering?:(ids:string[])=>void;onExplosionSteps?:(steps:number)=>void;onCapture?:(capture:SceneCapture|null)=>void;onFrameCapture?:(capture:SceneFrameCapture|null)=>void;onProgress:(n:number)=>void;onError:(s:string)=>void}
-type SceneMaterial={hepaticSurface?:boolean;nativeMaleEye?:boolean;skinLips?:boolean;fiberAppearance?:boolean;alphaDither?:boolean;alphaTest?:number;ocularSurface?:boolean;skinToneGain?:[number,number,number];skinToneNeckGain?:[number,number,number];skinEyes?:SkinEyeAppearance;skinDetail?:SkinDetail;polygonOffset?:boolean;polygonOffsetFactor?:number;polygonOffsetUnits?:number;gastricRelief?:{heightMap:string;scale:number};geometryOrigin?:[number,number,number];tissueAppearance?:TissueAppearance;appearance?:EmbryoSurface;color:number[];map?:string;surfaceMapping?:'object-triplanar';normalMap?:string;normalScale?:number;roughness?:number;metalness?:number;opacity?:number;vertexColors?:boolean};
-export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLabel,componentsExpanded=false,onShowLabelComponents,visitProgressRef,visitPoints,visitSegments,visit,onVisitEnd,atlas,vrModelUrl,state,hierarchy,guestHierarchy,remotePoseRef,remoteModel,onPose,cameraTransition,sectionTool=false,onSectionPosition,onSelect,onHidePart,onCamera,onCovering,onExplosionSteps,onCapture,onFrameCapture,onProgress,onError}:Props){
+import {captureSceneWorldPose,restoreSceneWorldPose} from './scene-world-pose';
+interface Props {cameraNavigation?:number;labelChoice?:HierarchyChoice;onSelectLabel?:(choice:HierarchyChoice)=>void;componentsExpanded?:boolean;onShowLabelComponents?:(ids:string[],choice?:HierarchyChoice)=>void;visitProgressRef?:{current:number};visitPoints?:[number,number,number][];visitSegments?:AlimentaryVisit['segments'];visit?:VisitState;onVisitEnd?:()=>void;atlas:Atlas;vrModelUrl:string;state:SceneState;hierarchy:ExplodeHierarchy;guestHierarchy?:GuestHierarchy;remotePoseRef?:{current:ScenePose|null};comparisonPoseRef?:{current:ScenePose|null};savedPoseRef?:{current:ScenePose|null};remoteModel?:string;onPose?:(pose:Omit<ScenePose,'model'>)=>void;cameraTransition?:{id:number;from:number[]};sectionTool?:boolean;onSectionPosition?:(position:number)=>void;onSelect:(id:string,toggle?:boolean)=>void;onHidePart:(id:string,peel?:boolean)=>void;onCamera?:(camera:number[])=>void;onCovering?:(ids:string[])=>void;onExplosionSteps?:(steps:number)=>void;onCapture?:(capture:SceneCapture|null)=>void;onFrameCapture?:(capture:SceneFrameCapture|null)=>void;onProgress:(n:number)=>void;onError:(s:string)=>void}
+type SceneMaterial={geometryInstance?:{rotation:[number,number,number,number];scale:number};pairedNormalSigns?:boolean;hepaticSurface?:boolean;nativeMaleEye?:boolean;skinLips?:boolean;fiberAppearance?:boolean;alphaDither?:boolean;alphaTest?:number;ocularSurface?:boolean;skinToneGain?:[number,number,number];skinToneNeckGain?:[number,number,number];skinEyes?:SkinEyeAppearance;skinDetail?:SkinDetail;polygonOffset?:boolean;polygonOffsetFactor?:number;polygonOffsetUnits?:number;gastricRelief?:{heightMap:string;scale:number};geometryOrigin?:[number,number,number];tissueAppearance?:TissueAppearance;appearance?:EmbryoSurface;color:number[];map?:string;surfaceMapping?:'object-triplanar';normalMap?:string;normalScale?:number;roughness?:number;metalness?:number;opacity?:number;vertexColors?:boolean};
+export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLabel,componentsExpanded=false,onShowLabelComponents,visitProgressRef,visitPoints,visitSegments,visit,onVisitEnd,atlas,vrModelUrl,state,hierarchy,guestHierarchy,remotePoseRef,comparisonPoseRef,savedPoseRef,remoteModel,onPose,cameraTransition,sectionTool=false,onSectionPosition,onSelect,onHidePart,onCamera,onCovering,onExplosionSteps,onCapture,onFrameCapture,onProgress,onError}:Props){
  const labelItems=useMemo(()=>selectedAnatomyLabels(atlas,state.selected,labelChoice,componentsExpanded||state.explode>0),[atlas,state.selected,labelChoice?.id,labelChoice?.name,labelChoice?.elements.join('|'),labelChoice?.children,componentsExpanded,state.explode>0]);
  const labelTargets=useMemo(()=>layerLabelTargets(labelItems,atlas.parts,atlas.concepts),[labelItems,atlas]);
  const labelTargetsRef=useRef(labelTargets);labelTargetsRef.current=labelTargets;
  const selectLabelRef=useRef(onSelectLabel);selectLabelRef.current=onSelectLabel;
  const labelItemsRef=useRef(labelItems),showLabelComponentsRef=useRef(onShowLabelComponents);labelItemsRef.current=labelItems;showLabelComponentsRef.current=onShowLabelComponents;
+ const liverBoundaryRef=useRef(selectedLiverBoundary(atlas,labelChoice));liverBoundaryRef.current=selectedLiverBoundary(atlas,labelChoice);
+ const liverSurfaceRef=useRef(selectedCarotidSurfaceFeature(atlas,labelChoice)??selectedTongueSurfaceFeature(atlas,labelChoice)??selectedCardiacSurfaceFeature(atlas,labelChoice)??selectedLiverSurfaceFeature(atlas,labelChoice));liverSurfaceRef.current=selectedCarotidSurfaceFeature(atlas,labelChoice)??selectedTongueSurfaceFeature(atlas,labelChoice)??selectedCardiacSurfaceFeature(atlas,labelChoice)??selectedLiverSurfaceFeature(atlas,labelChoice);
+ const tongueFibreRef=useRef(tongueFibreWeights(atlas,labelChoice));tongueFibreRef.current=tongueFibreWeights(atlas,labelChoice);
+ const cardiacReferenceRef=useRef(selectedCardiacLabelSite(atlas,labelChoice));cardiacReferenceRef.current=selectedCardiacLabelSite(atlas,labelChoice);
  const guestNodes=useMemo(()=>guestHierarchy?resolveGuestHierarchy(atlas,guestHierarchy):undefined,[atlas,guestHierarchy]);
  const travelProgressRef=useRef(visitProgressRef);travelProgressRef.current=visitProgressRef;
  const visitPointsRef=useRef(visitPoints);visitPointsRef.current=visitPoints;
@@ -86,9 +106,12 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
  const host=useRef<HTMLDivElement>(null),latest=useRef(state),transitionRef=useRef(cameraTransition),hierarchyRef=useRef(hierarchy),guestNodesRef=useRef(guestNodes),guestKeyRef=useRef(''),sectionToolRef=useRef(sectionTool),sectionPositionRef=useRef(onSectionPosition),select=useRef(onSelect),hidePart=useRef(onHidePart),cameraCallback=useRef(onCamera),coveringCallback=useRef(onCovering),stepsCallback=useRef(onExplosionSteps);
  latest.current=state;transitionRef.current=cameraTransition;hierarchyRef.current=hierarchy;guestNodesRef.current=guestNodes;guestKeyRef.current=guestHierarchy?`${guestHierarchy.id}:${guestHierarchy.revision??0}:${guestHierarchy.roots?.join(',')??guestHierarchy.source??''}`:'';sectionToolRef.current=sectionTool;sectionPositionRef.current=onSectionPosition;select.current=onSelect;hidePart.current=onHidePart;cameraCallback.current=onCamera;coveringCallback.current=onCovering;stepsCallback.current=onExplosionSteps;
  const navigationRef=useRef(cameraNavigation);navigationRef.current=cameraNavigation;
+ const comparisonRef=useRef(comparisonPoseRef);comparisonRef.current=comparisonPoseRef;
+ const savedUrlPose=useRef(savedPoseRef);savedUrlPose.current=savedPoseRef;
  const remoteRef=useRef(remotePoseRef),remoteModelRef=useRef(remoteModel),poseCallback=useRef(onPose);remoteRef.current=remotePoseRef;remoteModelRef.current=remoteModel;poseCallback.current=onPose;
  useEffect(()=>{
   const el=host.current!,cameraOwner=el.closest('.studio')??el,sceneModel=remoteModel??vrModelUrl;
+  const initialSavedIntent={view:latest.current.view,reset:latest.current.reset,focus:latest.current.focus??0};
   const restart=remoteRef.current?undefined:resumeSceneCamera(cameraOwner,sceneCameraIntent(sceneModel,navigationRef.current,latest.current,transitionRef.current?.id));
   let appliedCameraIntent=restart?.intent;
   let disposed=false,frame=0,dirty=true,ready=false,lastView=restart?latest.current.view:'',lastReset=restart?latest.current.reset:-1,layoutKey='',amount=restart?.explosion.amount??0;
@@ -109,6 +132,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
   const syncCaptureResolution=()=>{const normal=Math.min(devicePixelRatio,el.clientWidth<768||el.clientHeight<600?1.5:2),ratio=captureSize?Math.min(captureSize.width/Math.max(1,el.clientWidth),captureSize.height/Math.max(1,el.clientHeight)):normal;if(renderer.getPixelRatio()!==ratio){renderer.setPixelRatio(ratio);dirty=true;return true;}return false;};
   const rememberPageFrame=()=>{if(!pageCaptureCanvas)return;const source=renderer.domElement;if(pageCaptureCanvas.width!==source.width||pageCaptureCanvas.height!==source.height){pageCaptureCanvas.width=source.width;pageCaptureCanvas.height=source.height;}pageCaptureCanvas.getContext('2d')?.drawImage(source,0,0);};
   const scene=new T.Scene(),camera=new T.PerspectiveCamera(34,1,.01,100),controls=new OrbitControls(camera,renderer.domElement);
+  const discardSavedPose=()=>{if(savedUrlPose.current)savedUrlPose.current.current=null;};controls.addEventListener('start',discardSavedPose);
   const desktopAnatomy=new T.Group();scene.add(desktopAnatomy);
   const questVr=/OculusBrowser|Quest 2/i.test(navigator.userAgent),vrPreview=import.meta.env.DEV&&new URLSearchParams(location.search).has('vr-preview');
   let vrAnatomy:VrAnatomy|null=null,vrPreparation:Promise<void>|null=null,xrSupported=false,xrArSupported=false,lightweightActive=false;
@@ -123,8 +147,8 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
   let xrInfoText='';
   const updateXrInfo=(message:string)=>{if(message===xrInfoText)return;xrInfoText=message;const ctx=xrInfoCanvas.getContext('2d');if(!ctx)return;ctx.clearRect(0,0,1024,256);ctx.fillStyle='rgba(24,39,51,.9)';ctx.beginPath();ctx.roundRect(0,0,1024,256,28);ctx.fill();ctx.textAlign='center';ctx.fillStyle='#d9f5f1';ctx.font='bold 46px Arial';ctx.fillText(message.length>38?`${message.slice(0,35)}…`:message,512,116);ctx.fillStyle='#a8bbc0';ctx.font='28px Arial';ctx.fillText(questVr&&xrActiveMode==='immersive-vr'?'L trigger: peel   R trigger + left turn: orbit   L stick: zoom':'Trigger: select     Left stick: move closer or farther',512,186);xrInfoTexture.needsUpdate=true;};
   updateXrInfo('Human Atlas');
-  camera.position.set(1.4,1.05,3.6);controls.target.set(0,.85,0);controls.zoomToCursor=true;controls.enableDamping=true;controls.dampingFactor=.085;controls.minDistance=.003;controls.maxDistance=6;controls.zoomSpeed=1.25;controls.maxPolarAngle=Math.PI-.001;controls.addEventListener('change',()=>{dirty=true;});
-  if(restart){restoreRawSceneCamera(camera,controls.target,restart.pose);controls.minDistance=restart.minDistance;controls.maxDistance=restart.maxDistance;}
+  camera.position.set(1.4,1.05,3.6);controls.target.set(0,.85,0);controls.zoomToCursor=true;controls.enableDamping=true;controls.dampingFactor=.085;controls.minDistance=0;controls.maxDistance=Infinity;controls.zoomSpeed=1.25;controls.maxPolarAngle=Math.PI-.001;controls.addEventListener('change',()=>{const near=Math.max(.00001,Math.min(.01,camera.position.distanceTo(controls.target)/50));const far=Math.max(100,camera.position.distanceTo(controls.target)*20);if(Math.abs(camera.near-near)>near*.05||camera.far<far){camera.near=near;camera.far=Math.max(camera.far,far);camera.updateProjectionMatrix();}dirty=true;});
+  if(restart){restoreRawSceneCamera(camera,controls.target,restart.pose);controls.minDistance=0;controls.maxDistance=Infinity;}
   const pmrem=new T.PMREMGenerator(renderer),room=new RoomEnvironment(),env=pmrem.fromScene(room,.04);scene.environment=env.texture;scene.environmentIntensity=referenceModel ? .7 : 1;room.dispose();pmrem.dispose();
   const hemisphere=new T.HemisphereLight(0xffffff,0x8c97a0,referenceModel ? .55 : .8);scene.add(hemisphere);
   const key=new T.DirectionalLight(0xfffaf4,referenceModel?1.65:2.05);key.position.set(-2,4,3);scene.add(key);
@@ -163,6 +187,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
   const keptBySections=(point:T.Vector3)=>clipPlanes.every(plane=>plane.distanceToPoint(point)>=-.00001);
   const metricHairPicking=new Map<number,MetricHairPicking>();
   const surfaceHitVisible=(index:number,hit:T.Intersection)=>{
+   if((atlas.parts[index] as {liverComputationalFaces?:number[]}).liverComputationalFaces?.includes(hit.faceIndex??-1))return false;
    const hair=metricHairPicking.get(index);if(hair&&pickers[index])return hair.hit(raycaster.ray,hit.point,pickers[index]!.matrixWorld);
    const source=atlas.materials?.[atlas.parts[index].material??''];if(!hit.uv)return true;
    if(source?.skinEyes&&skinEyeHoleAt(source.skinEyes,hit.uv))return false;
@@ -254,6 +279,9 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    return new T.Box3(new T.Vector3().fromArray(sectionBounds.min),new T.Vector3().fromArray(sectionBounds.max));
   };
   const contextUniform={value:1},sectionActiveUniform={value:0};
+  const fingerPreview=createFingerSurfacePreview(
+   (atlas as Atlas & {fingerSurfacePreview?:FingerSurfacePreview}).fingerSurfacePreview,
+   partIndices,width,abort.signal,()=>{dirty=true;});
   const textures=new Map<string,T.Texture>(),textureImages=new Set<TextureImage>();
   const textureFor=(url:string,normal=false)=>{
    const key=`${normal?'normal':'color'}:${url}`;
@@ -283,18 +311,19 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    if(/\b(pleura|peritone\w*|pericardi\w*|omentum|mesenter\w*|mesocolon|serosa)\b/i.test(part.name))return 'serosa';
    if(part.system==='fascia'||/\b(fascia|aponeurosis|capsule|membrane)\b/i.test(part.name))return 'fascia';
   };
-  const materialFor=(system:string,ghost=false,source?:SceneMaterial,skinSensitive=system==='integumentary'||system==='regions'||system==='cell-boundary',innerFace?:InnerFace)=>{
+  const materialFor=(system:string,ghost=false,source?:SceneMaterial,skinSensitive=system==='integumentary'||system==='regions'||system==='cell-boundary',innerFace?:InnerFace,pose?:OrganRenderPose)=>{
    const color=source?.color?`#${source.color.map(value=>Math.round(Math.max(0,Math.min(255,value))).toString(16).padStart(2,'0')).join('')}`:system==='tendon'?'#d6c8b0':system==='cartilage'?'#afc0cb':SYSTEMS.find(s=>s.id===system)?.color??'#aebbb8';
    const m=new T.MeshStandardMaterial({alphaTest:source?.alphaDither?0:source?.alphaTest??0,polygonOffset:source?.polygonOffset??false,polygonOffsetFactor:source?.polygonOffsetFactor??0,polygonOffsetUnits:source?.polygonOffsetUnits??0,color,map:source?.map?textureFor(source.map):null,normalMap:source?.normalMap?textureFor(source.normalMap,true):null,normalScale:new T.Vector2(source?.normalScale??1,source?.normalScale??1),vertexColors:!!source?.vertexColors,metalness:referenceModel?Math.min(.08,source?.metalness??.02):source?.metalness??.02,roughness:referenceModel?Math.max(.63,source?.roughness??.76):source?.roughness??.76,side:T.DoubleSide,transparent:ghost,opacity:1,depthWrite:!ghost,clippingPlanes:clipPlanes});
    const muscleSurface=system==='muscular'&&!source?.tissueAppearance&&!source?.map&&atlas.scope!=='embryo';
    const projectedSurface=source?.map&&source.surfaceMapping==='object-triplanar';
    const embryoSurface=atlas.scope==='embryo'&&source?.appearance?embryoSurfaceShader(source.appearance):null;
-   m.customProgramCacheKey=()=>JSON.stringify(source?.tissueAppearance??null)+':'+system+':'+ghost+':'+skinSensitive+':'+muscleSurface+':'+innerFace+':'+(source?.appearance??'')+':'+(source?.surfaceMapping??'')+':'+(source?.alphaDither?'dither':source?.alphaTest??0)+':opacity:'+(source?.opacity??1);
+   m.customProgramCacheKey=()=>JSON.stringify(source?.tissueAppearance??null)+':'+system+':'+ghost+':'+skinSensitive+':'+muscleSurface+':'+innerFace+':'+(source?.appearance??'')+':'+(source?.surfaceMapping??'')+':'+(source?.alphaDither?'dither':source?.alphaTest??0)+':opacity:'+(source?.opacity??1)+':part-instance:'+!!pose?.geometryInstance+':finger-preview:'+!!fingerPreview;
    m.onBeforeCompile=shader=>{
-    shader.uniforms.geometryOrigin={value:new T.Vector3().fromArray(source?.geometryOrigin??[0,0,0])};shader.uniforms.contextOpacity=contextUniform;shader.uniforms.partState={value:partTexture};shader.uniforms.selectionState={value:selectionTexture};shader.uniforms.rotationState={value:rotationTexture};shader.uniforms.stateWidth={value:width};shader.uniforms.rotationPivots={value:rotationPivotTexture};shader.uniforms.selectionRotation=rotationUniform;shader.uniforms.selectionPivot=pivotUniform;
+    shader.uniforms.geometryOrigin={value:new T.Vector3().fromArray(pose?.geometryOrigin??[0,0,0])};shader.uniforms.contextOpacity=contextUniform;shader.uniforms.partState={value:partTexture};shader.uniforms.selectionState={value:selectionTexture};shader.uniforms.rotationState={value:rotationTexture};shader.uniforms.stateWidth={value:width};shader.uniforms.rotationPivots={value:rotationPivotTexture};shader.uniforms.selectionRotation=rotationUniform;shader.uniforms.selectionPivot=pivotUniform;
     shader.vertexShader='uniform vec3 geometryOrigin; attribute float partIndex; uniform sampler2D partState; uniform sampler2D selectionState; uniform sampler2D rotationState; uniform sampler2D rotationPivots; uniform float stateWidth; uniform vec4 selectionRotation; uniform vec3 selectionPivot; varying float partVisible; varying float partSelected; varying float partOpacity; vec3 rotateSelected(vec3 v){return v+2.0*cross(selectionRotation.xyz,cross(selectionRotation.xyz,v)+selectionRotation.w*v);}\n'+shader.vertexShader;
     shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\nif (texture2D(rotationState,vec2((partIndex+0.5)/stateWidth,0.5)).r>0.5) objectNormal=rotateSelected(objectNormal);');
     shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvec2 stateUv = vec2((partIndex + 0.5) / stateWidth, 0.5); vec4 state = texture2D(partState, stateUv); transformed += state.xyz; partVisible = state.w; vec4 selection=texture2D(selectionState,stateUv); partSelected=selection.r; partOpacity=selection.g; if(texture2D(rotationState,stateUv).r>0.5){vec3 pivot=texture2D(rotationPivots,stateUv).xyz-geometryOrigin;transformed=pivot+rotateSelected(transformed-pivot);}');
+    applyOrganRenderPose(shader,pose);
     if(projectedSurface){
      shader.vertexShader=triplanarSurfaceTexture.vertex+shader.vertexShader;
      shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>'+triplanarSurfaceTexture.position);
@@ -310,6 +339,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     }
     shader.fragmentShader='uniform float contextOpacity; varying float partVisible; varying float partSelected; varying float partOpacity;\n'+shader.fragmentShader;
     shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif (partVisible < 0.5) discard;');
+    fingerPreview?.apply(shader);
     shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',`#include <color_fragment>
      ${source?.alphaDither?`float hairCoverageNoise=fract(sin(dot(floor(gl_FragCoord.xy),vec2(12.9898,78.233)))*43758.5453);if(diffuseColor.a<hairCoverageNoise)discard;`:source?.alphaTest?`if(diffuseColor.a < ${source.alphaTest.toFixed(6)})discard;`:''}
      float tissueAlpha = (partSelected > 0.5 ? 1.0 : contextOpacity) * partOpacity * ${(source?.opacity??1).toFixed(6)};
@@ -351,8 +381,10 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
      `+shader.fragmentShader;
      shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>','#include <color_fragment>\ndiffuseColor.rgb=mix(diffuseColor.rgb,muscleColor(),.83);');
     }
-   };if(source?.tissueAppearance){const tissue=tissueWallMaterial(source.tissueAppearance),base=m.onBeforeCompile;
-    m.onBeforeCompile=(shader,renderer)=>{base(shader,renderer);tissue.material.onBeforeCompile(shader,renderer);shader.vertexShader='attribute float normalSign;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\nobjectNormal*=normalSign;');};tissue.material.dispose();}
+   };if(source?.tissueAppearance){const tissue=tissueWallMaterial(source.tissueAppearance,undefined,false,pose?.geometryOrigin),base=m.onBeforeCompile;
+    if(source.tissueAppearance.fibres?.control==='tongue-tv')m.userData.tongueFibreWeights=tissue.fibreWeights;
+    m.onBeforeCompile=(shader,renderer)=>{base(shader,renderer);tissue.material.onBeforeCompile(shader,renderer);};tissue.material.dispose();}
+   if(source?.tissueAppearance||source?.pairedNormalSigns)applyPairedNormalSigns(m);
    if(source?.gastricRelief)applyGastricRelief(m,textureFor(source.gastricRelief.heightMap,true),source.gastricRelief.scale);
    if(source?.skinDetail)applySkinDetail(m,textureFor(source.skinDetail.map),source.skinDetail);
    if(source?.fiberAppearance)applyMetricHairMaterial(m);
@@ -364,7 +396,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    if(source?.hepaticSurface)applyHepaticSurface(m);
    applySafeSurfaceNormals(m);materials.push(m);return m;
   };
-  const materialSpecs=new Map<string,{system:string;source?:SceneMaterial;skinSensitive?:boolean;innerFace?:InnerFace}>([...SYSTEMS.map(s=>s.id),'tendon','cartilage'].map(id=>[id,{system:id}]));
+  const materialSpecs=new Map<string,{system:string;source?:SceneMaterial;skinSensitive?:boolean;innerFace?:InnerFace;pose?:OrganRenderPose}>([...SYSTEMS.map(s=>s.id),'tendon','cartilage'].map(id=>[id,{system:id}]));
   materialSpecs.set('integumentary:internal',{system:'integumentary',skinSensitive:false});
   if(atlas.version==='BodyParts3D 4.0')materialSpecs.set('integumentary:paired-skin',{system:'integumentary',skinSensitive:true,innerFace:'skin'});
   const spleenColor:[number,number,number]=[123,65,84];
@@ -372,24 +404,31 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
   // Female source caps provide the visible eye interior, not retina tissue.
   const darkEyeInteriorIds=new Set(['ZA:Retina.l','ZA:Retina.r','HRA:VH_F_retina_L','HRA:VH_F_retina_R','LOCAL:female:r_pupil:177','LOCAL:female:l_pupil:179']);
   const darkEyeInterior=(part:typeof atlas.parts[number])=>darkEyeInteriorIds.has(part.id);
-  for(const part of atlas.parts)if(part.material&&atlas.materials?.[part.material]){
-   const original=atlas.materials[part.material],taenia=colonicTaeniaFinish(part),hepatic=hepaticSurfaceFinish(part),source=hepatic?{...original,...hepatic}:taenia?{...original,...taenia}:original;
+  for(const part of atlas.parts)if(!part.suppressed&&part.material&&(atlas.materials?.[part.material]||hepaticSurfaceFinish(part))){
+   const original=atlas.materials?.[part.material]??{color:[107,61,43] as [number,number,number],roughness:.68,metalness:0},taenia=colonicTaeniaFinish(part),hepatic=hepaticSurfaceFinish(part),carotid=carotidBodySurfaceFinish(part),source=hepatic?{...original,...hepatic}:taenia?{...original,...taenia}:carotid?{...original,...carotid}:original;
    const internal=part.system==='integumentary'&&!isSkinPart(part);
    const innerFace=innerFaceFor(part);
    const spleen=/^spleen(?:\s|$)/i.test(part.name);
-   materialSpecs.set(`source:${part.system}:${part.material}${internal?':internal':''}${innerFace?`:${innerFace}`:''}${spleen?':spleen':''}${darkEyeInterior(part)?':black-eye-interior':''}${colonicTaeniaFinish(part)?':colonic-smooth-muscle':''}${hepaticSurfaceFinish(part)?':hepatic-gross-surface':''}`,{system:part.system,skinSensitive:isSkinPart(part),innerFace,source:darkEyeInterior(part)?{...source,color:[0,0,0],map:undefined,normalMap:undefined,metalness:0,roughness:1}:spleen&&!part.material.endsWith(':reviewed-spleen')?{...source,color:spleenColor,map:undefined,normalMap:undefined}:source});
+   materialSpecs.set(`source:${part.system}:${part.material}${internal?':internal':''}${innerFace?`:${innerFace}`:''}${spleen?':spleen':''}${darkEyeInterior(part)?':black-eye-interior':''}${colonicTaeniaFinish(part)?':colonic-smooth-muscle':''}${hepaticSurfaceFinish(part)?':hepatic-gross-surface':''}`+organRenderPoseKey(part),{system:part.system,skinSensitive:isSkinPart(part),innerFace,pose:part,source:darkEyeInterior(part)?{...source,color:[0,0,0],map:undefined,normalMap:undefined,metalness:0,roughness:1}:spleen&&!part.material.endsWith(':reviewed-spleen')?{...source,color:spleenColor,map:undefined,normalMap:undefined}:source});
   }
   const materialKeyFor=(part:typeof atlas.parts[number])=>{
    const innerFace=innerFaceFor(part);
    const spleen=/^spleen(?:\s|$)/i.test(part.name);
    if(pairedSkinPart(part)&&!part.material)return 'integumentary:paired-skin';
-   return part.material&&atlas.materials?.[part.material]?`source:${part.system}:${part.material}${part.system==='integumentary'&&!isSkinPart(part)?':internal':''}${innerFace?`:${innerFace}`:''}${spleen?':spleen':''}${darkEyeInterior(part)?':black-eye-interior':''}${colonicTaeniaFinish(part)?':colonic-smooth-muscle':''}${hepaticSurfaceFinish(part)?':hepatic-gross-surface':''}`:part.tissue==='tendon'||part.tissue==='cartilage'?part.tissue:part.system==='integumentary'&&!isSkinPart(part)?'integumentary:internal':part.system;
+    return (part.material&&(atlas.materials?.[part.material]||hepaticSurfaceFinish(part))?`source:${part.system}:${part.material}${part.system==='integumentary'&&!isSkinPart(part)?':internal':''}${innerFace?`:${innerFace}`:''}${spleen?':spleen':''}${darkEyeInterior(part)?':black-eye-interior':''}${colonicTaeniaFinish(part)?':colonic-smooth-muscle':''}${hepaticSurfaceFinish(part)?':hepatic-gross-surface':''}`:part.tissue==='tendon'||part.tissue==='cartilage'?part.tissue:part.system==='integumentary'&&!isSkinPart(part)?'integumentary:internal':part.system)+organRenderPoseKey(part);
   };
-  const mats=new Map([...materialSpecs].map(([key,{system,source,skinSensitive,innerFace}])=>[key,materialFor(system,false,source,skinSensitive,innerFace)])),ghostMats=new Map([...materialSpecs].map(([key,{system,source,skinSensitive,innerFace}])=>[key,materialFor(system,true,source,skinSensitive,innerFace)]));
+  for(const part of atlas.parts){if(part.suppressed)continue;const key=materialKeyFor(part);if(!materialSpecs.has(key)&&organRenderPoseKey(part))materialSpecs.set(key,{system:part.system,skinSensitive:isSkinPart(part),innerFace:innerFaceFor(part),pose:part});}
+  const mats=new Map([...materialSpecs].map(([key,{system,source,skinSensitive,innerFace,pose}])=>[key,materialFor(system,false,source,skinSensitive,innerFace,pose)])),ghostMats=new Map([...materialSpecs].map(([key,{system,source,skinSensitive,innerFace,pose}])=>[key,materialFor(system,true,source,skinSensitive,innerFace,pose)]));
+  const tongueFibreUniforms=[...mats.values(),...ghostMats.values()].flatMap(m=>m.userData.tongueFibreWeights?[m.userData.tongueFibreWeights as {value:T.Vector2}]:[]);let lastTongueFibreKey='';
   // Cut patterns use plane coordinates, so source meshes need no UVs. Keep
   // them on cap geometry; a cut texture must never stain the exterior mesh.
   const capPalette:Record<string,number>={muscular:0xB0605A,cardiac:0xAE3239,skeletal:0xCBA286,arterial:0xC8393F,venous:0x466FBA,nervous:0xE7C55C,lymphatic:0x7FB894,connective:0xB7B4AB,fascia:0xBEA99C,serosa:0xBC8B82,adipose:0xD8BE91,cartilage:0x86AEBD,tendon:0xC3B79B,lung:0xD99DA3,liver:0xA85A62,spleen:0xCBA85E,cns:0xC4BBB2,organ:0xB98580,integumentary:0xBBAA9F,attachments:0x8E5049};
   const stencilCaps=createStencilCaps(desktopAnatomy,clipPlanes as [T.Plane,T.Plane],url=>textureFor(url));
+  const surfaceFeatureOverlay=createSurfaceFeatureOverlay(desktopAnatomy,clipPlanes);
+  const cardiacReferenceOverlay=createCardiacReferenceOverlay(desktopAnatomy,clipPlanes,atlas);let lastCardiacReference:unknown;
+  const liverBoundaryOverlay=createLiverBoundaryOverlay(desktopAnatomy,clipPlanes);let lastLiverBoundary='',liverBoundaryIndex=-1;
+  let lastSurfaceFeature='',surfaceFeatureIndex=-1;
+  const sectionVolumes=new Map<number,{geometry:T.BufferGeometry;exclusions:T.BufferGeometry[]}>();
   const sectionAssemblies=createSectionAssemblyCache();
   const tissueDisplays:{index:number;geometry:T.BufferGeometry}[]=[];
   const gastricRims:{index:number;neighbor:number;mesh:T.Mesh<T.BufferGeometry,T.MeshStandardMaterial>}[]=[];
@@ -440,14 +479,15 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    const changed=key!==capKey;capKey=key;
    if(changed){++capGeneration;clearTimeout(capTimer);capTimer=0;capQueue.length=0;pendingCapSignatures.clear();clearCaps();}
    if(!cuts.length){stencilCaps.update([]);sectionAssemblies.collect([]);return;}
-   const visibleCandidates:CapCandidate[]=cuts.flatMap(({index:cutIndex})=>{
+   const rawVisibleCandidates:CapCandidate[]=cuts.flatMap(({index:cutIndex})=>{
     const plane=clipPlanes[cutIndex].clone();
     return atlas.parts.map((part,index)=>({part,index,cutIndex,plane})).filter(({part,index})=>{
-     if(part.sectionSolid===false&&!part.sectionAssembly)return false;
+     if(part.sectionSolid===false&&!part.sectionAssembly&&!sectionVolumes.has(index))return false;
      if(!pickers[index]||!sectionPartVisible(part,s)||sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1)<.001)return false;
      return true;
     });
    });
+   const visibleCandidates=filterSectionClosureCandidates(rawVisibleCandidates,({index})=>pickers[index]?.matrixWorld);
 
    const candidates=visibleCandidates.filter(({part,cutIndex})=>{if(s.explode>.001)return true;const plane=clipPlanes[cutIndex],range=sectionRange({min:part.bounds[0] as Point3,max:part.bounds[1] as Point3},plane.normal.toArray() as Point3);return range.min<=-plane.constant+.0002&&range.max>=-plane.constant-.0002;});
    const translucentAssemblies=new Set(visibleCandidates.filter(({part})=>part.sectionAssembly&&sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1)<.999).map(({part,cutIndex})=>`${cutIndex}:${part.sectionAssembly}`));
@@ -463,7 +503,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     return sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1)>=.999;
    });
    const gpuStarted=performance.now();
-   stencilCaps.update([...assemblies.caps,...gpuCandidates.map(({part,index,cutIndex})=>{const profile=sectionCapProfile(part);return {part,index,cutIndex,geometry:pickers[index]!.geometry,matrix:pickers[index]!.matrixWorld,mode:part.pairedTissue?'solid' as const:profile.hollowWall||pairedSkinPart(part)?'wall' as const:'solid' as const,wallWidth:profile.width,closedWall:!!part.pairedTissue||atlas.hepaticBoundaryPreview?.closedBoundary===true&&atlas.hepaticBoundaryPreview.partId===part.id,opacity:sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1)};})]);
+   stencilCaps.update([...assemblies.caps,...gpuCandidates.map(({part,index,cutIndex})=>{const profile=sectionCapProfile(part),volume=sectionVolumes.get(index);return {part,index,cutIndex,geometry:volume?.geometry??pickers[index]!.geometry,exclusions:volume?.exclusions,matrix:pickers[index]!.matrixWorld,mode:part.pairedTissue?'solid' as const:profile.hollowWall||pairedSkinPart(part)?'wall' as const:'solid' as const,wallWidth:profile.width,closedWall:!!part.pairedTissue||atlas.hepaticBoundaryPreview?.closedBoundary===true&&atlas.hepaticBoundaryPreview.partId===part.id,opacity:sectionCapOpacity(part,s,atlas.materials?.[part.material??'']?.opacity??1)};})]);
    renderer.domElement.dataset.sectionGpuMs=(performance.now()-gpuStarted).toFixed(1);
    renderer.domElement.dataset.sectionCapCount=String(capMeshes.length+stencilCaps.activeCount());
    const gpuKeys=new Set([...assemblies.covered,...gpuCandidates.map(({index,cutIndex})=>`${cutIndex}:${index}`)]);
@@ -518,10 +558,11 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
   const cameraValues=()=>captureFrame(camera,controls.target,viewBounds,currentArea);
   controls.addEventListener('end',()=>cameraCallback.current?.(cameraValues()));
   let loaded=0,lastReportedProgress=0;
-  const chunkParts=Array.from({length:atlas.chunks.length},()=>[] as number[]);
-  atlas.parts.forEach((part,index)=>chunkParts[part.chunk].push(index));
-  const chunkUrls=atlas.chunks.map(chunk=>assetUrl(chunk.gzip??chunk.url));
-  const chunkSizes=atlas.chunks.map(chunk=>chunk.bytes),chunkOffsets:number[]=[];let chunkTotal=0;
+  const geometryChunks=atlas.systemGeometry?.chunks??atlas.chunks;
+  const chunkParts=Array.from({length:geometryChunks.length},()=>[] as number[]);
+  atlas.parts.forEach((part,index)=>chunkParts[atlas.systemGeometry?.parts.get(part.id)?.chunk??part.chunk].push(index));
+  const chunkUrls=geometryChunks.map(chunk=>assetUrl(chunk.gzip??chunk.url));
+  const chunkSizes=geometryChunks.map(chunk=>chunk.bytes),chunkOffsets:number[]=[];let chunkTotal=0;
   for(const size of chunkSizes){chunkOffsets.push(chunkTotal);chunkTotal+=size;}
   const onDemand=atlas.delivery?.mode==='on-demand';
   const demandMeshes:Array<{chunk:number;mesh:T.Mesh;ghost:T.Mesh;preview:T.Mesh;indices:number[]}>=[];
@@ -547,25 +588,33 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    return Number(selected(b))-Number(selected(a))||surface(b)-surface(a)||cutCounts[b]-cutCounts[a]||distal(b)-distal(a)||a-b;
   });
   const loadChunk=async(ci:number,signal=abort.signal)=>{
-   const chunk=atlas.chunks[ci],compressed=!!chunk.gzip;const buffer=bundleBuffer??await loadModelBuffer(chunkUrls[ci],chunk.bytes,compressed,signal);if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');
+   const chunk=geometryChunks[ci],compressed=!!chunk.gzip;const buffer=bundleBuffer??await loadModelBuffer(chunkUrls[ci],chunk.bytes,compressed,signal);if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');
    if(!bundleBuffer)cachedBuffers[ci]=buffer;
    const offset=bundleBuffer?chunkOffsets[ci]:0;
    const groups=new Map<string,T.BufferGeometry[]>(),sharedAttributes=new Map<string,T.BufferAttribute>();
    const sharedAttribute=(key:string,make:()=>T.BufferAttribute)=>{let attribute=sharedAttributes.get(key);if(!attribute){attribute=make();sharedAttributes.set(key,attribute);}return attribute;};
    const owned:T.BufferGeometry[]=[];if(onDemand)chunkGeometry.set(ci,owned);
    const hairBuffers=new Map<number,ArrayBuffer>();
-   for(const i of chunkParts[ci]){const field=atlas.parts[i].hairField;if(!field)continue;const raw=await loadModelBuffer(assetUrl(field.url+'.gz'),field.bytes,true,signal);if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');hairBuffers.set(i,raw);metricHairPicking.set(i,new MetricHairPicking(field,raw));}
-   chunkParts[ci].forEach(i=>{const p=atlas.parts[i];
-    const positions=new Float32Array(buffer,offset+p.positions,p.vertexCount*3);
-    const g=new T.BufferGeometry();g.setAttribute('position',p.sourceOffset?new T.BufferAttribute(positions.slice(),3):sharedAttribute(`position:${p.positions}:${p.vertexCount}`,()=>new T.BufferAttribute(positions,3)));
+   for(const i of chunkParts[ci]){if(atlas.parts[i].suppressed)continue;const field=atlas.parts[i].hairField;if(!field)continue;const raw=await loadModelBuffer(assetUrl(field.url+'.gz'),field.bytes,true,signal);if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');hairBuffers.set(i,raw);metricHairPicking.set(i,new MetricHairPicking(field,raw));}
+   let workStarted=performance.now();
+   for(const i of chunkParts[ci]){const p=atlas.parts[i];
+    if(disposed||signal.aborted)throw new DOMException('Aborted','AbortError');
+    if(p.suppressed)continue;
+    const volume=liverSectionGeometry(atlas,p,buffer,offset,sharedAttribute);
+    if(volume){sectionVolumes.set(i,volume);for(const geometry of [volume.geometry,...volume.exclusions]){geometries.push(geometry);if(onDemand)owned.push(geometry);}}
+    const layout=atlas.systemGeometry?.parts.get(p.id)??p;
+    const positions=new Float32Array(buffer,offset+layout.positions,p.vertexCount*3),geometryScale=p.geometryScale??1;
+    if(!Number.isFinite(geometryScale)||geometryScale<=0)throw new Error('Invalid anatomy geometry scale.');
+    const scaledPositions=()=>geometryScale===1?positions:positions.map(x=>x*geometryScale);
+    const g=anatomyPartGeometry(p,i,atlas.parts.length);g.setAttribute('position',p.sourceOffset?new T.BufferAttribute(scaledPositions().slice(),3):sharedAttribute(`position:${layout.positions}:${p.vertexCount}:${geometryScale}`,()=>new T.BufferAttribute(scaledPositions(),3)));
     // GPU normalized signed-short normals keep the complete atlas compact in memory.
-    g.setAttribute('normal',sharedAttribute(`normal:${p.normals}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int16Array(buffer,offset+p.normals,p.vertexCount*3),3,true)));
-    if(p.normalSigns!==undefined)g.setAttribute('normalSign',sharedAttribute(`normalSign:${p.normalSigns}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int8Array(buffer,offset+p.normalSigns!,p.vertexCount),1)));
-    if(p.tissueChart!==undefined)g.setAttribute('tissueChart',sharedAttribute(`tissueChart:${p.tissueChart}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int16Array(buffer,offset+p.tissueChart!,p.vertexCount*3),3,true)));
-    if(p.gastricLumen!==undefined)g.setAttribute('gastricLumen',new T.BufferAttribute(new Uint8Array(buffer,offset+p.gastricLumen,p.vertexCount),1,true));
-    if(p.uvs!==undefined)g.setAttribute('uv',new T.BufferAttribute(new Float32Array(buffer,offset+p.uvs,p.vertexCount*2),2));
-    if(p.colors!==undefined)g.setAttribute('color',new T.BufferAttribute(new Uint8Array(buffer,offset+p.colors,p.vertexCount*3),3,true));
-    g.setIndex(new T.BufferAttribute(new Uint32Array(buffer,offset+p.indices,p.indexCount),1));
+    g.setAttribute('normal',sharedAttribute(`normal:${layout.normals}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int16Array(buffer,offset+layout.normals,p.vertexCount*3),3,true)));
+    if(layout.normalSigns!==undefined)g.setAttribute('normalSign',sharedAttribute(`normalSign:${layout.normalSigns}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int8Array(buffer,offset+layout.normalSigns!,p.vertexCount),1)));
+    if(layout.tissueChart!==undefined)g.setAttribute('tissueChart',sharedAttribute(`tissueChart:${layout.tissueChart}:${p.vertexCount}`,()=>new T.BufferAttribute(new Int16Array(buffer,offset+layout.tissueChart!,p.vertexCount*3),3,true)));
+    if(layout.gastricLumen!==undefined)g.setAttribute('gastricLumen',new T.BufferAttribute(new Uint8Array(buffer,offset+layout.gastricLumen,p.vertexCount),1,true));
+    if(layout.uvs!==undefined)g.setAttribute('uv',new T.BufferAttribute(new Float32Array(buffer,offset+layout.uvs,p.vertexCount*2),2));
+    if(layout.colors!==undefined)g.setAttribute('color',new T.BufferAttribute(new Uint8Array(buffer,offset+layout.colors,p.vertexCount*3),3,true));
+    g.setIndex(new T.BufferAttribute(new Uint32Array(buffer,offset+layout.indices,p.indexCount),1));
     if(p.sourceOffset)g.translate(p.sourceOffset[0],p.sourceOffset[1],p.sourceOffset[2]);
     if(innerFaceFor(p)){
      const position=g.getAttribute('position'),normal=g.getAttribute('normal'),innerSide=new Uint8Array(p.vertexCount);
@@ -580,8 +629,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
      const rim=gastricRegionRim(g),neighbor=atlas.parts.findIndex(part=>part.id==='TA98FEMALE:REGION:A05.5.01.012');
      if(rim&&neighbor>=0){const material=new T.MeshStandardMaterial({color:0xa86a60,roughness:.86,side:T.DoubleSide,clippingPlanes:clipPlanes}),mesh=new T.Mesh(rim,material);mesh.matrixAutoUpdate=false;mesh.visible=false;desktopAnatomy.add(mesh);geometries.push(rim);materials.push(material);gastricRims.push({index:i,neighbor,mesh});}
     }
-    g.boundingBox=organBounds(p).translate(organOrigin(p).negate());g.boundingSphere=bowelWallBoundingSphere(p);if(!g.boundingSphere)g.computeBoundingSphere();const pick=new T.Mesh(g,new T.MeshBasicMaterial({side:T.DoubleSide}));materials.push(pick.material);pick.matrixAutoUpdate=false;pick.position.copy(organOrigin(p));pick.updateMatrix();pick.updateMatrixWorld(true);pickers[i]=pick;geometries.push(g);
-    g.setAttribute('partIndex',new T.BufferAttribute(partIndexBuffer(i,p.vertexCount,atlas.parts.length),1));
+    if(p.geometryInstance)g.computeBoundingBox();else g.boundingBox=organBounds(p).translate(organOrigin(p).negate());g.boundingSphere=bowelWallBoundingSphere(p);if(!g.boundingSphere)g.computeBoundingSphere();const pick=new T.Mesh(g,new T.MeshBasicMaterial({side:T.DoubleSide}));materials.push(pick.material);pick.matrixAutoUpdate=false;pick.position.copy(organOrigin(p));pick.quaternion.copy(organOrientation(p));pick.scale.setScalar(organInstanceScale(p));pick.updateMatrix();pick.updateMatrixWorld(true);pickers[i]=pick;geometries.push(g);
     g.userData.atlasPartIndex=i;
     if(onDemand)owned.push(g);
     const materialKey=materialKeyFor(p);
@@ -594,18 +642,20 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
      if(onDemand)demandMeshes.push({chunk:ci,mesh,ghost,preview,indices:[i]});
     }else if(p.geometryOrigin){
      let displayed=g;
-     if(p.tissueDrawGroups){displayed=new T.BufferGeometry();for(const [name,attribute] of Object.entries(g.attributes))displayed.setAttribute(name,attribute);displayed.setIndex(g.getIndex());displayed.boundingBox=g.boundingBox;displayed.boundingSphere=g.boundingSphere;for(const group of p.tissueDrawGroups)displayed.addGroup(group.start,group.count,0);geometries.push(displayed);if(onDemand)owned.push(displayed);tissueDisplays.push({index:i,geometry:displayed});}
+     if(p.tissueDrawGroups){displayed=anatomyGeometryView(g);for(const group of p.tissueDrawGroups)if(!(group as {computationalOnly?:boolean}).computationalOnly)displayed.addGroup(group.start,group.count,0);geometries.push(displayed);if(onDemand)owned.push(displayed);tissueDisplays.push({index:i,geometry:displayed});}
      const mesh=new T.Mesh(displayed,p.tissueDrawGroups?[mats.get(materialKey)!]:mats.get(materialKey)!),ghost=new T.Mesh(displayed,p.tissueDrawGroups?[ghostMats.get(materialKey)!]:ghostMats.get(materialKey)!);
      for(const item of [mesh,ghost]){item.position.copy(organOrigin(p));item.updateMatrixWorld(true);item.frustumCulled=false;desktopAnatomy.add(item);}mesh.renderOrder=2;ghost.renderOrder=1;
      const previewMaterial=new T.MeshStandardMaterial({color:mats.get(materialKey)!.color,side:T.DoubleSide});
      previewMaterial.onBeforeCompile=shader=>{shader.uniforms.previewState={value:previewTexture};shader.uniforms.previewWidth={value:width};shader.vertexShader='attribute float partIndex;uniform sampler2D previewState;uniform float previewWidth;varying float previewShown;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\npreviewShown=texture2D(previewState,vec2((partIndex+.5)/previewWidth,.5)).r;');shader.fragmentShader='varying float previewShown;\n'+shader.fragmentShader;shader.fragmentShader=shader.fragmentShader.replace('#include <clipping_planes_fragment>','#include <clipping_planes_fragment>\nif(previewShown<.5)discard;');};
-     if(p.tissueAppearance){const tissue=tissueWallMaterial(p.tissueAppearance),base=previewMaterial.onBeforeCompile;previewMaterial.roughness=.82;
+     if(p.tissueAppearance){const tissue=tissueWallMaterial(p.tissueAppearance,undefined,false,p.geometryOrigin),base=previewMaterial.onBeforeCompile;previewMaterial.roughness=.82;
       previewMaterial.customProgramCacheKey=()=>`paired-tissue-preview:${JSON.stringify(p.tissueAppearance)}`;
-      previewMaterial.onBeforeCompile=(shader,renderer)=>{base(shader,renderer);tissue.material.onBeforeCompile(shader,renderer);shader.vertexShader='attribute float normalSign;\n'+shader.vertexShader;shader.vertexShader=shader.vertexShader.replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\nobjectNormal*=normalSign;');};tissue.material.dispose();}
-     applySafeSurfaceNormals(previewMaterial);materials.push(previewMaterial);previewBodyMaterials.add(previewMaterial);const preview=new T.Mesh(displayed,p.tissueDrawGroups?[previewMaterial]:previewMaterial);preview.position.copy(organOrigin(p));preview.updateMatrixWorld(true);preview.frustumCulled=false;previewScene.add(preview);
+      previewMaterial.onBeforeCompile=(shader,renderer)=>{base(shader,renderer);tissue.material.onBeforeCompile(shader,renderer);};tissue.material.dispose();}
+     if(p.normalSigns!==undefined)applyPairedNormalSigns(previewMaterial);
+     applySafeSurfaceNormals(previewMaterial);materials.push(previewMaterial);previewBodyMaterials.add(previewMaterial);const preview=new T.Mesh(displayed,p.tissueDrawGroups?[previewMaterial]:previewMaterial);preview.position.copy(organOrigin(p));preview.quaternion.copy(organOrientation(p));preview.scale.setScalar(organInstanceScale(p));preview.updateMatrixWorld(true);preview.frustumCulled=false;previewScene.add(preview);
      if(onDemand)demandMeshes.push({chunk:ci,mesh,ghost,preview,indices:[i]});
     }else{const list=groups.get(materialKey)??[];list.push(g);groups.set(materialKey,list);}
-   });
+    if(performance.now()-workStarted>8){await new Promise<void>(resolve=>setTimeout(resolve,0));workStarted=performance.now();}
+   }
    groups.forEach((gs,key)=>{const geometry=mergeGeometries(gs,false);if(!geometry)throw new Error('Could not assemble anatomy geometry.');geometries.push(geometry);const mesh=new T.Mesh(geometry,mats.get(key));mesh.frustumCulled=false;mesh.renderOrder=2;desktopAnatomy.add(mesh);const ghost=new T.Mesh(geometry,ghostMats.get(key));ghost.frustumCulled=false;ghost.renderOrder=1;desktopAnatomy.add(ghost);
     let material=previewMaterials.get(key);
     if(!material){const spec=materialSpecs.get(key),source=spec?.source,system=spec?.system??key;
@@ -631,7 +681,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    });
    if(onDemand){const arrays=new Set<ArrayBufferLike>();for(const geometry of owned){for(const attribute of Object.values(geometry.attributes))arrays.add((attribute instanceof T.InterleavedBufferAttribute?attribute.data.array:attribute.array).buffer);if(geometry.index)arrays.add(geometry.index.array.buffer);}chunkArrayBytes.set(ci,[...arrays].reduce((sum,buffer)=>sum+buffer.byteLength,0));}
    if(skinChunks.has(ci)){loadedSkinChunks++;if(loadedSkinChunks===skinChunks.size){surfaceReady=true;lastState=null;}}
-   previewDirty=true;if(onDemand){lastState=null;dirty=true;return;}loaded++;const nextProgress=Math.round(loaded/atlas.chunks.length*100);if(nextProgress===100||nextProgress-lastReportedProgress>=10){lastReportedProgress=nextProgress;onProgress(nextProgress);}dirty=true;
+   previewDirty=true;if(onDemand){lastState=null;dirty=true;return;}loaded++;const nextProgress=Math.round(loaded/geometryChunks.length*100);if(nextProgress===100||nextProgress-lastReportedProgress>=10){lastReportedProgress=nextProgress;onProgress(nextProgress);}dirty=true;
   };
   let demandState:SceneState|undefined,demandPreview=false;
   const releaseChunk=(ci:number)=>{
@@ -640,7 +690,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    stencilCaps.release(chunkParts[ci]);
    for(let i=demandMeshes.length-1;i>=0;i--){const group=demandMeshes[i];if(group.chunk!==ci)continue;group.mesh.removeFromParent();group.ghost.removeFromParent();group.preview.removeFromParent();demandMeshes.splice(i,1);}
    for(let i=tissueDisplays.length-1;i>=0;i--)if(chunkParts[ci].includes(tissueDisplays[i].index))tissueDisplays.splice(i,1);
-   for(const index of chunkParts[ci]){const picker=pickers[index];if(picker){const material=picker.material as T.Material;material.dispose();const at=materials.indexOf(material);if(at>=0)materials.splice(at,1);}pickers[index]=undefined;metricHairPicking.delete(index);labelSamples.delete(index);}
+   for(const index of chunkParts[ci]){const picker=pickers[index];if(picker){const material=picker.material as T.Material;material.dispose();const at=materials.indexOf(material);if(at>=0)materials.splice(at,1);}pickers[index]=undefined;sectionVolumes.delete(index);metricHairPicking.delete(index);labelSamples.delete(index);}
    for(const geometry of chunkGeometry.get(ci)??[]){geometry.dispose();const at=geometries.indexOf(geometry);if(at>=0)geometries.splice(at,1);}
    chunkGeometry.delete(ci);chunkArrayBytes.delete(ci);delete cachedBuffers[ci];lastState=null;previewDirty=true;dirty=true;
   };
@@ -661,9 +711,9 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    if(!demand||s===demandState&&previewWanted===demandPreview)return;
    demandState=s;demandPreview=previewWanted;
    const sections=enabledSections(s).length>0;
-   const selected=new Set(s.selected);
+   const selected=new Set(s.selected),companions=surfaceCompanions(atlas,s.selected);
    demand.update(chunkOrder.filter(ci=>chunkParts[ci].some(i=>{
-    const p=atlas.parts[i];return !p.suppressed&&(previewWanted&&isSkinPart(p)||selected.has(p.id)||(sections?sectionPartVisible(p,s):partVisible(p,s,atlas.parts)));
+    const p=atlas.parts[i];return !p.suppressed&&(previewWanted&&isSkinPart(p)||selected.has(p.id)||companions.has(p.id)||(sections?sectionPartVisible(p,s):partVisible(p,s,atlas.parts)));
    })));
   };
   if(!onDemand)(async()=>{try{bundleBuffer=useBundle?await loadModelBundle(chunkUrls,chunkSizes):undefined;if(disposed)return;let cursor=0;await Promise.all(Array.from({length:questVr?3:8},async()=>{while(cursor<chunkOrder.length){const i=chunkOrder[cursor++];await loadChunk(i);}}));if(!disposed){ready=true;lastState=null;dirty=true;if(!bundleBuffer&&useBundle)void rememberModelBundle(chunkUrls,cachedBuffers);if(vrPreview||questVr&&xrSupported||xrArSupported)void prepareVr();}}catch(e){if(!disposed)onError(e instanceof Error?e.message:'Could not load the anatomy.');}})();
@@ -688,7 +738,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    const distance=T.MathUtils.lerp(normalDistance,atlasDistance,extent);
    modelBounds.getCenter(controls.target);const pivot=latest.current.isolate||amount<.05?selectionCenter(atlas.parts,latest.current.selected,data):null;if(pivot)controls.target.copy(pivot);let fittedDistance=distance;
    if((atlas.scope==='embryo'||latest.current.region&&latest.current.region!=='all')&&!pivot){const box=new T.Box3();atlas.parts.forEach((p,i)=>{if(!isSkinPart(p)&&(enabledSections(latest.current).length?sectionPartVisible(p,latest.current):partVisible(p,latest.current,atlas.parts)))box.union(bounds[i]);});if(!box.isEmpty()){box.getCenter(controls.target);fittedDistance=frameDistance(box,direction,camera.up,camera.aspect,area,camera.fov)*1.1;}}
-   controls.maxDistance=atlas.scope==='embryo'?Infinity:Math.max(fittedDistance*1.25,.2);camera.position.copy(controls.target).addScaledVector(direction,fittedDistance);controls.update();dirty=true;
+   controls.maxDistance=Infinity;camera.position.copy(controls.target).addScaledVector(direction,fittedDistance);controls.update();dirty=true;
   };
   const markLayoutDirty=()=>{layoutDirty=true;};
   const observer=new ResizeObserver(markLayoutDirty);observer.observe(el);
@@ -724,7 +774,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     for(const i of members)clusterBox.union(bounds[i].clone().translate(new T.Vector3(data[i*4],data[i*4+1],data[i*4+2])));
     const center=clusterBox.getCenter(new T.Vector3());
     for(const i of members){rotationPivotData.set([center.x,center.y,center.z,1],i*4);const mesh=pickers[i];if(!mesh)continue;
-     mesh.quaternion.copy(selectedRotation);mesh.position.copy(organOrigin(atlas.parts[i])).add(new T.Vector3(data[i*4],data[i*4+1],data[i*4+2])).sub(center).applyQuaternion(selectedRotation).add(center);mesh.updateMatrix();mesh.updateMatrixWorld(true);
+     mesh.quaternion.copy(selectedRotation).multiply(organOrientation(atlas.parts[i]));mesh.position.copy(organOrigin(atlas.parts[i])).add(new T.Vector3(data[i*4],data[i*4+1],data[i*4+2])).sub(center).applyQuaternion(selectedRotation).add(center);mesh.updateMatrix();mesh.updateMatrixWorld(true);
     }
    }
    rotationPivotTexture.needsUpdate=true;
@@ -820,7 +870,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    if(e.buttons||!ready||sectionToolRef.current&&!enabledSections(latest.current).length||e.pointerType==='touch'){hover.hidden=true;renderer.domElement.style.cursor=e.buttons?'grabbing':'default';return;}
    const rect=el.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top,index=pickAt(e.clientX,e.clientY);
    hover.hidden=index<0;renderer.domElement.style.cursor='default';
-   if(index>=0){const fullName=structureName(atlas.parts[index].name),display=displayLaterality(fullName);hoverLabel.textContent=display.label;hover.className=`part-hover ${lateralityClass(display.side)}`;hover.title=fullName;hover.setAttribute('aria-label',fullName);hover.style.left=`${Math.max(8,Math.min(x+14,el.clientWidth-260))}px`;hover.style.top=`${Math.max(8,Math.min(y+18,el.clientHeight-55))}px`;}
+   if(index>=0){const fullName=structureLabelName(atlas.parts[index].name),display=displayLaterality(fullName);hoverLabel.textContent=display.label;hover.className=`part-hover ${lateralityClass(display.side)}`;hover.title=fullName;hover.setAttribute('aria-label',fullName);hover.style.left=`${Math.max(8,Math.min(x+14,el.clientWidth-260))}px`;hover.style.top=`${Math.max(8,Math.min(y+18,el.clientHeight-55))}px`;}
   };
   const cancel=(e:PointerEvent)=>{visitDrag=null;pressPoints.delete(e.pointerId);tap.cancel(e.pointerId);hover.hidden=true;renderer.domElement.style.cursor='default';};
   const leave=()=>{hover.hidden=true;renderer.domElement.style.cursor='default';};
@@ -874,12 +924,12 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    });
    return found;
   };
-  const xrSelect=(event:XRInputSourceEvent)=>{if(remoteRef.current||questVr&&xrActiveMode==='immersive-vr')return;const found=xrPick(event.frame,event.inputSource);if(found>=0){select.current(atlas.parts[found].id);updateXrInfo(structureName(atlas.parts[found].name));}};
+  const xrSelect=(event:XRInputSourceEvent)=>{if(remoteRef.current||questVr&&xrActiveMode==='immersive-vr')return;const found=xrPick(event.frame,event.inputSource);if(found>=0){select.current(atlas.parts[found].id);updateXrInfo(structureLabelName(atlas.parts[found].name));}};
   const xrSelectStart=(event:XRInputSourceEvent)=>{if(remoteRef.current||!questVr||xrActiveMode!=='immersive-vr')return;
    if(event.inputSource.handedness==='right'){xrOrbitHeld=true;xrLastLeftAim=null;return;}
    if(event.inputSource.handedness!=='left'||xrOrbitHeld)return;
    const found=xrPick(event.frame,event.inputSource);if(found<0)return;
-   const part=atlas.parts[found];hidePart.current(part.id,true);updateXrInfo(`Peeled ${structureName(part.name)}`);
+   const part=atlas.parts[found];hidePart.current(part.id,true);updateXrInfo(`Peeled ${structureLabelName(part.name)}`);
   };
   const xrSelectEnd=(event:XRInputSourceEvent)=>{if(event.inputSource.handedness==='right'){xrOrbitHeld=false;xrLastLeftAim=null;}};
   const xrEnded=()=>{xrSession?.removeEventListener('select',xrSelect);xrSession?.removeEventListener('selectstart',xrSelectStart);xrSession?.removeEventListener('selectend',xrSelectEnd);xrSession=null;xrActiveMode=null;xrBaseSpace=null;xrAnchorMatrix=null;xrOrbitHeld=false;xrLastLeftAim=null;xrOrbit={yaw:0,pitch:0};xrRays.forEach(ray=>ray.visible=false);xrInfo.visible=false;labelLayer.style.display='';setLightweight(vrPreview);xrButton.textContent='Enter VR';xrButton.hidden=false;xrArButton.hidden=false;delete (studio as HTMLElement).dataset.xrMode;renderer.setAnimationLoop(null);renderer.xr.enabled=false;controls.enabled=true;applyTheme();markLayoutDirty();dirty=true;if(xrLoopActive){xrLoopActive=false;if(!disposed)frame=requestAnimationFrame(animate);}};
@@ -893,7 +943,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    await renderer.xr.setSession(session);
    renderer.xr.setFoveation(questVr?.5:1);
    xrBaseSpace=renderer.xr.getReferenceSpace();xrZoom=1;xrAnchorMatrix=null;xrOrbitHeld=false;xrLastLeftAim=null;xrOrbit={yaw:0,pitch:0};(studio as HTMLElement).dataset.xrMode=mode==='immersive-ar'?'ar':'vr';applyTheme();
-   controls.enabled=false;labelLayer.style.display='none';hover.hidden=true;xrInfo.visible=true;xrInfoText='';updateXrInfo(latest.current.selected.length?structureName(atlas.parts[partIndices.get(latest.current.selected[0])??0].name):'Human Atlas');
+   controls.enabled=false;labelLayer.style.display='none';hover.hidden=true;xrInfo.visible=true;xrInfoText='';updateXrInfo(latest.current.selected.length?structureLabelName(atlas.parts[partIndices.get(latest.current.selected[0])??0].name):'Human Atlas');
    xrButton.hidden=xrArButton.hidden=true;cancelAnimationFrame(frame);xrLoopActive=true;renderer.setAnimationLoop(animate);
   }catch(error){renderer.xr.enabled=false;setLightweight(vrPreview);xrButton.hidden=xrArButton.hidden=false;delete (studio as HTMLElement).dataset.xrMode;applyTheme();onError(error instanceof Error?`Could not enter XR: ${error.message}`:'Could not enter XR.');if(xrSession)await xrSession.end().catch(()=>{});xrActiveMode=null;}finally{xrButton.disabled=xrArButton.disabled=false;}};
   xrButton.onclick=()=>{void enterXr('immersive-vr');};xrArButton.onclick=()=>{void enterXr('immersive-ar');};
@@ -928,8 +978,8 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    const labelFrame=[camera.matrixWorld.elements.join(','),camera.projectionMatrix.elements.join(','),selectedRotation.toArray().join(','),el.clientWidth,el.clientHeight,currentLabelArea.left,currentLabelArea.right,currentLabelArea.top,currentLabelArea.bottom,amount,loaded,demand?.loaded.size??0].join(';');
    if(drawnLabelState===s&&drawnLabelItems===labelItemsRef.current&&drawnLabelTargets===labelTargetsRef.current&&drawnLabelLayout===explosionLayout&&drawnLabelFrame===labelFrame)return;
    drawnLabelState=s;drawnLabelItems=labelItemsRef.current;drawnLabelTargets=labelTargetsRef.current;drawnLabelLayout=explosionLayout;drawnLabelFrame=labelFrame;
-   labelLayer.replaceChildren();if(s.labels===false)return;const w=el.clientWidth,h=el.clientHeight;labelLayer.setAttribute('viewBox',`0 0 ${w} ${h}`);
-   if(amount>.04&&explosionLayout&&!s.isolate){
+   labelLayer.replaceChildren();if(!selectedLabelsVisible(s))return;const w=el.clientWidth,h=el.clientHeight;labelLayer.setAttribute('viewBox',`0 0 ${w} ${h}`);
+   if(s.labels!==false&&amount>.04&&explosionLayout&&!s.isolate){
     const progress=amount*explosionLayout.steps,from=Math.min(explosionLayout.steps,Math.floor(progress)),to=Math.min(explosionLayout.steps,from+1),mix=smoothStep(progress-from);
     const depth=Math.min(4,Math.max(1,Math.floor(progress+.05))),first=new Map(explosionLayout.stages[from].groups.map(group=>[group.id,group]));
     const candidates=explosionLayout.stages[to].groups.filter(group=>group.depth<=depth),names=new Set(candidates.map(group=>group.id)),parents=new Set<string>();
@@ -946,7 +996,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
      if(box.left<area.left||box.right>area.right||box.top<area.top||box.bottom>area.bottom||occupied.some(other=>box.left<other.right+4&&box.right>other.left-4&&box.top<other.bottom+3&&box.bottom>other.top-3))continue;
      occupied.push(box);
      const element=document.createElementNS('http://www.w3.org/2000/svg','g');element.setAttribute('class',`explosion-group-label ${lateralityClass(display.side)}`);
-     if(group.members?.length){element.setAttribute('role','button');element.setAttribute('tabindex','0');element.setAttribute('aria-label',`Select ${group.name}`);const activate=(event:Event)=>{event.preventDefault();event.stopPropagation();selectLabelRef.current?.({id:`hierarchy:explosion:${group.id}`,name:group.name,elements:group.members!.map(part=>part.id),children:group.childGroups?.map((child,index)=>({id:`hierarchy:explosion:${group.id}/${index}`,name:structureName(child.name),elements:child.members.map(part=>part.id)}))});};element.addEventListener('pointerdown',event=>event.stopPropagation());element.addEventListener('click',activate);element.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')activate(event);});}
+     if(group.members?.length){element.setAttribute('role','button');element.setAttribute('tabindex','0');element.setAttribute('aria-label',`Select ${group.name}`);const activate=(event:Event)=>{event.preventDefault();event.stopPropagation();selectLabelRef.current?.({id:`hierarchy:explosion:${group.id}`,name:group.name,elements:group.members!.map(part=>part.id),children:group.childGroups?.map((child,index)=>({id:`hierarchy:explosion:${group.id}/${index}`,name:structureLabelName(child.name),elements:child.members.map(part=>part.id)}))});};element.addEventListener('pointerdown',event=>event.stopPropagation());element.addEventListener('click',activate);element.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' ')activate(event);});}
      const background=document.createElementNS('http://www.w3.org/2000/svg','rect');background.setAttribute('x',String(box.left));background.setAttribute('y',String(box.top));background.setAttribute('width',String(labelWidth));background.setAttribute('height','19');background.setAttribute('rx','5');element.appendChild(background);
      const label=document.createElementNS('http://www.w3.org/2000/svg','text');label.setAttribute('x',String(screenX));label.setAttribute('y',String(screenY-3));label.setAttribute('text-anchor','middle');label.textContent=name;element.appendChild(label);const title=document.createElementNS('http://www.w3.org/2000/svg','title');title.textContent=group.name;element.appendChild(title);labelLayer.appendChild(element);
     }
@@ -956,8 +1006,11 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    // Only build anchors for the rows the label layout can actually display.
    const rowBudget=2*(Math.floor(Math.max(0,currentLabelArea.bottom-currentLabelArea.top)/18)+1);
    for(const item of items.slice(0,rowBudget)){
-    let chosen=labelPointCache.get(item.id);
-    if(chosen){const i=partIndices.get(chosen.partId)??-1,mesh=pickers[i];if(!mesh||data[i*4+3]<.5)chosen=undefined;else{const point=new T.Vector3(...chosen.point).sub(organOrigin(atlas.parts[i])).applyMatrix4(mesh.matrixWorld).project(camera);if(point.z< -1||point.z>1||Math.abs(point.x)>1||Math.abs(point.y)>1)chosen=undefined;}}
+    let chosen=item.anchor??labelPointCache.get(item.id);
+    if(chosen){const i=partIndices.get(chosen.partId)??-1,mesh=pickers[i];if(!mesh||data[i*4+3]<.5)chosen=undefined;else{const world=organGeometryPoint(atlas.parts[i],new T.Vector3(...chosen.point)).applyMatrix4(mesh.matrixWorld),point=world.clone().project(camera);if(point.z< -1||point.z>1||Math.abs(point.x)>1||Math.abs(point.y)>1||item.anchor&&!keptBySections(world))chosen=undefined;}}
+    // A clipped landmark has no alternative anatomical location. Ordinary
+    // layer labels may still choose another retained source surface sample.
+    if(item.anchor&&!chosen)continue;
     if(!chosen){
     const samples:LabelSurfacePoint[]=[],center=new T.Box3();
     for(const id of item.members){const part=atlas.parts[partIndices.get(id)??-1];if(part)center.union(organBounds(part));}
@@ -981,14 +1034,14 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
       const screen=world.clone().project(camera);if(screen.z< -1||screen.z>1||Math.abs(screen.x)>1||Math.abs(screen.y)>1)continue;
       // Distribution is measured in assembly coordinates, while candidates
       // remain literal surface points even during an exploded transformation.
-      const anatomical=sample.clone().add(organOrigin(atlas.parts[i]));samples.push({partId:id,point:anatomical.toArray() as [number,number,number]});
+      const anatomical=organAnatomicalPoint(atlas.parts[i],sample);samples.push({partId:id,point:anatomical.toArray() as [number,number,number]});
      }
      if(members.length>16&&samples.length>=2048)break;
     }
     if(!samples.length)continue;
     chosen=chooseLayerLabelPoint(samples,target,middle.toArray() as [number,number,number]);if(!chosen)continue;labelPointCache.set(item.id,chosen);
     }
-    const i=partIndices.get(chosen.partId)!,world=new T.Vector3(...chosen.point).sub(organOrigin(atlas.parts[i])).applyMatrix4(pickers[i]!.matrixWorld),point=world.project(camera),display=displayLaterality(item.name);
+    const i=partIndices.get(chosen.partId)!,world=organGeometryPoint(atlas.parts[i],new T.Vector3(...chosen.point)).applyMatrix4(pickers[i]!.matrixWorld),point=world.project(camera),display=displayLaterality(item.name);
     anchors.push({id:item.id,x:(point.x+1)*w/2,y:(1-point.y)*h/2,text:display.label,fullText:item.name,laterality:display.side,components:item.components});
    }
    const labelBounds=currentLabelArea;
@@ -996,9 +1049,10 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    const placements=layoutAnatomyLabels(anchors,labelBounds,measure);
    appendAnatomyLabelCallouts(labelLayer,placements,(id,components)=>showLabelComponentsRef.current?.(components,items.find(item=>item.id===id)?.choice),id=>{const item=items.find(item=>item.id===id);if(item)selectLabelRef.current?.(anatomyLabelChoice(item));});
   };
-  const clock=new T.Clock();let lastExtent=-1,lastCamera:number[]|undefined=restart?latest.current.camera:undefined,lastFocus=restart?latest.current.focus??0:0,lastRotationKey='',selectionStencil=false,lastRemotePose:ScenePose|null=null,panelsAnimating=false;
+  const clock=new T.Clock();let lastExtent=-1,lastCamera:number[]|undefined=restart?latest.current.camera:undefined,lastFocus=restart?latest.current.focus??0:0,lastRotationKey='',selectionStencil=false,lastRemotePose:ScenePose|null=null,lastComparisonPose:ScenePose|null=null,panelsAnimating=false;
   const animate=(now=performance.now())=>{
    if(disposed)return;const presenting=renderer.xr.isPresenting;if(!presenting)frame=requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05),requested=latest.current;if(!presenting)attachPreview();
+   const fibreWeights=tongueFibreRef.current,fibreKey=fibreWeights.join(',');if(fibreKey!==lastTongueFibreKey){for(const uniform of tongueFibreUniforms)uniform.value.set(...fibreWeights);lastTongueFibreKey=fibreKey;if(tongueFibreUniforms.length)dirty=true;}
    const following=!!remoteRef.current,reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
    let depthMoving=false;
    if(requested.depth===undefined){depthAmount=undefined;depthVelocity=0;}
@@ -1032,7 +1086,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     if(!following&&Math.abs(stick)>.15)xrZoom=T.MathUtils.clamp(xrZoom*Math.exp(stick*dt*1.25),.25,4);
     if(questVr&&xrActiveMode==='immersive-vr'&&xrOrbitHeld&&!following&&left&&xrFrame){const space=renderer.xr.getReferenceSpace(),pose=space&&xrFrame.getPose(left.targetRaySpace,space);if(pose){const {x,y,z,w}=pose.transform.orientation,aim=xrAim.set(0,0,-1).applyQuaternion(xrControllerQuaternion.set(x,y,z,w));const current={yaw:Math.atan2(aim.x,-aim.z),pitch:Math.asin(T.MathUtils.clamp(aim.y,-1,1))};xrOrbit=advanceControllerOrbit(xrLastLeftAim,current,xrOrbit);xrLastLeftAim=current;}}
     else xrLastLeftAim=null;
-    const selected=s.selected[0],index=selected===undefined?undefined:partIndices.get(selected);if(index!==undefined)updateXrInfo(structureName(atlas.parts[index].name));}
+    const selected=s.selected[0],index=selected===undefined?undefined:partIndices.get(selected);if(index!==undefined)updateXrInfo(structureLabelName(atlas.parts[index].name));}
    const nextSectionActive=enabledSections(s).length?1:0;if(sectionActiveUniform.value!==nextSectionActive){sectionActiveUniform.value=nextSectionActive;dirty=true;}
    const nextContext=nextSectionActive?1:s.selected.length?(s.contextOpacity??1):1;
    if(contextUniform.value!==nextContext){contextUniform.value=nextContext;dirty=true;}
@@ -1060,7 +1114,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    const explosionMotion=advanceExplosionMotion(amount,explosionVelocity,s.explode,explosionLayout?.steps??1,dt,reducedMotion,explosionRequested);
    if(amount!==explosionMotion.value||explosionVelocity!==explosionMotion.velocity){amount=explosionMotion.value;explosionVelocity=explosionMotion.velocity;dirty=true;}
    if(changed&&!planeOnly||moving||lastExtent<0){
-    const selection=new Set(s.selected),activeCut=enabledSections(s).length>0;
+    const selection=new Set(s.selected),activeCut=enabledSections(s).length>0,companions=surfaceCompanions(atlas,s.selected),surfaceHide=surfaceHidden(atlas,s.selected);
     const visibleParts=atlas.parts.filter(p=>activeCut?sectionPartVisible(p,s):partVisible(p,s,atlas.parts));
     const nextLayoutKey=visibleParts.map(p=>p.id).join(',')+':'+hierarchyRef.current+':'+(hierarchyRef.current==='guest'?guestKeyRef.current:'');
     const explosionChanged=!!lastState&&s.explode!==lastState.explode,layoutChanged=nextLayoutKey!==layoutKey||explosionChanged&&camera.aspect!==explosionAspect;
@@ -1078,10 +1132,10 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     atlas.parts.forEach((p,i)=>{
      const c=centers[i],j=i*3,dx=amount===0?0:T.MathUtils.lerp(stages[from].positions[j],stages[to].positions[j],blend)-c.x,dy=amount===0?0:T.MathUtils.lerp(stages[from].positions[j+1],stages[to].positions[j+1],blend)-c.y,dz=amount===0?0:T.MathUtils.lerp(stages[from].positions[j+2],stages[to].positions[j+2],blend)-c.z;
      const selected=selection.has(p.id),checked=sectionPartVisible(p,s);
-     data.set([dx,dy,dz,(activeCut?checked:partVisible(p,s,atlas.parts))&&(!isSkinPart(p)||surfaceReady||selected||activeCut)?1:0],i*4);selectedData[i*4]=selected?255:0;selectedData[i*4+1]=Math.round(partLayerOpacity(p,s)*255);previewData[i*4]=!p.suppressed&&(hasSurfacePreview?isSkinPart(p):checked)?255:0;
+     const companion=companions.has(p.id);data.set([dx,dy,dz,((activeCut?checked:partVisible(p,s,atlas.parts))||companion&&!p.suppressed)&&(!isSkinPart(p)||surfaceReady||selected||activeCut)&&(selected||(!surfaceHide.has(p.id)&&!/^DMT[AM]:/.test(p.id)))?1:0],i*4);selectedData[i*4]=selected||companion?255:0;selectedData[i*4+1]=Math.round(partLayerOpacity(p,s)*(companion?.3:1)*255);previewData[i*4]=!p.suppressed&&(hasSurfacePreview?isSkinPart(p):checked)?255:0;
      if(activeCut?checked:partVisible(p,s,atlas.parts)){explosionVisibleBounds.expandByPoint(framingPoint.set(bounds[i].min.x+dx,bounds[i].min.y+dy,bounds[i].min.z+dz));explosionVisibleBounds.expandByPoint(framingPoint.set(bounds[i].max.x+dx,bounds[i].max.y+dy,bounds[i].max.z+dz));}
      if(selection.size?selected:activeCut?checked:partVisible(p,s,atlas.parts)){viewBounds.expandByPoint(framingPoint.set(bounds[i].min.x+dx,bounds[i].min.y+dy,bounds[i].min.z+dz));viewBounds.expandByPoint(framingPoint.set(bounds[i].max.x+dx,bounds[i].max.y+dy,bounds[i].max.z+dz));}
-     const mesh=pickers[i];if(mesh){mesh.quaternion.identity();mesh.position.copy(organOrigin(atlas.parts[i])).add(new T.Vector3(dx,dy,dz));mesh.updateMatrix();mesh.updateMatrixWorld(true);}
+     const mesh=pickers[i];if(mesh){mesh.quaternion.copy(organOrientation(atlas.parts[i]));mesh.position.copy(organOrigin(atlas.parts[i])).add(new T.Vector3(dx,dy,dz));mesh.updateMatrix();mesh.updateMatrixWorld(true);}
     });if(viewBounds.isEmpty())viewBounds.copy(modelBounds);syncSelectedRotation();partTexture.needsUpdate=true;selectionTexture.needsUpdate=true;previewTexture.needsUpdate=true;rotationTexture.needsUpdate=true;lastState=s;lastExtent=amount;dirty=true;
     if(amount>0||moving){sectionBox(s);for(const cut of enabledSections(s)){const equation=sectionPlaneEquation(sectionBounds,cut.section);clipPlanes[cut.index].normal.fromArray(equation.normal);clipPlanes[cut.index].constant=equation.constant;}previewDirty=true;}
     if(changed||moving)queueCaps(s);
@@ -1092,7 +1146,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    // Only an explicit Center command increments focus.
    const focusChanged=(s.focus??0)!==lastFocus;lastFocus=s.focus??0;
    if(focusChanged&&!!s.focus){const box=new T.Box3();atlas.parts.forEach((p,i)=>{if(s.selected.includes(p.id))box.union(worldBox.copy(organBounds(atlas.parts[i],pickers[i]?.matrixWorld)));});
-    if(!box.isEmpty()){const center=box.getCenter(new T.Vector3()),area=viewArea(),direction=directionFor(s.view).normalize();setFrameOffset(camera,area);const distance=Math.max(.006,frameDistance(box,direction,camera.up,camera.aspect,area,camera.fov)*1.35);controls.maxDistance=atlas.scope==='embryo'?Infinity:Math.max(.12,distance*1.6);controls.target.copy(center);camera.position.copy(center).addScaledVector(direction,distance);controls.update();dirty=true;}
+    if(!box.isEmpty()){const center=box.getCenter(new T.Vector3()),area=viewArea(),direction=directionFor(s.view).normalize();setFrameOffset(camera,area);const distance=Math.max(.006,frameDistance(box,direction,camera.up,camera.aspect,area,camera.fov)*1.35);controls.maxDistance=Infinity;controls.target.copy(center);camera.position.copy(center).addScaledVector(direction,distance);controls.update();dirty=true;}
    }
    const canOrbit=amount<=.04||s.isolate;controls.enableRotate=canOrbit;controls.mouseButtons.LEFT=canOrbit?T.MOUSE.ROTATE:T.MOUSE.PAN;controls.touches.ONE=canOrbit?T.TOUCH.ROTATE:T.TOUCH.PAN;controls.autoRotate=!visitRef.current?.playing&&!following&&!presenting&&s.rotate&&!s.isolate&&canOrbit&&!cameraTween;controls.autoRotateSpeed=.65;if(!presenting&&!visitRef.current?.playing&&(travel.phase!=='done'||controls.autoRotate))controls.update();if(controls.autoRotate)dirty=true;
    if(!s.camera)lastCamera=undefined;
@@ -1119,6 +1173,31 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     applyFrame(camera,controls.target,remote.camera,viewBounds,viewArea());if(remote.camera.length!==12)camera.up.fromArray(remote.up);controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.05);controls.update();
     selectedRotation.fromArray(remote.rotation).normalize();syncSelectedRotation();lastRemotePose=remote;dirty=true;
    }
+   const compared=comparisonRef.current?.current;
+   if(!following&&compared&&compared!==lastComparisonPose){
+    const ownProjection=savedUrlPose.current?.current?.world?.view;
+     discardSavedPose();
+    cancelCameraTween();travel.release();
+    const damping=controls.enableDamping;controls.enableDamping=false;controls.update();
+    if(compared.world){
+     const world=compared.world;
+     camera.position.fromArray(world.position);controls.target.fromArray(world.target);camera.up.fromArray(world.up);
+     camera.quaternion.fromArray(world.quaternion).normalize();camera.fov=world.fov;camera.zoom=world.zoom;camera.near=world.near;camera.far=world.far;
+     if(ownProjection!==undefined)camera.view=ownProjection?{...ownProjection}:null;
+     fitViewToAspect(camera);
+     // Shared motion preserves this pane's saved/current projection offset.
+    }else applyFrame(camera,controls.target,compared.camera,viewBounds,viewArea());
+    controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.05);controls.update();controls.enableDamping=damping;
+    selectedRotation.fromArray(compared.rotation).normalize();syncSelectedRotation();lastComparisonPose=compared;dirty=true;
+   }
+   const saved=savedUrlPose.current?.current;
+   if(saved&&(s.view!==initialSavedIntent.view||s.reset!==initialSavedIntent.reset||(s.focus??0)!==initialSavedIntent.focus))discardSavedPose();
+   else if(saved?.world&&saved.model===sceneModel&&ready&&!following){
+    cancelCameraTween();travel.release();explosionFitActive=false;explosionStartView=null;
+    const damping=controls.enableDamping;controls.enableDamping=false;controls.update();
+    restoreSceneWorldPose(camera,controls.target,saved.world);controls.maxDistance=Math.max(controls.maxDistance,camera.position.distanceTo(controls.target)*1.05);controls.update();controls.enableDamping=damping;
+    selectedRotation.fromArray(saved.rotation).normalize();syncSelectedRotation();discardSavedPose();dirty=true;
+   }
    // Permanent view-plane invariant: reproject after every camera update,
    // including saved views, sections, roll and isolated cluster inspection.
    if(dirty&&amount>0&&explosionLayout){
@@ -1128,7 +1207,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     atlas.parts.forEach((part,i)=>{const j=i*3,c=centers[i];
      const dx=amount===0?0:T.MathUtils.lerp(stages[from].positions[j],stages[to].positions[j],blend)-c.x,dy=amount===0?0:T.MathUtils.lerp(stages[from].positions[j+1],stages[to].positions[j+1],blend)-c.y,dz=amount===0?0:T.MathUtils.lerp(stages[from].positions[j+2],stages[to].positions[j+2],blend)-c.z;
      data[i*4]=dx;data[i*4+1]=dy;data[i*4+2]=dz;
-     const mesh=pickers[i];if(mesh){mesh.quaternion.identity();mesh.position.copy(organOrigin(atlas.parts[i])).add(new T.Vector3(dx,dy,dz));mesh.updateMatrix();mesh.updateMatrixWorld(true);}
+     const mesh=pickers[i];if(mesh){mesh.quaternion.copy(organOrientation(atlas.parts[i]));mesh.position.copy(organOrigin(atlas.parts[i])).add(new T.Vector3(dx,dy,dz));mesh.updateMatrix();mesh.updateMatrixWorld(true);}
      if(data[i*4+3]>.5){worldBox.copy(bounds[i]).translate(framingPoint.set(dx,dy,dz));explosionVisibleBounds.union(worldBox);if(!s.selected.length||s.selected.includes(part.id))viewBounds.union(worldBox);}
     });
     if(viewBounds.isEmpty())viewBounds.copy(modelBounds);syncSelectedRotation();partTexture.needsUpdate=true;
@@ -1149,6 +1228,12 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     }
     if(!moving&&!explosionRequested){explosionFitActive=false;if(s.explode===0)explosionStartView=null;}
    }
+   if(fingerPreview){
+    const skin=atlas.parts[fingerPreview.skinIndex];
+    renderer.domElement.dataset.fingerSurfacePreview=fingerPreview.update(!presenting&&!lightweightActive&&!sectionToolRef.current&&!nextSectionActive&&
+     !s.isolate&&!s.selected.length&&amount<1e-7&&s.explode===0&&data[fingerPreview.skinIndex*4+3]>.5&&
+     partLayerOpacity(skin,s)>=.999&&(atlas.materials?.[skin.material??'']?.opacity??1)>=.999);
+   }
    for(const {index,neighbor,mesh} of gastricRims){
     const source=pickers[index],adjoining=pickers[neighbor];
     const joined=data[neighbor*4+3]>.5&&source&&adjoining&&source.matrixWorld.elements.every((value,i)=>Math.abs(value-adjoining.matrixWorld.elements[i])<1e-7);
@@ -1157,7 +1242,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     if(visible&&source){mesh.matrix.copy(source.matrixWorld);mesh.matrixWorld.copy(source.matrixWorld);mesh.material.opacity=sectionCapOpacity(atlas.parts[index],s,atlas.materials?.[atlas.parts[index].material??'']?.opacity??1);mesh.material.transparent=mesh.material.opacity<.999;mesh.material.depthWrite=!mesh.material.transparent;}
    }
    const displayedTissueOpacity=(i:number)=>data[i*4+3]>.5?(selectedData[i*4]>.5?1:contextUniform.value)*(selectedData[i*4+1]/255)*(atlas.materials?.[atlas.parts[i].material??'']?.opacity??1):0;
-   for(const {index,geometry} of tissueDisplays){const source=pickers[index];if(!source)continue;geometry.clearGroups();if(displayedTissueOpacity(index)<.001)continue;for(const group of atlas.parts[index].tissueDrawGroups??[]){const neighbor=group.neighbor?partIndices.get(group.neighbor):undefined,adjoining=neighbor===undefined||neighbor<0?undefined:pickers[neighbor];const joined=neighbor!==undefined&&tissueNeighborOccludes(displayedTissueOpacity(index),displayedTissueOpacity(neighbor))&&adjoining&&source.matrixWorld.elements.every((value,i)=>Math.abs(value-adjoining.matrixWorld.elements[i])<1e-7);if(!joined)geometry.addGroup(group.start,group.count,0);}}
+   for(const {index,geometry} of tissueDisplays){const source=pickers[index];if(!source)continue;geometry.clearGroups();if(displayedTissueOpacity(index)<.001)continue;for(const group of atlas.parts[index].tissueDrawGroups??[]){if((group as {computationalOnly?:boolean}).computationalOnly)continue;const replacement=group.replacement?partIndices.get(group.replacement):undefined;if(replacement!==undefined&&displayedTissueOpacity(replacement)>.001&&hepaticRegionReplaces(atlas.parts[index],atlas.parts[replacement]))continue;const neighbor=group.neighbor?partIndices.get(group.neighbor):undefined,adjoining=neighbor===undefined||neighbor<0?undefined:pickers[neighbor];const joined=neighbor!==undefined&&tissueNeighborOccludes(displayedTissueOpacity(index),displayedTissueOpacity(neighbor))&&adjoining&&tissuePosesCoincide(source.matrixWorld,atlas.parts[index].geometryOrigin,adjoining.matrixWorld,atlas.parts[neighbor].geometryOrigin);if(!joined)geometry.addGroup(group.start,group.count,0);}}
    // Keep depth precision near the anatomy as the camera moves. A fixed tiny near
    // plane causes close skin and muscle surfaces to fight at whole-body distances.
    if(visitRef.current?.seekId===0)lastAppliedVisitSeek=0;
@@ -1169,7 +1254,15 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    if(!presenting&&Math.abs(camera.near-near)>near*.01){camera.near=near;camera.updateProjectionMatrix();dirty=true;}
    if(lightweightActive&&vrAnatomy&&dirty){const solidQuest=questVr&&xrActiveMode==='immersive-vr';vrAnatomy.sync(s,data,pickers,solidQuest?1:contextUniform.value,solidQuest);renderer.domElement.dataset.xrVisibleTriangles=String(vrAnatomy.mesh.geometry.drawRange.count/3);}
    if(presenting){const xrFrame=renderer.xr.getFrame();updateXrPlacement(xrFrame);xrRays.forEach((ray,i)=>{const source=xrSession?.inputSources[i];ray.visible=!!source&&xrPose(xrFrame,source);if(ray.visible){ray.position.copy(xrOrigin);ray.quaternion.copy(xrQuaternion);}});}
+   const boundary=liverBoundaryRef.current,boundaryKey=boundary?.conceptId??'';
+   if(boundaryKey!==lastLiverBoundary){lastLiverBoundary=boundaryKey;liverBoundaryIndex=boundary?atlas.parts.findIndex(p=>p.id===boundary.partIds[0]):-1;dirty=true;}
+   const surfaceFeature=liverSurfaceRef.current,featureKey=surfaceFeature?.conceptId??'';
+   if(featureKey!==lastSurfaceFeature){lastSurfaceFeature=featureKey;surfaceFeatureIndex=surfaceFeature?atlas.parts.findIndex(p=>p.id===surfaceFeatureCarrier(surfaceFeature)):-1;dirty=true;}
+   if(lastCardiacReference!==cardiacReferenceRef.current){lastCardiacReference=cardiacReferenceRef.current;dirty=true;}
    if(dirty||presenting){
+    liverBoundaryOverlay.update(boundary,liverBoundaryIndex>=0&&data[liverBoundaryIndex*4+3]>.5?pickers[liverBoundaryIndex]:undefined,liverBoundaryIndex>=0?atlas.parts[liverBoundaryIndex].geometryOrigin:undefined);
+    surfaceFeatureOverlay.update(surfaceFeature,surfaceFeatureIndex>=0&&data[surfaceFeatureIndex*4+3]>.5?pickers[surfaceFeatureIndex]:undefined,atlas.parts[surfaceFeatureIndex]);
+    cardiacReferenceOverlay.update(cardiacReferenceRef.current,id=>{const i=partIndices.get(id)??-1;return i>=0&&data[i*4+3]>.5?pickers[i]:undefined;});
     if(onDemand)for(const group of demandMeshes){
      const alpha=(i:number)=>data[i*4+3]>.5?(selectedData[i*4]>.5?1:contextUniform.value)*(selectedData[i*4+1]/255)*(atlas.materials?.[atlas.parts[i].material??'']?.opacity??1):0;
      group.mesh.visible=group.indices.some(i=>alpha(i)>=.999);
@@ -1187,7 +1280,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
     let values:number[],viewUp:number[];
     if(presenting){const tracked=renderer.xr.getCamera();tracked.matrixWorld.decompose(xrHeadCamera.position,xrHeadCamera.quaternion,xrHeadCamera.scale);xrHeadCamera.up.set(0,1,0).applyQuaternion(xrHeadCamera.quaternion);xrHeadCamera.fov=xrPresentationCamera.fov;xrHeadCamera.aspect=xrPresentationCamera.aspect;const target=xrHeadCamera.position.clone().addScaledVector(new T.Vector3(0,0,-1).applyQuaternion(xrHeadCamera.quaternion),xrPresentationCamera.position.distanceTo(controls.target));values=captureFrame(xrHeadCamera,target,viewBounds,xrSession?.domOverlayState?viewArea():immersiveArea);viewUp=xrHeadCamera.up.toArray();}
     else{values=cameraValues();viewUp=camera.up.toArray();drawLabels(s);}
-    cameraCallback.current?.(values);if(!following)poseCallback.current?.({camera:values,up:viewUp,rotation:selectedRotation.toArray()});renderer.domElement.dataset.cameraFrame=JSON.stringify(values);renderer.domElement.dataset.cameraPose=JSON.stringify({position:camera.position.toArray(),target:controls.target.toArray(),up:camera.up.toArray(),quaternion:camera.quaternion.toArray(),view:camera.view});targets=[];
+    cameraCallback.current?.(values);if(!following)poseCallback.current?.({camera:values,up:viewUp,rotation:selectedRotation.toArray(),world:captureSceneWorldPose(camera,controls.target)});renderer.domElement.dataset.cameraFrame=JSON.stringify(values);renderer.domElement.dataset.cameraPose=JSON.stringify({position:camera.position.toArray(),target:controls.target.toArray(),up:camera.up.toArray(),quaternion:camera.quaternion.toArray(),view:camera.view});targets=[];
     if(!presenting&&amount>.45){
      const hasSolid=solidContext();
      atlas.parts.forEach((p,i)=>{
@@ -1226,7 +1319,7 @@ export default function AnatomyScene({cameraNavigation=0,labelChoice,onSelectLab
    return new Promise<Blob>((resolve,reject)=>output.toBlob(blob=>blob?resolve(blob):reject(new Error('The PNG could not be created.')),'image/png'));
   });
   const contextLost=(e:Event)=>{e.preventDefault();onError('The 3D session was paused by your device. Reload to continue.');};renderer.domElement.addEventListener('webglcontextlost',contextLost);
-  return()=>{if(appliedCameraIntent&&!remoteRef.current)rememberSceneCamera(cameraOwner,{intent:appliedCameraIntent,pose:captureRawSceneCamera(camera,controls.target),minDistance:controls.minDistance,maxDistance:controls.maxDistance,explosion:{amount,velocity:explosionVelocity,requested:lastExplode,start:explosionStartView,fitting:explosionFitActive}});onCapture?.(null);onFrameCapture?.(null);disposed=true;demand?.stop();abort.abort();vrAnatomy?.mesh.removeFromParent();vrAnatomy?.dispose();cancelAnimationFrame(frame);renderer.setAnimationLoop(null);renderer.xr.removeEventListener('sessionend',xrEnded);if(xrSession){xrSession.removeEventListener('select',xrSelect);xrSession.removeEventListener('selectstart',xrSelectStart);xrSession.removeEventListener('selectend',xrSelectEnd);void xrSession.end();}xrButton.remove();xrArButton.remove();delete (studio as HTMLElement).dataset.xrMode;xrRays.forEach(ray=>{ray.geometry.dispose();(ray.material as T.Material).dispose();});xrInfoTexture.dispose();(xrInfo.material as T.Material).dispose();clearTimeout(capTimer);clearCaps();stencilCaps.dispose();sectionAssemblies.dispose();observer.disconnect();layoutObserver.disconnect();studio.removeEventListener('beforexrselect',overlaySelect);theme.removeEventListener('change',applyTheme);themeObserver.disconnect();renderer.domElement.removeEventListener('wheel',cancelCameraTween);renderer.domElement.removeEventListener('wheel',abandonExplosionView);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());textureImages.forEach(image=>image.dispose());previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});visitMapLine.geometry.dispose();visitMapMaterial.dispose();visitMapMarker.geometry.dispose();visitMapMarker.material.dispose();previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();rotationPivotTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
+  return()=>{if(appliedCameraIntent&&!remoteRef.current)rememberSceneCamera(cameraOwner,{intent:appliedCameraIntent,pose:captureRawSceneCamera(camera,controls.target),minDistance:controls.minDistance,maxDistance:controls.maxDistance,explosion:{amount,velocity:explosionVelocity,requested:lastExplode,start:explosionStartView,fitting:explosionFitActive}});onCapture?.(null);onFrameCapture?.(null);disposed=true;demand?.stop();abort.abort();vrAnatomy?.mesh.removeFromParent();vrAnatomy?.dispose();cancelAnimationFrame(frame);renderer.setAnimationLoop(null);renderer.xr.removeEventListener('sessionend',xrEnded);if(xrSession){xrSession.removeEventListener('select',xrSelect);xrSession.removeEventListener('selectstart',xrSelectStart);xrSession.removeEventListener('selectend',xrSelectEnd);void xrSession.end();}xrButton.remove();xrArButton.remove();delete (studio as HTMLElement).dataset.xrMode;xrRays.forEach(ray=>{ray.geometry.dispose();(ray.material as T.Material).dispose();});xrInfoTexture.dispose();(xrInfo.material as T.Material).dispose();clearTimeout(capTimer);clearCaps();cardiacReferenceOverlay.dispose();surfaceFeatureOverlay.dispose();liverBoundaryOverlay.dispose();stencilCaps.dispose();sectionAssemblies.dispose();observer.disconnect();layoutObserver.disconnect();studio.removeEventListener('beforexrselect',overlaySelect);theme.removeEventListener('change',applyTheme);themeObserver.disconnect();renderer.domElement.removeEventListener('wheel',cancelCameraTween);renderer.domElement.removeEventListener('wheel',abandonExplosionView);renderer.domElement.removeEventListener('wheel',sectionWheel,true);renderer.domElement.removeEventListener('contextmenu',preventContextMenu);previewCanvas?.removeEventListener('pointerdown',previewDown);previewCanvas?.removeEventListener('pointermove',previewMove);previewCanvas?.removeEventListener('pointerup',previewUp);previewCanvas?.removeEventListener('pointercancel',previewUp);controls.removeEventListener('start',discardSavedPose);controls.dispose();geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());textureImages.forEach(image=>image.dispose());previewPlanes.forEach(({geometry,fill,edge})=>{geometry.dispose();edge.geometry.dispose();fill.material.dispose();edge.material.dispose();});visitMapLine.geometry.dispose();visitMapMaterial.dispose();visitMapMarker.geometry.dispose();visitMapMarker.material.dispose();previewTarget.dispose();scene.traverse(o=>{if(o instanceof T.Mesh&&!geometries.includes(o.geometry)){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});env.dispose();partTexture.dispose();selectionTexture.dispose();previewTexture.dispose();rotationTexture.dispose();rotationPivotTexture.dispose();hover.remove();labelLayer.remove();renderer.dispose();renderer.domElement.remove();};
  },[atlas]);
  return <div className="scene" ref={host}/>;
 }

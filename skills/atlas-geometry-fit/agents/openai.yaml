@@ -1,0 +1,4 @@
+interface:
+  display_name: "Controlled Geometry Fitting"
+  short_description: "Fit complete groups while protecting fixed anatomy"
+  default_prompt: "Use $atlas-geometry-fit to work on the requested Human Atlas geometry with source-bound checks."

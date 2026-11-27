@@ -1,0 +1,4 @@
+interface:
+  display_name: "Blender Review and Local Install"
+  short_description: "Review candidates and publish reversible local edits"
+  default_prompt: "Use $atlas-blender-install to work on the requested Human Atlas geometry with source-bound checks."

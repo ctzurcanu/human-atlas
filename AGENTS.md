@@ -1,5 +1,9 @@
 # Anatomical geometry work
 
+## Runtime limits
+
+Meter every command/job started for this workspace and give it a finite wall-clock deadline. Use `python3 -m geometry_tools.runtime --seconds N -- COMMAND ...` for scripts, builds and tests. The geometry CLI supervises itself (120-second default; `--wall-seconds N`, maximum 300 seconds). Read-only inspections should normally have a 20-second cap. Split longer work into saved stages; do not silently retry or extend a deadline. Report timeouts/failures promptly and retain elapsed-time evidence. Never install a timed-out or incomplete candidate. Existing interactive applications must not be killed to enforce a job deadline; work inside them needs an application-native time limit or separately supervised worker.
+
 Before splitting, replacing, or reconstructing an anatomical object:
 
 1. Inventory every applicable TA98 descendant of the whole organ against the authoritative terminology. Record all terms, their parents, existing source meshes, and missing representations in a checked-in report.
@@ -8,7 +12,6 @@ Before splitting, replacing, or reconstructing an anatomical object:
 4. Repair the complete surface before partitioning it. Inspect the actual rendered geometry and cross-sections. Zero open edges alone is insufficient: check connected components and unintended tunnels, as well as self-intersections, lumen continuity, and shared coordinates/normals.
 5. Partition shared tissue without duplicating overlapping faces. Keep missing geometry and provisional anatomical boundaries explicitly marked as such. Do not call a repair complete while visible defects remain.
 
-Local review models have unverified redistribution rights. Keep them local unless their licenses are established and deployment is authorized.
 
 Follow `ANATOMICAL-GEOMETRY-MANUAL.md` for organ packing, geometry acceptance and runtime efficiency. Run the applicable evidence scripts before accepting a new assembly. A script pass does not replace reference, render, cross-section or anatomical review.
 

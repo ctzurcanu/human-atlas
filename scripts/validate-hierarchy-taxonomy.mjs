@@ -157,7 +157,7 @@ function verify(atlas,name){
 }
 const catalogues=[
  ['male-detail','public/models/atlas-male-complete.json'],['male','public/models/atlas.json'],
- ['female','public/models/atlas-hra-female.json'],['embryo','public/models/atlas-embryo.json'],
+ ['female-ta98','public/models/female-ta98/atlas.json'],['embryo','public/models/atlas-embryo.json'],
  ['cell','public/models/atlas-cell.json'],['local-male','.local-models/male.json'],
  ['local-female','.local-models/female.json'],['local-reference','.local-models/reference.json'],
  ['legacy-z-anatomy','public/models/atlas-z-anatomy.json'],

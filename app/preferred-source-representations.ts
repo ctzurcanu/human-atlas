@@ -1,5 +1,8 @@
+import {liverCompletionRegistry} from './liver-completion-controls';
 import type {Atlas,Part} from './anatomy';
 import preferences from './data/preferred-source-representations.json';
+import {hepaticConnectionRegistry} from './hepatic-connection-controls';
+import {spinalCordRegistry} from './spinal-cord-controls';
 
 type SourceDecision={id:string;name:string;conceptId:string;basis:string;term:string;parts:string[]};
 
@@ -35,8 +38,13 @@ export function withPreferredSourceRepresentations(atlas:Atlas):Atlas{
 export function withHiddenReviewAlternatives(atlas:Atlas,inspectAlternatives=false):Atlas{
  if(inspectAlternatives)return atlas;
  const hidden=new Set(atlas.defaultHidden??[]);
- if(!atlas.parts.some(p=>hidden.has(p.id)&&!p.suppressed))return atlas;
- const parts=atlas.parts.map(p=>hidden.has(p.id)&&!p.suppressed?{...p,suppressed:true}:p);
+ // Owned views of the current finite wall are initially invisible controls,
+ // rather than retired donor geometry. Their literal source bank and marker
+ // must pass before they can remain available to Show components.
+ const regions=new Set([...(hepaticConnectionRegistry(atlas)?.marker.regionPartIds??[]),...(liverCompletionRegistry(atlas)?.partIds??[]),...(spinalCordRegistry(atlas)?.referenceParts.map(p=>p.id)??[])]);
+ const retired=(p:Part)=>hidden.has(p.id)&&!p.suppressed&&!regions.has(p.id);
+ if(!atlas.parts.some(retired))return atlas;
+ const parts=atlas.parts.map(p=>retired(p)?{...p,suppressed:true}:p);
  const unavailable=new Set(parts.filter(p=>p.suppressed&&!p.replacementParts?.length).map(p=>p.id));
  const concepts=atlas.concepts.flatMap(c=>{
   if(!c.elements.some(id=>unavailable.has(id)))return [c];

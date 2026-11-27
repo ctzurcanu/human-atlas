@@ -22,7 +22,7 @@ function verifyPacking(atlas,stage){
  }
 }
 
-for(const name of ['atlas-male-complete','atlas-hra-female','atlas-embryo','atlas-cell']){
+for(const name of ['atlas-male-complete','female-ta98/atlas','atlas-embryo','atlas-cell']){
  const atlas=JSON.parse(await readFile(new URL(`../public/models/${name}.json`,import.meta.url)));
  const entries=hierarchyEntries(atlas),visible=new Set(atlas.parts.map(part=>part.id));
  const modes=name==='atlas-cell'?['systems','regions']:['systems','regions','depth'];

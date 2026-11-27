@@ -6,9 +6,22 @@ import {readFileSync} from 'node:fs';
 const bundle=await build({entryPoints:['app/view-url.ts','app/viewer-state.ts','app/embed.ts','app/model-defaults.ts'],bundle:true,platform:'node',format:'esm',write:false,outdir:'/tmp/view-url-validation'});
 const load=async file=>import(`data:text/javascript;base64,${Buffer.from(bundle.outputFiles.find(output=>output.path.endsWith(file)).text).toString('base64')}`);
 const {compactViewUrl,viewParameters}=await load('view-url.js');
-const {viewUrl,readViewUrl}=await load('viewer-state.js');
+const {viewUrl,readViewUrl,resolveSelection}=await load('viewer-state.js');
 const {embedUrl}=await load('embed.js');
 const base='https://ctzurcanu.github.io/human-atlas/';
+// Source folders are usable review links even when no selectable concept was
+// emitted for the folder itself. Match exact group IDs, including nested ones.
+const handGroup='BDM:male:arteries_of_left_hand_and_wrist_ID';
+const folderAtlas={concepts:[{id:handGroup,name:'Hand arteries',elements:[]}],parts:[
+ {id:'arch',sourceId:'arch-source',sourceGroups:[handGroup]},
+ {id:'digital',sourceId:'digital-source',sourceGroups:[handGroup,'nested-digit-group']},
+ {id:'other',sourceGroups:['other-hand-group']}
+]};
+assert.deepEqual(resolveSelection(folderAtlas,[handGroup]),['arch','digital']);
+assert.deepEqual(resolveSelection(folderAtlas,['nested-digit-group']),['digital']);
+assert.deepEqual(resolveSelection(folderAtlas,['BDM:male:arteries_of_left_hand']),[],'No substring group matching');
+assert.deepEqual(resolveSelection(folderAtlas,['arch-source']),['arch']);
+assert.deepEqual(resolveSelection({...folderAtlas,concepts:[{id:handGroup,elements:['digital']}]},[handGroup]),['digital'],'Authored concept membership stays authoritative');
 const short=base+'?model=male-detail&select=ZA%3AStomach';
 assert.equal(compactViewUrl(short),short);
 

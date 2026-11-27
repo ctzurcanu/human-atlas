@@ -1,0 +1,22 @@
+"""Read-only actual triangle diagnostics; planned clearance remains failed."""
+from pathlib import Path
+import sys,json,hashlib,time,numpy as np
+ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
+from geometry_tools.model import Mesh
+from geometry_tools.audit import audit
+from geometry_tools.spatial import BVH
+from geometry_tools.contact import pair_contacts
+W=ROOT/'.local-models/geometry-workbench/circulatory-completion/anterior-cerebral-segments-v1';O=W/'analytic-trust-v9/left/independent-actual-diagnostic';started=time.monotonic();sha=lambda p:hashlib.sha256(Path(p).read_bytes()).hexdigest();info=json.loads((W/'source-inputs.json').read_text());ctx=json.loads((W/'active-fixed-context-v1/context-contract.json').read_text());assert sha(ROOT/'.local-models/ta98-review/bowel-wall-local-atlas/male/atlas.json')==info['source_sha256'];source=Mesh.load(W/next(r for r in info['sources']if r['part_id']=='ZA:Anterior cerebral artery.l')['mesh_file']);oldctx=Mesh.load(next(r for r in ctx['source']if r['id']=='ZA:Anterior cerebral artery.l')['path']);assert np.array_equal(source.vertices,oldctx.vertices)and np.array_equal(source.faces,oldctx.faces)and all(np.array_equal(source.attributes[k],oldctx.attributes[k])for k in source.attributes);raw=Mesh.load(O/'DIAGNOSTIC-REJECTED-left-aca.npz');m=Mesh(raw.vertices,raw.faces,ctx['frame'],raw.attributes);selfcheck=audit(m,require_closed=False,expected_components=1,max_pairs=250000,max_tests=1000000);r=dict(complete=False,diagnostic_only=True,accepted=False,installed=False,planned_clearance_passed=False,planned_clearance_mm=.2,minimum_optimizer_sample_clearance_mm=.014666498638689518,actual_self=selfcheck,context_all_nonarterial_complete=False,context_rows=[],explicit_identity_frame_registration=dict(source_frame=source.frame,context_frame=ctx['frame'],source_master_vertices_faces_all_attributes_literal_to_body=True,maximum_vertex_difference_m=0.,rigid_matrix=np.eye(4).tolist()));save=lambda:(O/'actual-diagnostic-report.json').write_text(json.dumps(r,indent=2,default=lambda x:x.tolist()if hasattr(x,'tolist')else str(x)))
+save()
+if not selfcheck['passed']:
+ r.update(complete=True,stop_reason='Actual self intersection or topology failed; stopped',elapsed_seconds=time.monotonic()-started);save();print(json.dumps(dict(self_defects=selfcheck['self_intersections']['defect_pairs'],stop_reason=r['stop_reason'])));raise SystemExit(0)
+changed=np.any(m.triangles!=source.triangles,axis=(1,2));tree=BVH(m)
+for entry in ctx['neighbors']:
+ if entry['system']=='arterial':continue
+ fixed=Mesh.load(entry['path']);ft=BVH.load(fixed,entry['bvh_path']);pairs,summary=pair_contacts(m,fixed,0.,first_bvh=tree,second_bvh=ft,max_pairs=250000,max_tests=1000000);assert summary['complete_within_pair_budget'];bad=np.isin(pairs['relation'],['crossing','coplanar-overlap']);new=bad&changed[pairs['pairs'][:,0]];old=bad&~changed[pairs['pairs'][:,0]];witnesses=[]
+ for i in np.flatnonzero(new)[:20]:
+  a,b=map(int,pairs['pairs'][i]);witnesses.append(dict(aca_source_face_id=a,fixed_source_face_id=entry['source_face_ids'][b],relation=str(pairs['relation'][i]),aca_triangle_m=m.triangles[a],fixed_triangle_m=fixed.triangles[b],aca_witness_m=pairs['first'][i],fixed_witness_m=pairs['second'][i]))
+ r['context_rows'].append(dict(id=entry['id'],system=entry['system'],all_strict_crossing_or_coplanar_pairs=int(bad.sum()),changed_triangle_crossing_pairs=int(new.sum()),literal_unchanged_triangle_crossing_pairs=int(old.sum()),witnesses=witnesses));np.savez_compressed(O/f'context-{entry["index"]:03d}-contact-witnesses.npz',**pairs);save()
+ if new.any():
+  r.update(complete=True,stop_reason='Changed triangle crosses fixed nonarterial anatomy; stopped',first_changed_triangle_crossing_id=entry['id'],elapsed_seconds=time.monotonic()-started);save();print(json.dumps(dict(self_defects=0,contexts_checked=len(r['context_rows']),first_changed_crossing=entry['id'],changed_triangle_pairs=int(new.sum()),witnesses=witnesses[:2],elapsed_seconds=r['elapsed_seconds']),default=lambda x:x.tolist()if hasattr(x,'tolist')else str(x)));raise SystemExit(0)
+r.update(complete=True,context_all_nonarterial_complete=True,stop_reason='All nonarterial context checked; no changed triangle crossing. Planned margin still failed.',elapsed_seconds=time.monotonic()-started);save();print(json.dumps(dict(self_defects=0,contexts_checked=len(r['context_rows']),no_changed_triangle_crossings=True,elapsed_seconds=r['elapsed_seconds'])))

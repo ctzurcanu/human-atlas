@@ -59,7 +59,7 @@
     "build:anatomical-attachments": "node scripts/build-anatomical-attachments.mjs",
     "import:cell": "node scripts/import-cell.mjs && node scripts/audit-meshes.mjs cell",
     "import:primary-male": "node scripts/import-primary-male.mjs && node scripts/audit-meshes.mjs male-detail",
-    "import:primary-female": "node scripts/import-primary-female.mjs && node scripts/audit-meshes.mjs female",
+    "import:primary-female": "node scripts/import-primary-female.mjs",
     "import:primary-female-muscles": "node scripts/run-female-muscles.mjs",
     "import:primary-standard": "node scripts/import-primary-standard.mjs && node scripts/audit-meshes.mjs male",
     "build:complete-male": "node scripts/build-complete-male.mjs && node scripts/audit-meshes.mjs male-full && node scripts/build-anatomical-attachments.mjs",
@@ -72,6 +72,7 @@
     "build:exercise": "node scripts/build-exercise-hierarchy.mjs",
     "test:exercise": "node scripts/validate-exercise-hierarchy.mjs",
     "build:spinal-roots": "node scripts/build-spinal-root-hierarchy.mjs",
+    "build:organ-models": "python3 -B -m geometry_tools.runtime --seconds 60 -- .local-models/geometry-tools-env/bin/python -B server/build-separate-spinal-model.py",
     "build:dermatome-depth": "node scripts/prepare-dermatome-depth.mjs && python3 scripts/prepare-dermatome-depth.py",
     "test:dermatome-depth": "python3 scripts/validate-dermatome-depth.py",
     "test:dermatome-visibility": "node scripts/validate-dermatome-visibility.mjs",
@@ -170,6 +171,8 @@
     "test:tube-geometry": "python3 -B server/tube_geometry_test.py",
     "test:camera-intent": "node --test tests/camera-intent.test.mjs",
     "test:explosion-plane": "node --test tests/explosion-plane.test.mjs",
+    "prepare:male-ta98": "python3 -m geometry_tools.runtime --seconds 120 -- node server/prepare-male-ta98.mjs",
+    "build:male-ta98-preview": "VITE_BASE_PATH=/human-atlas/ python3 -m geometry_tools.runtime --seconds 120 -- vite build --mode male-ta98-preview --outDir ../outputs/male-ta98-site",
     "prepare:embryo-pages": "node server/prepare-embryo-pages.mjs",
     "build:embryo-pages-preview": "npm run prepare:embryo-pages && EMBRYO_PAGES_PACKAGE=outputs/embryo-pages-package VITE_EMBRYO_CATALOGUE=/models/embryo-3month/atlas.json VITE_BASE_PATH=/human-atlas/ vite build --mode embryo-local-preview --outDir ../outputs/embryo-pages-preview",
     "test:embryo-pages": "node --test tests/embryo-pages.test.mjs",
@@ -179,7 +182,9 @@
     "test:urinary-paths": "node --test tests/urinary-native-paths.test.mjs",
     "test:coronary-paths": "node --test tests/coronary-native-paths.test.mjs",
     "build:small-intestine-walls": "node server/build-small-intestine-walls.mjs",
-    "build:mcp-ui": "node mcp/build-ui.mjs"
+    "build:mcp-ui": "node mcp/build-ui.mjs",
+    "test:biodigital-fascia": "node --test tests/biodigital-fascia-identities.test.mjs",
+    "build:biodigital-fascia-identities": "python3 scripts/bind-biodigital-fascia-identities.py --input-atlas .local-models/geometry-workbench/biodigital-male-nervous-v1/fascia-fit-v12/circulation-atlas.json --input-sha256 $(shasum -a 256 .local-models/geometry-workbench/biodigital-male-nervous-v1/fascia-fit-v12/circulation-atlas.json | cut -d' ' -f1) --output .local-models/geometry-workbench/biodigital-male-nervous-v1/fascia-fit-v13"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

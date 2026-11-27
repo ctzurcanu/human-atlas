@@ -18,7 +18,9 @@ export function useGuestHierarchies(){
   const inFlight=pending.current.get(url);if(inFlight)return inFlight;
   const builtIn=builtIns.some(input=>canonical(input)===url),limit=builtIn?20_000_000:500_000;
   const promise=(async()=>{
-   const response=await fetchAsset(url);if(!response.ok)throw new Error(`Hierarchy URL returned ${response.status}.`);
+   // Local installs regenerate these files independently of the cached model
+   // index; revalidate built-ins during development so new term controls show.
+   const response=await fetchAsset(url,builtIn&&import.meta.env.DEV?{cache:'reload'}:undefined);if(!response.ok)throw new Error(`Hierarchy URL returned ${response.status}.`);
    const length=Number(response.headers.get('content-length')??0);if(length>limit)throw new Error('Hierarchy file is too large.');
    const content=await response.text();if(content.length>limit)throw new Error('Hierarchy file is too large.');
    let raw:unknown;try{raw=JSON.parse(content);}catch{throw new Error('Hierarchy URL must provide JSON.');}
