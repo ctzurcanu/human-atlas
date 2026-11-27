@@ -59,7 +59,8 @@ export function majorSystemFor(entry:Pick<AnatomyEntry,'name'|'system'|'parts'>&
  if(taCode==='A05.2.01.011')return 'lymphatic';
  const chapter=taCode?.slice(0,3)??taChapterForConcept(entry.parts[0]?.conceptId??'');
  // TA98 files lymphatic trunks and ducts (A12.4) in its cardiovascular chapter, but they belong to the lymphatic system.
- if(taCode?.startsWith('A12.4.'))return 'lymphatic';
+ // Lymph vessels and nodes may be placed under a TA98 cardiovascular parent (A12.0.*); they are still lymphatic, not heart.
+ if(entry.system==='lymphatic'||taCode?.startsWith('A12.4.'))return 'lymphatic';
  const taSystem:Record<string,MajorSystemId>={A02:'skeletal',A03:'skeletal',A04:'muscular',A05:'digestive',A06:'respiratory',A08:'urinary',A09:'reproductive',A11:'endocrine',A12:'circulatory',A13:'lymphatic',A14:'nervous',A15:'nervous',A16:'integumentary'};
  if(chapter&&taSystem[chapter]&&entry.system!=='attachments')return taSystem[chapter];
  // Adipose tissue is hypodermis/fat pads (TA98 files subcutaneous tissue under the integument) and the meninges belong to the nervous system: neither is a skeletal structure.
