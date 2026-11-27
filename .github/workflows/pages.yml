@@ -30,12 +30,17 @@ jobs:
       - run: npm run test:explosion-plane
       - run: npm run test:embryo-pages
       - run: npm run test:model-download
-      - run: node --test server/female-ta98-pages.test.mjs
+      - run: node --test server/female-ta98-package.test.mjs
+      # The immutable repository URLs serve these two directories on Pages.
+      - run: mv public/models/female-ta98/{geometry,textures} "$RUNNER_TEMP/"
+      - run: gzip -n -9 public/models/female-ta98/atlas.json
       - run: npm run build
         env:
           VITE_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
+          VITE_FEMALE_TA98_ASSETS: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/public/
           VITE_CONNECT_RELAY_URL: ${{ vars.VITE_CONNECT_RELAY_URL }}
-          VITE_FEMALE_TA98: '1'
+      - run: node --input-type=module -e "import {compactPagesGeometry} from './server/pages-geometry.mjs'; await compactPagesGeometry('dist')"
+      - run: test "$(du -sb dist | cut -f1)" -lt 1000000000
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist
