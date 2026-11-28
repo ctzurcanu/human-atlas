@@ -631,3 +631,6 @@ body .studio[data-compare-side=right] :is(.detail-sheet,.search-panel,.section-p
 .visit-preview canvas{touch-action:none;cursor:grab}
 .visit-preview canvas:active{cursor:grabbing}
 @media(max-height:650px){.visit-preview{flex-basis:110px;min-height:80px}.visit-panel label{margin:6px 0}}
+.breadcrumb-hierarchy{flex:0 0 100%;color:var(--muted-foreground);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+.hierarchy-path{display:grid;gap:1px}
+.breadcrumb-more{color:var(--muted-foreground);font-size:11px}

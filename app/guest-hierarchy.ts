@@ -32,6 +32,8 @@ const object=(value:unknown):value is Record<string,unknown>=>!!value&&typeof va
 const strings=(value:unknown,max=100):value is string[]=>Array.isArray(value)&&value.length<=max&&value.every(item=>typeof item==='string'&&item.trim().length>0&&item.length<=200);
 
 /** Exact anatomical names, with only the bilateral suffix removed. */
+/** Reference sets name anatomy as `REF:Left atrium`, `ZA:collection:Heart` or `LOCAL:male:right_atrium`; the bare name is what a model's parts carry. */
+export const guestAnatomyAlias=(term:string)=>{const m=/^(?:REF|ZA):(?:collection:)?(.+)$/.exec(term)??/^LOCAL:(?:male|female):(.+)$/.exec(term);return m?m[1].replace(/_/g,' ').toLocaleLowerCase():'';};
 export const guestAnatomyBase=(name:string)=>name.trim().replace(/\s*\((?:left|right)\)\s*$/i,'').trim().toLocaleLowerCase();
 
 /** Treat remote hierarchy files as data: bounded plain text and exact anatomy names. */
@@ -205,8 +207,8 @@ export function resolveGuestHierarchy(atlas:Atlas,hierarchy:GuestHierarchy,view=
   const selectors=node.matchFrom?graph.get(node.matchFrom)!:node;
   let directParts=directCache.get(selectors);
   if(!directParts){
-   const matched=replacementTermParts.get(selectors.id??'')??[...(finiteTermParts.get(selectors.id??'')??[]),...(selectors.partIds??[]).flatMap(id=>byId.has(id)?[byId.get(id)!]:[]),...(selectors.matchBases??[]).flatMap(term=>byBase.get(guestAnatomyBase(term))??[]),...(selectors.matches??[]).flatMap(term=>{
-    const concept=concepts.get(term);return concept?concept.elements.map(id=>byId.get(id)).filter((part):part is Part=>!!part):byId.has(term)?[byId.get(term)!]:byName.get(term.toLocaleLowerCase())??[];
+   const matched=replacementTermParts.get(selectors.id??'')??[...(finiteTermParts.get(selectors.id??'')??[]),...(selectors.partIds??[]).flatMap(id=>byId.has(id)?[byId.get(id)!]:byName.get(guestAnatomyAlias(id))??[]),...(selectors.matchBases??[]).flatMap(term=>byBase.get(guestAnatomyBase(term))??[]),...(selectors.matches??[]).flatMap(term=>{
+    const concept=concepts.get(term);return concept?concept.elements.map(id=>byId.get(id)).filter((part):part is Part=>!!part):byId.has(term)?[byId.get(term)!]:byName.get(term.toLocaleLowerCase())??byName.get(guestAnatomyAlias(term))??[];
    })];
    const systems=new Set(selectors.systems??[]);
    directParts=[...new Map([...matched,...(systems.size?availableParts.filter(part=>systems.has(part.system)):[])].map(part=>[part.id,part])).values()];directCache.set(selectors,directParts);
