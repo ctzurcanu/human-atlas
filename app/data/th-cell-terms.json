@@ -1,0 +1,230 @@
+{
+ "CELL:0": {
+  "latin": "Tegumentum nucleare",
+  "th": "H1.00.01.2.01001"
+ },
+ "CELL:1": {
+  "latin": "Porus nuclearis",
+  "th": "H1.00.01.2.01005"
+ },
+ "CELL:2": {
+  "latin": "Nucleolus",
+  "th": "H1.00.01.2.03001"
+ },
+ "CELL:3": {
+  "latin": "Heterochromatinum",
+  "th": "H1.00.01.2.02005"
+ },
+ "CELL:4": {
+  "latin": "Microfilamentum; Filamentum actini",
+  "th": "H1.00.01.3.02013"
+ },
+ "CELL:5": {
+  "latin": "Microfilamentum; Filamentum actini",
+  "th": "H1.00.01.3.02013"
+ },
+ "CELL:6": {
+  "latin": "Complexus golgiensis; Apparatus golgiensis",
+  "th": "H1.00.01.3.01046"
+ },
+ "CELL:7": {
+  "latin": "Reticulum endoplasmicum granulosum",
+  "th": "H1.00.01.3.01036"
+ },
+ "CELL:8": {
+  "latin": "Ribosoma",
+  "th": "H1.00.01.3.01042"
+ },
+ "CELL:10": {
+  "latin": "Membrana mitochondrialis externa",
+  "th": "H1.00.01.3.01010"
+ },
+ "CELL:11": {
+  "latin": "Endosoma",
+  "th": "H1.00.01.3.01102"
+ },
+ "CELL:12": {
+  "latin": "Endosoma",
+  "th": "H1.00.01.3.01102"
+ },
+ "CELL:13": {
+  "latin": "Endosoma",
+  "th": "H1.00.01.3.01102"
+ },
+ "CELL:14": {
+  "latin": "Centriolum",
+  "th": "H1.00.01.3.01003"
+ },
+ "CELL:15": {
+  "latin": "Plasmalemma; Membrana cellularis",
+  "th": "H1.00.01.1.00001"
+ },
+ "CELL:16": {
+  "latin": "Membrana lysosomatica",
+  "th": "H1.00.01.3.01064"
+ },
+ "CELL:17": {
+  "latin": "Matrix lysosomatica",
+  "th": "H1.00.01.3.01065"
+ },
+ "CELL:18": {
+  "latin": "Mitochondrion",
+  "th": "H1.00.01.3.01008"
+ },
+ "CELL:nucleus": {
+  "latin": "Nucleus",
+  "th": "H1.00.01.2.00001"
+ },
+ "CELL:microfilaments": {
+  "latin": "Microfilamentum; Filamentum actini",
+  "th": "H1.00.01.3.02013"
+ },
+ "CELL:mitochondria": {
+  "latin": "Mitochondrion",
+  "th": "H1.00.01.3.01008"
+ },
+ "CELL:endosome": {
+  "latin": "Endosoma",
+  "th": "H1.00.01.3.01102"
+ },
+ "CELL:lysosome": {
+  "latin": "Lysosoma",
+  "th": "H1.00.01.3.01059"
+ },
+ "CELL:20": {
+  "latin": "Membrana peroxisomatica",
+  "th": "H1.00.01.3.01075"
+ },
+ "CELL:21": {
+  "latin": "Matrix peroxisomatica",
+  "th": "H1.00.01.3.01076"
+ },
+ "CELL:22": {
+  "latin": "Guttula adipis",
+  "th": "H1.00.01.3.01126"
+ },
+ "CELL:23": {
+  "latin": "Granulum glycogeni",
+  "th": "H1.00.01.3.01121"
+ },
+ "CELL:24": {
+  "latin": "Vesicula secretoria; Granulum secretorium; Vacuola secretoria",
+  "th": "H1.00.01.3.01080"
+ },
+ "CELL:25": {
+  "latin": "Autophagosoma",
+  "th": "H1.00.01.3.01110"
+ },
+ "CELL:26": {
+  "latin": "Proteasoma",
+  "th": "H1.00.01.3.01113"
+ },
+ "CELL:27": {
+  "latin": "Reticulum endoplasmicum non granulosum",
+  "th": "H1.00.01.3.01038"
+ },
+ "CELL:28": {
+  "latin": "Microtubulus",
+  "th": "H1.00.01.3.02002"
+ },
+ "CELL:29": {
+  "latin": "Filamentum intermedium",
+  "th": "H1.00.01.3.02019"
+ },
+ "CELL:30": {
+  "latin": "Corpusculum multivesiculare",
+  "th": "H1.00.01.3.01105"
+ },
+ "CELL:31": {
+  "latin": "Vesicula interna",
+  "th": "H1.00.01.3.01106"
+ },
+ "CELL:32": {
+  "latin": "Exosoma",
+  "th": "H1.00.01.3.01107"
+ },
+ "CELL:33": {
+  "latin": "Vesicula a clathrino tecta",
+  "th": "H1.00.01.3.01097"
+ },
+ "CELL:34": {
+  "latin": "Vesicula a clathrino tecta",
+  "th": "H1.00.01.3.01097"
+ },
+ "CELL:35": {
+  "latin": "Vesicula transportans; Vesicula transferens",
+  "th": "H1.00.01.3.01115"
+ },
+ "CELL:36": {
+  "latin": "Endolysosoma",
+  "th": "H1.00.01.3.01104"
+ },
+ "CELL:37": {
+  "latin": "Endolysosoma",
+  "th": "H1.00.01.3.01104"
+ },
+ "CELL:38": {
+  "latin": "Corpusculum residuale",
+  "th": "H1.00.01.3.01112"
+ },
+ "CELL:39": {
+  "latin": "Granulum pigmenti",
+  "th": "H1.00.01.3.01117"
+ },
+ "CELL:40": {
+  "latin": "Polyribosoma",
+  "th": "H1.00.01.3.01045"
+ },
+ "CELL:41": {
+  "latin": "Filamentum acidi ribonucleici nuntii",
+  "th": "H1.00.01.3.01024"
+ },
+ "CELL:42": {
+  "latin": "Corpusculum convolutum",
+  "th": "H1.00.01.2.02015"
+ },
+ "CELL:43": {
+  "latin": "Corpusculum PML",
+  "th": "H1.00.01.2.02017"
+ },
+ "CELL:44": {
+  "latin": "Macula interchromatinea",
+  "th": "H1.00.01.2.02014"
+ },
+ "CELL:45": {
+  "latin": "Desmosoma; Macula adhaerens",
+  "th": "H1.00.01.1.02015"
+ },
+ "CELL:46": {
+  "latin": "Condensatio desmosomatica intracellularis",
+  "th": "H1.00.01.1.02016"
+ },
+ "CELL:47": {
+  "latin": "Hemidesmosoma",
+  "th": "H1.00.01.1.02029"
+ },
+ "CELL:48": {
+  "latin": "Caveola",
+  "th": "H1.00.01.3.01099"
+ },
+ "CELL:endoplasmic-reticulum": {
+  "latin": "Reticulum endoplasmicum",
+  "th": "H1.00.01.3.01027"
+ },
+ "CELL:peroxisome": {
+  "latin": "Peroxisoma",
+  "th": "H1.00.01.3.01074"
+ },
+ "CELL:cytoplasmic-granules": {
+  "latin": "Granulum cytoplasmicum",
+  "th": "H1.00.01.3.01116"
+ },
+ "CELL:cytoskeleton": {
+  "latin": "Cytoskeleton",
+  "th": "H1.00.01.3.02001"
+ },
+ "CELL:cell": {
+  "latin": "Cellula",
+  "th": "H1.00.01.0.00001"
+ }
+}

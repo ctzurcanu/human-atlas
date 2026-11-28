@@ -11,7 +11,7 @@ export const REGIONS=['all','head-neck','torso','upper-right','upper-left','lowe
 export const REGION_NAMES=['Whole body','Head & neck','Torso & pelvis','Right arm','Left arm','Right leg','Left leg'];
 export const VIEWS:View[]=['three-quarter','front','back','side','right','superior','inferior'];
 // Fixed URL bit positions. Append new systems; never reorder existing entries.
-const URL_SYSTEMS:readonly SystemId[]=['skeletal','muscular','cardiac','sensory','arterial','venous','nervous','respiratory','digestive','urinary','lymphatic','endocrine','reproductive','integumentary','pregnancy','fascia','schematic','attachments','regions','connective','cell-boundary','cell-nucleus','cell-endomembrane','cell-mitochondria','cell-cytoskeleton','cell-vesicles','cell-protein-synthesis','cell-division'];
+const URL_SYSTEMS:readonly SystemId[]=['skeletal','muscular','cardiac','sensory','arterial','venous','nervous','respiratory','digestive','urinary','lymphatic','endocrine','reproductive','integumentary','pregnancy','fascia','schematic','attachments','regions','connective','cell-boundary','cell-nucleus','cell-endomembrane','cell-mitochondria','cell-cytoskeleton','cell-vesicles','cell-protein-synthesis','cell-division','cell-inclusions'];
 const LEGACY_PEEL_LAYERS=[['skin'],['investing-fascia'],['superficial-muscles','second-muscles','intermediate-muscles','deep-muscles','deepest-muscles'],['visceral-coverings','ligaments'],['anterior-organs','deep-organs'],['superficial-veins','deep-vessels','lymphatic'],['thoracic-bones','limb-bones','other-bones','spine','skull']];
 const visibilityCache=new WeakMap<SceneState,{selected:Set<string>;hidden:Set<string>;visible:Set<SystemId>;depthHidden:Set<string>;surface:boolean}>();
 function visibilitySets(s:SceneState){

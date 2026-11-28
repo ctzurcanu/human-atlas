@@ -6,6 +6,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {gzipSync} from 'node:zlib';
 import {Matrix3,Matrix4,Quaternion,Vector3} from 'three';
+import {buildOrganelles} from './cell-organelles.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const source=path.join(root,'assets/source/human_eukaryotic_cell_and_its_main_components.glb');
@@ -34,6 +35,66 @@ const components=[
  ['Mitochondrial interior','cell-mitochondria','Cytoplasm'],
  ['RNA','cell-protein-synthesis','Cytoplasm'],
 ];
+
+// Terminologia Histologica (FIPAT/IFAA 2008), chapter H1.00 Cytologia: https://ifaa.unifr.ch/Public/EntryPage/TH08Ch100.html
+// Codes, Latin terms and English equivalents are transcribed from the published chapter pages.
+const TH={
+ 'CELL:0':{name:'Nuclear envelope',latin:'Tegumentum nucleare',th:'H1.00.01.2.01001'},
+ 'CELL:1':{name:'Nuclear pore',latin:'Porus nuclearis',th:'H1.00.01.2.01005'},
+ 'CELL:2':{name:'Nucleolus',latin:'Nucleolus',th:'H1.00.01.2.03001'},
+ 'CELL:3':{name:'Heterochromatin',latin:'Heterochromatinum',th:'H1.00.01.2.02005'},
+ 'CELL:4':{name:'Microfilament (set 2)',latin:'Microfilamentum; Filamentum actini',th:'H1.00.01.3.02013'},
+ 'CELL:5':{name:'Microfilament',latin:'Microfilamentum; Filamentum actini',th:'H1.00.01.3.02013'},
+ 'CELL:6':{name:'Golgi apparatus',latin:'Complexus golgiensis; Apparatus golgiensis',th:'H1.00.01.3.01046'},
+ 'CELL:7':{name:'Rough endoplasmic reticulum',latin:'Reticulum endoplasmicum granulosum',th:'H1.00.01.3.01036'},
+ 'CELL:8':{name:'Ribosome',latin:'Ribosoma',th:'H1.00.01.3.01042'},
+ 'CELL:10':{name:'External mitochondrial membrane',latin:'Membrana mitochondrialis externa',th:'H1.00.01.3.01010'},
+ 'CELL:11':{name:'Endosome contents',latin:'Endosoma',th:'H1.00.01.3.01102'},
+ 'CELL:12':{name:'Endosome outer membrane',latin:'Endosoma',th:'H1.00.01.3.01102'},
+ 'CELL:13':{name:'Endosome inner membrane',latin:'Endosoma',th:'H1.00.01.3.01102'},
+ 'CELL:14':{name:'Centriole',latin:'Centriolum',th:'H1.00.01.3.01003'},
+ 'CELL:15':{name:'Plasma membrane',latin:'Plasmalemma; Membrana cellularis',th:'H1.00.01.1.00001'},
+ 'CELL:16':{name:'Lysosomal membrane',latin:'Membrana lysosomatica',th:'H1.00.01.3.01064'},
+ 'CELL:17':{name:'Lysosomal matrix',latin:'Matrix lysosomatica',th:'H1.00.01.3.01065'},
+ 'CELL:18':{name:'Mitochondrial interior',latin:'Mitochondrion',th:'H1.00.01.3.01008'},
+ 'CELL:nucleus':{latin:'Nucleus',th:'H1.00.01.2.00001'},
+ 'CELL:microfilaments':{latin:'Microfilamentum; Filamentum actini',th:'H1.00.01.3.02013'},
+ 'CELL:mitochondria':{latin:'Mitochondrion',th:'H1.00.01.3.01008'},
+ 'CELL:endosome':{latin:'Endosoma',th:'H1.00.01.3.01102'},
+ 'CELL:lysosome':{latin:'Lysosoma',th:'H1.00.01.3.01059'},
+};
+// Organelles the source scan lacks, generated schematically (see cell-organelles.mjs). system and TH term per shape.
+const ADDITIONS={
+ 'peroxisomal-membrane':{name:'Peroxisomal membrane',system:'cell-vesicles',latin:'Membrana peroxisomatica',th:'H1.00.01.3.01075'},
+ 'peroxisomal-matrix':{name:'Peroxisomal matrix',system:'cell-vesicles',latin:'Matrix peroxisomatica',th:'H1.00.01.3.01076'},
+ 'fat-droplet':{name:'Fat droplet',system:'cell-inclusions',latin:'Guttula adipis',th:'H1.00.01.3.01126'},
+ 'glycogen-granule':{name:'Glycogen granule',system:'cell-inclusions',latin:'Granulum glycogeni',th:'H1.00.01.3.01121'},
+ 'secretory-vesicle':{name:'Secretory vesicle',system:'cell-vesicles',latin:'Vesicula secretoria; Granulum secretorium; Vacuola secretoria',th:'H1.00.01.3.01080'},
+ 'autophagosome':{name:'Autophagosome',system:'cell-vesicles',latin:'Autophagosoma',th:'H1.00.01.3.01110'},
+ 'proteasome':{name:'Proteasome',system:'cell-protein-synthesis',latin:'Proteasoma',th:'H1.00.01.3.01113'},
+ 'smooth-er':{name:'Smooth endoplasmic reticulum',system:'cell-endomembrane',latin:'Reticulum endoplasmicum non granulosum',th:'H1.00.01.3.01038'},
+ 'microtubule':{name:'Microtubule',system:'cell-cytoskeleton',latin:'Microtubulus',th:'H1.00.01.3.02002'},
+ 'multivesicular-body':{name:'Multivesicular body',system:'cell-vesicles',latin:'Corpusculum multivesiculare',th:'H1.00.01.3.01105'},
+ 'internal-vesicle':{name:'Internal vesicle',system:'cell-vesicles',latin:'Vesicula interna',th:'H1.00.01.3.01106'},
+ 'exosome':{name:'Exosome',system:'cell-vesicles',latin:'Exosoma',th:'H1.00.01.3.01107'},
+ 'clathrin-coated-vesicle':{name:'Clathrin-coated vesicle',system:'cell-vesicles',latin:'Vesicula a clathrino tecta',th:'H1.00.01.3.01097'},
+ 'clathrin-coat':{name:'Clathrin coat',system:'cell-vesicles',latin:'Vesicula a clathrino tecta',th:'H1.00.01.3.01097'},
+ 'transport-vesicle':{name:'Transport vesicle',system:'cell-vesicles',latin:'Vesicula transportans; Vesicula transferens',th:'H1.00.01.3.01115'},
+ 'endolysosome':{name:'Endolysosome',system:'cell-vesicles',latin:'Endolysosoma',th:'H1.00.01.3.01104'},
+ 'endolysosome-contents':{name:'Endolysosome contents',system:'cell-vesicles',latin:'Endolysosoma',th:'H1.00.01.3.01104'},
+ 'residual-body':{name:'Residual body',system:'cell-vesicles',latin:'Corpusculum residuale',th:'H1.00.01.3.01112'},
+ 'pigment-granule':{name:'Pigment granule',system:'cell-inclusions',latin:'Granulum pigmenti',th:'H1.00.01.3.01117'},
+ 'polyribosome':{name:'Polyribosome',system:'cell-protein-synthesis',latin:'Polyribosoma',th:'H1.00.01.3.01045'},
+ 'messenger-rna-strand':{name:'Messenger RNA strand',system:'cell-protein-synthesis',latin:'Filamentum acidi ribonucleici nuntii',th:'H1.00.01.3.01024'},
+ 'coiled-body':{name:'Coiled body',system:'cell-nucleus',compartment:'Nucleus',latin:'Corpusculum convolutum',th:'H1.00.01.2.02015'},
+ 'pml-nuclear-body':{name:'PML nuclear body',system:'cell-nucleus',compartment:'Nucleus',latin:'Corpusculum PML',th:'H1.00.01.2.02017'},
+ 'nuclear-speckle':{name:'Nuclear speckle',system:'cell-nucleus',compartment:'Nucleus',latin:'Macula interchromatinea',th:'H1.00.01.2.02014'},
+ 'desmosome':{name:'Desmosome',system:'cell-boundary',compartment:'Cell boundary',latin:'Desmosoma; Macula adhaerens',th:'H1.00.01.1.02015'},
+ 'desmosomal-plaque':{name:'Desmosomal plaque',system:'cell-boundary',compartment:'Cell boundary',latin:'Condensatio desmosomatica intracellularis',th:'H1.00.01.1.02016'},
+ 'hemidesmosome':{name:'Hemidesmosome',system:'cell-boundary',compartment:'Cell boundary',latin:'Hemidesmosoma',th:'H1.00.01.1.02029'},
+ 'caveola':{name:'Caveola',system:'cell-boundary',compartment:'Cell boundary',latin:'Caveola',th:'H1.00.01.3.01099'},
+ 'intermediate-filament':{name:'Intermediate filament',system:'cell-cytoskeleton',latin:'Filamentum intermedium',th:'H1.00.01.3.02019'},
+};
 
 const file=await fs.readFile(source);
 assert.equal(createHash('sha256').update(file).digest('hex'),sourceHash,'The source GLB has changed');
@@ -96,7 +157,7 @@ function append(data){
 const linearToSrgb=value=>value<=.0031308?value*12.92:1.055*Math.pow(value,1/2.4)-.055;
 const parts=[],concepts=[],materials={};
 for(let mesh=0;mesh<components.length;mesh++){
- const [name,system,compartment]=components[mesh],item=raw.get(mesh);
+ const [sourceName,system,compartment]=components[mesh],item=raw.get(mesh),name=TH[`CELL:${mesh}`]?.name??sourceName;
  assert.ok(item,`Missing source mesh ${mesh}`);
  const boundsMin=new Vector3(Infinity,Infinity,Infinity),boundsMax=new Vector3(-Infinity,-Infinity,-Infinity),point=new Vector3();
  for(let i=0;i<item.points.length;i+=3){
@@ -110,10 +171,34 @@ for(let mesh=0;mesh<components.length;mesh++){
  parts.push({id,name,conceptId:id,system,chunk:0,positions,normals,colors,indices,vertexCount:item.points.length/3,indexCount:item.indices.length,bounds:[boundsMin.toArray(),boundsMax.toArray()],material:materialId,sourceId:item.node,groups:[compartment]});
  concepts.push({id,name,elements:[id]});triangles+=item.indices.length/3;
 }
+// Schematic additions, placed in free space between the source meshes.
+const added=[];
+{
+ const obstacles=[...raw.entries()].filter(([mesh])=>mesh!==15).map(([,item])=>item.points);
+ const centroid=index=>{const points=raw.get(index).points,sum=[0,0,0];for(let i=0;i<points.length;i+=3)for(let j=0;j<3;j++)sum[j]+=points[i+j];return sum.map(value=>value/(points.length/3));};
+ const {parts:shapes,stat}=buildOrganelles({obstacles,centrosome:[-.1,1.0,.18],golgi:centroid(6),nucleus:centroid(0)});
+ console.log('Schematic organelles:',JSON.stringify(stat));
+ for(const shape of shapes){
+  const meta=ADDITIONS[shape.key];assert.ok(meta,`No TH entry for ${shape.key}`);
+  const index=parts.length,id=`CELL:${index}`,materialId=`cell-material-${index}`;
+  const points=Float32Array.from(shape.mesh.points),normals=new Int16Array(shape.mesh.normals.map(value=>Math.round(Math.max(-1,Math.min(1,value))*32767))),indices=Uint32Array.from(shape.mesh.indices);
+  const boundsMin=[Infinity,Infinity,Infinity],boundsMax=[-Infinity,-Infinity,-Infinity];
+  for(let i=0;i<points.length;i+=3)for(let j=0;j<3;j++){boundsMin[j]=Math.min(boundsMin[j],points[i+j]);boundsMax[j]=Math.max(boundsMax[j],points[i+j]);}
+  materials[materialId]={color:shape.color,opacity:shape.opacity};
+  parts.push({id,name:meta.name,conceptId:id,system:meta.system,chunk:0,positions:append(points),normals:append(normals),indices:append(indices),vertexCount:points.length/3,indexCount:indices.length,bounds:[boundsMin,boundsMax],material:materialId,groups:[meta.compartment??'Cytoplasm'],provenance:{label:'Schematic addition',detail:'Generated for this atlas to show an organelle absent from the UMCG scan; shape and position are illustrative, not measured.'}});
+  concepts.push({id,name:meta.name,elements:[id]});triangles+=indices.length/3;
+  TH[id]={name:meta.name,latin:meta.latin,th:meta.th};
+  added.push(id);
+ }
+}
 for(const [id,name,meshes] of [
- ['cell','Human eukaryotic cell',components.map((_,i)=>i)],
+ ['cell','Human eukaryotic cell',parts.map((_,i)=>i)],
  ['nucleus','Nucleus',[0,1,2,3]],
+ ['endoplasmic-reticulum','Endoplasmic reticulum',[7,...parts.flatMap((part,i)=>part.name==='Smooth endoplasmic reticulum'?[i]:[])]],
+ ['peroxisome','Peroxisome',parts.flatMap((part,i)=>part.name.startsWith('Peroxisomal')?[i]:[])],
+ ['cytoplasmic-granules','Cytoplasmic inclusions',parts.flatMap((part,i)=>part.system==='cell-inclusions'?[i]:[])],
  ['microfilaments','Microfilaments (all)',[4,5]],
+ ['cytoskeleton','Cytoskeleton',[4,5,...parts.flatMap((part,i)=>/^(Microtubule|Intermediate filament)$/.test(part.name)?[i]:[])]],
  ['mitochondria','Mitochondria',[10,18]],
  ['endosome','Endosome',[11,12,13]],
  ['lysosome','Lysosome',[16,17]],
@@ -124,4 +209,10 @@ await fs.writeFile(path.join(destination,'cell-0.bin'),binary);
 await fs.writeFile(path.join(destination,'cell-0.bin.gz'),compressed);
 const manifest={version:'E-learning UMCG human eukaryotic cell',scope:'cell',source:'E-learning UMCG via Sketchfab',sourceUrl,sourceSha256:sourceHash,license:'CC BY-NC-SA 4.0',licenseUrl:'https://creativecommons.org/licenses/by-nc-sa/4.0/',author:'E-learning UMCG',parts,concepts,materials,chunks:[{url:'/models/cell-0.bin',bytes:binary.length,gzip:'/models/cell-0.bin.gz',gzipBytes:compressed.length}],triangles};
 await fs.writeFile(path.join(destination,'atlas-cell.json'),JSON.stringify(manifest));
+TH['CELL:endoplasmic-reticulum']={latin:'Reticulum endoplasmicum',th:'H1.00.01.3.01027'};
+TH['CELL:peroxisome']={latin:'Peroxisoma',th:'H1.00.01.3.01074'};
+TH['CELL:cytoplasmic-granules']={latin:'Granulum cytoplasmicum',th:'H1.00.01.3.01116'};
+TH['CELL:cytoskeleton']={latin:'Cytoskeleton',th:'H1.00.01.3.02001'};
+TH['CELL:cell']={latin:'Cellula',th:'H1.00.01.0.00001'};
+await fs.writeFile(path.join(root,'app/data/th-cell-terms.json'),JSON.stringify(Object.fromEntries(Object.entries(TH).map(([id,{name,...rest}])=>[id,rest])),null,1)+'\n');
 console.log(`Imported ${parts.length} cell components, ${concepts.length} concepts, ${triangles.toLocaleString()} triangles; ${(binary.length/1e6).toFixed(1)} MB binary, ${(compressed.length/1e6).toFixed(1)} MB gzip`);

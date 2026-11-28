@@ -1,4 +1,4 @@
-export type SystemId = 'skeletal'|'muscular'|'arterial'|'venous'|'nervous'|'digestive'|'respiratory'|'urinary'|'reproductive'|'lymphatic'|'endocrine'|'integumentary'|'connective'|'sensory'|'cardiac'|'pregnancy'|'attachments'|'regions'|'fascia'|'schematic'|'cell-boundary'|'cell-nucleus'|'cell-endomembrane'|'cell-mitochondria'|'cell-cytoskeleton'|'cell-vesicles'|'cell-protein-synthesis'|'cell-division';
+export type SystemId = 'skeletal'|'muscular'|'arterial'|'venous'|'nervous'|'digestive'|'respiratory'|'urinary'|'reproductive'|'lymphatic'|'endocrine'|'integumentary'|'connective'|'sensory'|'cardiac'|'pregnancy'|'attachments'|'regions'|'fascia'|'schematic'|'cell-boundary'|'cell-nucleus'|'cell-endomembrane'|'cell-mitochondria'|'cell-cytoskeleton'|'cell-vesicles'|'cell-protein-synthesis'|'cell-division'|'cell-inclusions';
 export type AnatomySex='male'|'female';
 export const SYSTEMS: {id:SystemId;name:string;color:string;description:string}[] = [
  {id:'skeletal',name:'Skeleton',color:'#e2d9ba',description:'Bones form the supporting framework of the body, protect organs, and provide attachment points for muscles. Their internal tissue also stores minerals and produces blood cells.'},
@@ -28,6 +28,7 @@ export const SYSTEMS: {id:SystemId;name:string;color:string;description:string}[
  {id:'cell-cytoskeleton',name:'Cytoskeleton',color:'#8bc5a8',description:'Microfilaments help maintain cell shape and support movement and intracellular organization.'},
  {id:'cell-vesicles',name:'Vesicles and lysosomes',color:'#9b9dd6',description:'Membrane-bound compartments sort, transport, and break down material inside the cell.'},
  {id:'cell-protein-synthesis',name:'Protein synthesis',color:'#d1a056',description:'Ribosomes read RNA to assemble proteins. The model also shows representative RNA and protein structures.'},
+ {id:'cell-inclusions',name:'Cytoplasmic inclusions',color:'#c6a3e0',description:'Fat droplets and glycogen granules store energy in the cytoplasm without a surrounding organelle membrane system.'},
  {id:'cell-division',name:'Cell division',color:'#d9c45f',description:'Centrioles help organize microtubules in the centrosome during cell division.'},
 ];
 export interface Part {surfaceOnly?:boolean;referenceOnly?:boolean;representationClass?:string;ta98Term?:string;defaultHidden?:boolean;gallbladderRegion?:string;ileocaecalJunctionAssembly?:string;ileocaecalJunctionRole?:'caecum'|'ileum';ileocaecalJunctionLayer?:string;tissueBoundaryOffsets?:number[];tissueBoundaryCounts?:number[];tissueWallAssembly?:string;tissueWallLayer?:string;hairField?:import('./metric-hair-field').HairField;visibleThroughSkin?:boolean;caecocolicLayer?:string;caecocolicBand?:string|null;caecocolicWallAssembly?:string;caecocolicRegion?:string;tissueChart?:number;bowelWallSource?:string;geometryInstance?:{rotation:[number,number,number,number];scale:number};geometryScale?:number;geometryOrigin?:[number,number,number];pairedTissue?:boolean;tissueDrawGroups?:{start:number;count:number;neighbor?:string;replacement?:string}[];normalSigns?:number;gastricLumen?:number;tissueAppearance?:import('./tissue-wall-material').TissueAppearance;description?:string;coverageLimitation?:string;replacementParts?:string[];sectionSolid?:boolean;sectionAssembly?:string;sectionClosureParts?:string[];sectionWall?:number;suppressed?:boolean;tissue?:string;regions?:string[];depth?:number;sourceId?:string;sourceOffset?:number[];groups?:string[];sourceGroups?:string[];provenance?:{label:string;url:string;detail:string};license?:string;material?:string;uvs?:number;colors?:number;id:string;name:string;conceptId:string;system:SystemId;chunk:number;positions:number;normals:number;indices:number;vertexCount:number;indexCount:number;bounds:[number[],number[]]}
@@ -37,7 +38,7 @@ export interface Atlas {systemGeometry?:import('./system-geometry').SystemGeomet
 export type View = 'three-quarter'|'front'|'back'|'side'|'right'|'superior'|'inferior';
 export interface SceneState {dermatomeSelected?:string[];dermatomeHidden?:string[];guestView?:string;guestExtensions?:string[];guestQuery?:string;focus?:number;contextOpacity?:number;region?:string;peel?:number;depth?:number;depthHidden?:string[];hidden?:string[];labels?:boolean;selectionGroup?:boolean;camera?:number[];section?:import('./section-plane').SectionState;sections?:import('./section-plane').SectionState[];activeSection?:number;skinOpacity?:number;inspectorOpen?:boolean;explode:number;visible:SystemId[];selected:string[];isolate:boolean;view:View;rotate:boolean;reset:number}
 export const DEFAULT_VISIBLE:SystemId[] = ['cardiac','sensory','skeletal','muscular','arterial','venous','nervous','respiratory','digestive','urinary','lymphatic','endocrine','reproductive','connective'];
-export const CELL_VISIBLE:SystemId[] = ['cell-boundary','cell-nucleus','cell-endomembrane','cell-mitochondria','cell-cytoskeleton','cell-vesicles','cell-protein-synthesis','cell-division'];
+export const CELL_VISIBLE:SystemId[] = ['cell-boundary','cell-nucleus','cell-endomembrane','cell-mitochondria','cell-cytoskeleton','cell-vesicles','cell-protein-synthesis','cell-division','cell-inclusions'];
 export const isSurfaceSystem=(system:SystemId)=>system==='integumentary'||system==='cell-boundary';
 // Source meshes can be split by rendering material (for example Bone-7 or
 // Brain-Inner). Those labels identify surfaces, not anatomical structures.
@@ -66,6 +67,42 @@ export const EXPLANATIONS:Record<string,string> = {
  'plasma membrane':'The cell’s outer boundary, made mainly of a lipid bilayer with embedded proteins.',
  'lysosomal membrane':'The boundary of a lysosome, which contains enzymes that break down cellular material.',
  'lysosomal contents':'Material inside a lysosome, a compartment used for breakdown and recycling.',
+ 'nuclear pore':'Protein complexes in the nuclear envelope that control transport of RNA and proteins between nucleus and cytoplasm.',
+ 'microfilament':'Thin actin filaments of the cytoskeleton that help shape the cell and support movement.',
+ 'microfilament (set 2)':'An additional modeled set of actin microfilaments that supports cell shape and movement.',
+ 'ribosome':'Molecular machines that translate messenger RNA into proteins.',
+ 'external mitochondrial membrane':'The outer boundaries of the modeled mitochondria, organelles that help generate cellular ATP.',
+ 'centriole':'Cylindrical microtubule structures within the centrosome that help organize the cell division machinery.',
+ 'lysosomal matrix':'Material inside a lysosome, a compartment used for breakdown and recycling.',
+ 'peroxisomal membrane':'The single membrane around a peroxisome, a small organelle that breaks down fatty acids and neutralises hydrogen peroxide. Shown as a schematic addition.',
+ 'peroxisomal matrix':'The enzyme-rich interior of a peroxisome, including its dense crystalline core. Shown as a schematic addition.',
+ 'fat droplet':'A storage droplet of neutral fats in the cytoplasm, a cytoplasmic inclusion without a surrounding membrane bilayer. Shown as a schematic addition.',
+ 'glycogen granule':'Clusters of tiny granules that store glucose as glycogen in the cytoplasm. Shown as a schematic addition.',
+ 'secretory vesicle':'A membrane-bound vesicle that carries products from the Golgi apparatus towards the cell surface for release. Shown as a schematic addition.',
+ 'autophagosome':'A double-membrane vesicle that wraps worn-out cell parts and delivers them to lysosomes for recycling. Shown as a schematic addition.',
+ 'proteasome':'A barrel-shaped protein complex that breaks down damaged or unneeded proteins. Shown as a schematic addition.',
+ 'smooth endoplasmic reticulum':'Branching membrane tubules without ribosomes, continuous with the rough endoplasmic reticulum, that make lipids and handle calcium. Shown as a schematic addition.',
+ 'microtubule':'Hollow protein tubes of the cytoskeleton that radiate from the centrosome and guide transport and cell division. Shown as a schematic addition.',
+ 'intermediate filament':'Rope-like cytoskeleton fibres that give the cell mechanical strength, ringing the nucleus and reaching the cell edge. Shown as a schematic addition.',
+ 'multivesicular body':'A late endosome that holds smaller internal vesicles; it can fuse with lysosomes or release its vesicles as exosomes. Shown as a schematic addition.',
+ 'internal vesicle':'Small vesicles formed inside a multivesicular body, carrying proteins and RNA that are destined for degradation or release. Shown as a schematic addition.',
+ 'exosome':'A very small vesicle released by the cell, carrying proteins, lipids, and RNA between cells. Shown as a schematic addition.',
+ 'clathrin-coated vesicle':'A newly budded vesicle used in endocytosis and in traffic from the Golgi apparatus; its inner membrane sac is wrapped by a clathrin cage. Shown as a schematic addition.',
+ 'clathrin coat':'The lattice of clathrin protein that shapes and wraps a budding vesicle before it pinches off. Shown as a schematic addition.',
+ 'transport vesicle':'A small vesicle that carries cargo between compartments, for example from the rough endoplasmic reticulum to the Golgi apparatus. Shown as a schematic addition.',
+ 'endolysosome':'A hybrid compartment formed when an endosome fuses with a lysosome, where digestion of its cargo begins. Shown as a schematic addition.',
+ 'endolysosome contents':'Partly digested material inside an endolysosome. Shown as a schematic addition.',
+ 'residual body':'A dense remnant of lysosomal digestion that can stay in the cell for a long time. Shown as a schematic addition.',
+ 'pigment granule':'Small dark granules of pigment, such as lipofuscin, that build up in long-lived cells. Shown as a schematic addition.',
+ 'polyribosome':'Several ribosomes reading the same messenger RNA at once, seen as beads on a string. Shown as a schematic addition.',
+ 'messenger rna strand':'The messenger RNA strand that links the ribosomes of a polyribosome. Shown as a schematic addition.',
+ 'coiled body':'A small nuclear body that helps assemble factors needed for RNA processing. Shown as a schematic addition.',
+ 'pml nuclear body':'A small spherical nuclear body involved in DNA-damage response and gene regulation. Shown as a schematic addition.',
+ 'nuclear speckle':'Patches of RNA-processing factors in the nucleus, found between regions of chromatin. Shown as a schematic addition.',
+ 'desmosome':'A button-like junction that anchors neighbouring cells together; intermediate filaments attach to it on the inside of each cell. Shown as a schematic addition.',
+ 'desmosomal plaque':'The dense protein plate on the cytoplasmic side of a desmosome, where intermediate filaments are anchored. Shown as a schematic addition.',
+ 'hemidesmosome':'An anchoring junction on the cell base that attaches the cell to the underlying basement membrane. Shown as a schematic addition.',
+ 'caveola':'A small flask-shaped pit in the plasma membrane involved in transport, signalling, and membrane regulation. Shown as a schematic addition.',
  'rna':'A nucleic acid that helps carry and use genetic information, including instructions for making proteins.',
  'sternum':'The sternum, or breastbone, is the flat bone at the front of the chest. Its manubrium, body, and xiphoid process form the front of the rib cage and connect to the ribs through costal cartilage.',
  'body of sternum':'The body is the long middle portion of the sternum, between the manubrium above and the xiphoid process below. Its sides meet the costal cartilages of the ribs.',

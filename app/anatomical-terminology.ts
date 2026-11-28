@@ -1,9 +1,13 @@
 import metadata from './data/ta98-metadata.json';
 import parentIndex from './data/ta98-parents.json';
+import thCellTerms from './data/th-cell-terms.json';
 
-export type Terminology={ta98:string|null;tha:string|null;fma:string|null;latin:string|null;ontology?:string|null};
-export type IdentifierKind='La'|'TA98'|'THA'|'FMA'|'UBERON'|'Atlas'|'HA-G';
+export type Terminology={ta98:string|null;tha:string|null;fma:string|null;latin:string|null;ontology?:string|null;th?:string|null};
+export type IdentifierKind='La'|'TA98'|'TH'|'THA'|'FMA'|'UBERON'|'Atlas'|'HA-G';
 const empty:Terminology={ta98:null,tha:null,fma:null,latin:null};
+/** Terminologia Histologica (H1.00 Cytologia) terms for the cell model; Latin names follow TH. */
+const thCell=thCellTerms as Record<string,{latin:string;th:string}>;
+const THA_CHAPTER='https://ifaa.unifr.ch/Public/EntryPage/TH08Ch100.html';
 const concepts=metadata.byConcept as Record<string,Terminology>;
 const groups=metadata.byGroup as Record<string,Terminology>;
 const groupsLower=new Map(Object.entries(groups).map(([name,term])=>[name.toLowerCase(),term]));
@@ -26,6 +30,7 @@ export function taExactEntityForConcept(id:string):string|undefined{
 }
 
 export function terminologyForConcept(id:string,ta98Term?:string,ta98Kind?:'exact'|'parent'):Terminology{
+ if(thCell[id])return {...empty,latin:thCell[id].latin,th:thCell[id].th};
  if(ta98Kind==='parent')return empty;
  const code=ta98Term??/^TA98(?:RECOVERED|REGION|FEMALE)?:(A\d{2}\.\d\.\d{2}\.\d{3}[FM]?)$/.exec(id)?.[1];
  if(code){
@@ -62,6 +67,7 @@ export function terminologyTitle(name:string,term:Terminology,id?:string):string
  const lines=[name];
  if(term.latin)lines.push(`La:${term.latin}`);
  if(term.ta98)lines.push(`TA98:${term.ta98}`);
+ if(term.th)lines.push(`TH:${term.th}`);
  if(term.tha)lines.push(term.tha);
  if(term.fma)lines.push(term.fma);
  if(term.ontology)lines.push(term.ontology);
@@ -71,6 +77,7 @@ export function terminologyTitle(name:string,term:Terminology,id?:string):string
 
 /** Registry records for published identifiers; atlas permalinks for local IDs. */
 export function identifierReference(kind:IdentifierKind,term:Terminology,viewUrl:string):string{
+ if(term.th&&!term.ta98&&(kind==='TH'||kind==='La'))return THA_CHAPTER;
  if(kind==='FMA'&&term.fma)return `https://bioportal.bioontology.org/ontologies/FMA?p=classes&conceptid=${encodeURIComponent(`http://purl.org/sig/ont/fma/fma${term.fma.replace(/^FMA:/,'')}`)}`;
  if(kind==='UBERON'&&term.ontology)return `https://www.ebi.ac.uk/ols4/ontologies/uberon/classes?obo_id=${encodeURIComponent(term.ontology)}`;
  if((kind==='TA98'||kind==='THA'||kind==='La')&&term.ta98){
