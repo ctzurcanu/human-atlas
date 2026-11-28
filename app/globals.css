@@ -634,3 +634,5 @@ body .studio[data-compare-side=right] :is(.detail-sheet,.search-panel,.section-p
 .breadcrumb-hierarchy{flex:0 0 100%;color:var(--muted-foreground);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
 .hierarchy-path{display:grid;gap:1px}
 .breadcrumb-more{color:var(--muted-foreground);font-size:11px}
+.hierarchy-more-button{justify-self:start;border:0;background:none;padding:2px 0;color:var(--muted-foreground);font-size:11px;text-decoration:underline;cursor:pointer}
+.hierarchy-more-button:hover{color:var(--foreground)}

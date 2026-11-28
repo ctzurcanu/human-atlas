@@ -47,6 +47,8 @@ interface Props {
  choice:HierarchyChoice;
  componentChoices?:HierarchyChoice[];
  ancestors:HierarchyChoice[];
+ otherPaths?:boolean;
+ onOtherPaths?:(open:boolean)=>void;
  hierarchyPaths?:{id:string;label:string;paths:HierarchyChoice[][];more:number;active:boolean}[];
  selectedParts:Part[];
  anchorParts?:Part[];
@@ -86,7 +88,7 @@ function IdentifierPill({kind,value,href,language}:{kind:IdentifierKind;value:st
  return <span role="listitem" className="identifier-item"><a className={`identifier-pill identifier-${kind.toLowerCase()}`} href={href} target="_blank" rel="noopener noreferrer" title={`Open ${kind} ${value}`}><strong>{kind}</strong><span lang={language}>{value}</span></a></span>;
 }
 
-export default function SelectionInspector({titleRef,choice,componentChoices,ancestors,hierarchyPaths,selectedParts,anchorParts,relationshipDepth,relationshipExhausted,partById,concepts,scope,state,viewUrl,covering,wallSteps,depth,onDepth,onCenter,onIsolate,onExpandRelationships,onShowComponents,onHide,onHidePart,onChoosePart,onChooseChild}:Props){
+export default function SelectionInspector({titleRef,choice,componentChoices,ancestors,hierarchyPaths,otherPaths,onOtherPaths,selectedParts,anchorParts,relationshipDepth,relationshipExhausted,partById,concepts,scope,state,viewUrl,covering,wallSteps,depth,onDepth,onCenter,onIsolate,onExpandRelationships,onShowComponents,onHide,onHidePart,onChoosePart,onChooseChild}:Props){
  const title=structureLabelName(choice.name);
  const liverMicroDetail=import.meta.env.DEV?liverMicroscopicDetailUrl(choice):null;
  const microscopicDetail=import.meta.env.DEV?intestinalVillusDetailUrl(choice):null;
@@ -186,6 +188,7 @@ export default function SelectionInspector({titleRef,choice,componentChoices,anc
   </div>
   <div className="detail-scroll" key={choice.id}>
    {hierarchyPaths&&hierarchyPaths.length>0?hierarchyPaths.map(h=><div className="hierarchy-path" key={h.id}>{hierarchyPaths.length>1&&<span className="breadcrumb-hierarchy">{h.label}</span>}{h.paths.map((path,i)=><nav className="structure-breadcrumbs" key={i} aria-label={`${h.label} path`}>{path.map((parent,index)=>{const display=displayLaterality(parent.name);return <span className="breadcrumb-step" key={`${index}:${parent.id}`}>{index>0&&<span className="breadcrumb-separator" aria-hidden="true">›</span>}<button type="button" className={lateralityClass(display.side)} onClick={()=>onChooseChild(parent)} aria-label={`Select ${parent.name}`} title={`Open ${parent.name}`}>{display.label}</button></span>;})}</nav>)}{h.more>0&&<span className="breadcrumb-more">+{h.more} more</span>}</div>):(ancestors.length>0?<nav className="structure-breadcrumbs" aria-label="Anatomical path">{ancestors.map((parent,index)=>{const display=displayLaterality(parent.name);return <span className="breadcrumb-step" key={`${index}:${parent.id}`}>{index>0&&<span className="breadcrumb-separator" aria-hidden="true">›</span>}<button type="button" className={lateralityClass(display.side)} onClick={()=>onChooseChild(parent)} aria-label={`Select ${parent.name}`} title={`Open ${parent.name}`}>{display.label}</button></span>;})}</nav>:null)}
+   {onOtherPaths&&(hierarchyPaths?.length??0)>0&&<button type="button" className="hierarchy-more-button" aria-pressed={!!otherPaths} onClick={()=>onOtherPaths(!otherPaths)}>{otherPaths?'Hide genes, drugs, physiology and other hierarchies':'Show in genes, drugs, physiology and other hierarchies'}</button>}
    {tags.length>0&&<div className="structure-tags">{tags.map(tag=>{const display=displayLaterality(tag);return <span className={`structure-tag${display.side?` tree-name ${lateralityClass(display.side)}`:''}`} key={tag} title={tag}>{display.label}</span>;})}</div>}
    <SheetDescription className="structure-description">{description}</SheetDescription>
    {coverageLimitation&&coverageLimitation!==description&&(selectionSet
